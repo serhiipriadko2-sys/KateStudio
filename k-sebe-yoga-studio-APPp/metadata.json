@@ -1,0 +1,8 @@
+{
+  "name": "K Sebe Yoga Studio | Atmosphere",
+  "description": "Студия йоги Кати Габран 'К себе'. Inside Flow, Хатха-йога, ретриты и глубокое погружение в практику. Атмосферное пространство для души и тела.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ]
+}

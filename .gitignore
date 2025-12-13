@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+
+# Index file
+repo_index.json
+
+# Editor configs
+.vscode/
+.idea/
+
+# Archives
+*.zip
+*.tar.gz
+*.tgz

@@ -1,0 +1,8 @@
+{
+  "name": "K Sebe Yoga Studio",
+  "description": "A serene and modern website for K Sebe Yoga Studio featuring pricing, gallery, and an AI yoga assistant.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ]
+}
