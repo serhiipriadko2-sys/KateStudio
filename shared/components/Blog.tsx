@@ -1,6 +1,6 @@
 /**
- * Blog Component for APP
- * Mobile-optimized with article reader modal
+ * Blog Component
+ * Shared across WEB and APP
  */
 import React, { useState } from 'react';
 import {
@@ -14,22 +14,10 @@ import {
   Check,
 } from 'lucide-react';
 import { FadeIn } from './FadeIn';
-import { Image } from './Image';
-import { useToast } from '../context/ToastContext';
+import { BlogArticle } from '../types';
 
-interface BlogArticle {
-  id: number;
-  category: string;
-  title: string;
-  excerpt: string;
-  image: string;
-  date: string;
-  content?: string;
-  author?: string;
-  readTime?: string;
-}
-
-const articles: BlogArticle[] = [
+// Default articles data
+const defaultArticles: BlogArticle[] = [
   {
     id: 1,
     category: 'Практика',
@@ -95,12 +83,20 @@ const articles: BlogArticle[] = [
 ];
 
 interface BlogProps {
+  articles?: BlogArticle[];
   className?: string;
+  onArticleClick?: (article: BlogArticle) => void;
+  showAllLink?: boolean;
   compact?: boolean;
 }
 
-export const Blog: React.FC<BlogProps> = ({ className = '', compact = false }) => {
-  const { showToast } = useToast();
+export const Blog: React.FC<BlogProps> = ({
+  articles = defaultArticles,
+  className = '',
+  onArticleClick,
+  showAllLink = true,
+  compact = false,
+}) => {
   const [selectedArticle, setSelectedArticle] = useState<BlogArticle | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -120,9 +116,16 @@ export const Blog: React.FC<BlogProps> = ({ className = '', compact = false }) =
     const url = window.location.href.split('#')[0] + '#blog';
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
-      showToast('Ссылка скопирована', 'success');
       setTimeout(() => setCopied(false), 2000);
     });
+  };
+
+  const handleArticleSelect = (article: BlogArticle) => {
+    if (onArticleClick) {
+      onArticleClick(article);
+    } else {
+      setSelectedArticle(article);
+    }
   };
 
   return (
@@ -138,33 +141,34 @@ export const Blog: React.FC<BlogProps> = ({ className = '', compact = false }) =
           <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Полезное</h2>
         </FadeIn>
 
-        <FadeIn delay={200} direction="left">
-          <button className="flex items-center gap-2 text-brand-text hover:text-brand-green transition-colors group">
-            <span className="text-sm font-medium uppercase tracking-wider">Все статьи</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </FadeIn>
+        {showAllLink && (
+          <FadeIn delay={200} direction="left">
+            <button className="flex items-center gap-2 text-brand-text hover:text-brand-green transition-colors group">
+              <span className="text-sm font-medium uppercase tracking-wider">Все статьи</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </FadeIn>
+        )}
       </div>
 
-      <div className={`grid grid-cols-1 ${compact ? 'gap-4' : 'md:grid-cols-3 gap-10'}`}>
+      <div
+        className={`grid grid-cols-1 ${compact ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-10`}
+      >
         {articles.map((article, idx) => (
           <FadeIn key={article.id} delay={idx * 150} direction="up" className="h-full">
             <article
               className="group h-full flex flex-col cursor-pointer"
-              onClick={() => setSelectedArticle(article)}
+              onClick={() => handleArticleSelect(article)}
             >
               <div className="relative overflow-hidden rounded-[2rem] aspect-[4/3] mb-6 shadow-sm group-hover:shadow-xl transition-all duration-500">
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold text-brand-text z-10">
                   {article.category}
                 </div>
-                <Image
+                <img
                   src={article.image}
                   alt={article.title}
-                  storageKey={`blog-article-${article.id}`}
-                  containerClassName="w-full h-full"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                {/* Overlay on hover */}
                 <div className="absolute inset-0 bg-brand-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center pointer-events-none">
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-brand-green transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                     <BookOpen className="w-5 h-5" />
@@ -200,18 +204,18 @@ export const Blog: React.FC<BlogProps> = ({ className = '', compact = false }) =
       </div>
 
       {/* Article Reader Modal */}
-      {selectedArticle && selectedArticle.content && (
+      {selectedArticle && (
         <div
-          className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
           onClick={() => setSelectedArticle(null)}
         >
           <div
-            className="bg-white w-full md:max-w-2xl md:rounded-[2rem] rounded-t-[2rem] max-h-[90vh] md:h-[85vh] overflow-hidden relative flex flex-col animate-in slide-in-from-bottom-10 duration-300"
+            className="bg-white w-full max-w-2xl h-[85vh] rounded-[2rem] shadow-2xl overflow-hidden relative flex flex-col animate-in slide-in-from-bottom-10 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header Image */}
-            <div className="h-48 md:h-64 relative shrink-0">
-              <Image
+            <div className="h-64 relative shrink-0">
+              <img
                 src={selectedArticle.image}
                 alt={selectedArticle.title}
                 className="w-full h-full object-cover"
@@ -238,7 +242,7 @@ export const Blog: React.FC<BlogProps> = ({ className = '', compact = false }) =
                 <span className="bg-brand-green text-white px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold mb-3 inline-block">
                   {selectedArticle.category}
                 </span>
-                <h2 className="text-xl md:text-3xl font-serif text-white leading-tight">
+                <h2 className="text-2xl md:text-3xl font-serif text-white leading-tight">
                   {selectedArticle.title}
                 </h2>
               </div>

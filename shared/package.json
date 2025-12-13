@@ -1,0 +1,44 @@
+{
+  "name": "@ksebe/shared",
+  "version": "1.0.0",
+  "description": "Shared components, hooks, services, and types for K Sebe Yoga Studio ecosystem",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./components": "./components/index.ts",
+    "./hooks": "./hooks/index.ts",
+    "./services": "./services/index.ts",
+    "./types": "./types/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "lucide-react": "^0.511.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "~5.8.0"
+  },
+  "keywords": [
+    "yoga",
+    "inside-flow",
+    "react",
+    "components",
+    "wellness"
+  ],
+  "author": "K Sebe Yoga Studio",
+  "license": "UNLICENSED",
+  "private": true
+}
