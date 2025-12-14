@@ -4,7 +4,7 @@
  * Central export for all shared modules across WEB and APP platforms
  *
  * Usage:
- *   import { FadeIn, Logo, useScrollLock, supabase } from '@ksebe/shared';
+ *   import { FadeIn, Logo, useScrollLock, supabase, cn, COLORS } from '@ksebe/shared';
  *   import type { UserProfile, ClassSession } from '@ksebe/shared';
  */
 
@@ -19,3 +19,9 @@ export * from './services';
 
 // Types
 export * from './types';
+
+// Utilities
+export * from './utils';
+
+// Constants
+export * from './constants';
