@@ -21,7 +21,8 @@ describe('Utility Functions', () => {
     });
 
     it('should handle conditional classes', () => {
-      expect(cn('foo', false && 'bar', 'baz')).toBe('foo baz');
+      const showBar = false;
+      expect(cn('foo', showBar && 'bar', 'baz')).toBe('foo baz');
     });
 
     it('should handle undefined and null', () => {
@@ -120,9 +121,13 @@ describe('Utility Functions', () => {
       expect(id1).not.toBe(id2);
     });
 
-    it('should generate IDs of specified length', () => {
-      expect(generateId(10).length).toBe(10);
-      expect(generateId(20).length).toBe(20);
+    it('should use custom prefix', () => {
+      expect(generateId('test')).toMatch(/^test_/);
+      expect(generateId('custom')).toMatch(/^custom_/);
+    });
+
+    it('should have default prefix', () => {
+      expect(generateId()).toMatch(/^ksebe_/);
     });
   });
 

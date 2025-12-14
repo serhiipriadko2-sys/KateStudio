@@ -12,7 +12,10 @@ export function cn(...classes: (string | boolean | undefined | null)[]): string 
 /**
  * Format date to Russian locale
  */
-export function formatDate(date: Date | string | number, options?: Intl.DateTimeFormatOptions): string {
+export function formatDate(
+  date: Date | string | number,
+  options?: Intl.DateTimeFormatOptions
+): string {
   const d = new Date(date);
   return d.toLocaleDateString('ru-RU', {
     day: 'numeric',
@@ -112,9 +115,7 @@ export const isBrowser = typeof window !== 'undefined';
  */
 export function isMobile(): boolean {
   if (!isBrowser) return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  );
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 /**
@@ -152,11 +153,19 @@ export function getInitials(name: string): string {
 }
 
 /**
+ * Capitalize first letter
+ */
+export function capitalize(text: string): string {
+  if (!text) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
  * Truncate text with ellipsis
  */
 export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 3) + '...';
+  return text.slice(0, maxLength) + '...';
 }
 
 /**
