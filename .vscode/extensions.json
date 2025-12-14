@@ -1,0 +1,45 @@
+{
+  "recommendations": [
+    // Core
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-vscode.vscode-typescript-next",
+
+    // React & TypeScript
+    "dsznajder.es7-react-js-snippets",
+    "burkeholland.simple-react-snippets",
+    "formulahendry.auto-rename-tag",
+    "steoates.autoimport",
+
+    // Tailwind CSS
+    "bradlc.vscode-tailwindcss",
+
+    // Git
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+
+    // Utils
+    "christian-kohler.path-intellisense",
+    "christian-kohler.npm-intellisense",
+    "wayou.vscode-todo-highlight",
+    "gruntfuggly.todo-tree",
+    "usernamehw.errorlens",
+
+    // Testing
+    "vitest.explorer",
+
+    // Markdown
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+
+    // Icons & Themes
+    "pkief.material-icon-theme",
+
+    // AI
+    "github.copilot",
+
+    // Docker
+    "ms-azuretools.vscode-docker"
+  ],
+  "unwantedRecommendations": []
+}
