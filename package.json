@@ -19,7 +19,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf node_modules shared/node_modules k-sebe-yoga-studioWEB/node_modules k-sebe-yoga-studio-APPp/node_modules"
+    "clean": "rm -rf node_modules shared/node_modules k-sebe-yoga-studioWEB/node_modules k-sebe-yoga-studio-APPp/node_modules",
+    "prepare": "husky",
+    "test": "echo 'No tests configured yet' && exit 0",
+    "test:web": "npm run test --workspace=k-sebe-yoga-studioWEB --if-present",
+    "test:app": "npm run test --workspace=k-sebe-yoga-studio-APPp --if-present"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.0.0",
@@ -30,8 +34,22 @@
     "eslint-plugin-jsx-a11y": "^6.9.0",
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^5.0.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
     "prettier": "^3.3.0",
     "typescript": "~5.8.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.{css,scss}": [
+      "prettier --write"
+    ]
   },
   "engines": {
     "node": ">=18.0.0"

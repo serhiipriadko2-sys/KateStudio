@@ -1,0 +1,21 @@
+# K Sebe Yoga Studio - Code Owners
+# These owners will be requested for review when someone opens a pull request.
+
+# Default owners for everything in the repo
+* @serhiipriadko2-sys
+
+# Shared library - requires careful review
+/shared/ @serhiipriadko2-sys
+
+# WEB project
+/k-sebe-yoga-studioWEB/ @serhiipriadko2-sys
+
+# APP project
+/k-sebe-yoga-studio-APPp/ @serhiipriadko2-sys
+
+# Configuration files
+/.github/ @serhiipriadko2-sys
+/package.json @serhiipriadko2-sys
+/tsconfig.json @serhiipriadko2-sys
+/.eslintrc.cjs @serhiipriadko2-sys
+/.prettierrc @serhiipriadko2-sys
