@@ -1,0 +1,82 @@
+version: 2
+updates:
+  # Root package.json
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "npm"
+    groups:
+      eslint:
+        patterns:
+          - "eslint*"
+          - "@typescript-eslint/*"
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      development:
+        dependency-type: "development"
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "eslint*"
+          - "@typescript-eslint/*"
+          - "react*"
+          - "@types/react*"
+
+  # WEB project
+  - package-ecosystem: "npm"
+    directory: "/k-sebe-yoga-studioWEB"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps(web)"
+    labels:
+      - "dependencies"
+      - "web"
+
+  # APP project
+  - package-ecosystem: "npm"
+    directory: "/k-sebe-yoga-studio-APPp"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps(app)"
+    labels:
+      - "dependencies"
+      - "app"
+
+  # Shared library
+  - package-ecosystem: "npm"
+    directory: "/shared"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps(shared)"
+    labels:
+      - "dependencies"
+      - "shared"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "ci"
+      - "dependencies"

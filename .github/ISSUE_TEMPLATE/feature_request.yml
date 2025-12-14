@@ -1,0 +1,84 @@
+name: Feature Request
+description: Suggest a new feature for KateStudio ecosystem
+title: "[Feature]: "
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature for K Sebe Yoga Studio!
+        Please describe your idea in detail.
+
+  - type: dropdown
+    id: project
+    attributes:
+      label: Target Project
+      description: Which project should this feature be added to?
+      options:
+        - WEB (k-sebe-yoga-studioWEB)
+        - APP (k-sebe-yoga-studio-APPp)
+        - Shared library
+        - Both WEB and APP
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What category does this feature belong to?
+      options:
+        - AI Coach / Chat
+        - Video Library
+        - Schedule / Booking
+        - Breathwork / Meditation
+        - User Profile
+        - Blog / Content
+        - UI/UX Improvement
+        - Performance
+        - Accessibility
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: A clear and concise description of what the problem is. Ex. I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: A clear and concise description of what you want to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups / Examples
+      description: If you have any mockups, sketches, or examples from other apps, please share them
+
+  - type: checkboxes
+    id: yoga-alignment
+    attributes:
+      label: Alignment with Inside Flow Philosophy
+      description: Does this feature align with the Inside Flow yoga philosophy?
+      options:
+        - label: This feature supports mindful movement and breathing practices
+        - label: This feature enhances the yoga learning experience
+        - label: This feature helps build community connection
