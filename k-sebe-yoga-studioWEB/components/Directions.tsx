@@ -24,7 +24,7 @@ export const Directions: React.FC<DirectionsProps> = ({ onBook }) => {
                 <button onClick={() => onBook("Inside Flow")} className="flex items-center gap-2 text-brand-green font-medium group/btn w-fit"><span>Записаться</span><ArrowRight className="w-4 h-4 group-hover/btn:translate-x-2 transition-transform" /></button>
                 </div>
                 <div className="md:w-1/2 w-full aspect-square md:aspect-[4/3] rounded-[2.5rem] overflow-hidden order-1 md:order-2 shadow-lg rotate-2 group-hover:rotate-0 transition-transform duration-700">
-                <Image src="https://images.unsplash.com/photo-1552196563-55cd4e45efb3?q=80&w=800&auto=format&fit=crop" alt="Inside Flow - Warrior Pose" storageKey="direction-inside-flow" containerClassName="w-full h-full" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                <Image src="/images/directions/direction-inside-flow.jpg" alt="Inside Flow - Warrior Pose" storageKey="direction-inside-flow" containerClassName="w-full h-full" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                 </div>
             </div>
             </div>
@@ -33,7 +33,7 @@ export const Directions: React.FC<DirectionsProps> = ({ onBook }) => {
             <div className="group bg-[#f5f5f4] rounded-[3rem] p-8 md:p-16 transition-all hover:shadow-2xl hover:shadow-stone-200">
             <div className="flex flex-col md:flex-row items-center gap-10 md:gap-20">
                 <div className="md:w-1/2 w-full aspect-square md:aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-lg -rotate-2 group-hover:rotate-0 transition-transform duration-700">
-                <Image src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=800&auto=format&fit=crop" alt="Hatha Yoga" storageKey="direction-hatha" containerClassName="w-full h-full" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                <Image src="/images/directions/direction-hatha.jpg" alt="Hatha Yoga" storageKey="direction-hatha" containerClassName="w-full h-full" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                 </div>
                 <div className="md:w-1/2">
                 <h3 className="text-3xl md:text-5xl font-serif text-brand-text mb-6">Хатха йога</h3>

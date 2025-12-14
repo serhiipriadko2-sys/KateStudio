@@ -11,9 +11,9 @@ export const About: React.FC = () => {
           <FadeIn delay={0} direction="right">
             <div className="absolute inset-0 bg-brand-mint rounded-[3rem] rotate-3 group-hover:rotate-6 transition-transform duration-500"></div>
             <div className="relative w-full aspect-[3/4] rounded-[3rem] overflow-hidden shadow-xl">
-               <Image 
-                src="https://images.unsplash.com/photo-1544367563-12123d8965cd?q=80&w=800&auto=format&fit=crop" 
-                alt="Катя Габран" 
+               <Image
+                src="/images/about/katya-portrait.jpg"
+                alt="Катя Габран"
                 storageKey="about-katya-portrait"
                 containerClassName="w-full h-full"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"

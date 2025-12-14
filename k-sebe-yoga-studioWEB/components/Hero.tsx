@@ -34,7 +34,7 @@ export const Hero: React.FC<HeroProps> = ({ onBook }) => {
   return (
     <section className="relative h-screen min-h-[600px] flex flex-col justify-end pb-24 px-6 md:px-12 overflow-hidden bg-brand-dark">
       <div ref={parallaxRef} className="absolute inset-0 z-0 will-change-transform">
-        <Image src="/hero.jpg" alt="Yoga Pose" storageKey="hero-main-bg" containerClassName="w-full h-[120%] -top-[10%]" className="w-full h-full object-cover object-center brightness-[0.85]" controlsClassName="top-32 right-6 md:top-36 md:right-8" loading="eager" fetchPriority="high" />
+        <Image src="/images/hero/hero-bg.jpg" alt="Yoga Pose" storageKey="hero-main-bg" containerClassName="w-full h-[120%] -top-[10%]" className="w-full h-full object-cover object-center brightness-[0.85]" controlsClassName="top-32 right-6 md:top-36 md:right-8" loading="eager" fetchPriority="high" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none z-10"></div>
       </div>
 
