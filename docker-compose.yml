@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # WEB Development Server
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: ksebe-web
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/k-sebe-yoga-studioWEB/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+    command: npm run dev:web -- --host 0.0.0.0
+    networks:
+      - ksebe-network
+
+  # APP Development Server
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: ksebe-app
+    ports:
+      - "5174:5174"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/k-sebe-yoga-studio-APPp/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
+    command: npm run dev:app -- --host 0.0.0.0 --port 5174
+    networks:
+      - ksebe-network
+
+  # Production Build (WEB)
+  web-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web-production
+    container_name: ksebe-web-prod
+    ports:
+      - "80:80"
+    profiles:
+      - production
+    networks:
+      - ksebe-network
+
+  # Production Build (APP)
+  app-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app-production
+    container_name: ksebe-app-prod
+    ports:
+      - "8080:80"
+    profiles:
+      - production
+    networks:
+      - ksebe-network
+
+networks:
+  ksebe-network:
+    driver: bridge
+
+volumes:
+  node_modules:
