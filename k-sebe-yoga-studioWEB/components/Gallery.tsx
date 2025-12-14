@@ -8,25 +8,25 @@ import { useScrollLock } from '../hooks/useScrollLock';
 const galleryImages = [
   {
     id: 1,
-    url: "https://images.unsplash.com/photo-1599447421405-0c174142716c?q=80&w=1200&auto=format&fit=crop",
+    url: "/images/gallery/gallery-image-1.jpg",
     alt: "Meditation Atmosphere",
     className: "md:col-span-1 row-span-1"
   },
   {
     id: 2,
-    url: "https://images.unsplash.com/photo-1593164842264-854604eb8a4c?q=80&w=1200&auto=format&fit=crop",
+    url: "/images/gallery/gallery-image-2.jpg",
     alt: "Stretching Flow",
     className: "md:col-span-2 row-span-1 object-[50%_40%]"
   },
   {
     id: 3,
-    url: "https://images.unsplash.com/photo-1552196563-55cd4e45efb3?q=80&w=1200&auto=format&fit=crop",
+    url: "/images/gallery/gallery-image-3.jpg",
     alt: "Yoga Studio Vibe",
     className: "md:col-span-2 row-span-1"
   },
   {
     id: 4,
-    url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1200&auto=format&fit=crop",
+    url: "/images/gallery/gallery-image-4.jpg",
     alt: "Peaceful Moment",
     className: "md:col-span-1 row-span-1"
   }
