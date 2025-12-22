@@ -202,12 +202,12 @@ export const CONTACT = {
 } as const;
 
 // ============================================
-// API ENDPOINTS
+// API CONFIGURATION
 // ============================================
 
 export const API = {
   supabase: {
-    url: 'https://qkaycdcbstjobacmuaro.supabase.co',
+    // URL and keys are loaded from environment variables (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
     tables: {
       users: 'users',
       bookings: 'bookings',
@@ -222,12 +222,13 @@ export const API = {
     },
   },
   gemini: {
+    // API key is loaded from environment variable (VITE_GEMINI_API_KEY)
     models: {
       chat: 'gemini-2.5-flash',
       vision: 'gemini-2.5-flash',
-      thinking: 'gemini-3-pro-preview',
-      image: 'gemini-3-pro-image',
-      video: 'veo-3.1',
+      thinking: 'gemini-2.5-pro',
+      image: 'imagen-3.0-generate-002',
+      video: 'veo-2.0-generate-001',
     },
   },
 } as const;
