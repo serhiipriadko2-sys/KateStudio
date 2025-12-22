@@ -15,6 +15,7 @@ export default defineConfig({
     ],
     exclude: ['**/node_modules/**', '**/dist/**'],
     coverage: {
+      enabled: true,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       thresholds: {
