@@ -1,22 +1,22 @@
 import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
 import { Menu, X, Instagram, Send } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { Contact } from './components/Contact';
-import { Hero } from './components/Hero';
 import { About } from './components/About';
-import { Directions } from './components/Directions';
-import { FAQ } from './components/FAQ';
-import { Philosophy } from './components/Philosophy';
-import { FirstVisit } from './components/FirstVisit';
-import { Footer } from './components/Footer';
-import { Blog } from './components/Blog';
 import { AdminPanel } from './components/AdminPanel';
 import { Benefits } from './components/Benefits';
-import { LegalModals } from './components/LegalModals';
+import { Blog } from './components/Blog';
 import { BookingModal } from './components/BookingModal';
 import { ChatWidget } from './components/ChatWidget';
+import { Contact } from './components/Contact';
+import { Directions } from './components/Directions';
+import { FAQ } from './components/FAQ';
+import { FirstVisit } from './components/FirstVisit';
+import { Footer } from './components/Footer';
 import { Gallery } from './components/Gallery';
+import { Hero } from './components/Hero';
+import { LegalModals } from './components/LegalModals';
 import { Logo } from './components/Logo';
+import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
 import { Pricing } from './components/Pricing';
 import { Retreats } from './components/Retreats';
@@ -113,6 +113,18 @@ function App() {
       <div
         className={`min-h-screen bg-brand-light font-sans selection:bg-brand-green selection:text-white relative flex flex-col transition-opacity duration-700 ${loading ? 'opacity-0' : 'opacity-100'}`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[1000] focus:bg-white focus:text-brand-green focus:px-4 focus:py-2 focus:rounded-full focus:shadow-lg"
+        >
+          Пропустить к содержимому
+        </a>
+        <a
+          href="#footer"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-16 focus:left-4 focus:z-[1000] focus:bg-white focus:text-brand-green focus:px-4 focus:py-2 focus:rounded-full focus:shadow-lg"
+        >
+          Пропустить к подвалу
+        </a>
         {/* Texture Overlay */}
         <div
           className="fixed inset-0 z-[5] pointer-events-none opacity-[0.05] mix-blend-multiply"
@@ -224,25 +236,27 @@ function App() {
         )}
 
         {/* Main Content Flow */}
-        <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
-        <Marquee />
-        <Benefits />
-        <About />
-        <Philosophy />
-        <Directions onBook={(type) => openBooking({ type })} />
-        <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
-        <Gallery />
-        <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-        <Retreats onBook={(type) => openBooking({ type })} />
-        <Schedule onBook={(details) => openBooking(details)} />
-        <Blog />
-        <Reviews />
-        <FAQ />
-        <Contact />
-        <Footer
-          onOpenAdmin={() => setIsAdminOpen(true)}
-          onOpenLegal={(type) => setLegalModalType(type)}
-        />
+        <main id="main-content" tabIndex={-1} className="flex-1">
+          <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
+          <Marquee />
+          <Benefits />
+          <About />
+          <Philosophy />
+          <Directions onBook={(type) => openBooking({ type })} />
+          <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
+          <Gallery />
+          <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
+          <Retreats onBook={(type) => openBooking({ type })} />
+          <Schedule onBook={(details) => openBooking(details)} />
+          <Blog />
+          <Reviews />
+          <FAQ />
+          <Contact />
+          <Footer
+            onOpenAdmin={() => setIsAdminOpen(true)}
+            onOpenLegal={(type) => setLegalModalType(type)}
+          />
+        </main>
 
         <BackToTop />
         <ChatWidget />
