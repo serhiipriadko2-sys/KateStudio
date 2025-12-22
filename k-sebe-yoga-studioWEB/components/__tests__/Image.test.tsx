@@ -3,11 +3,13 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Image } from '../Image';
 
-vi.mock('../../services/content', () => ({
-  getSavedImageUrl: vi.fn().mockResolvedValue(null),
-  saveImageMapping: vi.fn(),
-  deleteImageMapping: vi.fn(),
-  uploadImage: vi.fn(),
+vi.mock('../../../shared/services', () => ({
+  imageStorageAdapter: {
+    getMapping: vi.fn().mockResolvedValue(null),
+    saveMapping: vi.fn(),
+    deleteMapping: vi.fn(),
+    uploadToCloud: vi.fn(),
+  },
 }));
 
 vi.mock('../../services/geminiService', () => ({

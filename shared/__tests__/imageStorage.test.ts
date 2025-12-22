@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { deleteImageMapping, getSavedImageUrl, saveImageMapping, uploadImage } from '../content';
-import { BUCKET_NAME } from '../content';
+import {
+  BUCKET_NAME,
+  deleteImageMapping,
+  getSavedImageUrl,
+  saveImageMapping,
+  uploadImage,
+} from '../services/imageStorage';
 
 const mocks = vi.hoisted(() => {
   const singleMock = vi
@@ -30,12 +35,12 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock('../supabase', () => ({
+vi.mock('../services/supabase', () => ({
   supabase: { from: mocks.fromMock },
   uploadFile: mocks.uploadFileMock,
 }));
 
-describe('content service', () => {
+describe('imageStorage', () => {
   it('returns saved image url when present', async () => {
     const result = await getSavedImageUrl('hero');
 
