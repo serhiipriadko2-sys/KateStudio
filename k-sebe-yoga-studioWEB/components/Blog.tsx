@@ -1,18 +1,29 @@
-
-import React, { useState } from 'react';
-import { ArrowRight, BookOpen, X, Clock, Calendar as CalendarIcon, User, Share2, Check } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  X,
+  Clock,
+  Calendar as CalendarIcon,
+  User,
+  Share2,
+  Check,
+} from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
-import { useScrollLock } from '../hooks/useScrollLock';
 
 const articles = [
   {
     id: 1,
-    category: "Практика",
-    title: "Как начать медитировать: 5 простых шагов",
-    excerpt: "Медитация — это не отсутствие мыслей, а умение их наблюдать. Рассказываем, как сделать первые шаги к осознанности без стресса.",
-    image: "https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?q=80&w=800&auto=format&fit=crop",
-    date: "12 Авг",
+    category: 'Практика',
+    title: 'Как начать медитировать: 5 простых шагов',
+    excerpt:
+      'Медитация — это не отсутствие мыслей, а умение их наблюдать. Рассказываем, как сделать первые шаги к осознанности без стресса.',
+    image:
+      'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?q=80&w=800&auto=format&fit=crop',
+    date: '12 Авг',
     content: `
       <p>Многие думают, что медитация — это сидеть в позе лотоса и ни о чем не думать. На самом деле, это тренировка ума возвращаться в настоящий момент.</p>
       <h3>1. Найдите удобное место</h3>
@@ -22,15 +33,17 @@ const articles = [
       <h3>3. Не ругайте себя за мысли</h3>
       <p>Мысли будут приходить. Это нормально. Как только заметите, что отвлеклись — мягко верните внимание к дыханию.</p>
       <p>Начните с 5 минут в день. Это эффективнее, чем час раз в месяц.</p>
-    `
+    `,
   },
   {
     id: 2,
-    category: "Здоровье",
-    title: "Питание и Йога: что есть до и после?",
-    excerpt: "Легкость в теле — залог успешной практики. Разбираем идеальный рацион для утренних и вечерних занятий.",
-    image: "https://images.unsplash.com/photo-1511690656952-34342d5c22b0?q=80&w=800&auto=format&fit=crop",
-    date: "08 Авг",
+    category: 'Здоровье',
+    title: 'Питание и Йога: что есть до и после?',
+    excerpt:
+      'Легкость в теле — залог успешной практики. Разбираем идеальный рацион для утренних и вечерних занятий.',
+    image:
+      'https://images.unsplash.com/photo-1511690656952-34342d5c22b0?q=80&w=800&auto=format&fit=crop',
+    date: '08 Авг',
     content: `
       <p>Йога на полный желудок — это испытание. Но и на голодный желудок заниматься сложно из-за слабости.</p>
       <h3>До практики (за 1.5-2 часа)</h3>
@@ -38,15 +51,17 @@ const articles = [
       <h3>После практики</h3>
       <p>В течение 30 минут после шавасаны лучше выпить травяной чай или воду. Через час можно полноценно поесть: белок + овощи.</p>
       <p>Слушайте свое тело — оно лучший нутрициолог.</p>
-    `
+    `,
   },
   {
     id: 3,
-    category: "Философия",
-    title: "Inside Flow: Танец твоего сердца",
-    excerpt: "Почему эта практика покоряет мир? Сочетание современной музыки, ритма и традиционных асан в одном потоке.",
-    image: "https://images.unsplash.com/photo-1508672019048-805c276e7e69?q=80&w=800&auto=format&fit=crop",
-    date: "01 Авг",
+    category: 'Философия',
+    title: 'Inside Flow: Танец твоего сердца',
+    excerpt:
+      'Почему эта практика покоряет мир? Сочетание современной музыки, ритма и традиционных асан в одном потоке.',
+    image:
+      'https://images.unsplash.com/photo-1508672019048-805c276e7e69?q=80&w=800&auto=format&fit=crop',
+    date: '01 Авг',
     content: `
       <p>Inside Flow — это эволюция виньяса-йоги. Здесь мы движемся в такт современной музыке.</p>
       <h3>Музыка как проводник</h3>
@@ -54,15 +69,18 @@ const articles = [
       <h3>История в движении</h3>
       <p>Каждая последовательность (флоу) рассказывает историю. Мы проживаем эмоции через тело.</p>
       <p>Это практика для тех, кто любит динамику, музыку и хочет почувствовать йогу по-новому.</p>
-    `
-  }
+    `,
+  },
 ];
 
 export const Blog: React.FC = () => {
-  const [selectedArticle, setSelectedArticle] = useState<typeof articles[0] | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<(typeof articles)[0] | null>(null);
   const [copied, setCopied] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useScrollLock(!!selectedArticle);
+  useFocusTrap(dialogRef, !!selectedArticle, closeButtonRef);
 
   const handleShare = () => {
     // In a real app with routing, this would copy the specific URL like /blog/1
@@ -77,10 +95,12 @@ export const Blog: React.FC = () => {
     <section id="blog" className="py-24 px-6 md:px-12 max-w-7xl mx-auto scroll-mt-20">
       <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
         <FadeIn>
-          <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">Блог</h4>
+          <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">
+            Блог
+          </h4>
           <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Полезное</h2>
         </FadeIn>
-        
+
         <FadeIn delay={200} direction="left">
           <button className="flex items-center gap-2 text-brand-text hover:text-brand-green transition-colors group">
             <span className="text-sm font-medium uppercase tracking-wider">Все статьи</span>
@@ -92,7 +112,7 @@ export const Blog: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
         {articles.map((article, idx) => (
           <FadeIn key={article.id} delay={idx * 150} direction="up" className="h-full">
-            <article 
+            <article
               className="group h-full flex flex-col cursor-pointer"
               onClick={() => setSelectedArticle(article)}
             >
@@ -100,8 +120,8 @@ export const Blog: React.FC = () => {
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold text-brand-text z-10">
                   {article.category}
                 </div>
-                <Image 
-                  src={article.image} 
+                <Image
+                  src={article.image}
                   alt={article.title}
                   storageKey={`blog-article-${article.id}`}
                   containerClassName="w-full h-full"
@@ -109,17 +129,21 @@ export const Blog: React.FC = () => {
                 />
                 {/* Overlay on hover */}
                 <div className="absolute inset-0 bg-brand-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center pointer-events-none">
-                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-brand-green transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                      <BookOpen className="w-5 h-5" />
-                   </div>
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-brand-green transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
                 </div>
               </div>
 
               <div className="flex-1 flex flex-col">
                 <div className="flex items-center gap-3 text-xs text-stone-400 mb-3">
-                   <span className="flex items-center gap-1"><CalendarIcon className="w-3 h-3" /> {article.date}</span>
-                   <span className="w-1 h-1 bg-stone-300 rounded-full"></span>
-                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> 3 мин</span>
+                  <span className="flex items-center gap-1">
+                    <CalendarIcon className="w-3 h-3" /> {article.date}
+                  </span>
+                  <span className="w-1 h-1 bg-stone-300 rounded-full"></span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> 3 мин
+                  </span>
                 </div>
                 <h3 className="text-xl font-serif text-brand-text mb-3 leading-snug group-hover:text-brand-green transition-colors">
                   {article.title}
@@ -128,7 +152,9 @@ export const Blog: React.FC = () => {
                   {article.excerpt}
                 </p>
                 <div className="mt-auto">
-                   <span className="text-xs font-bold uppercase tracking-wider text-brand-green border-b border-brand-green/20 pb-0.5 group-hover:border-brand-green transition-colors">Читать</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-brand-green border-b border-brand-green/20 pb-0.5 group-hover:border-brand-green transition-colors">
+                    Читать
+                  </span>
                 </div>
               </div>
             </article>
@@ -138,74 +164,85 @@ export const Blog: React.FC = () => {
 
       {/* Article Reader Modal */}
       {selectedArticle && (
-        <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
-            onClick={() => setSelectedArticle(null)}
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
+          onClick={() => setSelectedArticle(null)}
         >
-            <div 
-                className="bg-white w-full max-w-2xl h-[85vh] rounded-[2rem] shadow-2xl overflow-hidden relative flex flex-col animate-in slide-in-from-bottom-10 duration-300"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header Image */}
-                <div className="h-64 relative shrink-0">
-                     <Image 
-                        src={selectedArticle.image} 
-                        alt={selectedArticle.title}
-                        className="w-full h-full object-cover"
-                     />
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                     
-                     <div className="absolute top-4 right-4 flex gap-2">
-                        <button 
-                            onClick={handleShare}
-                            className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-colors"
-                            title="Скопировать ссылку"
-                        >
-                            {copied ? <Check className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
-                        </button>
-                        <button 
-                            onClick={() => setSelectedArticle(null)}
-                            className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-colors"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-                     </div>
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="blog-modal-title"
+            tabIndex={-1}
+            className="bg-white w-full max-w-2xl h-[85vh] rounded-[2rem] shadow-2xl overflow-hidden relative flex flex-col animate-in slide-in-from-bottom-10 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header Image */}
+            <div className="h-64 relative shrink-0">
+              <Image
+                src={selectedArticle.image}
+                alt={selectedArticle.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
-                     <div className="absolute bottom-6 left-6 md:left-8 right-6">
-                        <span className="bg-brand-green text-white px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold mb-3 inline-block">
-                            {selectedArticle.category}
-                        </span>
-                        <h2 className="text-2xl md:text-3xl font-serif text-white leading-tight">
-                            {selectedArticle.title}
-                        </h2>
-                     </div>
-                </div>
+              <div className="absolute top-4 right-4 flex gap-2">
+                <button
+                  onClick={handleShare}
+                  aria-label="Скопировать ссылку на статью"
+                  className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-colors"
+                  title="Скопировать ссылку"
+                >
+                  {copied ? <Check className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                </button>
+                <button
+                  onClick={() => setSelectedArticle(null)}
+                  ref={closeButtonRef}
+                  aria-label="Закрыть статью"
+                  className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
-                    <div className="flex items-center gap-6 text-sm text-stone-400 mb-8 border-b border-stone-100 pb-6">
-                         <div className="flex items-center gap-2">
-                             <User className="w-4 h-4" />
-                             <span>Катя Габран</span>
-                         </div>
-                         <div className="flex items-center gap-2">
-                             <Clock className="w-4 h-4" />
-                             <span>3 мин чтения</span>
-                         </div>
-                    </div>
-
-                    <div 
-                        className="prose prose-stone prose-headings:font-serif prose-headings:text-brand-text prose-p:text-stone-600 prose-a:text-brand-green max-w-none"
-                        dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
-                    />
-
-                    <div className="mt-12 pt-8 border-t border-stone-100">
-                        <p className="text-center text-stone-400 italic font-serif text-lg">
-                            "Практикуй, и все придет"
-                        </p>
-                    </div>
-                </div>
+              <div className="absolute bottom-6 left-6 md:left-8 right-6">
+                <span className="bg-brand-green text-white px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold mb-3 inline-block">
+                  {selectedArticle.category}
+                </span>
+                <h2
+                  id="blog-modal-title"
+                  className="text-2xl md:text-3xl font-serif text-white leading-tight"
+                >
+                  {selectedArticle.title}
+                </h2>
+              </div>
             </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+              <div className="flex items-center gap-6 text-sm text-stone-400 mb-8 border-b border-stone-100 pb-6">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  <span>Катя Габран</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span>3 мин чтения</span>
+                </div>
+              </div>
+
+              <div
+                className="prose prose-stone prose-headings:font-serif prose-headings:text-brand-text prose-p:text-stone-600 prose-a:text-brand-green max-w-none"
+                dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
+              />
+
+              <div className="mt-12 pt-8 border-t border-stone-100">
+                <p className="text-center text-stone-400 italic font-serif text-lg">
+                  "Практикуй, и все придет"
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </section>
