@@ -2,18 +2,27 @@
  * Supabase Client - Unified
  * Shared across WEB and APP
  *
- * IMPORTANT: In production, move credentials to environment variables!
+ * Configuration is loaded from environment variables.
+ * See .env.example for required variables.
  */
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Configuration - should be from environment variables in production
-const supabaseUrl = process.env.SUPABASE_URL || 'https://qkaycdcbstjobacmuaro.supabase.co';
-const supabaseKey =
-  process.env.SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrYXljZGNic3Rqb2JhY211YXJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMzYyOTYsImV4cCI6MjA4MDkxMjI5Nn0.rdul4--s5ZLu850dTi9BMa8Wvni1GlOShXPWrPgY6Dg';
+// Configuration from environment variables (Vite uses VITE_ prefix)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Create singleton client
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
+// Validate configuration
+if (!supabaseUrl || !supabaseKey) {
+  console.error(
+    'Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
+  );
+}
+
+// Create singleton client (with fallback for missing config to prevent crashes)
+export const supabase: SupabaseClient = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseKey || 'placeholder-key'
+);
 
 /**
  * Helper to upload a file to Supabase Storage
