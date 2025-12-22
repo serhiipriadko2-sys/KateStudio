@@ -1,5 +1,5 @@
 import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
-import { Menu, X, Instagram, Send } from 'lucide-react';
+import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { About } from './components/About';
 import { AdminPanel } from './components/AdminPanel';
@@ -22,6 +22,7 @@ import { Pricing } from './components/Pricing';
 import { Retreats } from './components/Retreats';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
+import { registerServiceWorker } from './services/serviceWorker';
 import { loadTheme, applyTheme } from './services/theme';
 import { BookingDetails } from './types';
 
@@ -31,6 +32,12 @@ function App() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'offer' | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isOffline, setIsOffline] = useState(
+    typeof navigator !== 'undefined' ? !navigator.onLine : false
+  );
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [waitingForRefresh, setWaitingForRefresh] = useState(false);
 
   // Global Booking State
   const [bookingModalData, setBookingModalData] = useState<{
@@ -57,6 +64,41 @@ function App() {
   useEffect(() => {
     const theme = loadTheme();
     applyTheme(theme);
+  }, []);
+
+  // Service Worker registration for offline/update support
+  useEffect(() => {
+    registerServiceWorker({
+      onUpdate: (registration) => {
+        setSwRegistration(registration);
+        setUpdateAvailable(true);
+      },
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!waitingForRefresh) return;
+    const handleControllerChange = () => {
+      window.location.reload();
+    };
+    navigator.serviceWorker?.addEventListener('controllerchange', handleControllerChange);
+    return () => {
+      navigator.serviceWorker?.removeEventListener('controllerchange', handleControllerChange);
+    };
+  }, [waitingForRefresh]);
+
+  // Online/offline listener
+  useEffect(() => {
+    const handleNetworkChange = () => {
+      setIsOffline(!navigator.onLine);
+    };
+    window.addEventListener('online', handleNetworkChange);
+    window.addEventListener('offline', handleNetworkChange);
+    handleNetworkChange();
+    return () => {
+      window.removeEventListener('online', handleNetworkChange);
+      window.removeEventListener('offline', handleNetworkChange);
+    };
   }, []);
 
   // Scroll Listener for Smart Header
@@ -101,6 +143,12 @@ function App() {
   }, [isMenuOpen, loading]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const handleUpdateApp = () => {
+    if (!swRegistration?.waiting) return;
+    setWaitingForRefresh(true);
+    swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+  };
 
   const noiseBg = `
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E")
@@ -173,6 +221,51 @@ function App() {
             )}
           </button>
         </nav>
+
+        {(isOffline || updateAvailable) && (
+          <div className="fixed bottom-6 right-6 z-[70] flex flex-col gap-3 max-w-xs">
+            {isOffline && (
+              <div className="bg-brand-dark/90 text-white rounded-2xl shadow-lg px-4 py-3 backdrop-blur flex gap-3 items-start">
+                <div className="mt-0.5">
+                  <WifiOff className="w-5 h-5 text-brand-mint" />
+                </div>
+                <div className="text-sm">
+                  <p className="font-semibold">Оффлайн-режим</p>
+                  <p className="text-white/80">Нет соединения. Страница доступна из кеша.</p>
+                </div>
+              </div>
+            )}
+            {updateAvailable && (
+              <div className="bg-white rounded-2xl shadow-lg px-4 py-3 border border-brand-mint/40">
+                <div className="flex gap-3 items-start">
+                  <div className="mt-0.5">
+                    <RefreshCcw className="w-5 h-5 text-brand-green" />
+                  </div>
+                  <div className="text-sm text-brand-text">
+                    <p className="font-semibold text-brand-dark">Доступно обновление</p>
+                    <p className="text-brand-text/70">
+                      Обновите приложение, чтобы получить свежую версию.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={handleUpdateApp}
+                    className="px-4 py-2 text-sm font-medium rounded-full bg-brand-green text-white hover:bg-brand-green/90 transition-colors"
+                  >
+                    Обновить
+                  </button>
+                  <button
+                    onClick={() => setUpdateAvailable(false)}
+                    className="px-4 py-2 text-sm font-medium rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 transition-colors"
+                  >
+                    Позже
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* --- Full Screen Menu Overlay --- */}
         {isMenuOpen && (
