@@ -176,6 +176,20 @@
       }
     </script>
     <link rel="stylesheet" href="/index.css" />
+    <!-- SPA Redirect Handler for GitHub Pages -->
+    <script type="text/javascript">
+      // Handle redirect from 404.html for SPA routing
+      (function(l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search.slice(1).split('&').map(function(s) {
+            return s.replace(/~and~/g, '&');
+          }).join('?');
+          window.history.replaceState(null, null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location));
+    </script>
   </head>
   <body class="bg-brand-light text-brand-text antialiased">
     <div id="root"></div>
