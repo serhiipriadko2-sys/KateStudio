@@ -180,7 +180,7 @@ export const Gallery: React.FC = () => {
             {/* Caption */}
             <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
               <span className="inline-block bg-black/50 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium">
-                {selectedIndex + 1} / {galleryImages.length} — {galleryImages[selectedIndex].alt}
+                {selectedIndex + 1} / {gallery.length} — {gallery[selectedIndex].alt}
               </span>
             </div>
           </div>
