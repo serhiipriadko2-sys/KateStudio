@@ -5,6 +5,8 @@ import { defineConfig, loadEnv } from 'vite';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
+    // For GitHub Pages: set VITE_BASE_PATH in workflow or use repo name
+    base: process.env.VITE_BASE_PATH || '/',
     server: {
       port: 3000,
       host: '0.0.0.0',
