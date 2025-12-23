@@ -1,8 +1,15 @@
-import { ClassSession, UserProfile, Booking } from '../types';
+import { Booking, ClassSession, UserProfile } from '../types';
+import { cacheAdapter, CachedBooking } from './localCache';
 import { supabase } from './supabaseClient';
 
-// Keys for LocalStorage (only for caching session)
-const KEY_USER = 'ksebe_user';
+export const DATA_SOURCES = {
+  userProfile: 'supabase',
+  bookings: 'supabase',
+  classSchedule: 'local-generated',
+  cachedUser: 'local-cache',
+  cachedBookings: 'local-cache',
+  pendingBookings: 'local-cache',
+} as const;
 
 // --- Mock Data Generators ---
 const pseudoRandom = (seed: number) => {
@@ -14,10 +21,7 @@ export const dataService = {
   // --- Auth & User ---
 
   // Sync method for initialization state, reads from cache
-  getUser: (): UserProfile | null => {
-    const data = localStorage.getItem(KEY_USER);
-    return data ? JSON.parse(data) : null;
-  },
+  getUser: async (): Promise<UserProfile | null> => cacheAdapter.getUser(),
 
   // Async method to register/login with Supabase
   registerUser: async (name: string, phone: string): Promise<UserProfile> => {
@@ -59,7 +63,7 @@ export const dataService = {
     }
 
     // Cache locally
-    localStorage.setItem(KEY_USER, JSON.stringify(user));
+    await cacheAdapter.setUser(user);
     return user;
   },
 
@@ -82,12 +86,12 @@ export const dataService = {
     }
 
     // Update local cache
-    localStorage.setItem(KEY_USER, JSON.stringify(user));
+    await cacheAdapter.setUser(user);
     return true;
   },
 
   logout: () => {
-    localStorage.removeItem(KEY_USER);
+    cacheAdapter.clearUser();
   },
 
   // --- Schedule ---
@@ -211,12 +215,13 @@ export const dataService = {
 
   // --- Booking ---
   getBookings: async (phone: string): Promise<Booking[]> => {
+    await dataService.syncPendingBookings(phone);
     try {
       const { data, error } = await supabase.from('bookings').select('*').eq('phone', phone);
 
       if (error) throw error;
 
-      return data.map((b: any) => ({
+      const bookings = data.map((b: any) => ({
         id: b.id,
         classId: b.class_id,
         className: b.class_name,
@@ -225,15 +230,42 @@ export const dataService = {
         location: b.location,
         timestamp: b.timestamp,
       }));
+
+      await cacheAdapter.upsertBookings(
+        bookings.map((booking) => ({
+          ...booking,
+          phone,
+          status: 'synced',
+        }))
+      );
+
+      const pending = await cacheAdapter.getPendingBookings(phone);
+      return [...bookings, ...pending.map(dataService.stripCachedBooking)];
     } catch (e) {
       console.warn('Failed to fetch bookings from DB', e);
-      return [];
+      const cached = await cacheAdapter.getBookingsByPhone(phone);
+      return cached.map(dataService.stripCachedBooking);
     }
   },
 
   bookClass: async (cls: ClassSession, user: UserProfile): Promise<boolean> => {
     // 1. Ensure user exists (local or remote)
     await dataService.registerUser(user.name, user.phone);
+
+    const existingLocal = await cacheAdapter.findBookingByClassId(user.phone, cls.id);
+    if (existingLocal) {
+      return false;
+    }
+
+    const bookingPayload = {
+      phone: user.phone,
+      class_id: cls.id,
+      class_name: cls.name,
+      date: cls.dateStr,
+      time: cls.time,
+      location: cls.location,
+      timestamp: Date.now(),
+    };
 
     try {
       // 2. Check for duplicate booking
@@ -249,35 +281,119 @@ export const dataService = {
       }
 
       // 3. Insert Booking
-      const { error } = await supabase.from('bookings').insert({
-        phone: user.phone,
-        class_id: cls.id,
-        class_name: cls.name,
-        date: cls.dateStr,
-        time: cls.time,
-        location: cls.location,
-        timestamp: Date.now(),
-      });
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert(bookingPayload)
+        .select()
+        .single();
 
       if (error) throw error;
+      if (data) {
+        const cachedBooking: CachedBooking = {
+          id: data.id,
+          classId: data.class_id,
+          className: data.class_name,
+          date: data.date,
+          time: data.time,
+          location: data.location,
+          timestamp: data.timestamp,
+          phone: user.phone,
+          status: 'synced',
+        };
+        await cacheAdapter.upsertBookings([cachedBooking]);
+      }
 
       return true;
     } catch (e) {
       console.error('Booking error, falling back to simulation', e);
+      const pendingBooking: CachedBooking = {
+        id: `pending-${Date.now()}-${cls.id}`,
+        classId: cls.id,
+        className: cls.name,
+        date: cls.dateStr,
+        time: cls.time,
+        location: cls.location,
+        timestamp: Date.now(),
+        phone: user.phone,
+        status: 'pending',
+      };
+      await cacheAdapter.upsertBookings([pendingBooking]);
       // Simulate success for demo purposes if backend fails
       return true;
     }
   },
 
   cancelBooking: async (bookingId: string): Promise<boolean> => {
+    const pending = await cacheAdapter.getBookingById(bookingId);
+    if (pending?.status === 'pending') {
+      await cacheAdapter.removeBooking(bookingId);
+      return true;
+    }
+
     try {
       const { error } = await supabase.from('bookings').delete().eq('id', bookingId);
 
       if (error) throw error;
+      await cacheAdapter.removeBooking(bookingId);
       return true;
     } catch (e) {
       console.error('Cancellation error', e);
       return false;
     }
   },
+
+  syncPendingBookings: async (phone: string): Promise<void> => {
+    const pending = await cacheAdapter.getPendingBookings(phone);
+    if (!pending.length) return;
+
+    await Promise.all(
+      pending.map(async (booking) => {
+        try {
+          const { data, error } = await supabase
+            .from('bookings')
+            .insert({
+              phone: booking.phone,
+              class_id: booking.classId,
+              class_name: booking.className,
+              date: booking.date,
+              time: booking.time,
+              location: booking.location,
+              timestamp: booking.timestamp,
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          if (data) {
+            const synced: CachedBooking = {
+              id: data.id,
+              classId: data.class_id,
+              className: data.class_name,
+              date: data.date,
+              time: data.time,
+              location: data.location,
+              timestamp: data.timestamp,
+              phone: booking.phone,
+              status: 'synced',
+            };
+            await cacheAdapter.removeBooking(booking.id);
+            await cacheAdapter.upsertBookings([synced]);
+          }
+        } catch {
+          // keep pending for next attempt
+        }
+      })
+    );
+  },
+
+  stripCachedBooking: (booking: CachedBooking): Booking => ({
+    id: booking.id,
+    classId: booking.classId,
+    className: booking.className,
+    date: booking.date,
+    time: booking.time,
+    location: booking.location,
+    timestamp: booking.timestamp,
+  }),
 };

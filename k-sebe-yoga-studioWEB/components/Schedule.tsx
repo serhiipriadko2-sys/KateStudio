@@ -1,5 +1,7 @@
 import { ChevronRight, ChevronLeft, MapPin, Users, Info, Flame } from 'lucide-react';
 import React, { useState } from 'react';
+import { ScheduleTemplate } from '../data/content';
+import { useContentData } from '../hooks/useContentData';
 import { BookingDetails } from '../types';
 import { FadeIn } from './FadeIn';
 
@@ -26,6 +28,7 @@ const seededRandom = (seed: number) => {
 };
 
 export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
+  const { schedule } = useContentData();
   const [activeTab, setActiveTab] = useState<'offline' | 'online'>('offline');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
@@ -49,52 +52,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
   };
 
   const getClassList = (day: number, tab: 'offline' | 'online'): ClassSession[] => {
-    const baseClasses: Omit<ClassSession, 'id' | 'spotsBooked' | 'instructor'>[] =
-      tab === 'offline'
-        ? [
-            {
-              name: 'Inside Flow',
-              time: '09:00',
-              duration: '90 мин',
-              spotsTotal: 12,
-              location: 'Зал на Мира',
-              intensity: 3,
-            },
-            {
-              name: 'Хатха Йога',
-              time: '18:30',
-              duration: '60 мин',
-              spotsTotal: 15,
-              location: 'Зал на Ленина',
-              intensity: 2,
-            },
-            {
-              name: 'Медитация + Sound Healing',
-              time: '20:00',
-              duration: '60 мин',
-              spotsTotal: 10,
-              location: 'Зал на Мира',
-              intensity: 1,
-            },
-          ]
-        : [
-            {
-              name: 'Утренний поток (Zoom)',
-              time: '08:00',
-              duration: '45 мин',
-              spotsTotal: 50,
-              location: 'Online',
-              intensity: 2,
-            },
-            {
-              name: 'Вечерняя растяжка (Zoom)',
-              time: '19:00',
-              duration: '60 мин',
-              spotsTotal: 50,
-              location: 'Online',
-              intensity: 1,
-            },
-          ];
+    const baseClasses: ScheduleTemplate[] = tab === 'offline' ? schedule.offline : schedule.online;
     const baseSeed =
       currentMonth.getFullYear() * 10000 +
       currentMonth.getMonth() * 100 +

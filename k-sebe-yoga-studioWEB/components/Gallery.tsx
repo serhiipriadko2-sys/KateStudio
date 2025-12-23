@@ -1,43 +1,22 @@
 import { X, ZoomIn, ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useContentData } from '../hooks/useContentData';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
 
-const galleryImages = [
-  {
-    id: 1,
-    url: '/images/gallery/gallery-image-1.jpg',
-    alt: 'Meditation Atmosphere',
-    className: 'md:col-span-1 row-span-1',
-  },
-  {
-    id: 2,
-    url: '/images/gallery/gallery-image-2.jpg',
-    alt: 'Stretching Flow',
-    className: 'md:col-span-2 row-span-1 object-[50%_40%]',
-  },
-  {
-    id: 3,
-    url: '/images/gallery/gallery-image-3.jpg',
-    alt: 'Yoga Studio Vibe',
-    className: 'md:col-span-2 row-span-1',
-  },
-  {
-    id: 4,
-    url: '/images/gallery/gallery-image-4.jpg',
-    alt: 'Peaceful Moment',
-    className: 'md:col-span-1 row-span-1',
-  },
-];
-
 export const Gallery: React.FC = () => {
+  const { gallery } = useContentData();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   // Use custom hook for scroll locking
   useScrollLock(selectedIndex !== null);
+  useFocusTrap(dialogRef, selectedIndex !== null, closeButtonRef);
 
   // Keyboard navigation
   useEffect(() => {
@@ -51,19 +30,25 @@ export const Gallery: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex]);
+  }, [handleNext, handlePrev, selectedIndex]);
 
-  const handleNext = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setSelectedIndex((prev) => (prev === null ? null : (prev + 1) % galleryImages.length));
-  }, []);
+  const handleNext = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      setSelectedIndex((prev) => (prev === null ? null : (prev + 1) % gallery.length));
+    },
+    [gallery.length]
+  );
 
-  const handlePrev = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setSelectedIndex((prev) =>
-      prev === null ? null : (prev - 1 + galleryImages.length) % galleryImages.length
-    );
-  }, []);
+  const handlePrev = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      setSelectedIndex((prev) =>
+        prev === null ? null : (prev - 1 + gallery.length) % gallery.length
+      );
+    },
+    [gallery.length]
+  );
 
   // Swipe Handlers
   const onTouchStart = (e: React.TouchEvent) => {
@@ -99,12 +84,12 @@ export const Gallery: React.FC = () => {
 
         {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px] md:auto-rows-[400px]">
-          {galleryImages.map((img, idx) => (
+          {gallery.map((img, idx) => (
             <FadeIn
               key={img.id}
               delay={idx * 150}
               direction="up"
-              className={`${img.className} h-full`}
+              className={`${img.wrapperClassName ?? ''} h-full`}
             >
               <div
                 className={`
@@ -120,7 +105,7 @@ export const Gallery: React.FC = () => {
                   alt={img.alt}
                   storageKey={`gallery-image-${img.id}`}
                   containerClassName="w-full h-full"
-                  className={`w-full h-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 ${img.id === 2 ? 'object-[50%_40%]' : ''}`}
+                  className={`w-full h-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 ${img.imageClassName ?? ''}`}
                   loading="lazy"
                 />
 
@@ -139,20 +124,23 @@ export const Gallery: React.FC = () => {
       {/* Lightbox Overlay */}
       {selectedIndex !== null && (
         <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Просмотр изображения: ${gallery[selectedIndex].alt}`}
+          tabIndex={-1}
           className="fixed inset-0 z-[100] bg-stone-900/95 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300 touch-none"
           onClick={() => setSelectedIndex(null)}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
-          role="dialog"
-          aria-modal="true"
-          aria-label={`Просмотр изображения ${selectedIndex + 1} из ${galleryImages.length}`}
         >
           {/* Close Button */}
           <button
             onClick={() => setSelectedIndex(null)}
+            ref={closeButtonRef}
             className="absolute top-6 right-6 p-3 bg-white/10 rounded-full hover:bg-white/20 text-white transition-colors z-50 focus:outline-none focus:ring-2 focus:ring-white"
-            aria-label="Close"
+            aria-label="Закрыть"
           >
             <X className="w-8 h-8" />
           </button>
@@ -161,7 +149,7 @@ export const Gallery: React.FC = () => {
           <button
             onClick={handlePrev}
             className="hidden md:block absolute left-4 md:left-8 p-4 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all hover:scale-110 z-50 focus:outline-none focus:ring-2 focus:ring-white group"
-            aria-label="Previous image"
+            aria-label="Предыдущее изображение"
           >
             <ChevronLeft className="w-8 h-8 group-hover:-translate-x-1 transition-transform" />
           </button>
@@ -169,7 +157,7 @@ export const Gallery: React.FC = () => {
           <button
             onClick={handleNext}
             className="hidden md:block absolute right-4 md:right-8 p-4 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all hover:scale-110 z-50 focus:outline-none focus:ring-2 focus:ring-white group"
-            aria-label="Next image"
+            aria-label="Следующее изображение"
           >
             <ChevronRight className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
           </button>
@@ -181,9 +169,9 @@ export const Gallery: React.FC = () => {
           >
             <Image
               key={selectedIndex} // Force re-render on index change for animation
-              src={galleryImages[selectedIndex].url}
-              alt={galleryImages[selectedIndex].alt}
-              storageKey={`gallery-image-${galleryImages[selectedIndex].id}`} // Enable sync with admin changes
+              src={gallery[selectedIndex].url}
+              alt={gallery[selectedIndex].alt}
+              storageKey={`gallery-image-${gallery[selectedIndex].id}`} // Enable sync with admin changes
               containerClassName="w-full h-full flex items-center justify-center"
               className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 fade-in duration-300"
               controlsClassName="hidden" // Hide edit controls in lightbox

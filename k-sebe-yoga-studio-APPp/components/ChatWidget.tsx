@@ -12,11 +12,19 @@ import {
   StopCircle,
   AlertCircle,
   Trash2,
+  Shield,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { useToast } from '../context/ToastContext';
 import { getGeminiChatResponse, generateSpeech } from '../services/geminiService';
-import { ChatMessage, Source } from '../types';
+import { ChatMessage } from '../types';
+import {
+  defaultConsents,
+  loadConsents,
+  saveConsents,
+  type ConsentKey,
+  type ConsentState,
+} from '../utils/consent';
 
 function createBlob(data: Float32Array): GenAIBlob {
   const l = data.length;
@@ -81,6 +89,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
   const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isLiveMode, setIsLiveMode] = useState(false);
+  const [consents, setConsents] = useState<ConsentState>(() => loadConsents());
+  const [consentRequest, setConsentRequest] = useState<ConsentKey | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const pendingActionRef = useRef<(() => void) | null>(null);
 
   // Load initial state from session storage
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
@@ -129,19 +141,28 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
 
   // Init Location
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) =>
-          setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude }),
-        () => console.log('Location access denied')
-      );
-    }
-  }, []);
+    if (consents.geolocation !== 'granted') return;
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (position) =>
+        setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude }),
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+          setConsents((prev) => ({ ...prev, geolocation: 'denied' }));
+          showToast('Доступ к геолокации запрещен', 'warning');
+        }
+      }
+    );
+  }, [consents.geolocation, showToast]);
 
   // Persist messages
   useEffect(() => {
     sessionStorage.setItem('ksebe_chat_history', JSON.stringify(messages));
   }, [messages]);
+
+  useEffect(() => {
+    saveConsents(consents);
+  }, [consents]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -164,21 +185,85 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
     showToast('История переписки очищена', 'info');
   };
 
-  const handleSend = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  const updateConsent = (key: ConsentKey, status: ConsentState[ConsentKey]) => {
+    setConsents((prev) => ({ ...prev, [key]: status }));
+  };
 
-    const userMsg = inputValue;
+  const requestConsent = (key: ConsentKey, action: () => void, forcePrompt = false) => {
+    if (consents[key] === 'granted') {
+      action();
+      return;
+    }
+    if (consents[key] === 'denied' && !forcePrompt) {
+      showToast('Доступ запрещен. Измените настройки согласий.', 'warning');
+      setSettingsOpen(true);
+      return;
+    }
+    pendingActionRef.current = action;
+    setConsentRequest(key);
+  };
+
+  const confirmConsent = async (approved: boolean) => {
+    if (!consentRequest) return;
+    const key = consentRequest;
+    setConsentRequest(null);
+    if (!approved) {
+      updateConsent(key, 'denied');
+      showToast('Согласие не предоставлено', 'info');
+      return;
+    }
+    updateConsent(key, 'granted');
+    if (key === 'microphone') {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      } catch {
+        updateConsent(key, 'denied');
+        showToast('Не удалось получить доступ к микрофону', 'warning');
+        return;
+      }
+    }
+    if (key === 'geolocation') {
+      if (!navigator.geolocation) {
+        updateConsent(key, 'denied');
+        showToast('Геолокация недоступна в этом браузере', 'warning');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (position) =>
+          setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude }),
+        () => {
+          updateConsent(key, 'denied');
+          showToast('Не удалось получить доступ к геолокации', 'warning');
+        }
+      );
+    }
+    pendingActionRef.current?.();
+    pendingActionRef.current = null;
+  };
+
+  const sendMessage = async (message: string) => {
+    if (!message.trim() || isLoading) return;
     setInputValue('');
-    setMessages((prev) => [...prev, { role: 'user', text: userMsg }]);
+    setMessages((prev) => [...prev, { role: 'user', text: message }]);
     setIsLoading(true);
 
-    const response = await getGeminiChatResponse(userMsg, userLocation);
+    const response = await getGeminiChatResponse(message, userLocation);
 
     setMessages((prev) => [
       ...prev,
       { role: 'model', text: response.text, sources: response.sources },
     ]);
     setIsLoading(false);
+  };
+
+  const handleSend = async () => {
+    if (!inputValue.trim() || isLoading) return;
+    if (consents.ai !== 'granted') {
+      requestConsent('ai', () => sendMessage(inputValue));
+      return;
+    }
+    await sendMessage(inputValue);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -205,6 +290,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
       const audio = new Audio('data:audio/mp3;base64,' + audioBase64);
       audio.play();
     }
+  };
+
+  const handlePlayTTS = (index: number, text: string) => {
+    if (consents.ai !== 'granted') {
+      requestConsent('ai', () => playTTS(index, text));
+      return;
+    }
+    void playTTS(index, text);
   };
 
   // --- Live API Logic ---
@@ -290,7 +383,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
           onclose: () => {
             setIsLiveConnected(false);
           },
-          onerror: (err) => {
+          onerror: (_err) => {
             setLiveError('Ошибка соединения');
           },
         },
@@ -303,6 +396,18 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
     }
   };
 
+  const handleStartLiveSession = async (options?: { skipAi?: boolean; skipMic?: boolean }) => {
+    if (!options?.skipAi && consents.ai !== 'granted') {
+      requestConsent('ai', () => handleStartLiveSession({ skipAi: true }));
+      return;
+    }
+    if (!options?.skipMic && consents.microphone !== 'granted') {
+      requestConsent('microphone', () => handleStartLiveSession({ skipMic: true }));
+      return;
+    }
+    await startLiveSession();
+  };
+
   const stopLiveSession = async () => {
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -311,24 +416,24 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
     if (inputAudioContextRef.current) {
       try {
         await inputAudioContextRef.current.close();
-      } catch {
-        // Ignore close errors
+      } catch (error) {
+        console.warn('Failed to close input audio context', error);
       }
       inputAudioContextRef.current = null;
     }
     if (outputAudioContextRef.current) {
       try {
         await outputAudioContextRef.current.close();
-      } catch {
-        // Ignore close errors
+      } catch (error) {
+        console.warn('Failed to close output audio context', error);
       }
       outputAudioContextRef.current = null;
     }
     sourcesRef.current.forEach((s) => {
       try {
         s.stop();
-      } catch {
-        // Ignore stop errors
+      } catch (error) {
+        console.warn('Failed to stop audio source', error);
       }
     });
     sourcesRef.current.clear();
@@ -338,8 +443,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
         if (typeof (session as any).close === 'function') {
           try {
             (session as any).close();
-          } catch {
-            // Ignore close errors
+          } catch (error) {
+            console.warn('Failed to close live session', error);
           }
         }
       });
@@ -351,6 +456,21 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
   };
 
   if (hidden) return null;
+
+  const consentMeta: Record<ConsentKey, { title: string; description: string }> = {
+    ai: {
+      title: 'Доступ к AI',
+      description: 'Мы будем отправлять ваши сообщения в AI-сервис, чтобы дать персональный ответ.',
+    },
+    microphone: {
+      title: 'Доступ к микрофону',
+      description: 'Нужен для голосового общения с ассистентом.',
+    },
+    geolocation: {
+      title: 'Доступ к геолокации',
+      description: 'Поможет дать подсказки по расписанию и локации студии.',
+    },
+  };
 
   return (
     <div className="fixed bottom-24 md:bottom-6 right-6 z-50 flex flex-col items-end transition-all duration-300 pointer-events-none">
@@ -376,7 +496,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
                       <Trash2 className="w-4 h-4 opacity-80" />
                     </button>
                     <button
-                      onClick={startLiveSession}
+                      onClick={() => setSettingsOpen(true)}
+                      className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                      title="Настройки согласий"
+                    >
+                      <Shield className="w-4 h-4 opacity-80" />
+                    </button>
+                    <button
+                      onClick={handleStartLiveSession}
                       className="p-2 hover:bg-white/10 rounded-full transition-colors group relative"
                       title="Голосовой режим"
                     >
@@ -465,7 +592,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
 
                         {msg.role === 'model' && (
                           <button
-                            onClick={() => playTTS(idx, msg.text)}
+                            onClick={() => handlePlayTTS(idx, msg.text)}
                             disabled={msg.isAudioLoading}
                             className="p-1.5 bg-white rounded-full text-stone-400 hover:text-brand-green shadow-sm hover:scale-110 transition-all border border-stone-100 flex-shrink-0"
                           >
@@ -571,6 +698,121 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
           )}
         </button>
       </div>
+
+      {consentRequest && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-stone-900/50 backdrop-blur-sm p-4 pointer-events-auto">
+          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 border border-stone-100">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-full bg-brand-green/10">
+                <Shield className="w-5 h-5 text-brand-green" />
+              </div>
+              <div>
+                <h3 className="text-lg font-serif text-brand-text">
+                  {consentMeta[consentRequest].title}
+                </h3>
+                <p className="text-xs text-stone-400">Перед использованием нужна ваша согласие</p>
+              </div>
+            </div>
+            <p className="text-sm text-stone-500 mb-6">{consentMeta[consentRequest].description}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => confirmConsent(false)}
+                className="flex-1 px-4 py-2.5 rounded-full border border-stone-200 text-stone-500 hover:bg-stone-50 transition-colors text-sm"
+              >
+                Не сейчас
+              </button>
+              <button
+                onClick={() => confirmConsent(true)}
+                className="flex-1 px-4 py-2.5 rounded-full bg-brand-green text-white hover:bg-brand-green/90 transition-colors text-sm"
+              >
+                Разрешить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {settingsOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-stone-900/50 backdrop-blur-sm p-4 pointer-events-auto">
+          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 border border-stone-100">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-serif text-brand-text">Согласия и приватность</h3>
+                <p className="text-xs text-stone-400">Управляйте доступами ассистента</p>
+              </div>
+              <button
+                onClick={() => setSettingsOpen(false)}
+                className="p-2 rounded-full hover:bg-stone-100 transition-colors"
+                aria-label="Закрыть настройки"
+              >
+                <X className="w-4 h-4 text-stone-400" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {(Object.keys(consentMeta) as ConsentKey[]).map((key) => (
+                <div
+                  key={key}
+                  className="flex items-center justify-between gap-4 bg-stone-50 rounded-2xl px-4 py-3 border border-stone-100"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-brand-text">{consentMeta[key].title}</p>
+                    <p className="text-xs text-stone-400">{consentMeta[key].description}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span
+                      className={`text-[10px] uppercase font-semibold tracking-wide ${consents[key] === 'granted' ? 'text-emerald-600' : consents[key] === 'denied' ? 'text-rose-500' : 'text-stone-400'}`}
+                    >
+                      {consents[key] === 'granted'
+                        ? 'Разрешено'
+                        : consents[key] === 'denied'
+                          ? 'Запрещено'
+                          : 'Не выбрано'}
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => requestConsent(key, () => null, true)}
+                        className="px-3 py-1.5 rounded-full text-xs bg-brand-green/10 text-brand-green hover:bg-brand-green hover:text-white transition-colors"
+                      >
+                        Разрешить
+                      </button>
+                      <button
+                        onClick={() => {
+                          updateConsent(key, 'denied');
+                          if (key === 'microphone') stopLiveSession();
+                          if (key === 'geolocation') setUserLocation(undefined);
+                        }}
+                        className="px-3 py-1.5 rounded-full text-xs bg-stone-200 text-stone-600 hover:bg-stone-300 transition-colors"
+                      >
+                        Запретить
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  setConsents(defaultConsents);
+                  setUserLocation(undefined);
+                  showToast('Согласия сброшены', 'info');
+                }}
+                className="flex-1 px-4 py-2.5 rounded-full border border-stone-200 text-stone-500 hover:bg-stone-50 transition-colors text-sm"
+              >
+                Сбросить
+              </button>
+              <button
+                onClick={() => setSettingsOpen(false)}
+                className="flex-1 px-4 py-2.5 rounded-full bg-brand-green text-white hover:bg-brand-green/90 transition-colors text-sm"
+              >
+                Готово
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

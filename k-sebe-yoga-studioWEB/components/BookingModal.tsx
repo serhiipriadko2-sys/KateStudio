@@ -1,5 +1,6 @@
 import { X, Check, CalendarPlus, ArrowRight, AlertCircle, Loader2, CreditCard } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { supabase } from '../services/supabase';
 import { BookingDetails } from '../types';
@@ -15,8 +16,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [errors, setErrors] = useState<{ name?: boolean; phone?: boolean; privacy?: boolean }>({});
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useScrollLock(isOpen);
+  useFocusTrap(dialogRef, isOpen, closeButtonRef);
 
   if (!isOpen) return null;
 
@@ -78,15 +82,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="booking-modal-title"
-    >
-      <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="booking-modal-title"
+        tabIndex={-1}
+        className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]"
+      >
         <button
           onClick={resetForm}
+          ref={closeButtonRef}
+          aria-label="Закрыть окно записи"
           className="absolute top-6 right-6 p-2 rounded-full bg-stone-50 hover:bg-stone-100 transition-colors z-20 focus:outline-none focus:ring-2 focus:ring-brand-green"
         >
           <X className="w-5 h-5 text-stone-500" />
@@ -98,7 +106,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
               <Check className="w-10 h-10 text-brand-green" />
             </div>
             <div>
-              <h3 className="text-3xl font-serif text-brand-text mb-2">
+              <h3 id="booking-modal-title" className="text-3xl font-serif text-brand-text mb-2">
                 {isSpecificClass ? 'Вы записаны!' : 'Заявка принята!'}
               </h3>
               <p className="text-stone-500 leading-relaxed">

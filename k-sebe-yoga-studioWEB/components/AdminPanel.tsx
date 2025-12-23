@@ -13,10 +13,20 @@ import {
   Download,
   FileJson,
   Trash2,
+  FilePenLine,
+  Layers,
 } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
+import { ContentData, ContentMode } from '../data/content';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { uploadImage, saveImageMapping } from '../services/content';
+import {
+  getContentData,
+  getContentMode,
+  resetContentData,
+  saveContentData,
+  setContentMode,
+} from '../services/contentStore';
 import { ThemeColors, loadTheme, saveTheme, resetTheme, applyTheme } from '../services/theme';
 import { Image } from './Image';
 
@@ -41,14 +51,20 @@ const IMAGE_REGISTRY = [
 ];
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'colors' | 'images' | 'backup'>('colors');
+  const [activeTab, setActiveTab] = useState<'colors' | 'images' | 'backup' | 'content'>('colors');
   const [colors, setColors] = useState<ThemeColors>(loadTheme());
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
   const [notification, setNotification] = useState<{
     message: string;
     type: 'success' | 'error';
   } | null>(null);
+  const [contentMode, setContentModeState] = useState<ContentMode>(getContentMode());
+  const [contentDraft, setContentDraft] = useState(() =>
+    JSON.stringify(getContentData(contentMode), null, 2)
+  );
+  const [contentError, setContentError] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
+  const contentImportRef = useRef<HTMLInputElement>(null);
 
   useScrollLock(isOpen);
 
@@ -66,6 +82,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       return () => clearTimeout(timer);
     }
   }, [notification]);
+
+  useEffect(() => {
+    if (activeTab !== 'content') return;
+    setContentDraft(JSON.stringify(getContentData(contentMode), null, 2));
+    setContentError(null);
+  }, [activeTab, contentMode]);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ message, type });
@@ -211,6 +233,70 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     reader.readAsText(file);
   };
 
+  const handleContentModeChange = (mode: ContentMode) => {
+    setContentMode(mode);
+    setContentModeState(mode);
+    showToast(`Режим контента: ${mode === 'demo' ? 'demo/mock' : 'production'}`);
+  };
+
+  const handleContentSave = () => {
+    try {
+      const parsed = JSON.parse(contentDraft) as ContentData;
+      saveContentData(parsed, contentMode);
+      setContentError(null);
+      showToast('Контент обновлен');
+    } catch (error) {
+      setContentError('JSON содержит ошибку. Проверьте формат.');
+    }
+  };
+
+  const handleContentReset = () => {
+    if (confirm('Сбросить контент к значениям по умолчанию?')) {
+      resetContentData(contentMode);
+      setContentDraft(JSON.stringify(getContentData(contentMode), null, 2));
+      showToast('Контент сброшен');
+    }
+  };
+
+  const handleContentExport = () => {
+    try {
+      const dataStr =
+        'data:text/json;charset=utf-8,' +
+        encodeURIComponent(JSON.stringify(getContentData(contentMode), null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute('href', dataStr);
+      downloadAnchorNode.setAttribute(
+        'download',
+        `ksebe_content_${contentMode}_${new Date().toISOString().slice(0, 10)}.json`
+      );
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      showToast('Контент выгружен');
+    } catch (e) {
+      showToast('Ошибка экспорта контента', 'error');
+    }
+  };
+
+  const handleContentImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string) as ContentData;
+        saveContentData(parsed, contentMode);
+        setContentDraft(JSON.stringify(getContentData(contentMode), null, 2));
+        setContentError(null);
+        showToast('Контент импортирован');
+      } catch (err) {
+        setContentError('Неверный формат JSON');
+        showToast('Ошибка импорта контента', 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -255,6 +341,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             className={`flex-1 py-4 text-sm font-medium flex items-center justify-center gap-2 transition-colors whitespace-nowrap px-4 ${activeTab === 'backup' ? 'bg-white text-brand-green border-b-2 border-brand-green' : 'bg-stone-50 text-stone-500 hover:bg-stone-100'}`}
           >
             <Database className="w-4 h-4" /> <span className="hidden sm:inline">Бэкап</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('content')}
+            className={`flex-1 py-4 text-sm font-medium flex items-center justify-center gap-2 transition-colors whitespace-nowrap px-4 ${activeTab === 'content' ? 'bg-white text-brand-green border-b-2 border-brand-green' : 'bg-stone-50 text-stone-500 hover:bg-stone-100'}`}
+          >
+            <FileJson className="w-4 h-4" /> <span className="hidden sm:inline">Контент</span>
           </button>
         </div>
 
@@ -351,6 +443,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                       <Image
                         storageKey={item.key}
                         src="/placeholder.png" // Fallback
+                        alt={item.label}
                         containerClassName="w-full h-full"
                         className="w-full h-full object-cover"
                         controlsClassName="hidden" // Hide on-image controls in admin list
@@ -434,6 +527,113 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                     Файл содержит JSON объект с ключами <code>theme</code> и <code>images</code>. Не
                     редактируйте его вручную, если не уверены в структуре.
                   </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'content' && (
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-brand-green text-white rounded-xl">
+                    <Layers className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-serif text-brand-dark">Слой контента</h3>
+                    <p className="text-xs text-stone-500">
+                      Переключайте режимы demo/mock и production для тестирования или публикации.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-xs uppercase tracking-wider text-stone-400">Режим</span>
+                  <button
+                    onClick={() => handleContentModeChange('demo')}
+                    className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider border transition-colors ${
+                      contentMode === 'demo'
+                        ? 'bg-brand-green text-white border-brand-green'
+                        : 'bg-white text-stone-500 border-stone-200 hover:border-brand-green'
+                    }`}
+                  >
+                    demo/mock
+                  </button>
+                  <button
+                    onClick={() => handleContentModeChange('production')}
+                    className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider border transition-colors ${
+                      contentMode === 'production'
+                        ? 'bg-brand-green text-white border-brand-green'
+                        : 'bg-white text-stone-500 border-stone-200 hover:border-brand-green'
+                    }`}
+                  >
+                    production
+                  </button>
+                  <span className="text-xs text-stone-400">
+                    Текущий: {contentMode === 'demo' ? 'demo/mock' : 'production'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm space-y-4">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <h3 className="text-lg font-serif text-brand-dark">JSON редактор</h3>
+                    <p className="text-xs text-stone-500">
+                      Обновления применяются сразу после сохранения.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={handleContentExport}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors"
+                    >
+                      <Download className="w-4 h-4" /> Экспорт
+                    </button>
+                    <button
+                      onClick={() => contentImportRef.current?.click()}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors"
+                    >
+                      <FileJson className="w-4 h-4" /> Импорт
+                    </button>
+                    <input
+                      type="file"
+                      accept="application/json"
+                      ref={contentImportRef}
+                      onChange={handleContentImport}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={handleContentReset}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase border border-rose-200 text-rose-500 hover:bg-rose-50 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" /> Сброс
+                    </button>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <FilePenLine className="w-4 h-4 text-stone-300 absolute top-4 right-4" />
+                  <textarea
+                    value={contentDraft}
+                    onChange={(event) => setContentDraft(event.target.value)}
+                    className="w-full min-h-[260px] rounded-xl border border-stone-200 p-4 font-mono text-xs text-stone-600 focus:outline-none focus:ring-2 focus:ring-brand-green/40"
+                  />
+                </div>
+
+                {contentError && (
+                  <div className="flex items-center gap-2 text-xs text-rose-500">
+                    <AlertCircle className="w-4 h-4" /> {contentError}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end">
+                  <button
+                    onClick={handleContentSave}
+                    className="flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase bg-brand-green text-white hover:bg-brand-green/90 transition-colors shadow-lg shadow-brand-green/20"
+                  >
+                    <Save className="w-4 h-4" /> Сохранить
+                  </button>
                 </div>
               </div>
             </div>

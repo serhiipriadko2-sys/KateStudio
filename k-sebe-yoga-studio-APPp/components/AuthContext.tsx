@@ -16,10 +16,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    const storedUser = dataService.getUser();
-    if (storedUser) {
-      setUser(storedUser);
-    }
+    let isMounted = true;
+    const loadUser = async () => {
+      const storedUser = await dataService.getUser();
+      if (storedUser && isMounted) {
+        setUser(storedUser);
+      }
+    };
+    loadUser();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = async (name: string, phone: string) => {
