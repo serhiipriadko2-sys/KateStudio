@@ -209,6 +209,9 @@ export const Blog: React.FC<BlogProps> = ({
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
           onClick={() => setSelectedArticle(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="blog-modal-title"
         >
           <div
             className="bg-white w-full max-w-2xl h-[85vh] rounded-[2rem] shadow-2xl overflow-hidden relative flex flex-col animate-in slide-in-from-bottom-10 duration-300"
@@ -243,7 +246,7 @@ export const Blog: React.FC<BlogProps> = ({
                 <span className="bg-brand-green text-white px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold mb-3 inline-block">
                   {selectedArticle.category}
                 </span>
-                <h2 className="text-2xl md:text-3xl font-serif text-white leading-tight">
+                <h2 id="blog-modal-title" className="text-2xl md:text-3xl font-serif text-white leading-tight">
                   {selectedArticle.title}
                 </h2>
               </div>

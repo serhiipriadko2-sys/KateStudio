@@ -94,10 +94,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, cla
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-      <div 
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="app-booking-modal-title"
+    >
+      <div
         className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+        onClick={(e) => e.stopPropagation()}
       >
         <button 
           onClick={onClose}
@@ -170,7 +176,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, cla
           <div className="p-8 md:p-10">
             <div className="mb-8">
                <span className="text-xs font-bold uppercase tracking-widest text-brand-green bg-brand-mint/50 px-3 py-1 rounded-full">Бронирование</span>
-               <h3 className="text-3xl font-serif text-brand-text mt-4">{classDetails.name}</h3>
+               <h3 id="app-booking-modal-title" className="text-3xl font-serif text-brand-text mt-4">{classDetails.name}</h3>
                <div className="flex items-center gap-2 text-stone-500 mt-2 text-sm">
                   <span>{new Date(classDetails.dateStr).toLocaleDateString('ru', {day: 'numeric', month: 'long'})}</span>
                   <span className="w-1 h-1 rounded-full bg-stone-300"></span>

@@ -113,6 +113,14 @@ function App() {
       <div
         className={`min-h-screen bg-brand-light font-sans selection:bg-brand-green selection:text-white relative flex flex-col transition-opacity duration-700 ${loading ? 'opacity-0' : 'opacity-100'}`}
       >
+        {/* Skip Link for Accessibility */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:bg-brand-green focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none"
+        >
+          Перейти к основному содержимому
+        </a>
+
         {/* Texture Overlay */}
         <div
           className="fixed inset-0 z-[5] pointer-events-none opacity-[0.05] mix-blend-multiply"
@@ -224,6 +232,7 @@ function App() {
         )}
 
         {/* Main Content Flow */}
+        <main id="main-content">
         <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
         <Marquee />
         <Benefits />
@@ -239,6 +248,7 @@ function App() {
         <Reviews />
         <FAQ />
         <Contact />
+        </main>
         <Footer
           onOpenAdmin={() => setIsAdminOpen(true)}
           onOpenLegal={(type) => setLegalModalType(type)}

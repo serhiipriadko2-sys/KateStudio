@@ -130,12 +130,15 @@ export const Gallery: React.FC = () => {
 
       {/* Lightbox Overlay */}
       {selectedIndex !== null && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-stone-900/95 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300 touch-none"
           onClick={() => setSelectedIndex(null)}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Просмотр изображения ${selectedIndex + 1} из ${galleryImages.length}`}
         >
           {/* Close Button */}
           <button 

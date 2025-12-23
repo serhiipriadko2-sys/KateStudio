@@ -38,9 +38,12 @@ export const LegalModals: React.FC<LegalModalProps> = ({ type, onClose }) => {
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-300"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="legal-modal-title"
     >
       <div 
         className="bg-white w-full max-w-2xl max-h-[80vh] rounded-[2rem] shadow-2xl flex flex-col animate-in slide-in-from-bottom-10 duration-300 relative"
@@ -51,7 +54,7 @@ export const LegalModals: React.FC<LegalModalProps> = ({ type, onClose }) => {
               <div className="p-2 bg-brand-mint/30 rounded-full">
                 {content.icon}
               </div>
-              <h3 className="text-xl font-serif text-brand-text">{content.title}</h3>
+              <h3 id="legal-modal-title" className="text-xl font-serif text-brand-text">{content.title}</h3>
            </div>
            <button 
              onClick={onClose}
