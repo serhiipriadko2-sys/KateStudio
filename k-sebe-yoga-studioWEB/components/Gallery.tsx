@@ -1,35 +1,34 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
 import { X, ZoomIn, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
-import { useScrollLock } from '../hooks/useScrollLock';
 
 const galleryImages = [
   {
     id: 1,
-    url: "/images/gallery/gallery-image-1.jpg",
-    alt: "Meditation Atmosphere",
-    className: "md:col-span-1 row-span-1"
+    url: '/images/gallery/gallery-image-1.jpg',
+    alt: 'Meditation Atmosphere',
+    className: 'md:col-span-1 row-span-1',
   },
   {
     id: 2,
-    url: "/images/gallery/gallery-image-2.jpg",
-    alt: "Stretching Flow",
-    className: "md:col-span-2 row-span-1 object-[50%_40%]"
+    url: '/images/gallery/gallery-image-2.jpg',
+    alt: 'Stretching Flow',
+    className: 'md:col-span-2 row-span-1 object-[50%_40%]',
   },
   {
     id: 3,
-    url: "/images/gallery/gallery-image-3.jpg",
-    alt: "Yoga Studio Vibe",
-    className: "md:col-span-2 row-span-1"
+    url: '/images/gallery/gallery-image-3.jpg',
+    alt: 'Yoga Studio Vibe',
+    className: 'md:col-span-2 row-span-1',
   },
   {
     id: 4,
-    url: "/images/gallery/gallery-image-4.jpg",
-    alt: "Peaceful Moment",
-    className: "md:col-span-1 row-span-1"
-  }
+    url: '/images/gallery/gallery-image-4.jpg',
+    alt: 'Peaceful Moment',
+    className: 'md:col-span-1 row-span-1',
+  },
 ];
 
 export const Gallery: React.FC = () => {
@@ -56,12 +55,14 @@ export const Gallery: React.FC = () => {
 
   const handleNext = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setSelectedIndex(prev => (prev === null ? null : (prev + 1) % galleryImages.length));
+    setSelectedIndex((prev) => (prev === null ? null : (prev + 1) % galleryImages.length));
   }, []);
 
   const handlePrev = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setSelectedIndex(prev => (prev === null ? null : (prev - 1 + galleryImages.length) % galleryImages.length));
+    setSelectedIndex((prev) =>
+      prev === null ? null : (prev - 1 + galleryImages.length) % galleryImages.length
+    );
   }, []);
 
   // Swipe Handlers
@@ -79,7 +80,7 @@ export const Gallery: React.FC = () => {
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
-    
+
     if (isLeftSwipe) handleNext();
     if (isRightSwipe) handlePrev();
   };
@@ -89,40 +90,47 @@ export const Gallery: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <FadeIn>
-             <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">Галерея</h4>
-             <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Атмосфера</h2>
+            <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">
+              Галерея
+            </h4>
+            <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Атмосфера</h2>
           </FadeIn>
         </div>
 
         {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px] md:auto-rows-[400px]">
           {galleryImages.map((img, idx) => (
-            <FadeIn key={img.id} delay={idx * 150} direction="up" className={`${img.className} h-full`}>
-                <div 
-                  className={`
+            <FadeIn
+              key={img.id}
+              delay={idx * 150}
+              direction="up"
+              className={`${img.className} h-full`}
+            >
+              <div
+                className={`
                     h-full w-full rounded-[2.5rem] overflow-hidden relative group cursor-pointer 
                     shadow-sm hover:shadow-2xl hover:shadow-stone-200 
                     transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]
                     transform hover:-translate-y-1
                   `}
-                  onClick={() => setSelectedIndex(idx)}
-                >
-                  <Image 
-                    src={img.url} 
-                    alt={img.alt} 
-                    storageKey={`gallery-image-${img.id}`}
-                    containerClassName="w-full h-full"
-                    className={`w-full h-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 ${img.id === 2 ? 'object-[50%_40%]' : ''}`} 
-                    loading="lazy"
-                  />
-                  
-                  {/* Overlay and Icon */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center z-20 pointer-events-none">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
-                      <ZoomIn className="w-8 h-8" />
-                    </div>
+                onClick={() => setSelectedIndex(idx)}
+              >
+                <Image
+                  src={img.url}
+                  alt={img.alt}
+                  storageKey={`gallery-image-${img.id}`}
+                  containerClassName="w-full h-full"
+                  className={`w-full h-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 ${img.id === 2 ? 'object-[50%_40%]' : ''}`}
+                  loading="lazy"
+                />
+
+                {/* Overlay and Icon */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center z-20 pointer-events-none">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
+                    <ZoomIn className="w-8 h-8" />
                   </div>
                 </div>
+              </div>
             </FadeIn>
           ))}
         </div>
@@ -141,14 +149,14 @@ export const Gallery: React.FC = () => {
           aria-label={`Просмотр изображения ${selectedIndex + 1} из ${galleryImages.length}`}
         >
           {/* Close Button */}
-          <button 
+          <button
             onClick={() => setSelectedIndex(null)}
             className="absolute top-6 right-6 p-3 bg-white/10 rounded-full hover:bg-white/20 text-white transition-colors z-50 focus:outline-none focus:ring-2 focus:ring-white"
             aria-label="Close"
           >
             <X className="w-8 h-8" />
           </button>
-          
+
           {/* Navigation Buttons */}
           <button
             onClick={handlePrev}
@@ -167,26 +175,26 @@ export const Gallery: React.FC = () => {
           </button>
 
           {/* Main Image Container */}
-          <div 
+          <div
             className="relative max-w-7xl max-h-[85vh] w-full h-full flex items-center justify-center p-4 md:p-12"
-            onClick={(e) => e.stopPropagation()} 
+            onClick={(e) => e.stopPropagation()}
           >
-             <Image 
-               key={selectedIndex} // Force re-render on index change for animation
-               src={galleryImages[selectedIndex].url} 
-               alt={galleryImages[selectedIndex].alt} 
-               storageKey={`gallery-image-${galleryImages[selectedIndex].id}`} // Enable sync with admin changes
-               containerClassName="w-full h-full flex items-center justify-center"
-               className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 fade-in duration-300"
-               controlsClassName="hidden" // Hide edit controls in lightbox
-             />
-             
-             {/* Caption */}
-             <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
-                <span className="inline-block bg-black/50 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium">
-                   {selectedIndex + 1} / {galleryImages.length} — {galleryImages[selectedIndex].alt}
-                </span>
-             </div>
+            <Image
+              key={selectedIndex} // Force re-render on index change for animation
+              src={galleryImages[selectedIndex].url}
+              alt={galleryImages[selectedIndex].alt}
+              storageKey={`gallery-image-${galleryImages[selectedIndex].id}`} // Enable sync with admin changes
+              containerClassName="w-full h-full flex items-center justify-center"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 fade-in duration-300"
+              controlsClassName="hidden" // Hide edit controls in lightbox
+            />
+
+            {/* Caption */}
+            <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+              <span className="inline-block bg-black/50 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-medium">
+                {selectedIndex + 1} / {galleryImages.length} — {galleryImages[selectedIndex].alt}
+              </span>
+            </div>
           </div>
         </div>
       )}

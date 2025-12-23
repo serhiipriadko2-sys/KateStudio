@@ -17,10 +17,10 @@ import {
 import React, { useState, useRef, useEffect } from 'react';
 import { About } from './components/About';
 import { AICoach } from './components/AICoach';
-import { Directions } from './components/Directions';
-import { Contact } from './components/Contact';
 import { ChatWidget } from './components/ChatWidget';
+import { Contact } from './components/Contact';
 import { Dashboard } from './components/Dashboard';
+import { Directions } from './components/Directions';
 import { Gallery } from './components/Gallery';
 import { Image } from './components/Image';
 import { Logo } from './components/Logo';

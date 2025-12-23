@@ -1,6 +1,5 @@
-
-import { GoogleGenAI, Chat, GenerateContentResponse, Modality, Type } from "@google/genai";
-import { Source } from "../types";
+import { GoogleGenAI, Chat, GenerateContentResponse, Modality, Type } from '@google/genai';
+import { Source } from '../types';
 
 let chatSession: Chat | null = null;
 
@@ -35,15 +34,15 @@ export interface VisionAnalysisResult {
 }
 
 export interface MeditationResult {
-    title: string;
-    script: string;
-    durationMin: number;
+  title: string;
+  script: string;
+  durationMin: number;
 }
 
 // Helper to init AI
 // Note: For Veo, we re-instantiate this in the function to capture the latest key if selected via dialog
 const getAI = () => {
-  if (!process.env.API_KEY) throw new Error("API Key missing");
+  if (!process.env.API_KEY) throw new Error('API Key missing');
   return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
 
@@ -65,31 +64,36 @@ const ensureSession = () => {
 
 // --- THINKING MODE (New) ---
 export const getThinkingResponse = async (userMessage: string): Promise<string> => {
-  if (!process.env.API_KEY) return "API Key missing";
+  if (!process.env.API_KEY) return 'API Key missing';
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash", // Thinking is available on 2.5 Flash
+      model: 'gemini-2.5-flash', // Thinking is available on 2.5 Flash
       contents: userMessage,
       config: {
-        systemInstruction: SYSTEM_INSTRUCTION + "\n\nCRITICAL: Use your thinking capabilities to provide a deeply reasoned, step-by-step analysis or plan. Think before answering.",
-        thinkingConfig: { thinkingBudget: 1024 } // Enable Thinking Mode
-      }
+        systemInstruction:
+          SYSTEM_INSTRUCTION +
+          '\n\nCRITICAL: Use your thinking capabilities to provide a deeply reasoned, step-by-step analysis or plan. Think before answering.',
+        thinkingConfig: { thinkingBudget: 1024 }, // Enable Thinking Mode
+      },
     });
-    return response.text || "Не удалось сгенерировать глубокий ответ.";
+    return response.text || 'Не удалось сгенерировать глубокий ответ.';
   } catch (e) {
-    console.error("Thinking Error:", e);
-    return "Произошла ошибка при глубоком анализе. Попробуйте обычный режим.";
+    console.error('Thinking Error:', e);
+    return 'Произошла ошибка при глубоком анализе. Попробуйте обычный режим.';
   }
 };
 
-export const getGeminiChatResponse = async (userMessage: string, location?: { lat: number, lng: number }): Promise<{ text: string; sources: Source[] }> => {
-  if (!process.env.API_KEY) return { text: "API Key missing", sources: [] };
+export const getGeminiChatResponse = async (
+  userMessage: string,
+  location?: { lat: number; lng: number }
+): Promise<{ text: string; sources: Source[] }> => {
+  if (!process.env.API_KEY) return { text: 'API Key missing', sources: [] };
 
   try {
     const session = ensureSession();
     const response: GenerateContentResponse = await session.sendMessage({ message: userMessage });
-    
+
     const sources: Source[] = [];
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     if (chunks) {
@@ -100,72 +104,82 @@ export const getGeminiChatResponse = async (userMessage: string, location?: { la
       });
     }
 
-    return { 
-      text: response.text || "...", 
-      sources 
+    return {
+      text: response.text || '...',
+      sources,
     };
   } catch (error) {
-    console.error("Gemini Error:", error);
+    console.error('Gemini Error:', error);
     chatSession = null;
-    return { text: "Ошибка соединения.", sources: [] };
+    return { text: 'Ошибка соединения.', sources: [] };
   }
 };
 
 export async function* getGeminiChatStream(userMessage: string) {
   if (!process.env.API_KEY) {
-      yield "Пожалуйста, настройте API ключ.";
-      return;
+    yield 'Пожалуйста, настройте API ключ.';
+    return;
   }
-  
+
   try {
-      const session = ensureSession();
-      const result = await session.sendMessageStream({ message: userMessage });
-      
-      for await (const chunk of result) {
-          if (chunk.text) {
-              yield chunk.text;
-          }
+    const session = ensureSession();
+    const result = await session.sendMessageStream({ message: userMessage });
+
+    for await (const chunk of result) {
+      if (chunk.text) {
+        yield chunk.text;
       }
+    }
   } catch (error) {
-      console.error("Stream Error", error);
-      chatSession = null;
-      yield "\n[Ошибка соединения. Пожалуйста, попробуйте еще раз]";
+    console.error('Stream Error', error);
+    chatSession = null;
+    yield '\n[Ошибка соединения. Пожалуйста, попробуйте еще раз]';
   }
 }
 
 // --- MEDITATION GENERATION ---
-export const createMeditation = async (topic: string, duration: string): Promise<MeditationResult | null> => {
-    if (!process.env.API_KEY) return null;
-    try {
-        const ai = getAI();
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: {
-                parts: [{ text: `Create a yoga meditation script. Topic: "${topic}". Target duration: ${duration}. Language: Russian. Keep it soothing, metaphorical, and focused on breath.` }]
+export const createMeditation = async (
+  topic: string,
+  duration: string
+): Promise<MeditationResult | null> => {
+  if (!process.env.API_KEY) return null;
+  try {
+    const ai = getAI();
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: {
+        parts: [
+          {
+            text: `Create a yoga meditation script. Topic: "${topic}". Target duration: ${duration}. Language: Russian. Keep it soothing, metaphorical, and focused on breath.`,
+          },
+        ],
+      },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            script: {
+              type: Type.STRING,
+              description: 'The full text to be read aloud, include pauses like [пауза]',
             },
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        title: { type: Type.STRING },
-                        script: { type: Type.STRING, description: "The full text to be read aloud, include pauses like [пауза]" },
-                        durationMin: { type: Type.NUMBER }
-                    },
-                    required: ["title", "script", "durationMin"]
-                }
-            }
-        });
+            durationMin: { type: Type.NUMBER },
+          },
+          required: ['title', 'script', 'durationMin'],
+        },
+      },
+    });
 
-        if (response.text) {
-            return JSON.parse(response.text) as MeditationResult;
-        }
-        return null;
-    } catch (e) {
-        console.error("Meditation Gen Error", e);
-        return null;
+    if (response.text) {
+      return JSON.parse(response.text) as MeditationResult;
     }
-}
+    return null;
+  } catch (e) {
+    console.error('Meditation Gen Error', e);
+    return null;
+  }
+};
 
 // --- TTS ---
 export const generateSpeech = async (text: string): Promise<string | null> => {
@@ -173,10 +187,10 @@ export const generateSpeech = async (text: string): Promise<string | null> => {
   try {
     const ai = getAI();
     // Clean text from instructions for TTS
-    const cleanText = text.replace(/\[.*?\]/g, '... '); 
+    const cleanText = text.replace(/\[.*?\]/g, '... ');
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
+      model: 'gemini-2.5-flash-preview-tts',
       contents: [{ parts: [{ text: cleanText }] }],
       config: {
         responseModalities: [Modality.AUDIO],
@@ -184,36 +198,44 @@ export const generateSpeech = async (text: string): Promise<string | null> => {
       },
     });
     return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || null;
-  } catch (e) { return null; }
+  } catch (e) {
+    return null;
+  }
 };
 
 // --- IMAGE GEN ---
-export const generateYogaImage = async (prompt: string, aspectRatio: string): Promise<string | null> => {
+export const generateYogaImage = async (
+  prompt: string,
+  aspectRatio: string
+): Promise<string | null> => {
   if (!process.env.API_KEY) return null;
-  try {
-    const ai = getAI();
-    let safeRatio = aspectRatio;
-    if (['2:3', '21:9', '3:2'].includes(aspectRatio)) {
-        if (aspectRatio === '2:3') safeRatio = '3:4'; 
-        if (aspectRatio === '3:2') safeRatio = '4:3';
-        if (aspectRatio === '21:9') safeRatio = '16:9';
-    }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-image-preview',
-      contents: { parts: [{ text: `High quality, yoga atmosphere, soft lighting: ${prompt}` }] },
-      config: { imageConfig: { aspectRatio: safeRatio, imageSize: "1K" } },
-    });
+  const ai = getAI();
+  let safeRatio = aspectRatio;
+  if (['2:3', '21:9', '3:2'].includes(aspectRatio)) {
+    if (aspectRatio === '2:3') safeRatio = '3:4';
+    if (aspectRatio === '3:2') safeRatio = '4:3';
+    if (aspectRatio === '21:9') safeRatio = '16:9';
+  }
 
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
-    }
-    return null;
-  } catch (e) { throw e; }
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-image-preview',
+    contents: { parts: [{ text: `High quality, yoga atmosphere, soft lighting: ${prompt}` }] },
+    config: { imageConfig: { aspectRatio: safeRatio, imageSize: '1K' } },
+  });
+
+  for (const part of response.candidates?.[0]?.content?.parts || []) {
+    if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
+  }
+  return null;
 };
 
 // --- IMAGE EDITING (Magic Edit) ---
-export const editYogaImage = async (base64Image: string, mimeType: string, prompt: string): Promise<string | null> => {
+export const editYogaImage = async (
+  base64Image: string,
+  mimeType: string,
+  prompt: string
+): Promise<string | null> => {
   if (!process.env.API_KEY) return null;
   try {
     const ai = getAI();
@@ -222,18 +244,18 @@ export const editYogaImage = async (base64Image: string, mimeType: string, promp
       contents: {
         parts: [
           { inlineData: { mimeType: mimeType, data: base64Image } },
-          { text: `Edit this image: ${prompt}. Maintain high quality and yoga atmosphere.` }
-        ]
-      }
+          { text: `Edit this image: ${prompt}. Maintain high quality and yoga atmosphere.` },
+        ],
+      },
     });
 
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
     }
     return null;
-  } catch (e) { 
-    console.error("Edit Image Error", e);
-    throw e; 
+  } catch (e) {
+    console.error('Edit Image Error', e);
+    throw e;
   }
 };
 
@@ -241,11 +263,11 @@ export const editYogaImage = async (base64Image: string, mimeType: string, promp
 export const generateVeoVideo = async (prompt: string): Promise<string | null> => {
   // Check for paid key selection (Required for Veo)
   if ((window as any).aistudio) {
-      const hasKey = await (window as any).aistudio.hasSelectedApiKey();
-      if (!hasKey) {
-          await (window as any).aistudio.openSelectKey();
-          // We assume success or they closed it. If they selected, env var is injected.
-      }
+    const hasKey = await (window as any).aistudio.hasSelectedApiKey();
+    if (!hasKey) {
+      await (window as any).aistudio.openSelectKey();
+      // We assume success or they closed it. If they selected, env var is injected.
+    }
   }
 
   // Create fresh instance to pick up new key if just selected
@@ -258,73 +280,104 @@ export const generateVeoVideo = async (prompt: string): Promise<string | null> =
       config: {
         numberOfVideos: 1,
         resolution: '720p',
-        aspectRatio: '16:9'
-      }
+        aspectRatio: '16:9',
+      },
     });
 
     while (!operation.done) {
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      operation = await ai.operations.getVideosOperation({operation: operation});
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      operation = await ai.operations.getVideosOperation({ operation: operation });
     }
 
     const videoUri = operation.response?.generatedVideos?.[0]?.video?.uri;
     if (videoUri) {
-        return `${videoUri}&key=${process.env.API_KEY}`;
+      return `${videoUri}&key=${process.env.API_KEY}`;
     }
     return null;
   } catch (e) {
-    console.error("Veo Error", e);
+    console.error('Veo Error', e);
     throw e;
   }
 };
 
 // --- VISION ANALYSIS (Images & Video) ---
-export const analyzeMedia = async (fileBase64: string, mimeType: string, userPrompt: string): Promise<VisionAnalysisResult | string> => {
-  if (!process.env.API_KEY) return "API Key not found";
+export const analyzeMedia = async (
+  fileBase64: string,
+  mimeType: string,
+  userPrompt: string
+): Promise<VisionAnalysisResult | string> => {
+  if (!process.env.API_KEY) return 'API Key not found';
 
   try {
     const ai = getAI();
     const isVideo = mimeType.startsWith('video/');
-    
+
     // Dynamic Prompt based on Media Type
-    const contextPrompt = isVideo 
-        ? `Analyze this yoga video clip. Focus on the movement flow, transitions between poses, stability, and rhythm (Inside Flow context). User question: ${userPrompt}`
-        : `Analyze this yoga pose photo. Focus on static alignment, geometry, and safety. User question: ${userPrompt}`;
+    const contextPrompt = isVideo
+      ? `Analyze this yoga video clip. Focus on the movement flow, transitions between poses, stability, and rhythm (Inside Flow context). User question: ${userPrompt}`
+      : `Analyze this yoga pose photo. Focus on static alignment, geometry, and safety. User question: ${userPrompt}`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: {
-        parts: [
-          { inlineData: { mimeType: mimeType, data: fileBase64 } },
-          { text: contextPrompt }
-        ]
+        parts: [{ inlineData: { mimeType: mimeType, data: fileBase64 } }, { text: contextPrompt }],
       },
       config: {
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            poseName: { type: Type.STRING, description: "Name of the pose or flow sequence" },
-            sanskritName: { type: Type.STRING, description: "Sanskrit name(s)" },
-            muscleGroups: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Key muscles worked" },
-            energyEffect: { type: Type.STRING, description: "Calming (Langhana) or Energizing (Brahmana)" },
-            alignmentScore: { type: Type.NUMBER, description: "Score from 1 to 10 based on form/flow" },
-            safetyStatus: { type: Type.STRING, enum: ["Safe", "Caution", "Danger"] },
-            positivePoints: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of what is done correctly" },
-            corrections: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of specific corrections needed" },
-            expertAdvice: { type: Type.STRING, description: "Detailed warm advice from Katya Gabran" }
+            poseName: { type: Type.STRING, description: 'Name of the pose or flow sequence' },
+            sanskritName: { type: Type.STRING, description: 'Sanskrit name(s)' },
+            muscleGroups: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: 'Key muscles worked',
+            },
+            energyEffect: {
+              type: Type.STRING,
+              description: 'Calming (Langhana) or Energizing (Brahmana)',
+            },
+            alignmentScore: {
+              type: Type.NUMBER,
+              description: 'Score from 1 to 10 based on form/flow',
+            },
+            safetyStatus: { type: Type.STRING, enum: ['Safe', 'Caution', 'Danger'] },
+            positivePoints: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: 'List of what is done correctly',
+            },
+            corrections: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: 'List of specific corrections needed',
+            },
+            expertAdvice: {
+              type: Type.STRING,
+              description: 'Detailed warm advice from Katya Gabran',
+            },
           },
-          required: ["poseName", "sanskritName", "muscleGroups", "alignmentScore", "safetyStatus", "positivePoints", "corrections", "expertAdvice"]
-        }
-      }
+          required: [
+            'poseName',
+            'sanskritName',
+            'muscleGroups',
+            'alignmentScore',
+            'safetyStatus',
+            'positivePoints',
+            'corrections',
+            'expertAdvice',
+          ],
+        },
+      },
     });
 
     if (response.text) {
       return JSON.parse(response.text) as VisionAnalysisResult;
     }
-    return "Не удалось проанализировать медиа.";
+    return 'Не удалось проанализировать медиа.';
   } catch (error) {
-    console.error("Analysis Error:", error);
-    return "Произошла ошибка при анализе файла.";
+    console.error('Analysis Error:', error);
+    return 'Произошла ошибка при анализе файла.';
   }
 };

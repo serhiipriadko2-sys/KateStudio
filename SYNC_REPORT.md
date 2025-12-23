@@ -1,4 +1,5 @@
 # KateStudio - Отчёт о синхронизации экосистемы
+
 ## InsideFlow: WEB ↔ APP ↔ Shared
 
 ---
@@ -32,24 +33,26 @@ shared/
 
 **Объединённые интерфейсы:**
 
-| Категория | Интерфейсы |
-|-----------|------------|
-| **User** | `UserProfile` |
-| **Booking** | `BookingDetails`, `Booking`, `ClassSession`, `LoadLevel` |
-| **AI/Chat** | `ChatMode`, `ChatMessage`, `ChatAttachment`, `AsanaAnalysis` |
-| **Content** | `BlogArticle`, `VideoItem`, `Retreat`, `Review` |
-| **Pricing** | `PriceOption`, `PricingProps` |
-| **Theme** | `ThemeMode`, `ThemeColors` |
-| **Breathwork** | `BreathPhase`, `BreathworkConfig` |
+| Категория      | Интерфейсы                                                   |
+| -------------- | ------------------------------------------------------------ |
+| **User**       | `UserProfile`                                                |
+| **Booking**    | `BookingDetails`, `Booking`, `ClassSession`, `LoadLevel`     |
+| **AI/Chat**    | `ChatMode`, `ChatMessage`, `ChatAttachment`, `AsanaAnalysis` |
+| **Content**    | `BlogArticle`, `VideoItem`, `Retreat`, `Review`              |
+| **Pricing**    | `PriceOption`, `PricingProps`                                |
+| **Theme**      | `ThemeMode`, `ThemeColors`                                   |
+| **Breathwork** | `BreathPhase`, `BreathworkConfig`                            |
 
 ### 3. Добавлены ESLint + Prettier
 
 **Созданные файлы:**
+
 - `.eslintrc.cjs` - Конфигурация с правилами для React/TypeScript
 - `.prettierrc` - Единый стиль форматирования
 - `.prettierignore` - Исключения для Prettier
 
 **Ключевые правила:**
+
 - `react-hooks/rules-of-hooks`: error
 - `@typescript-eslint/no-explicit-any`: warn
 - `import/order`: автосортировка импортов
@@ -58,10 +61,12 @@ shared/
 ### 4. Унифицирован Pricing
 
 **Было:**
+
 - WEB: `onBook(plan, price)` - callback prop
 - APP: `CustomEvent('ksebe-open-chat')` - кастомное событие
 
 **Стало (shared/components/Pricing.tsx):**
+
 ```typescript
 interface PricingProps {
   options?: PriceOption[];
@@ -74,25 +79,22 @@ interface PricingProps {
 
 ### 5. Синхронизированы компоненты
 
-| Компонент | WEB | APP | Shared | Статус |
-|-----------|-----|-----|--------|--------|
-| FadeIn | ✅ | ✅ | ✅ | Синхронизирован |
-| Logo | ✅ | ✅ | ✅ | Синхронизирован |
-| Pricing | ✅ | ✅ | ✅ | Унифицирован |
-| Blog | ✅ | ✅ | ✅ | Добавлен modal в APP |
-| Breathwork | ✅ (NEW) | ✅ | ✅ | Добавлен в WEB |
-| Schedule | ✅ | ✅ | - | Разная логика (OK) |
+| Компонент  | WEB      | APP | Shared | Статус               |
+| ---------- | -------- | --- | ------ | -------------------- |
+| FadeIn     | ✅       | ✅  | ✅     | Синхронизирован      |
+| Logo       | ✅       | ✅  | ✅     | Синхронизирован      |
+| Pricing    | ✅       | ✅  | ✅     | Унифицирован         |
+| Blog       | ✅       | ✅  | ✅     | Добавлен modal в APP |
+| Breathwork | ✅ (NEW) | ✅  | ✅     | Добавлен в WEB       |
+| Schedule   | ✅       | ✅  | -      | Разная логика (OK)   |
 
 ### 6. Настроен Monorepo
 
 **package.json (root):**
+
 ```json
 {
-  "workspaces": [
-    "shared",
-    "k-sebe-yoga-studioWEB",
-    "k-sebe-yoga-studio-APPp"
-  ],
+  "workspaces": ["shared", "k-sebe-yoga-studioWEB", "k-sebe-yoga-studio-APPp"],
   "scripts": {
     "dev:web": "npm run dev --workspace=k-sebe-yoga-studioWEB",
     "dev:app": "npm run dev --workspace=k-sebe-yoga-studio-APPp",
@@ -171,11 +173,11 @@ KateStudio/
 
 ### Потенциальные риски
 
-| Риск | Вероятность | Митигация |
-|------|-------------|-----------|
-| Breaking changes | Средняя | Версионирование shared |
-| Circular deps | Низкая | Lint rules |
-| Bundle size | Низкая | Tree shaking |
+| Риск             | Вероятность | Митигация              |
+| ---------------- | ----------- | ---------------------- |
+| Breaking changes | Средняя     | Версионирование shared |
+| Circular deps    | Низкая      | Lint rules             |
+| Bundle size      | Низкая      | Tree shaking           |
 
 ---
 
@@ -183,12 +185,12 @@ KateStudio/
 
 ### Результаты синхронизации
 
-| Метрика | До | После |
-|---------|-----|-------|
-| Дублирование кода | ~60% | ~25% |
-| Общих интерфейсов | 0 | 25+ |
-| ESLint/Prettier | Нет | Да |
-| Monorepo структура | Нет | Да |
+| Метрика            | До   | После |
+| ------------------ | ---- | ----- |
+| Дублирование кода  | ~60% | ~25%  |
+| Общих интерфейсов  | 0    | 25+   |
+| ESLint/Prettier    | Нет  | Да    |
+| Monorepo структура | Нет  | Да    |
 
 ### Ключевые улучшения
 
@@ -219,5 +221,4 @@ import type { UserProfile, ClassSession } from '@ksebe/shared/types';
 
 ---
 
-*Синхронизация выполнена: 13 декабря 2025*
-*Claude Opus 4.5*
+_Синхронизация выполнена: 13 декабря 2025_ _Claude Opus 4.5_

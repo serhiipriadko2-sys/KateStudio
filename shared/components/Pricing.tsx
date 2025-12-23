@@ -3,10 +3,10 @@
  * Shared across WEB and APP
  * Supports both callback patterns: onBook prop and CustomEvent
  */
-import React from 'react';
 import { Check, Star, ArrowRight } from 'lucide-react';
-import { FadeIn } from './FadeIn';
+import React from 'react';
 import { PriceOption } from '../types';
+import { FadeIn } from './FadeIn';
 
 // Default pricing options
 const defaultPriceOptions: PriceOption[] = [

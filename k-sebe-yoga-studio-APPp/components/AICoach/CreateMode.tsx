@@ -1,8 +1,8 @@
 /**
  * CreateMode - Art generation (Image, Video, Edit)
  */
-import React, { useState } from 'react';
 import { Upload, X, Loader2, Sparkles, Film, Wand2, Palette } from 'lucide-react';
+import React, { useState } from 'react';
 import { generateYogaImage, generateVeoVideo, editYogaImage } from '../../services/geminiService';
 import { CreateSubMode, ART_STYLES, ArtStyle } from './types';
 
@@ -138,7 +138,9 @@ export const CreateMode: React.FC<CreateModeProps> = ({ onError }) => {
           <textarea
             value={createSubMode === 'edit' ? editPrompt : genPrompt}
             onChange={(e) =>
-              createSubMode === 'edit' ? setEditPrompt(e.target.value) : setGenPrompt(e.target.value)
+              createSubMode === 'edit'
+                ? setEditPrompt(e.target.value)
+                : setGenPrompt(e.target.value)
             }
             className="w-full p-4 bg-stone-50 rounded-2xl border border-stone-100 text-sm focus:outline-none focus:border-brand-green/50 resize-none transition-colors"
             rows={createSubMode === 'veo' ? 2 : 3}

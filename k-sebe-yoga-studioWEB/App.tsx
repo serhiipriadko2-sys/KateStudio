@@ -1,22 +1,22 @@
 import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
 import { Menu, X, Instagram, Send } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { Contact } from './components/Contact';
-import { Hero } from './components/Hero';
 import { About } from './components/About';
-import { Directions } from './components/Directions';
-import { FAQ } from './components/FAQ';
-import { Philosophy } from './components/Philosophy';
-import { FirstVisit } from './components/FirstVisit';
-import { Footer } from './components/Footer';
-import { Blog } from './components/Blog';
 import { AdminPanel } from './components/AdminPanel';
 import { Benefits } from './components/Benefits';
-import { LegalModals } from './components/LegalModals';
+import { Blog } from './components/Blog';
 import { BookingModal } from './components/BookingModal';
 import { ChatWidget } from './components/ChatWidget';
+import { Contact } from './components/Contact';
+import { Directions } from './components/Directions';
+import { FAQ } from './components/FAQ';
+import { FirstVisit } from './components/FirstVisit';
+import { Footer } from './components/Footer';
 import { Gallery } from './components/Gallery';
+import { Hero } from './components/Hero';
+import { LegalModals } from './components/LegalModals';
 import { Logo } from './components/Logo';
+import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
 import { Pricing } from './components/Pricing';
 import { Retreats } from './components/Retreats';
@@ -233,21 +233,21 @@ function App() {
 
         {/* Main Content Flow */}
         <main id="main-content">
-        <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
-        <Marquee />
-        <Benefits />
-        <About />
-        <Philosophy />
-        <Directions onBook={(type) => openBooking({ type })} />
-        <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
-        <Gallery />
-        <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-        <Retreats onBook={(type) => openBooking({ type })} />
-        <Schedule onBook={(details) => openBooking(details)} />
-        <Blog />
-        <Reviews />
-        <FAQ />
-        <Contact />
+          <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
+          <Marquee />
+          <Benefits />
+          <About />
+          <Philosophy />
+          <Directions onBook={(type) => openBooking({ type })} />
+          <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
+          <Gallery />
+          <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
+          <Retreats onBook={(type) => openBooking({ type })} />
+          <Schedule onBook={(details) => openBooking(details)} />
+          <Blog />
+          <Reviews />
+          <FAQ />
+          <Contact />
         </main>
         <Footer
           onOpenAdmin={() => setIsAdminOpen(true)}

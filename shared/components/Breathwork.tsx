@@ -2,8 +2,8 @@
  * Breathwork Component - Square Breathing
  * Shared across WEB and APP
  */
-import React, { useState, useEffect } from 'react';
 import { Play, Pause, RefreshCw, Wind } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { BreathPhase, BreathworkConfig } from '../types';
 
 interface BreathworkProps {

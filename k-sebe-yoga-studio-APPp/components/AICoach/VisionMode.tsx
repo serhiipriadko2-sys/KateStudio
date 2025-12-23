@@ -1,8 +1,8 @@
 /**
  * VisionMode - Photo/Video analysis for yoga poses
  */
-import React, { useState } from 'react';
 import { Upload, X, Lightbulb, Loader2, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
 import { analyzeMedia, VisionAnalysisResult } from '../../services/geminiService';
 import { AnalysisReport } from './AnalysisReport';
 

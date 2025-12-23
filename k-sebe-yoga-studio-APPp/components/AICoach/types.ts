@@ -25,8 +25,16 @@ export const SUGGESTED_PROMPTS = [
 
 export const ART_STYLES: ArtStyle[] = [
   { id: 'realistic', label: 'Реализм', promptMod: 'photorealistic, 8k, cinematic lighting' },
-  { id: 'watercolor', label: 'Акварель', promptMod: 'soft watercolor painting, artistic, pastel colors' },
-  { id: 'cyber', label: 'Кибер-Йога', promptMod: 'cyberpunk neon, futuristic city, glowing tattoos' },
+  {
+    id: 'watercolor',
+    label: 'Акварель',
+    promptMod: 'soft watercolor painting, artistic, pastel colors',
+  },
+  {
+    id: 'cyber',
+    label: 'Кибер-Йога',
+    promptMod: 'cyberpunk neon, futuristic city, glowing tattoos',
+  },
   { id: 'oil', label: 'Масло', promptMod: 'oil painting on canvas, classical art style' },
 ];
 

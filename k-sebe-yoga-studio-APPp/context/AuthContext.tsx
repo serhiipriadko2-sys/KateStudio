@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserProfile } from '../types';
 import { dataService } from '../services/dataService';
+import { UserProfile } from '../types';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -28,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newUser = await dataService.registerUser(name, phone);
       setUser(newUser);
     } catch (error) {
-      console.error("Login failed", error);
+      console.error('Login failed', error);
       throw error;
     }
   };

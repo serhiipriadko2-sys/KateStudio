@@ -39,7 +39,9 @@ export function useLocalStorage<T>(
         if (typeof window !== 'undefined') {
           window.localStorage.setItem(key, JSON.stringify(valueToStore));
           // Dispatch event for cross-tab sync
-          window.dispatchEvent(new StorageEvent('storage', { key, newValue: JSON.stringify(valueToStore) }));
+          window.dispatchEvent(
+            new StorageEvent('storage', { key, newValue: JSON.stringify(valueToStore) })
+          );
         }
       } catch (error) {
         console.warn(`Error setting localStorage key "${key}":`, error);

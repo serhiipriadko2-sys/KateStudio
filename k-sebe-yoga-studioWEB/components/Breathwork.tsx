@@ -2,8 +2,8 @@
  * Breathwork Component for WEB
  * Re-exports from shared with WEB-specific styling
  */
-import React from 'react';
 import { Play, Pause, RefreshCw, Wind } from 'lucide-react';
+import React from 'react';
 
 type BreathPhase = 'inhale' | 'hold-full' | 'exhale' | 'hold-empty' | 'idle';
 
@@ -173,9 +173,7 @@ export const Breathwork: React.FC<BreathworkProps> = ({
           >
             {text}
           </h3>
-          <p className="text-stone-400 text-xs font-medium uppercase tracking-widest">
-            {subText}
-          </p>
+          <p className="text-stone-400 text-xs font-medium uppercase tracking-widest">{subText}</p>
         </div>
       </div>
 

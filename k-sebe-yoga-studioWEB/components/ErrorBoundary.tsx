@@ -1,5 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
-import { AlertTriangle, RotateCcw } from "lucide-react";
+import { AlertTriangle, RotateCcw } from 'lucide-react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children?: ReactNode;
@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
+    console.error('Uncaught error:', error, errorInfo);
   }
 
   public render() {
@@ -37,17 +37,19 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
             <h1 className="text-3xl font-serif text-stone-800 mb-4">Что-то пошло не так</h1>
             <p className="text-stone-500 mb-8 leading-relaxed text-sm">
-              Произошла непредвиденная ошибка в работе приложения. Мы уже работаем над ее устранением. 
-              Пожалуйста, попробуйте перезагрузить страницу.
+              Произошла непредвиденная ошибка в работе приложения. Мы уже работаем над ее
+              устранением. Пожалуйста, попробуйте перезагрузить страницу.
             </p>
-            
+
             {this.state.error && (
-                <div className="bg-stone-50 p-4 rounded-xl text-left mb-8 overflow-auto max-h-32 border border-stone-200 scrollbar-hide">
-                    <p className="text-[10px] text-stone-400 font-bold uppercase mb-1">Техническая информация:</p>
-                    <code className="text-xs text-stone-600 font-mono block break-words">
-                        {this.state.error.message}
-                    </code>
-                </div>
+              <div className="bg-stone-50 p-4 rounded-xl text-left mb-8 overflow-auto max-h-32 border border-stone-200 scrollbar-hide">
+                <p className="text-[10px] text-stone-400 font-bold uppercase mb-1">
+                  Техническая информация:
+                </p>
+                <code className="text-xs text-stone-600 font-mono block break-words">
+                  {this.state.error.message}
+                </code>
+              </div>
             )}
 
             <button
