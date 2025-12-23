@@ -12,6 +12,7 @@
 **Please do NOT report security vulnerabilities through public GitHub issues.**
 
 Instead, please report them via:
+
 - GitHub's private vulnerability reporting feature
 - Email: security@k-sebe-yoga.com
 
@@ -39,11 +40,11 @@ Instead, please report them via:
 
 ### Known Security Considerations
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Gemini API Key | Client-side | Rate limited by Google |
-| Supabase Anon Key | Public by design | Protected by RLS |
-| User Data | Protected | Row Level Security enabled |
+| Item              | Status           | Notes                      |
+| ----------------- | ---------------- | -------------------------- |
+| Gemini API Key    | Client-side      | Rate limited by Google     |
+| Supabase Anon Key | Public by design | Protected by RLS           |
+| User Data         | Protected        | Row Level Security enabled |
 
 ## Security Features
 

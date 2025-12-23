@@ -14,7 +14,13 @@ import prettier from 'eslint-config-prettier';
 export default [
   js.configs.recommended,
   {
-    ignores: ['**/dist/**', '**/build/**', '**/node_modules/**', '**/*.config.js', '**/*.config.cjs'],
+    ignores: [
+      '**/dist/**',
+      '**/build/**',
+      '**/node_modules/**',
+      '**/*.config.js',
+      '**/*.config.cjs',
+    ],
   },
   {
     files: ['**/*.{ts,tsx,js,jsx}'],

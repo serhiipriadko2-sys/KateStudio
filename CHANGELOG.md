@@ -3,11 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
 ### Added
+
 - Complete GitHub infrastructure (CI/CD, templates, dependabot)
 - CLAUDE.md for AI agent instructions
 - CONTRIBUTING.md with contribution guidelines
@@ -19,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Vitest testing framework
 
 ### Changed
+
 - Updated README.md with badges and comprehensive documentation
 - Enhanced LICENSE with studio information
 
@@ -27,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Shared Library (@ksebe/shared)
+
 - **Components**: FadeIn, Logo, Breathwork, Blog, Pricing
 - **Hooks**: useScrollLock
 - **Services**: Supabase client configuration
@@ -36,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Styles**: Tailwind CSS preset with custom design tokens
 
 #### WEB (k-sebe-yoga-studioWEB)
+
 - Landing page with responsive design
 - Hero section with animations
 - About section
@@ -48,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Breathwork practice component
 
 #### APP (k-sebe-yoga-studio-APPp)
+
 - Mobile-first PWA application
 - Dashboard with quick actions
 - AI Coach (Aria) with multiple modes:
@@ -63,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - User profile management
 
 #### Infrastructure
+
 - Monorepo structure with npm workspaces
 - TypeScript configuration with path aliases
 - ESLint + Prettier setup
@@ -71,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Pages deployment
 
 ### Technical Details
+
 - React 19.2.1
 - TypeScript 5.8
 - Vite 6.2
@@ -91,5 +99,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Fixed** for any bug fixes
 - **Security** for vulnerability fixes
 
-[Unreleased]: https://github.com/serhiipriadko2-sys/KateStudio/compare/v1.0.0...HEAD
+[Unreleased]:
+  https://github.com/serhiipriadko2-sys/KateStudio/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/serhiipriadko2-sys/KateStudio/releases/tag/v1.0.0

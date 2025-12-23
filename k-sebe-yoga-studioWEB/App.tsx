@@ -161,18 +161,20 @@ function App() {
       <div
         className={`min-h-screen bg-brand-light font-sans selection:bg-brand-green selection:text-white relative flex flex-col transition-opacity duration-700 ${loading ? 'opacity-0' : 'opacity-100'}`}
       >
+        {/* Skip Links for Accessibility */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[1000] focus:bg-white focus:text-brand-green focus:px-4 focus:py-2 focus:rounded-full focus:shadow-lg"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-brand-green focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none"
         >
-          Пропустить к содержимому
+          Перейти к основному содержимому
         </a>
         <a
           href="#footer"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-16 focus:left-4 focus:z-[1000] focus:bg-white focus:text-brand-green focus:px-4 focus:py-2 focus:rounded-full focus:shadow-lg"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-16 focus:left-4 focus:z-[100] focus:bg-brand-green focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none"
         >
-          Пропустить к подвалу
+          Перейти к подвалу
         </a>
+
         {/* Texture Overlay */}
         <div
           className="fixed inset-0 z-[5] pointer-events-none opacity-[0.05] mix-blend-multiply"

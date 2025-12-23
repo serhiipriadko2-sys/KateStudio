@@ -2,7 +2,7 @@
  * Blog Component
  * Shared across WEB and APP
  */
-import React, { useState, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import {
   ArrowRight,
   BookOpen,
@@ -13,9 +13,9 @@ import {
   Share2,
   Check,
 } from 'lucide-react';
-import DOMPurify from 'dompurify';
-import { FadeIn } from './FadeIn';
+import React, { useState, useMemo } from 'react';
 import { BlogArticle } from '../types';
+import { FadeIn } from './FadeIn';
 
 // Default articles data
 const defaultArticles: BlogArticle[] = [
@@ -152,9 +152,7 @@ export const Blog: React.FC<BlogProps> = ({
         )}
       </div>
 
-      <div
-        className={`grid grid-cols-1 ${compact ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-10`}
-      >
+      <div className={`grid grid-cols-1 ${compact ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-10`}>
         {articles.map((article, idx) => (
           <FadeIn key={article.id} delay={idx * 150} direction="up" className="h-full">
             <article
@@ -209,6 +207,9 @@ export const Blog: React.FC<BlogProps> = ({
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
           onClick={() => setSelectedArticle(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="blog-modal-title"
         >
           <div
             className="bg-white w-full max-w-2xl h-[85vh] rounded-[2rem] shadow-2xl overflow-hidden relative flex flex-col animate-in slide-in-from-bottom-10 duration-300"
@@ -243,7 +244,10 @@ export const Blog: React.FC<BlogProps> = ({
                 <span className="bg-brand-green text-white px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold mb-3 inline-block">
                   {selectedArticle.category}
                 </span>
-                <h2 className="text-2xl md:text-3xl font-serif text-white leading-tight">
+                <h2
+                  id="blog-modal-title"
+                  className="text-2xl md:text-3xl font-serif text-white leading-tight"
+                >
                   {selectedArticle.title}
                 </h2>
               </div>
@@ -266,7 +270,23 @@ export const Blog: React.FC<BlogProps> = ({
                 className="prose prose-stone prose-headings:font-serif prose-headings:text-brand-text prose-p:text-stone-600 prose-a:text-brand-green max-w-none"
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(selectedArticle.content, {
-                    ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'ul', 'ol', 'li', 'strong', 'em', 'blockquote', 'br'],
+                    ALLOWED_TAGS: [
+                      'h1',
+                      'h2',
+                      'h3',
+                      'h4',
+                      'h5',
+                      'h6',
+                      'p',
+                      'a',
+                      'ul',
+                      'ol',
+                      'li',
+                      'strong',
+                      'em',
+                      'blockquote',
+                      'br',
+                    ],
                     ALLOWED_ATTR: ['href', 'target', 'rel'],
                   }),
                 }}

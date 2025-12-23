@@ -1,4 +1,3 @@
-
 export interface ThemeColors {
   '--color-brand-green': string;
   '--color-brand-mint': string;

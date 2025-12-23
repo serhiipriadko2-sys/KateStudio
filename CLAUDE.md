@@ -1,10 +1,13 @@
 # CLAUDE.md - AI Agent Instructions
 
-This file provides context and instructions for AI assistants (Claude, GitHub Copilot, Cursor, etc.) working with the KateStudio codebase.
+This file provides context and instructions for AI assistants (Claude, GitHub
+Copilot, Cursor, etc.) working with the KateStudio codebase.
 
 ## Project Overview
 
-**K Sebe Yoga Studio** ("К себе" - "To Yourself") is an InsideFlow yoga ecosystem created for Katya Gabran's yoga studio. The project consists of two main applications sharing a common library.
+**K Sebe Yoga Studio** ("К себе" - "To Yourself") is an InsideFlow yoga
+ecosystem created for Katya Gabran's yoga studio. The project consists of two
+main applications sharing a common library.
 
 ### Architecture
 
@@ -60,13 +63,13 @@ KateStudio/
 
 ## Important Files
 
-| File | Purpose |
-|------|---------|
-| `shared/types/index.ts` | All TypeScript interfaces |
-| `shared/constants/index.ts` | Brand constants, API endpoints |
-| `shared/utils/index.ts` | Utility functions (cn, formatDate, etc.) |
-| `shared/services/supabase.ts` | Supabase client configuration |
-| `.env.example` | Required environment variables |
+| File                          | Purpose                                  |
+| ----------------------------- | ---------------------------------------- |
+| `shared/types/index.ts`       | All TypeScript interfaces                |
+| `shared/constants/index.ts`   | Brand constants, API endpoints           |
+| `shared/utils/index.ts`       | Utility functions (cn, formatDate, etc.) |
+| `shared/services/supabase.ts` | Supabase client configuration            |
+| `.env.example`                | Required environment variables           |
 
 ## Common Tasks
 
@@ -88,7 +91,9 @@ KateStudio/
 import { supabase } from '@ksebe/shared';
 
 // Authentication
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 
 // Database query
 const { data, error } = await supabase
@@ -117,6 +122,7 @@ const audioUrl = await geminiService.textToSpeech(text);
 ### Inside Flow Yoga
 
 Inside Flow is a modern yoga style created by Young Ho Kim that combines:
+
 - Vinyasa flow movements synchronized with music
 - Emotional expression through movement
 - Breath-to-beat coordination
@@ -166,6 +172,7 @@ npm run test        # Run tests (when configured)
 ---
 
 **Remember**: This is a passion project for a yoga studio. Prioritize:
+
 - Clean, maintainable code
 - Accessible design (WCAG 2.1 AA)
 - Mobile-first responsive layouts

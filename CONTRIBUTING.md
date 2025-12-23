@@ -1,6 +1,7 @@
 # Contributing to K Sebe Yoga Studio
 
-Thank you for your interest in contributing to the K Sebe Yoga Studio project! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to the K Sebe Yoga Studio project!
+This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
 
@@ -14,7 +15,8 @@ Thank you for your interest in contributing to the K Sebe Yoga Studio project! T
 
 ## Code of Conduct
 
-This project is dedicated to providing a welcoming and supportive environment for all contributors. We expect everyone to:
+This project is dedicated to providing a welcoming and supportive environment
+for all contributors. We expect everyone to:
 
 - Be respectful and inclusive
 - Be patient with newcomers
@@ -204,17 +206,17 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ### Types
 
-| Type | Description |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation |
-| `style` | Formatting, no code change |
-| `refactor` | Code refactoring |
-| `perf` | Performance improvement |
-| `test` | Adding tests |
-| `chore` | Maintenance |
-| `ci` | CI/CD changes |
+| Type       | Description                |
+| ---------- | -------------------------- |
+| `feat`     | New feature                |
+| `fix`      | Bug fix                    |
+| `docs`     | Documentation              |
+| `style`    | Formatting, no code change |
+| `refactor` | Code refactoring           |
+| `perf`     | Performance improvement    |
+| `test`     | Adding tests               |
+| `chore`    | Maintenance                |
+| `ci`       | CI/CD changes              |
 
 ### Scopes
 
@@ -244,7 +246,6 @@ refactor(app): extract video player logic to hook
    ```
 
 2. **Make your changes**
-
    - Write clean, documented code
    - Add tests if applicable
    - Update documentation if needed
@@ -269,13 +270,11 @@ refactor(app): extract video player logic to hook
    ```
 
 6. **Create a Pull Request**
-
    - Fill out the PR template completely
    - Link related issues
    - Request review from maintainers
 
 7. **Address review feedback**
-
    - Respond to all comments
    - Make requested changes
    - Re-request review when ready
@@ -322,4 +321,5 @@ If you have questions about contributing, feel free to:
 
 ---
 
-Thank you for contributing to K Sebe Yoga Studio! Your help makes this project better for everyone.
+Thank you for contributing to K Sebe Yoga Studio! Your help makes this project
+better for everyone.

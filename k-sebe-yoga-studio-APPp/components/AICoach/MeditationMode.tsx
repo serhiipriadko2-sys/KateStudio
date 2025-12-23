@@ -1,8 +1,8 @@
 /**
  * MeditationMode - AI-powered meditation generator with TTS
  */
-import React, { useState, useEffect } from 'react';
 import { Loader2, Sparkles, Play, Pause } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { createMeditation, generateSpeech, MeditationResult } from '../../services/geminiService';
 import { MEDITATION_DURATIONS } from './types';
 

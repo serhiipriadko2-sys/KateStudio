@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 
 export const BackToTop: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);

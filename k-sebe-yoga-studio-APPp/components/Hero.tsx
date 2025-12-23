@@ -1,8 +1,7 @@
-
 import React from 'react';
-import { Logo } from './Logo';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
+import { Logo } from './Logo';
 
 export const Hero: React.FC = () => {
   return (
@@ -24,7 +23,7 @@ export const Hero: React.FC = () => {
       <div className="relative z-20 w-full max-w-7xl mx-auto pointer-events-none">
         <FadeIn delay={100} direction="down">
           <div className="pointer-events-auto inline-block">
-             <Logo className="w-28 h-28 mb-8" color="#fff" />
+            <Logo className="w-28 h-28 mb-8" color="#fff" />
           </div>
         </FadeIn>
 
@@ -43,7 +42,10 @@ export const Hero: React.FC = () => {
           </FadeIn>
 
           <FadeIn delay={700} direction="up">
-            <a href="#schedule" className="pointer-events-auto inline-block w-full md:w-auto text-center bg-white text-brand-dark font-medium tracking-widest text-xs uppercase py-5 px-10 rounded-full hover:bg-brand-mint transition-colors duration-300 shadow-xl shadow-black/10">
+            <a
+              href="#schedule"
+              className="pointer-events-auto inline-block w-full md:w-auto text-center bg-white text-brand-dark font-medium tracking-widest text-xs uppercase py-5 px-10 rounded-full hover:bg-brand-mint transition-colors duration-300 shadow-xl shadow-black/10"
+            >
               Записаться на занятие
             </a>
           </FadeIn>

@@ -1,4 +1,3 @@
-
 export interface PriceItem {
   id: string;
   title: string;
@@ -21,9 +20,9 @@ export interface ChatMessage {
   sources?: Source[];
   audioBase64?: string;
   isAudioLoading?: boolean;
-  
+
   // New fields for AI features
-  type?: ChatMode; 
+  type?: ChatMode;
   generatedImageUrl?: string;
   generatedVideoUrl?: string;
   videoAnalysis?: string;
@@ -48,9 +47,9 @@ export interface AsanaAnalysis {
 }
 
 export interface BookingDetails {
-  type: string;     // Название услуги или класса
-  date?: string;    // Опционально (если конкретная дата)
-  time?: string;    // Опционально
-  location?: string;// Опционально
-  price?: string;   // Опционально (для покупки абонементов)
+  type: string; // Название услуги или класса
+  date?: string; // Опционально (если конкретная дата)
+  time?: string; // Опционально
+  location?: string; // Опционально
+  price?: string; // Опционально (для покупки абонементов)
 }

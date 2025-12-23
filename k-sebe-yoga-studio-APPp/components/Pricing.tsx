@@ -1,39 +1,48 @@
-
-import React from 'react';
 import { Check } from 'lucide-react';
-import { FadeIn } from './FadeIn';
+import React from 'react';
 import { useToast } from '../context/ToastContext';
+import { FadeIn } from './FadeIn';
 
 const priceOptions = [
   {
-    title: "Разовое",
-    price: "800 ₽",
-    description: "Для знакомства со студией",
-    features: ["1 посещение", "Коврик включен", "Чай после практики", "Срок: 7 дней"],
-    isPopular: false
-  },
-  {
-    title: "4 занятия",
-    price: "2 800 ₽",
-    description: "Для регулярной практики",
-    features: ["700 ₽ за занятие", "Заморозка на 7 дней", "Скидка на мастер-классы", "Срок: 30 дней"],
-    isPopular: false
-  },
-  {
-    title: "8 занятий",
-    price: "5 200 ₽",
-    description: "Выгодный выбор",
-    features: ["650 ₽ за занятие", "Заморозка на 14 дней", "Гостевой визит для друга", "Срок: 45 дней"],
-    isPopular: true
-  },
-  {
-    title: "Индивидуально",
-    price: "3 500 ₽",
-    description: "Персональный подход",
-    features: ["Удобное время", "Разбор техники", "План питания", "Срок: по согласованию"],
+    title: 'Разовое',
+    price: '800 ₽',
+    description: 'Для знакомства со студией',
+    features: ['1 посещение', 'Коврик включен', 'Чай после практики', 'Срок: 7 дней'],
     isPopular: false,
-    isDark: true
-  }
+  },
+  {
+    title: '4 занятия',
+    price: '2 800 ₽',
+    description: 'Для регулярной практики',
+    features: [
+      '700 ₽ за занятие',
+      'Заморозка на 7 дней',
+      'Скидка на мастер-классы',
+      'Срок: 30 дней',
+    ],
+    isPopular: false,
+  },
+  {
+    title: '8 занятий',
+    price: '5 200 ₽',
+    description: 'Выгодный выбор',
+    features: [
+      '650 ₽ за занятие',
+      'Заморозка на 14 дней',
+      'Гостевой визит для друга',
+      'Срок: 45 дней',
+    ],
+    isPopular: true,
+  },
+  {
+    title: 'Индивидуально',
+    price: '3 500 ₽',
+    description: 'Персональный подход',
+    features: ['Удобное время', 'Разбор техники', 'План питания', 'Срок: по согласованию'],
+    isPopular: false,
+    isDark: true,
+  },
 ];
 
 export const Pricing: React.FC = () => {
@@ -41,8 +50,10 @@ export const Pricing: React.FC = () => {
 
   const handleSelect = (title: string, price: string) => {
     // Dispatch custom event for ChatWidget to catch
-    const event = new CustomEvent('ksebe-open-chat', { 
-        detail: { message: `Здравствуйте! Я хочу приобрести абонемент "${title}" за ${price}. Как это сделать?` } 
+    const event = new CustomEvent('ksebe-open-chat', {
+      detail: {
+        message: `Здравствуйте! Я хочу приобрести абонемент "${title}" за ${price}. Как это сделать?`,
+      },
     });
     window.dispatchEvent(event);
     showToast('Переходим в чат для оформления...', 'success');
@@ -52,15 +63,17 @@ export const Pricing: React.FC = () => {
     <section id="pricing" className="py-24 px-4 md:px-12 max-w-7xl mx-auto scroll-mt-20">
       <div className="text-center mb-16">
         <FadeIn>
-            <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">Абонементы</h4>
-            <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Стоимость</h2>
+          <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">
+            Абонементы
+          </h4>
+          <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Стоимость</h2>
         </FadeIn>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {priceOptions.map((option, idx) => (
           <FadeIn key={idx} delay={idx * 150} direction="up" className="h-full">
-            <div 
+            <div
               className={`
                 h-full relative flex flex-col p-8 rounded-[2.5rem] transition-all duration-300 hover:scale-[1.02] overflow-hidden
                 ${option.isPopular ? 'border-2 border-brand-green shadow-xl bg-white scale-[1.02] z-10' : ''}
@@ -69,16 +82,18 @@ export const Pricing: React.FC = () => {
             >
               {option.isPopular && (
                 <>
-                   {/* Refined Shimmer Effect */}
-                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-[-20deg] animate-shimmer pointer-events-none z-0 opacity-40"></div>
-                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-green text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg z-20">
-                     Хит продаж
-                   </div>
+                  {/* Refined Shimmer Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-[-20deg] animate-shimmer pointer-events-none z-0 opacity-40"></div>
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-green text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg z-20">
+                    Хит продаж
+                  </div>
                 </>
               )}
 
               <div className="mb-8 relative z-10">
-                <h3 className={`text-xl font-serif mb-2 ${option.isDark ? 'text-white' : 'text-brand-text'}`}>
+                <h3
+                  className={`text-xl font-serif mb-2 ${option.isDark ? 'text-white' : 'text-brand-text'}`}
+                >
                   {option.title}
                 </h3>
                 <p className={`text-sm ${option.isDark ? 'text-white/50' : 'text-stone-400'}`}>
@@ -93,24 +108,31 @@ export const Pricing: React.FC = () => {
               <ul className="space-y-4 mb-10 flex-1 relative z-10">
                 {option.features.map((feature, fIdx) => (
                   <li key={fIdx} className="flex items-start gap-3 text-sm">
-                    <div className={`mt-0.5 min-w-[16px] ${option.isDark ? 'text-brand-green' : 'text-brand-green'}`}>
+                    <div
+                      className={`mt-0.5 min-w-[16px] ${option.isDark ? 'text-brand-green' : 'text-brand-green'}`}
+                    >
                       <Check className="w-4 h-4" />
                     </div>
-                    <span className={option.isDark ? 'text-white/80' : 'text-brand-text/70'}>{feature}</span>
+                    <span className={option.isDark ? 'text-white/80' : 'text-brand-text/70'}>
+                      {feature}
+                    </span>
                   </li>
                 ))}
               </ul>
 
-              <button 
+              <button
                 onClick={() => handleSelect(option.title, option.price)}
                 className={`
                 w-full py-4 rounded-xl font-medium transition-all duration-300 text-sm tracking-wide uppercase relative z-10
-                ${option.isDark 
-                  ? 'bg-brand-green text-white hover:bg-brand-green/90' 
-                  : option.isPopular
-                    ? 'bg-brand-green text-white hover:bg-brand-green/90 shadow-lg shadow-brand-green/30'
-                    : 'bg-stone-50 text-brand-text hover:bg-stone-100'}
-              `}>
+                ${
+                  option.isDark
+                    ? 'bg-brand-green text-white hover:bg-brand-green/90'
+                    : option.isPopular
+                      ? 'bg-brand-green text-white hover:bg-brand-green/90 shadow-lg shadow-brand-green/30'
+                      : 'bg-stone-50 text-brand-text hover:bg-stone-100'
+                }
+              `}
+              >
                 Выбрать
               </button>
             </div>

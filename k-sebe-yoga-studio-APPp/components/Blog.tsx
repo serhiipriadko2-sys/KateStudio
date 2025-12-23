@@ -2,7 +2,6 @@
  * Blog Component for APP
  * Mobile-optimized with article reader modal
  */
-import React, { useState } from 'react';
 import {
   ArrowRight,
   BookOpen,
@@ -13,9 +12,10 @@ import {
   Share2,
   Check,
 } from 'lucide-react';
+import React, { useState } from 'react';
+import { useToast } from '../context/ToastContext';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
-import { useToast } from '../context/ToastContext';
 
 interface BlogArticle {
   id: number;

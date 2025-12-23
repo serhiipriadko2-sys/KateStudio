@@ -17,10 +17,10 @@ import {
 import React, { useState, useRef, useEffect } from 'react';
 import { About } from './components/About';
 import { AICoach } from './components/AICoach';
-import { Directions } from './components/Directions';
-import { Contact } from './components/Contact';
 import { ChatWidget } from './components/ChatWidget';
+import { Contact } from './components/Contact';
 import { Dashboard } from './components/Dashboard';
+import { Directions } from './components/Directions';
 import { Gallery } from './components/Gallery';
 import { Image } from './components/Image';
 import { Logo } from './components/Logo';
@@ -236,6 +236,14 @@ export default function App() {
       className="flex flex-col h-[100dvh] bg-[#FDFBF7] text-brand-text overflow-hidden relative selection:bg-brand-green selection:text-white animate-in fade-in duration-1000"
       onContextMenu={(e) => e.preventDefault()}
     >
+      {/* Skip Link for Accessibility */}
+      <a
+        href="#app-main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:bg-brand-green focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none"
+      >
+        Перейти к основному содержимому
+      </a>
+
       <header
         className={`absolute top-0 left-0 right-0 z-30 pt-safe px-6 pb-4 transition-all duration-300 flex justify-between items-center pointer-events-none ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm' : 'bg-transparent'}`}
       >
@@ -261,6 +269,7 @@ export default function App() {
       </header>
 
       <main
+        id="app-main-content"
         ref={mainRef}
         className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide relative pb-24"
         onScroll={handleScroll}

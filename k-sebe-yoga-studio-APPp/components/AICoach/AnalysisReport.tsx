@@ -1,8 +1,8 @@
 /**
  * AnalysisReport - Displays vision analysis results
  */
-import React from 'react';
 import { CheckCircle2, AlertCircle, AlertTriangle, Sparkles, Info } from 'lucide-react';
+import React from 'react';
 import { VisionAnalysisResult } from '../../services/geminiService';
 
 interface AnalysisReportProps {

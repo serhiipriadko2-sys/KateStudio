@@ -1,4 +1,3 @@
-
 export interface PriceItem {
   id: string;
   title: string;

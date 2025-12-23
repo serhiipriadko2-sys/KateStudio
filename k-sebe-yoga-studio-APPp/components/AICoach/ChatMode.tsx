@@ -1,8 +1,8 @@
 /**
  * ChatMode - AI Chat interface with streaming support
  */
-import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Brain } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
 import { getGeminiChatStream, getThinkingResponse } from '../../services/geminiService';
 import { FormattedText } from './FormattedText';
 import { ChatMessage, SUGGESTED_PROMPTS } from './types';
@@ -120,7 +120,10 @@ export const ChatMode: React.FC<ChatModeProps> = ({ onError }) => {
                   : 'bg-[#F8F9FA] text-stone-700 rounded-bl-none border border-stone-100'
               }`}
             >
-              {msg.role === 'model' && msg.text === '' && isChatLoading && idx === messages.length - 1 ? (
+              {msg.role === 'model' &&
+              msg.text === '' &&
+              isChatLoading &&
+              idx === messages.length - 1 ? (
                 <div className="flex gap-1.5 items-center py-2 px-1">
                   <div
                     className="w-1.5 h-1.5 bg-stone-400 rounded-full animate-bounce"

@@ -7,14 +7,14 @@
  * - MeditationMode: AI meditation generator with TTS
  * - CreateMode: Art generation (Image, Video, Edit)
  */
-import React, { useState } from 'react';
 import { Sparkles, Image as ImageIcon, Headphones, Maximize2, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
 import { useToast } from '../../context/ToastContext';
 import { ChatMode } from './ChatMode';
-import { VisionMode } from './VisionMode';
-import { MeditationMode } from './MeditationMode';
 import { CreateMode } from './CreateMode';
+import { MeditationMode } from './MeditationMode';
 import { Mode } from './types';
+import { VisionMode } from './VisionMode';
 
 const MODES = [
   { id: 'chat', label: 'Чат', icon: <Sparkles className="w-4 h-4" /> },

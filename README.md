@@ -7,9 +7,11 @@
 [![React](https://img.shields.io/badge/React-19.2-61dafb.svg)](https://react.dev/)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-339933.svg)](https://nodejs.org/)
 
-> **"Йога — это не про то, чтобы дотянуться руками до пальцев ног, а про то, что мы узнаем на пути вниз"**
+> **"Йога — это не про то, чтобы дотянуться руками до пальцев ног, а про то, что
+> мы узнаем на пути вниз"**
 
-Экосистема для йога-студии **"К себе"** (Катя Габран) — веб-сайт, PWA-приложение и общая библиотека компонентов в стиле Inside Flow.
+Экосистема для йога-студии **"К себе"** (Катя Габран) — веб-сайт, PWA-приложение
+и общая библиотека компонентов в стиле Inside Flow.
 
 ---
 
@@ -103,16 +105,16 @@ npm run build:all
 
 ## Технологический стек
 
-| Категория | Технология | Версия |
-|-----------|------------|--------|
-| **Frontend** | React | 19.2 |
-| **Language** | TypeScript | 5.8 |
-| **Build** | Vite | 6.2 |
-| **Backend** | Supabase | 2.49 |
-| **AI** | Google Gemini | 2.5 |
-| **Styling** | Tailwind CSS | 3.x |
-| **Icons** | Lucide React | 0.511 |
-| **Lint** | ESLint + Prettier | 9.x / 3.x |
+| Категория    | Технология        | Версия    |
+| ------------ | ----------------- | --------- |
+| **Frontend** | React             | 19.2      |
+| **Language** | TypeScript        | 5.8       |
+| **Build**    | Vite              | 6.2       |
+| **Backend**  | Supabase          | 2.49      |
+| **AI**       | Google Gemini     | 2.5       |
+| **Styling**  | Tailwind CSS      | 3.x       |
+| **Icons**    | Lucide React      | 0.511     |
+| **Lint**     | ESLint + Prettier | 9.x / 3.x |
 
 ---
 
@@ -152,14 +154,21 @@ function Modal({ isOpen }) {
 ### Утилиты
 
 ```tsx
-import { cn, formatDate, formatPrice, pluralize, debounce, storage } from '@ksebe/shared';
+import {
+  cn,
+  formatDate,
+  formatPrice,
+  pluralize,
+  debounce,
+  storage,
+} from '@ksebe/shared';
 
 // Классы (как clsx)
-<div className={cn('base', isActive && 'active')} />
+<div className={cn('base', isActive && 'active')} />;
 
 // Форматирование
-formatDate(new Date());           // "13 декабря"
-formatPrice(5200);                // "5 200 ₽"
+formatDate(new Date()); // "13 декабря"
+formatPrice(5200); // "5 200 ₽"
 pluralize(8, ['занятие', 'занятия', 'занятий']); // "8 занятий"
 
 // Debounce
@@ -175,9 +184,9 @@ const user = storage.get<User>('user');
 ```tsx
 import { COLORS, BRAND, PRICING_PLANS, CONTACT } from '@ksebe/shared';
 
-console.log(COLORS.brandGreen);   // "#57a773"
-console.log(BRAND.founder);       // "Катя Габран"
-console.log(CONTACT.phone);       // "+7 (999) 123-45-67"
+console.log(COLORS.brandGreen); // "#57a773"
+console.log(BRAND.founder); // "Катя Габран"
+console.log(CONTACT.phone); // "+7 (999) 123-45-67"
 ```
 
 ### Типы
@@ -191,7 +200,7 @@ import type {
   AsanaAnalysis,
   BlogArticle,
   PriceOption,
-  BreathPhase
+  BreathPhase,
 } from '@ksebe/shared';
 ```
 
@@ -227,18 +236,18 @@ module.exports = {
 
 ## Скрипты
 
-| Команда | Описание |
-|---------|----------|
-| `npm run dev:web` | Запуск веб-сайта |
-| `npm run dev:app` | Запуск приложения |
-| `npm run build:all` | Сборка всех проектов |
-| `npm run lint` | Проверка ESLint |
-| `npm run lint:fix` | Автоисправление ESLint |
-| `npm run format` | Форматирование Prettier |
-| `npm run format:check` | Проверка форматирования |
-| `npm run typecheck` | Проверка типов TypeScript |
-| `npm run test` | Запуск тестов |
-| `npm run clean` | Очистка node_modules |
+| Команда                | Описание                  |
+| ---------------------- | ------------------------- |
+| `npm run dev:web`      | Запуск веб-сайта          |
+| `npm run dev:app`      | Запуск приложения         |
+| `npm run build:all`    | Сборка всех проектов      |
+| `npm run lint`         | Проверка ESLint           |
+| `npm run lint:fix`     | Автоисправление ESLint    |
+| `npm run format`       | Форматирование Prettier   |
+| `npm run format:check` | Проверка форматирования   |
+| `npm run typecheck`    | Проверка типов TypeScript |
+| `npm run test`         | Запуск тестов             |
+| `npm run clean`        | Очистка node_modules      |
 
 ---
 
@@ -246,13 +255,13 @@ module.exports = {
 
 ### Aria - AI Коуч
 
-| Режим | Модель | Описание |
-|-------|--------|----------|
-| `chat` | Gemini 2.5 Flash | Общение с AI-ассистентом |
-| `vision` | Gemini Vision | Анализ фото/видео асан |
-| `meditation` | Gemini + TTS | Генерация медитаций |
-| `art` | Imagen 3 | Арт-терапия |
-| `program` | Gemini Pro | Персональные программы |
+| Режим        | Модель           | Описание                 |
+| ------------ | ---------------- | ------------------------ |
+| `chat`       | Gemini 2.5 Flash | Общение с AI-ассистентом |
+| `vision`     | Gemini Vision    | Анализ фото/видео асан   |
+| `meditation` | Gemini + TTS     | Генерация медитаций      |
+| `art`        | Imagen 3         | Арт-терапия              |
+| `program`    | Gemini Pro       | Персональные программы   |
 
 ### Пример использования
 
@@ -273,24 +282,24 @@ const audioUrl = await geminiService.textToSpeech(text, 'ru');
 
 ## Документация
 
-| Документ | Описание |
-|----------|----------|
-| [ANALYSIS.md](./ANALYSIS.md) | Полный аудит репозитория |
-| [SYNC_REPORT.md](./SYNC_REPORT.md) | Отчёт о синхронизации WEB/APP |
-| [CLAUDE.md](./CLAUDE.md) | Инструкции для AI агентов |
+| Документ                             | Описание                       |
+| ------------------------------------ | ------------------------------ |
+| [ANALYSIS.md](./ANALYSIS.md)         | Полный аудит репозитория       |
+| [SYNC_REPORT.md](./SYNC_REPORT.md)   | Отчёт о синхронизации WEB/APP  |
+| [CLAUDE.md](./CLAUDE.md)             | Инструкции для AI агентов      |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Руководство для контрибьюторов |
 
 ---
 
 ## Структура веток
 
-| Ветка | Назначение |
-|-------|------------|
-| `main` | Продакшен код |
-| `develop` | Разработка |
-| `feature/*` | Новые фичи |
-| `fix/*` | Исправления багов |
-| `claude/*` | AI-assisted разработка |
+| Ветка       | Назначение             |
+| ----------- | ---------------------- |
+| `main`      | Продакшен код          |
+| `develop`   | Разработка             |
+| `feature/*` | Новые фичи             |
+| `fix/*`     | Исправления багов      |
+| `claude/*`  | AI-assisted разработка |
 
 ---
 
