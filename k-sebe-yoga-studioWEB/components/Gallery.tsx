@@ -18,20 +18,6 @@ export const Gallery: React.FC = () => {
   useScrollLock(selectedIndex !== null);
   useFocusTrap(dialogRef, selectedIndex !== null, closeButtonRef);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedIndex === null) return;
-
-      if (e.key === 'ArrowRight') handleNext();
-      if (e.key === 'ArrowLeft') handlePrev();
-      if (e.key === 'Escape') setSelectedIndex(null);
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrev, selectedIndex]);
-
   const handleNext = useCallback(
     (e?: React.MouseEvent) => {
       e?.stopPropagation();
@@ -49,6 +35,20 @@ export const Gallery: React.FC = () => {
     },
     [gallery.length]
   );
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedIndex === null) return;
+
+      if (e.key === 'ArrowRight') handleNext();
+      if (e.key === 'ArrowLeft') handlePrev();
+      if (e.key === 'Escape') setSelectedIndex(null);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNext, handlePrev, selectedIndex]);
 
   // Swipe Handlers
   const onTouchStart = (e: React.TouchEvent) => {
