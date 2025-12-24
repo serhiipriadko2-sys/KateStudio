@@ -1,0 +1,25 @@
+{
+  "name": "К себе — Йога студия",
+  "short_name": "К себе",
+  "description": "Студия йоги Кати Габран. Inside Flow, Хатха-йога и ретриты.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f9f9f9",
+  "theme_color": "#57a773",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["health", "fitness", "lifestyle"]
+}
