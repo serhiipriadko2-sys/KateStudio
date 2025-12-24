@@ -1,22 +1,22 @@
 # Дорожная карта развития KateStudio
 
-> **Дата анализа:** 22 декабря 2025 **Версия проекта:** 1.0.0 **Статус:**
-> Production-ready с замечаниями
+> **Дата обновления:** 24 декабря 2025
+> **Версия проекта:** 1.1.0
+> **Статус:** Production с активным развитием
 
 ---
 
 ## Обзор проекта
 
-**K Sebe Yoga Studio** — InsideFlow yoga ecosystem для студии Кати Габран "К
-себе". Монорепозиторий с двумя приложениями и общей библиотекой.
+**K Sebe Yoga Studio** — InsideFlow yoga ecosystem для студии Кати Габран "К себе". Монорепозиторий с двумя приложениями и общей библиотекой.
 
 ### Архитектура
 
 ```
 KateStudio/
-├── shared/                    # @ksebe/shared (12 компонентов, 28 типов, 28 утилит)
-├── k-sebe-yoga-studioWEB/     # Landing page (30 компонентов, 3774 строк)
-└── k-sebe-yoga-studio-APPp/   # PWA приложение (31 компонент, 5539 строк)
+├── shared/                    # @ksebe/shared (8 компонентов, 25+ типов, 28 утилит)
+├── k-sebe-yoga-studioWEB/     # Landing page (30 компонентов, PWA manifest)
+└── k-sebe-yoga-studio-APPp/   # PWA приложение (37 компонентов, offline-first)
 ```
 
 ### Технологический стек
@@ -25,312 +25,374 @@ KateStudio/
 | --------- | ------------------------------------------------ |
 | Frontend  | React 19.2, TypeScript 5.8, Vite 6.2             |
 | Styling   | Tailwind CSS (CDN + custom preset)               |
-| Backend   | Supabase (Auth, Database, Storage)               |
+| Backend   | Supabase (Auth, Database, Storage, Realtime)     |
 | AI        | Google Gemini API (Chat, Vision, TTS, Image Gen) |
 | Testing   | Vitest 2.1.8 + React Testing Library             |
-| CI/CD     | GitHub Actions, Firebase Hosting                 |
+| CI/CD     | GitHub Actions, GitHub Pages                     |
+| Offline   | Service Worker, IndexedDB, localStorage          |
 
 ---
 
-## Текущее состояние
+## Текущее состояние (Декабрь 2025)
 
-### Общая оценка: 7.4/10
+### Общая оценка: 7.8/10
 
-| Компонент         | Оценка | Статус                         |
-| ----------------- | ------ | ------------------------------ |
-| Shared библиотека | 7.4/10 | Production с замечаниями       |
-| WEB приложение    | 8/10   | Production-ready               |
-| APP приложение    | 7/10   | Функционален, есть недоработки |
-| Безопасность      | 4/10   | Критические проблемы           |
-| Тестирование      | 5/10   | Минимальное покрытие           |
-| Документация      | 7/10   | Базовая (CLAUDE.md)            |
+| Компонент         | Оценка | Статус                    |
+| ----------------- | ------ | ------------------------- |
+| Shared библиотека | 9.2/10 | Production-ready          |
+| WEB приложение    | 8.5/10 | Production (GitHub Pages) |
+| APP приложение    | 8.5/10 | Production с offline      |
+| PWA               | 9/10   | Manifest + SW             |
+| Безопасность      | 6/10   | Требует внимания          |
+| Тестирование      | 4/10   | Минимальное покрытие      |
+| Документация      | 8/10   | Хорошая (CLAUDE.md)       |
 
----
+### Недавние улучшения ✅
 
-## Выявленные проблемы
-
-### Критические (Приоритет P0)
-
-| #   | Проблема                                 | Расположение                        | Риск                  |
-| --- | ---------------------------------------- | ----------------------------------- | --------------------- |
-| 1   | **API ключ Supabase в исходном коде**    | `shared/services/supabase.ts:11-13` | Компрометация бэкенда |
-| 2   | **Gemini API key в коде**                | `APP/services/supabaseClient.ts:6`  | Утечка квот API       |
-| 3   | **dangerouslySetInnerHTML без sanitize** | `shared/components/Blog.tsx:266`    | XSS уязвимость        |
-
-### Высокие (Приоритет P1)
-
-| #   | Проблема                    | Расположение       | Влияние                           |
-| --- | --------------------------- | ------------------ | --------------------------------- |
-| 4   | Отсутствует Service Worker  | APP                | Нет offline режима                |
-| 5   | Нет PWA manifest.json       | APP                | Не устанавливается как приложение |
-| 6   | Неполное тестирование       | Весь проект        | 5/12 компонентов покрыто          |
-| 7   | AICoach.tsx слишком большой | APP (837 строк)    | Сложность поддержки               |
-| 8   | Image.tsx слишком большой   | Shared (490 строк) | Нарушает guidelines               |
-
-### Средние (Приоритет P2)
-
-| #   | Проблема                              | Влияние                              |
-| --- | ------------------------------------- | ------------------------------------ |
-| 9   | Preview модели Gemini (3-pro-preview) | Могут стать недоступны               |
-| 10  | Veo видео-генерация не готова         | Требует платный API                  |
-| 11  | Нет обработки rate-limiting           | Потенциальные ошибки                 |
-| 12  | Дублирование конфигурации Supabase    | constants.ts ↔ supabase.ts           |
-| 13  | Недостаточно хуков в shared           | Нужны useLocalStorage, useMediaQuery |
-
-### Низкие (Приоритет P3)
-
-| #   | Проблема                             | Влияние                |
-| --- | ------------------------------------ | ---------------------- |
-| 14  | Нет alt-текстов для всех изображений | Доступность            |
-| 15  | Модальные окна без aria-modal        | Доступность            |
-| 16  | Schedule использует mock-данные      | UX                     |
-| 17  | Нет skip-links                       | Навигация с клавиатуры |
-| 18  | Stone palette дублируется в preset   | Размер бандла          |
+- [x] PWA manifest с standalone режимом
+- [x] Service Worker с network-first для JS/CSS
+- [x] Реальные фотографии в Hero, About, Directions, Gallery
+- [x] Исправлены пути изображений для GitHub Pages
+- [x] iOS PWA мета-теги для fullscreen
 
 ---
 
-## Дорожная карта
+## Результаты аудита
 
-### Фаза 1: Безопасность и стабильность
+### WEB (Landing Page)
 
-**Цель:** Устранить критические уязвимости и обеспечить надёжность
+| Аспект        | Оценка   | Детали                              |
+| ------------- | -------- | ----------------------------------- |
+| Компоненты    | 30       | Hero, About, Schedule, Gallery, etc |
+| AI-интеграция | 6 режимов| Chat, Vision, Meditation, Art, etc  |
+| PWA           | ✅       | manifest.json + SW                  |
+| SEO           | 8/10     | Schema.org, OG tags                 |
+| Доступность   | 7/10     | Focus visible, scroll behavior      |
 
-#### 1.1 Исправление безопасности API ключей
+**Критические находки:**
+- Gemini API key экспонирован в frontend (контролируется rate limiting)
+- ChatWidget.tsx: 700+ строк (требует рефакторинга)
+- Отсутствуют: favicon.png, apple-touch-icon.png, og-image.jpg
 
-**Задачи:**
+### APP (PWA Dashboard)
 
-- [ ] Создать `.env.local` с шаблоном
-- [ ] Перенести Supabase credentials из `shared/services/supabase.ts` в
-      переменные окружения
-- [ ] Перенести Gemini API key из `APP/services/supabaseClient.ts`
-- [ ] Обновить `vite.config.ts` для корректной подстановки переменных
-- [ ] Добавить `.env.local` в `.gitignore`
-- [ ] Обновить CI/CD workflows для использования GitHub Secrets
+| Аспект          | Оценка | Детали                          |
+| --------------- | ------ | ------------------------------- |
+| Компоненты      | 37     | Dashboard, AICoach, VideoLib    |
+| Offline-support | ✅     | IndexedDB + localStorage        |
+| Auth            | ✅     | Supabase Auth + Context         |
+| AI-интеграция   | 4 режима| Chat, Vision, Meditation, Create|
+| Sync            | ✅     | Realtime subscriptions          |
 
-**Файлы для изменения:**
+**Критические находки:**
+- AICoach.tsx: 837 строк (требует декомпозиции)
+- Дублирование AuthContext (можно вынести в shared)
+- Неиспользуемый useLocalStorage hook
 
-```
-shared/services/supabase.ts
-k-sebe-yoga-studio-APPp/services/supabaseClient.ts
-k-sebe-yoga-studioWEB/services/supabase.ts
-.env.example
-.gitignore
-```
+### Shared Library
 
-#### 1.2 XSS защита в Blog компоненте
+| Аспект      | Количество | Качество      |
+| ----------- | ---------- | ------------- |
+| Компоненты  | 8          | Production    |
+| Hooks       | 5          | Documented    |
+| Services    | 2          | Typed         |
+| Types       | 25+        | Comprehensive |
+| Utils       | 28         | Well-tested   |
+| Constants   | 4 модуля   | Brand-aligned |
 
-**Задачи:**
-
-- [ ] Установить DOMPurify: `npm install dompurify @types/dompurify`
-- [ ] Заменить `dangerouslySetInnerHTML` на sanitized HTML
-- [ ] Добавить тесты на XSS вектора
-
-**Файлы для изменения:**
-
-```
-shared/components/Blog.tsx
-shared/package.json
-```
-
-#### 1.3 Унификация конфигурации
-
-**Задачи:**
-
-- [ ] Централизовать Supabase URL в `shared/constants/index.ts`
-- [ ] Удалить дублирование в сервисах
-- [ ] Создать config.ts для runtime конфигурации
+**Оценка: 92/100** - хорошо структурирована
 
 ---
 
-### Фаза 2: PWA и Offline поддержка
+## Исследование индустрии
 
-**Цель:** Сделать APP полноценным PWA
+### Лидеры рынка йога-приложений 2025
 
-#### 2.1 PWA Manifest
+| Платформа     | Модель           | Сильные стороны                   | Применимо для K Sebe       |
+| ------------- | ---------------- | --------------------------------- | --------------------------- |
+| **Alo Moves** | $12.99/мес       | 4000+ классов, 70 инструкторов    | Масштабирование контента    |
+| **Down Dog**  | $9.99/мес        | AI-генерация последовательностей  | Персонализация AI           |
+| **Glo**       | $30/мес          | Premium позиционирование          | Высокий ARPU               |
+| **Mindbody**  | B2B SaaS         | Бронирование, платежи, CRM        | Интеграция расписания      |
+| **ClassPass** | Credits система  | Multi-studio marketplace          | Партнёрства                |
 
-**Задачи:**
+### Inside Flow экосистема
 
-- [ ] Создать `manifest.json` с icons, name, theme_color
-- [ ] Добавить link в `index.html`
-- [ ] Создать иконки всех размеров (72-512px)
-- [ ] Настроить splash screens для iOS
+| Ресурс                | Функционал                        |
+| --------------------- | --------------------------------- |
+| insideflow.com        | Официальный сайт, тренинги        |
+| Inside Flow Academy   | Сертификация, levels система      |
+| Young Ho Kim YouTube  | Бесплатный контент, продвижение   |
 
-**Файлы для создания:**
+### Ключевые инсайты
 
-```
-k-sebe-yoga-studio-APPp/public/manifest.json
-k-sebe-yoga-studio-APPp/public/icons/
-```
-
-#### 2.2 Service Worker
-
-**Задачи:**
-
-- [ ] Установить workbox: `npm install workbox-cli -D`
-- [ ] Создать стратегию кеширования (Cache First для статики, Network First для
-      API)
-- [ ] Реализовать offline fallback страницу
-- [ ] Добавить обновление уведомлений
-
-**Файлы для создания:**
-
-```
-k-sebe-yoga-studio-APPp/src/sw.ts
-k-sebe-yoga-studio-APPp/public/offline.html
-```
-
-#### 2.3 Offline-first архитектура
-
-**Задачи:**
-
-- [ ] IndexedDB для кеширования данных пользователя
-- [ ] Background Sync для отложенных операций
-- [ ] Graceful degradation UI при отсутствии сети
+1. **Персонализация** — Down Dog генерирует уникальную практику каждый раз
+2. **Уровни сложности** — Inside Flow Academy использует Credits/Levels
+3. **Subscription tiers** — Freemium → Premium → VIP (консультации)
+4. **Community** — Insight Timer: 17000+ учителей, социальные функции
+5. **Offline** — Glo позволяет скачивать видео для offline
 
 ---
 
-### Фаза 3: Качество кода и тестирование
+## "Что если?" — Стратегическое мышление
 
-**Цель:** Увеличить покрытие тестами до 80%, улучшить maintainability
+### Сценарий A: AI-First Studio
+> Что если K Sebe станет первой полностью AI-персонализированной йога-студией?
 
-#### 3.1 Рефакторинг больших компонентов
+- Aria генерирует уникальную практику под настроение/цели
+- AI-анализ прогресса по видео со временем
+- Голосовой ассистент во время практики
+- AI-подбор музыки для Inside Flow
 
-**AICoach.tsx (837 → ~200 строк каждый):**
+### Сценарий B: Inside Flow Academy RU
+> Что если создать русскоязычную сертификацию Inside Flow?
 
+- Партнёрство с Inside Flow International
+- Онлайн-обучение преподавателей
+- Marketplace для сертифицированных учителей
+- White-label решение для студий
+
+### Сценарий C: Lifestyle Ecosystem
+> Что если расширить экосистему за пределы йоги?
+
+- Интеграция с трекерами сна (Apple Health, Google Fit)
+- Mindful eating / рецепты
+- Медитации для бизнеса (B2B)
+- Retreats marketplace
+
+### Сценарий D: Freemium Scale
+> Что если выйти на 100K+ пользователей?
+
+- Бесплатный AI-чат без ограничений
+- 3 видео в неделю бесплатно
+- Premium: полный доступ + offline
+- VIP: личные консультации с Катей
+
+---
+
+## Детализированная дорожная карта
+
+### Фаза 1: Стабилизация и безопасность
+
+**Цель:** Устранить критические проблемы, укрепить фундамент
+
+#### 1.1 Безопасность API ключей
+
+**Текущее состояние:** API ключи в коде (контролируется rate limiting)
+
+**Задачи:**
+- [ ] Создать Supabase Edge Function для проксирования Gemini API
+- [ ] Перенести API ключи в Supabase secrets
+- [ ] Обновить frontend для использования Edge Function
+- [ ] Добавить rate limiting на уровне пользователя
+
+**Файлы:**
+```
+supabase/functions/gemini-proxy/index.ts (новый)
+k-sebe-yoga-studioWEB/services/aiService.ts (обновить)
+k-sebe-yoga-studio-APPp/services/geminiService.ts (обновить)
+```
+
+#### 1.2 Добавить недостающие assets
+
+**Задачи:**
+- [ ] Создать favicon.png (192x192)
+- [ ] Создать apple-touch-icon.png (180x180)
+- [ ] Создать og-image.jpg (1200x630)
+- [ ] Добавить иконки для PWA (72-512px)
+
+**Файлы:**
+```
+k-sebe-yoga-studioWEB/public/favicon.png
+k-sebe-yoga-studioWEB/public/apple-touch-icon.png
+k-sebe-yoga-studioWEB/public/og-image.jpg
+k-sebe-yoga-studioWEB/public/icons/ (папка)
+```
+
+#### 1.3 Рефакторинг больших компонентов
+
+**ChatWidget.tsx (WEB) — 700 → 200 строк:**
+- [ ] Выделить `ChatInput.tsx` — ввод сообщений
+- [ ] Выделить `ChatMessages.tsx` — список сообщений
+- [ ] Выделить `ChatModeSelector.tsx` — выбор режима
+- [ ] Создать `useChatWidget.ts` — логика чата
+
+**AICoach.tsx (APP) — 837 → 200 строк:**
 - [ ] Выделить `AICoachChat.tsx` — текстовый чат
 - [ ] Выделить `AICoachVision.tsx` — анализ поз
 - [ ] Выделить `AICoachMeditation.tsx` — медитации
-- [ ] Выделить `AICoachCreate.tsx` — генерация контента
-- [ ] Создать `useAICoach.ts` хук для общей логики
-
-**Image.tsx (490 → ~150 строк каждый):**
-
-- [ ] Выделить `ImageUploader.tsx` — загрузка файлов
-- [ ] Выделить `ImageAnalyzer.tsx` — AI анализ
-- [ ] Выделить `useImageStorage.ts` — логика хранения
-
-#### 3.2 Расширение тестового покрытия
-
-**Компоненты для покрытия:**
-
-- [ ] Image (unit + integration)
-- [ ] Breathwork (animation states)
-- [ ] Pricing (click handlers)
-- [ ] Blog (modal, XSS protection)
-- [ ] Marquee (animation)
-- [ ] ScrollProgress (scroll events)
-
-**Сервисы для покрытия:**
-
-- [ ] geminiService (mock API calls)
-- [ ] supabase (mock client)
-- [ ] dataService (localStorage + Supabase)
-
-**Новые тесты:**
-
-```
-shared/__tests__/Image.test.tsx
-shared/__tests__/services/supabase.test.ts
-k-sebe-yoga-studio-APPp/__tests__/AICoach.test.tsx
-k-sebe-yoga-studio-APPp/__tests__/services/geminiService.test.ts
-```
-
-#### 3.3 Дополнительные хуки
-
-**Создать в `shared/hooks/`:**
-
-- [ ] `useLocalStorage.ts` — type-safe localStorage
-- [ ] `useMediaQuery.ts` — responsive logic
-- [ ] `useDebounce.ts` — debounced value
-- [ ] `usePrevious.ts` — previous value reference
-- [ ] `useOnlineStatus.ts` — network detection
+- [ ] Выделить `AICoachCreate.tsx` — генерация
+- [ ] Создать `useAICoach.ts` — общая логика
 
 ---
 
-### Фаза 4: Улучшение UX и доступности
+### Фаза 2: Улучшение пользовательского опыта
 
-**Цель:** WCAG 2.1 AA compliance, улучшение мобильного опыта
+**Цель:** Повысить вовлечённость и удержание
 
-#### 4.1 Доступность (a11y)
+#### 2.1 Геймификация
 
 **Задачи:**
+- [ ] Система достижений (badges)
+- [ ] Streak-трекинг практик
+- [ ] Уровни мастерства (Beginner → Advanced)
+- [ ] Leaderboard (опционально)
 
-- [ ] Audit с axe-core или Lighthouse
-- [ ] Добавить aria-modal на все модальные окна
-- [ ] Добавить skip-links в Header
-- [ ] Проверить цветовой контраст (особенно brand-green)
-- [ ] Добавить alt-тексты для всех изображений
-- [ ] Улучшить focus indicators
-
-**Файлы для изменения:**
-
+**Новые компоненты:**
 ```
-shared/components/Blog.tsx (modal)
-k-sebe-yoga-studioWEB/components/BookingModal.tsx
-k-sebe-yoga-studioWEB/components/Gallery.tsx
-k-sebe-yoga-studio-APPp/components/AICoach.tsx
+shared/components/Achievements.tsx
+shared/components/ProgressTracker.tsx
+shared/hooks/useStreak.ts
 ```
 
-#### 4.2 SEO для WEB
+#### 2.2 Push-уведомления
 
 **Задачи:**
+- [ ] Интеграция Firebase Cloud Messaging
+- [ ] Напоминания о занятиях
+- [ ] Мотивационные пуши
+- [ ] Новости о ретритах
 
-- [ ] Генерация отдельных страниц для блога (SSG)
-- [ ] Добавить canonical URLs
-- [ ] Улучшить structured data (Schema.org)
-- [ ] Добавить sitemap.xml
-- [ ] Оптимизировать Core Web Vitals (LCP, CLS, FID)
+**Файлы:**
+```
+k-sebe-yoga-studio-APPp/services/pushService.ts
+k-sebe-yoga-studio-APPp/public/firebase-messaging-sw.js
+```
 
-#### 4.3 Улучшение мобильного опыта
+#### 2.3 Улучшение offline-режима
 
 **Задачи:**
-
-- [ ] Haptic feedback на кнопках (Vibration API)
-- [ ] Pull-to-refresh в APP
-- [ ] Swipe gestures для навигации
-- [ ] Оптимизация изображений (WebP, srcset)
+- [ ] Скачивание видео для offline просмотра
+- [ ] Offline-доступ к расписанию
+- [ ] Background sync для бронирований
+- [ ] Graceful degradation UI
 
 ---
 
-### Фаза 5: Новая функциональность
+### Фаза 3: Монетизация
 
-**Цель:** Расширение возможностей платформы
+**Цель:** Внедрить устойчивую бизнес-модель
 
-#### 5.1 Интеграция с платежами
+#### 3.1 Подписочные планы
 
-**Задачи:**
-
-- [ ] Интеграция YooKassa или Stripe
-- [ ] Страница оплаты абонемента
-- [ ] Webhook для подтверждения платежей
-- [ ] История транзакций в профиле
-
-#### 5.2 Реальное расписание
+| План      | Цена/мес | Функции                              |
+| --------- | -------- | ------------------------------------ |
+| Free      | 0₽       | AI-чат, 3 видео/неделю               |
+| Premium   | 990₽     | Все видео, offline, без рекламы      |
+| VIP       | 2990₽    | + Личные консультации, приоритет     |
 
 **Задачи:**
+- [ ] Интеграция YooKassa/Stripe
+- [ ] Paywall компонент
+- [ ] Управление подписками в профиле
+- [ ] Webhooks для подтверждения платежей
 
-- [ ] Создать таблицу `classes` в Supabase
-- [ ] Admin интерфейс для управления расписанием
+**Файлы:**
+```
+shared/components/Paywall.tsx
+k-sebe-yoga-studio-APPp/services/paymentService.ts
+supabase/functions/payment-webhook/index.ts
+```
+
+#### 3.2 Реальное расписание
+
+**Задачи:**
+- [ ] CRUD для занятий в Supabase
+- [ ] Admin интерфейс для Кати
 - [ ] Real-time обновления (уже есть subscriptions)
-- [ ] Push уведомления о занятиях
+- [ ] Интеграция с Google Calendar
 
-#### 5.3 Veo видео-генерация
+**Supabase schema:**
+```sql
+create table classes (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  instructor text default 'Катя Габран',
+  type text check (type in ('inside-flow', 'hatha', 'meditation')),
+  starts_at timestamptz not null,
+  duration_minutes int default 60,
+  max_participants int default 15,
+  current_participants int default 0,
+  price int,
+  created_at timestamptz default now()
+);
+```
+
+---
+
+### Фаза 4: Расширение AI-возможностей
+
+**Цель:** Усилить AI-дифференциацию
+
+#### 4.1 Персональные программы
 
 **Задачи:**
+- [ ] AI-генерация 7-дневных программ
+- [ ] Адаптация под цели (гибкость, сила, релакс)
+- [ ] Учёт уровня и истории практик
+- [ ] Прогресс-трекинг выполнения
 
-- [ ] Получить платный API ключ Google AI Studio
-- [ ] Реализовать polling операций
-- [ ] UI для выбора параметров видео
-- [ ] Галерея сгенерированных видео
-
-#### 5.4 Расширение AI возможностей
+#### 4.2 Live Voice Coach
 
 **Задачи:**
+- [ ] Интеграция Gemini Live API
+- [ ] Голосовое сопровождение практики
+- [ ] Real-time коррекция техники
+- [ ] Голосовые команды управления
 
-- [ ] Персональные программы тренировок
-- [ ] AI анализ прогресса (история практик)
-- [ ] Голосовой ассистент (Live API)
-- [ ] Рекомендации на основе настроения
+#### 4.3 AI-аналитика прогресса
+
+**Задачи:**
+- [ ] Анализ фото асан со временем
+- [ ] Визуализация улучшений
+- [ ] Рекомендации на основе прогресса
+- [ ] Weekly/monthly отчёты
+
+---
+
+### Фаза 5: Масштабирование
+
+**Цель:** Подготовка к росту аудитории
+
+#### 5.1 Performance-оптимизация
+
+**Задачи:**
+- [ ] Lazy loading для всех роутов
+- [ ] Image optimization (WebP, srcset)
+- [ ] CDN для видеоконтента
+- [ ] Core Web Vitals: LCP < 2.5s, CLS < 0.1
+
+#### 5.2 Тестирование
+
+**Цель:** 80% coverage
+
+**Задачи:**
+- [ ] Unit тесты для shared компонентов
+- [ ] Integration тесты для сервисов
+- [ ] E2E тесты для критических flows
+- [ ] Visual regression (Chromatic)
+
+**Приоритетные тесты:**
+```
+shared/__tests__/
+├── components/
+│   ├── Pricing.test.tsx
+│   ├── Blog.test.tsx
+│   └── Breathwork.test.tsx
+├── hooks/
+│   └── useScrollLock.test.ts
+└── utils/
+    └── cn.test.ts
+```
+
+#### 5.3 Документация
+
+**Задачи:**
+- [ ] Storybook для компонентов
+- [ ] API документация (TypeDoc)
+- [ ] Onboarding guide для разработчиков
+- [ ] Architecture Decision Records (ADRs)
 
 ---
 
@@ -338,80 +400,81 @@ k-sebe-yoga-studio-APPp/components/AICoach.tsx
 
 ### Технические KPI
 
-| Метрика                      | Текущее    | Цель   |
-| ---------------------------- | ---------- | ------ |
-| Test coverage                | ~15%       | 80%    |
-| Lighthouse Performance (WEB) | ~70        | 90+    |
-| Lighthouse Accessibility     | ~85        | 100    |
-| Bundle size (APP)            | ~245KB     | <200KB |
-| Time to Interactive          | ~3s        | <2s    |
-| Security vulnerabilities     | 3 critical | 0      |
+| Метрика                | Текущее | Цель (Q1 2026) |
+| ---------------------- | ------- | -------------- |
+| Lighthouse Performance | ~75     | 90+            |
+| Lighthouse A11y        | ~85     | 100            |
+| Test coverage          | ~15%    | 80%            |
+| Bundle size (APP)      | ~250KB  | <200KB         |
+| TTI                    | ~3s     | <2s            |
+| Service Worker uptime  | 95%     | 99.5%          |
 
 ### Бизнес KPI
 
-| Метрика             | Измерение        |
-| ------------------- | ---------------- |
-| PWA installs        | Analytics events |
-| AI Coach sessions   | Supabase logs    |
-| Booking conversions | Funnel analytics |
-| User retention      | DAU/MAU          |
+| Метрика          | Измерение               | Цель (Q2 2026) |
+| ---------------- | ----------------------- | -------------- |
+| PWA installs     | Analytics events        | 5000+          |
+| DAU/MAU          | Supabase analytics      | 30%            |
+| AI sessions/user | Logs                    | 10+/мес        |
+| Conversion rate  | Free → Premium          | 5%             |
+| Retention D30    | Cohort analysis         | 40%            |
 
 ---
 
-## Приоритизация задач
+## Приоритизация
 
-### Матрица приоритетов
+### Матрица срочности/влияния
 
 ```
          Высокое влияние
               ▲
               │
-   P1         │         P0
-   Фаза 3     │    Фаза 1 (Безопасность)
-   (Тесты)    │
+   Фаза 3     │    Фаза 1
+   Монетизация│    Безопасность
+              │    + Assets
               │
 ─────────────────────────────────► Срочность
               │
-   P3         │         P2
-   Фаза 4     │    Фаза 2 (PWA)
-   (UX)       │
+   Фаза 5     │    Фаза 2
+   Масштаб    │    UX + PWA
               │
          Низкое влияние
 ```
 
 ### Рекомендуемый порядок
 
-1. **Немедленно (Фаза 1):** Безопасность API ключей
-2. **Краткосрочно (Фаза 2):** PWA и offline
-3. **Среднесрочно (Фаза 3):** Рефакторинг и тесты
-4. **Долгосрочно (Фаза 4-5):** UX и новые фичи
+1. **Немедленно:** Фаза 1.2 (Assets) — блокирует визуальное качество
+2. **Q1 2026:** Фаза 1.1, 1.3 (Безопасность, рефакторинг)
+3. **Q2 2026:** Фаза 2 (UX), Фаза 3.2 (Расписание)
+4. **Q3 2026:** Фаза 3.1 (Платежи), Фаза 4 (AI)
+5. **Q4 2026:** Фаза 5 (Масштабирование)
 
 ---
 
 ## Риски и митигация
 
-| Риск                      | Вероятность      | Влияние   | Митигация                        |
-| ------------------------- | ---------------- | --------- | -------------------------------- |
-| Gemini API deprecation    | Средняя          | Высокое   | Fallback на OpenAI/Claude        |
-| Supabase outage           | Низкая           | Высокое   | localStorage fallback (уже есть) |
-| Breaking changes React 19 | Низкая           | Среднее   | Pin versions, тесты              |
-| API key compromise        | Высокая (сейчас) | Критичное | Фаза 1 — срочно                  |
+| Риск                   | Вероятность | Влияние   | Митигация                        |
+| ---------------------- | ----------- | --------- | -------------------------------- |
+| Gemini API deprecation | Средняя     | Высокое   | Fallback на Claude/GPT-4         |
+| Rate limit exceeded    | Высокая     | Среднее   | Кеширование, Edge Functions      |
+| Supabase outage        | Низкая      | Высокое   | Offline-first уже есть           |
+| Payment integration    | Средняя     | Высокое   | Начать с простого (YooKassa)     |
+| User churn             | Средняя     | Высокое   | Push-уведомления, геймификация   |
 
 ---
 
 ## Заключение
 
-KateStudio — хорошо структурированный проект с современным стеком. Основные
-области для улучшения:
+KateStudio — хорошо структурированный проект с уникальным позиционированием в нише Inside Flow. Основные направления развития:
 
-1. **Безопасность** — критически важно исправить утечку API ключей
-2. **PWA** — превращение APP в полноценное мобильное приложение
-3. **Качество** — рефакторинг больших компонентов, увеличение тестового покрытия
-4. **UX** — доступность и производительность
+1. **Стабильность** — Assets, безопасность, рефакторинг
+2. **Монетизация** — Подписки, реальное расписание
+3. **AI-дифференциация** — Live coach, персонализация
+4. **Масштаб** — Performance, тесты, документация
 
-Следуя этой дорожной карте, проект может достичь production-grade качества и
-обеспечить отличный пользовательский опыт для студии йоги "К себе".
+Проект готов к переходу от MVP к полноценному продукту с устойчивой бизнес-моделью.
 
 ---
 
-_Документ создан автоматически на основе анализа кодовой базы_
+*Документ обновлён: 24 декабря 2025*
+*Автор: Claude Opus 4.5*

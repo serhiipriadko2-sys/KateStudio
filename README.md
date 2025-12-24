@@ -282,12 +282,15 @@ const audioUrl = await geminiService.textToSpeech(text, 'ru');
 
 ## Документация
 
-| Документ                             | Описание                       |
-| ------------------------------------ | ------------------------------ |
-| [ANALYSIS.md](./ANALYSIS.md)         | Полный аудит репозитория       |
-| [SYNC_REPORT.md](./SYNC_REPORT.md)   | Отчёт о синхронизации WEB/APP  |
-| [CLAUDE.md](./CLAUDE.md)             | Инструкции для AI агентов      |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Руководство для контрибьюторов |
+| Документ                                   | Описание                           |
+| ------------------------------------------ | ---------------------------------- |
+| [ECOSYSTEM_AUDIT.md](./ECOSYSTEM_AUDIT.md) | Всеобъемлющий 17-шаговый аудит     |
+| [ROADMAP.md](./ROADMAP.md)                 | Дорожная карта развития            |
+| [ANALYSIS.md](./ANALYSIS.md)               | Технический аудит репозитория      |
+| [SYNC_REPORT.md](./SYNC_REPORT.md)         | Отчёт о синхронизации WEB/APP      |
+| [CLAUDE.md](./CLAUDE.md)                   | Инструкции для AI агентов          |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)       | Руководство для контрибьюторов     |
+| [shared/README.md](./shared/README.md)     | Документация shared библиотеки     |
 
 ---
 
