@@ -88,26 +88,26 @@ export const defaultContent: ContentData = {
   gallery: [
     {
       id: 1,
-      url: '/images/gallery/gallery-image-1.jpg',
+      url: `${import.meta.env.BASE_URL}images/gallery/gallery-image-1.jpg`,
       alt: 'Meditation Atmosphere',
       wrapperClassName: 'md:col-span-1 row-span-1',
     },
     {
       id: 2,
-      url: '/images/gallery/gallery-image-2.jpg',
+      url: `${import.meta.env.BASE_URL}images/gallery/gallery-image-2.jpg`,
       alt: 'Stretching Flow',
       wrapperClassName: 'md:col-span-2 row-span-1',
       imageClassName: 'object-[50%_40%]',
     },
     {
       id: 3,
-      url: '/images/gallery/gallery-image-3.jpg',
+      url: `${import.meta.env.BASE_URL}images/gallery/gallery-image-3.jpg`,
       alt: 'Yoga Studio Vibe',
       wrapperClassName: 'md:col-span-2 row-span-1',
     },
     {
       id: 4,
-      url: '/images/gallery/gallery-image-4.jpg',
+      url: `${import.meta.env.BASE_URL}images/gallery/gallery-image-4.jpg`,
       alt: 'Peaceful Moment',
       wrapperClassName: 'md:col-span-1 row-span-1',
     },

@@ -45,7 +45,7 @@ export const Directions: React.FC<DirectionsProps> = ({ onBook }) => {
               </div>
               <div className="md:w-1/2 w-full aspect-square md:aspect-[4/3] rounded-[2.5rem] overflow-hidden order-1 md:order-2 shadow-lg rotate-2 group-hover:rotate-0 transition-transform duration-700">
                 <Image
-                  src="/images/directions/direction-inside-flow.jpg"
+                  src={`${import.meta.env.BASE_URL}images/directions/direction-inside-flow.jpg`}
                   alt="Inside Flow - Warrior Pose"
                   storageKey="direction-inside-flow"
                   containerClassName="w-full h-full"
@@ -60,7 +60,7 @@ export const Directions: React.FC<DirectionsProps> = ({ onBook }) => {
             <div className="flex flex-col md:flex-row items-center gap-10 md:gap-20">
               <div className="md:w-1/2 w-full aspect-square md:aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-lg -rotate-2 group-hover:rotate-0 transition-transform duration-700">
                 <Image
-                  src="/images/directions/direction-hatha.jpg"
+                  src={`${import.meta.env.BASE_URL}images/directions/direction-hatha.jpg`}
                   alt="Hatha Yoga"
                   storageKey="direction-hatha"
                   containerClassName="w-full h-full"
