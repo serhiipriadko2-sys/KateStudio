@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const STATIC_CACHE = `ksebe-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `ksebe-runtime-${CACHE_VERSION}`;
 
@@ -54,15 +54,32 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (isSameOrigin) {
-    event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        if (cachedResponse) return cachedResponse;
-        return fetch(event.request).then((response) => {
-          const responseClone = response.clone();
-          caches.open(RUNTIME_CACHE).then((cache) => cache.put(event.request, responseClone));
-          return response;
-        });
-      })
-    );
+    // Use network-first for JS/CSS to ensure fresh code, cache-first for images
+    const isAsset = requestUrl.pathname.match(/\.(js|css|mjs)$/);
+
+    if (isAsset) {
+      // Network-first for scripts and styles
+      event.respondWith(
+        fetch(event.request)
+          .then((response) => {
+            const responseClone = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put(event.request, responseClone));
+            return response;
+          })
+          .catch(() => caches.match(event.request))
+      );
+    } else {
+      // Cache-first for images and other assets
+      event.respondWith(
+        caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          return fetch(event.request).then((response) => {
+            const responseClone = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put(event.request, responseClone));
+            return response;
+          });
+        })
+      );
+    }
   }
 });
