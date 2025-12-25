@@ -289,7 +289,6 @@ function App() {
                 'Галерея',
                 'Стоимость',
                 'Расписание',
-                'Блог',
                 'Отзывы',
                 'Контакты',
               ].map((item, i) => (
@@ -341,9 +340,11 @@ function App() {
           <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
           <Gallery />
           <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-          <Retreats onBook={(type) => openBooking({ type })} />
+          {/* Retreats temporarily hidden - no upcoming retreat info */}
+          {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
           <Schedule onBook={(details) => openBooking(details)} />
-          <Blog />
+          {/* Blog replaced with Instagram feed */}
+          {/* <Blog /> */}
           <Reviews />
           <FAQ />
           <Contact />

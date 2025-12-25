@@ -16,8 +16,6 @@ const defaultPriceOptions: PriceOption[] = [
     description: 'Для знакомства со студией',
     features: [
       '1 посещение любой практики',
-      'Коврик включен',
-      'Чай после практики',
       'Срок действия: 7 дней',
     ],
     isPopular: false,
@@ -50,7 +48,7 @@ const defaultPriceOptions: PriceOption[] = [
     title: 'Индивидуально',
     price: '1 800 ₽',
     description: 'Персональный подход',
-    features: ['Удобное время', 'Разбор техники асан', 'Индивидуальный подход', '1 человек'],
+    features: ['Удобное время', 'Индивидуальный подход', '1 человек'],
     isPopular: false,
     isDark: true,
   },
