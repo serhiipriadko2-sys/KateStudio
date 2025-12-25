@@ -17,15 +17,15 @@ export const Logo: React.FC<LogoProps> = ({
   isIgnited = false,
   variant = 'full',
 }) => {
-  // New gold color matching the updated logo
+  // Gold color matching the logo
   const strokeColor = color || '#D4AF37';
   const p = Math.min(Math.max(progress, 0), 100) / 100;
 
   // Path Lengths for dasharray animation
   const lenTriangle = 510; // Triangle perimeter
-  const lenSpiral = 350; // Spiral path length
+  const lenSpiral = 400; // Spiral path length
 
-  const viewBox = variant === 'symbol' ? '0 0 200 180' : '0 0 200 240';
+  const viewBox = variant === 'symbol' ? '0 0 200 200' : '0 0 200 260';
 
   // Dynamic styles for the ignition effect
   const groupStyle = isIgnited
@@ -65,46 +65,47 @@ export const Logo: React.FC<LogoProps> = ({
         </defs>
 
         <g
-          strokeWidth="3"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
           style={groupStyle}
         >
-          {/* Triangle */}
+          {/* "К себе" text ABOVE triangle */}
+          <text
+            x="100"
+            y="28"
+            textAnchor="middle"
+            fill={isIgnited ? '#fff' : p > 0.2 ? strokeColor : 'none'}
+            stroke="none"
+            fontFamily="'Playfair Display', Georgia, serif"
+            fontSize="26"
+            fontWeight="400"
+            letterSpacing="2"
+            className="transition-opacity duration-300"
+            style={{ opacity: p > 0.2 ? 1 : 0 }}
+          >
+            К себе
+          </text>
+
+          {/* Triangle - starts below text */}
           <path
-            d="M100 15 L185 175 H15 L100 15 Z"
+            d="M100 42 L185 195 H15 L100 42 Z"
             strokeDasharray={lenTriangle}
             strokeDashoffset={lenTriangle * (1 - p)}
             className="transition-all duration-75 ease-linear"
             style={{ strokeOpacity: p > 0 ? 1 : 0 }}
           />
 
-          {/* "К себе" text inside triangle */}
-          <text
-            x="100"
-            y="55"
-            textAnchor="middle"
-            fill={isIgnited ? '#fff' : p > 0.3 ? strokeColor : 'none'}
-            stroke="none"
-            fontFamily="'Playfair Display', Georgia, serif"
-            fontSize="24"
-            fontWeight="400"
-            letterSpacing="2"
-            className="transition-opacity duration-300"
-            style={{ opacity: p > 0.3 ? 1 : 0 }}
-          >
-            К себе
-          </text>
-
-          {/* Spiral */}
+          {/* Spiral - centered in triangle, clockwise from center outward */}
           <path
-            d="M100 115
-               C108 115, 115 122, 115 130
-               C115 145, 100 155, 85 148
-               C65 138, 60 115, 78 95
-               C100 72, 140 80, 150 110
-               C160 145, 135 175, 100 175"
+            d="M100 130
+               C100 130, 105 130, 105 125
+               C105 118, 95 115, 90 122
+               C82 132, 88 148, 102 150
+               C122 152, 135 135, 132 115
+               C128 88, 95 75, 70 95
+               C45 118, 55 165, 95 180"
             strokeDasharray={lenSpiral}
             strokeDashoffset={lenSpiral * (1 - p)}
             className="transition-all duration-75 ease-linear"
@@ -114,7 +115,7 @@ export const Logo: React.FC<LogoProps> = ({
           {variant === 'full' && (
             <text
               x="100"
-              y="215"
+              y="235"
               textAnchor="middle"
               fill={isIgnited ? '#fff' : p > 0.85 ? strokeColor : 'none'}
               stroke="none"
