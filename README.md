@@ -353,10 +353,12 @@ MIT License. См. [LICENSE](./LICENSE).
 
 ## Контакты
 
-- **Студия**: K Sebe Yoga Studio
+- **Студия**: К Себе | Йога Студия
 - **Основатель**: Катя Габран
-- **Instagram**: [@k_sebe_yoga](https://instagram.com/k_sebe_yoga)
-- **Telegram**: [@ksebe_yoga](https://t.me/ksebe_yoga)
+- **Адрес**: г. Дубна, Станционная ул., 5Б (этаж 2)
+- **Instagram**: [@kate_gabran](https://instagram.com/kate_gabran)
+- **Telegram**: [@k_sebe_dubna](https://t.me/k_sebe_dubna)
+- **Яндекс Карты**: [К Себе](https://yandex.ru/navi/org/k_sebe/7167334007)
 
 ---
 
