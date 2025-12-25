@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { About } from './components/About';
 import { AdminPanel } from './components/AdminPanel';
 import { Benefits } from './components/Benefits';
-import { Blog } from './components/Blog';
+import { InstagramFeed } from './components/InstagramFeed';
 import { BookingModal } from './components/BookingModal';
 import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
@@ -289,12 +289,13 @@ function App() {
                 'Галерея',
                 'Стоимость',
                 'Расписание',
+                'Instagram',
                 'Отзывы',
                 'Контакты',
               ].map((item, i) => (
                 <a
                   key={item}
-                  href={`#${item === 'Обо мне' ? 'about' : item === 'Направления' ? 'directions' : item === 'Галерея' ? 'gallery' : item === 'Стоимость' ? 'pricing' : item === 'Расписание' ? 'schedule' : item === 'Блог' ? 'blog' : item === 'Отзывы' ? 'reviews' : 'contact'}`}
+                  href={`#${item === 'Обо мне' ? 'about' : item === 'Направления' ? 'directions' : item === 'Галерея' ? 'gallery' : item === 'Стоимость' ? 'pricing' : item === 'Расписание' ? 'schedule' : item === 'Instagram' ? 'instagram' : item === 'Отзывы' ? 'reviews' : 'contact'}`}
                   onClick={toggleMenu}
                   className="text-3xl md:text-5xl font-serif text-stone-800 hover:text-brand-green hover:scale-105 transition-all duration-300 focus:outline-none focus:text-brand-green"
                   style={{
@@ -343,8 +344,7 @@ function App() {
           {/* Retreats temporarily hidden - no upcoming retreat info */}
           {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
           <Schedule onBook={(details) => openBooking(details)} />
-          {/* Blog replaced with Instagram feed */}
-          {/* <Blog /> */}
+          <InstagramFeed />
           <Reviews />
           <FAQ />
           <Contact />
