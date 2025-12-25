@@ -1,4 +1,4 @@
-import { Instagram, Send, Mail, Phone, MapPin } from 'lucide-react';
+import { Instagram, Send, MapPin } from 'lucide-react';
 import React from 'react';
 import { Logo } from './Logo';
 
@@ -60,22 +60,37 @@ export const Footer: React.FC = () => {
             <ul className="space-y-4 text-sm text-white/70">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-brand-green shrink-0" />
-                <span>
-                  г. Дубна, Станционная 5б
+                <a
+                  href="https://yandex.ru/navi/org/k_sebe/7167334007"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white"
+                >
+                  г. Дубна, Станционная ул., 5Б
                   <br />
-                  г. Дубна, Станционная 5б
-                </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-brand-green shrink-0" />
-                <a href="tel:+79990000000" className="hover:text-white">
-                  +7 (999) 000-00-00
+                  <span className="text-white/50">этаж 2</span>
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-brand-green shrink-0" />
-                <a href="mailto:hello@ksebe.yoga" className="hover:text-white">
-                  hello@ksebe.yoga
+                <Send className="w-5 h-5 text-brand-green shrink-0" />
+                <a
+                  href="https://t.me/k_sebe_dubna"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white"
+                >
+                  @k_sebe_dubna
+                </a>
+              </li>
+              <li className="flex items-center gap-3">
+                <Instagram className="w-5 h-5 text-brand-green shrink-0" />
+                <a
+                  href="https://instagram.com/kate_gabran"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white"
+                >
+                  @kate_gabran
                 </a>
               </li>
             </ul>
@@ -86,14 +101,20 @@ export const Footer: React.FC = () => {
             <h4 className="text-lg font-serif mb-6 text-brand-green">Мы в соцсетях</h4>
             <div className="flex gap-4">
               <a
-                href="#"
+                href="https://instagram.com/kate_gabran"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
+                aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://t.me/k_sebe_dubna"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
+                aria-label="Telegram"
               >
                 <Send className="w-5 h-5" />
               </a>

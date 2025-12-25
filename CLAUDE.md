@@ -166,8 +166,10 @@ npm run test        # Run tests (when configured)
 ## Contact
 
 - **Studio Owner**: Katya Gabran
-- **Website**: k-sebe-yoga.com (placeholder)
-- **Instagram**: @k_sebe_yoga
+- **Address**: Станционная ул., 5Б, Дубна, 141981 (этаж 2)
+- **Instagram**: @kate_gabran
+- **Telegram**: @k_sebe_dubna
+- **Yandex Maps**: https://yandex.ru/navi/org/k_sebe/7167334007
 
 ---
 
