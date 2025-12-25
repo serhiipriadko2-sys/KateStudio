@@ -117,7 +117,7 @@ export const Contact: React.FC = () => {
               {/* Bottom Actions */}
               <div className="absolute bottom-8 left-8 right-8">
                 <a
-                  href="https://maps.google.com"
+                  href="https://yandex.ru/navi/org/k_sebe/7167334007"
                   target="_blank"
                   rel="noreferrer"
                   className="block w-full bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all group/card"
@@ -125,9 +125,10 @@ export const Contact: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-stone-400 uppercase tracking-wider font-bold mb-1">
-                        Студия на Мира
+                        Студия К Себе
                       </p>
-                      <p className="text-brand-text font-serif text-xl">ул. Мира, 15</p>
+                      <p className="text-brand-text font-serif text-xl">Станционная ул., 5Б</p>
+                      <p className="text-xs text-stone-400 mt-1">г. Дубна, этаж 2</p>
                     </div>
                     <div className="w-12 h-12 bg-brand-green text-white rounded-full flex items-center justify-center group-hover/card:scale-110 transition-transform">
                       <Navigation className="w-5 h-5" />
