@@ -5,7 +5,7 @@ interface LogoProps {
   color?: string;
   progress?: number; // 0 to 100
   isSparking?: boolean;
-  isIgnited?: boolean; // New prop for activation effect
+  isIgnited?: boolean; // Activation effect
   variant?: 'full' | 'symbol';
 }
 
@@ -17,15 +17,15 @@ export const Logo: React.FC<LogoProps> = ({
   isIgnited = false,
   variant = 'full',
 }) => {
-  // Reference: Neon is Warm Yellow/Gold.
-  const strokeColor = color || '#FCEEAC';
+  // New gold color matching the updated logo
+  const strokeColor = color || '#D4AF37';
   const p = Math.min(Math.max(progress, 0), 100) / 100;
 
   // Path Lengths for dasharray animation
-  const lenTriangle = 950;
-  const lenSpiral = 550;
+  const lenTriangle = 510; // Triangle perimeter
+  const lenSpiral = 350; // Spiral path length
 
-  const viewBox = variant === 'symbol' ? '0 0 400 320' : '0 0 400 520';
+  const viewBox = variant === 'symbol' ? '0 0 200 180' : '0 0 200 240';
 
   // Dynamic styles for the ignition effect
   const groupStyle = isIgnited
@@ -65,96 +65,68 @@ export const Logo: React.FC<LogoProps> = ({
         </defs>
 
         <g
-          strokeWidth={variant === 'symbol' ? '8' : '5'}
+          strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
           style={groupStyle}
         >
-          {/* 1. TRIANGLE (Outer) */}
+          {/* Triangle */}
           <path
-            d="M 200 40 L 360 290 H 40 L 200 40 Z"
+            d="M100 15 L185 175 H15 L100 15 Z"
             strokeDasharray={lenTriangle}
             strokeDashoffset={lenTriangle * (1 - p)}
             className="transition-all duration-75 ease-linear"
             style={{ strokeOpacity: p > 0 ? 1 : 0 }}
           />
 
-          {/* 2. SPIRAL (Refined Geometry) */}
+          {/* "К себе" text inside triangle */}
+          <text
+            x="100"
+            y="55"
+            textAnchor="middle"
+            fill={isIgnited ? '#fff' : p > 0.3 ? strokeColor : 'none'}
+            stroke="none"
+            fontFamily="'Playfair Display', Georgia, serif"
+            fontSize="24"
+            fontWeight="400"
+            letterSpacing="2"
+            className="transition-opacity duration-300"
+            style={{ opacity: p > 0.3 ? 1 : 0 }}
+          >
+            К себе
+          </text>
+
+          {/* Spiral */}
           <path
-            d="M 200 195 
-               C 205 195, 210 200, 210 205
-               C 210 215, 200 220, 190 215
-               C 175 205, 175 180, 190 165
-               C 215 145, 250 155, 255 190
-               C 260 235, 215 260, 175 255
-               C 125 245, 110 190, 130 150"
+            d="M100 115
+               C108 115, 115 122, 115 130
+               C115 145, 100 155, 85 148
+               C65 138, 60 115, 78 95
+               C100 72, 140 80, 150 110
+               C160 145, 135 175, 100 175"
             strokeDasharray={lenSpiral}
             strokeDashoffset={lenSpiral * (1 - p)}
             className="transition-all duration-75 ease-linear"
           />
 
-          {/* Render Text only if variant is 'full' */}
+          {/* "ЙОГА СТУДИЯ" text below - only in full variant */}
           {variant === 'full' && (
-            <>
-              {/* 3. TEXT: "К себе" */}
-              <g transform="translate(0, 40)" strokeWidth="5">
-                {/* К */}
-                <path
-                  d="M 85 300 V 360 M 85 330 L 115 300 M 85 330 L 115 360"
-                  strokeDasharray={140}
-                  strokeDashoffset={140 * (1 - p)}
-                />
-                {/* с */}
-                <path
-                  d="M 160 330 A 15 15 0 1 0 160 360"
-                  strokeDasharray={80}
-                  strokeDashoffset={80 * (1 - p)}
-                />
-                {/* е */}
-                <path
-                  d="M 180 345 H 200 A 10 10 0 0 0 190 330 A 10 10 0 0 0 180 345 A 10 10 0 0 0 190 360 H 200"
-                  strokeDasharray={100}
-                  strokeDashoffset={100 * (1 - p)}
-                />
-                {/* б */}
-                <path
-                  d="M 230 310 H 245 M 230 310 V 345 A 15 15 0 1 0 245 345 V 345"
-                  strokeDasharray={120}
-                  strokeDashoffset={120 * (1 - p)}
-                />
-                {/* е */}
-                <path
-                  d="M 270 345 H 290 A 10 10 0 0 0 280 330 A 10 10 0 0 0 270 345 A 10 10 0 0 0 280 360 H 290"
-                  strokeDasharray={100}
-                  strokeDashoffset={100 * (1 - p)}
-                />
-              </g>
-
-              {/* 4. BADGE */}
-              <path
-                d="M 70 425 H 330 C 335 425, 340 430, 340 435 V 465 C 340 475, 320 475, 310 465 C 300 455, 280 480, 200 480 C 120 480, 100 455, 90 465 C 80 475, 60 475, 60 465 V 435 C 60 430, 65 425, 70 425 Z"
-                strokeWidth="3"
-                style={{ opacity: p > 0.5 ? 1 : 0 }}
-              />
-
-              {/* 5. TEXT "ЙОГА СТУДИЯ" */}
-              <text
-                x="200"
-                y="462"
-                textAnchor="middle"
-                fill={isIgnited ? '#fff' : p > 0.85 ? strokeColor : 'none'}
-                stroke="none"
-                fontFamily="'Manrope', sans-serif"
-                fontSize="22"
-                fontWeight="600"
-                letterSpacing="4"
-                className="transition-opacity duration-300"
-                style={{ opacity: p > 0.85 ? 1 : 0 }}
-              >
-                ЙОГА СТУДИЯ
-              </text>
-            </>
+            <text
+              x="100"
+              y="215"
+              textAnchor="middle"
+              fill={isIgnited ? '#fff' : p > 0.85 ? strokeColor : 'none'}
+              stroke="none"
+              fontFamily="'Inter', 'Segoe UI', sans-serif"
+              fontSize="16"
+              fontWeight="400"
+              letterSpacing="6"
+              className="transition-opacity duration-300"
+              style={{ opacity: p > 0.85 ? 1 : 0 }}
+            >
+              ЙОГА СТУДИЯ
+            </text>
           )}
         </g>
       </svg>
