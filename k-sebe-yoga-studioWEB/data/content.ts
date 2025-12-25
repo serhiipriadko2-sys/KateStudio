@@ -44,9 +44,9 @@ export const defaultContent: ContentData = {
       {
         name: 'Inside Flow',
         time: '09:00',
-        duration: '90 мин',
+        duration: '60 мин',
         spotsTotal: 12,
-        location: 'Зал на Мира',
+        location: 'Станционная ул., 5Б',
         intensity: 3,
       },
       {
@@ -54,7 +54,7 @@ export const defaultContent: ContentData = {
         time: '18:30',
         duration: '60 мин',
         spotsTotal: 15,
-        location: 'Зал на Ленина',
+        location: 'Станционная ул., 5Б',
         intensity: 2,
       },
       {
@@ -62,7 +62,7 @@ export const defaultContent: ContentData = {
         time: '20:00',
         duration: '60 мин',
         spotsTotal: 10,
-        location: 'Зал на Мира',
+        location: 'Станционная ул., 5Б',
         intensity: 1,
       },
     ],
