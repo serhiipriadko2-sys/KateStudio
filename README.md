@@ -284,6 +284,8 @@ const audioUrl = await geminiService.textToSpeech(text, 'ru');
 
 | Документ                                   | Описание                           |
 | ------------------------------------------ | ---------------------------------- |
+| [STRATEGIC_ROADMAP_2026.md](./STRATEGIC_ROADMAP_2026.md) | **Стратегическая дорожная карта 2026** |
+| [ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md) | Краткий план действий              |
 | [ECOSYSTEM_AUDIT.md](./ECOSYSTEM_AUDIT.md) | Всеобъемлющий 17-шаговый аудит     |
 | [ROADMAP.md](./ROADMAP.md)                 | Дорожная карта развития            |
 | [ANALYSIS.md](./ANALYSIS.md)               | Технический аудит репозитория      |
