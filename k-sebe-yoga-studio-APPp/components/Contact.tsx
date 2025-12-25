@@ -1,4 +1,4 @@
-import { Send, Phone, MapPin, Navigation, Loader2, Check } from 'lucide-react';
+import { Send, Phone, MapPin, Navigation, Loader2, Check, MessageCircle } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '../context/ToastContext';
 import { FadeIn } from './FadeIn';
@@ -85,6 +85,32 @@ export const Contact: React.FC = () => {
                 </p>
               </FadeIn>
             </form>
+
+            {/* Contact Links */}
+            <FadeIn delay={500}>
+              <div className="flex flex-col sm:flex-row gap-4 mt-10 pt-8 border-t border-white/10">
+                <a
+                  href="tel:+79099468972"
+                  className="flex items-center gap-3 text-white/70 hover:text-brand-green transition-colors group"
+                >
+                  <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-brand-green/20 transition-colors">
+                    <Phone className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm">+7 (909) 946-89-72</span>
+                </a>
+                <a
+                  href="https://t.me/k_sebe_dubna"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 text-white/70 hover:text-brand-green transition-colors group"
+                >
+                  <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-brand-green/20 transition-colors">
+                    <MessageCircle className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm">Telegram</span>
+                </a>
+              </div>
+            </FadeIn>
           </div>
         </div>
 
