@@ -256,7 +256,7 @@ export const Pricing: React.FC<PricingProps> = ({
       return;
     }
 
-    console.log(`Selected: ${title} - ${price}`);
+    // Fallback - no action configured
   };
 
   return (

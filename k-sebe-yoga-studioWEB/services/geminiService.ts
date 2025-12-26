@@ -10,7 +10,6 @@ import {
 import { Source, AsanaAnalysis } from '../types';
 
 let chatSession: Chat | null = null;
-const coachSession: Chat | null = null;
 
 // --- STUDIO KNOWLEDGE BASE ---
 const KNOWLEDGE_BASE = {
