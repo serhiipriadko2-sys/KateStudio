@@ -1,4 +1,4 @@
-import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
+import { ScrollProgress, BackToTop, CookieBanner, Marquee, useIsPWA } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { About } from './components/About';
@@ -19,6 +19,7 @@ import { Logo } from './components/Logo';
 import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
 import { Pricing } from './components/Pricing';
+import { PWAShell } from './components/PWAShell';
 import { Retreats } from './components/Retreats';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
@@ -27,6 +28,7 @@ import { loadTheme, applyTheme } from './services/theme';
 import { BookingDetails } from './types';
 
 function App() {
+  const isPWA = useIsPWA();
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
@@ -183,7 +185,8 @@ function App() {
 
         <ScrollProgress />
 
-        {/* --- Smart Glass Navigation Bar --- */}
+        {/* --- Smart Glass Navigation Bar (hidden in PWA mode) --- */}
+        {!isPWA && (
         <nav
           className={`fixed top-0 left-0 right-0 z-50 flex justify-between items-center transition-all duration-500 ease-in-out pointer-events-none
             ${isScrolled ? 'py-3 px-6 bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20' : 'py-6 px-6 bg-transparent'}
@@ -223,6 +226,7 @@ function App() {
             )}
           </button>
         </nav>
+        )}
 
         {(isOffline || updateAvailable) && (
           <div className="fixed bottom-6 right-6 z-[70] flex flex-col gap-3 max-w-xs">
@@ -269,8 +273,8 @@ function App() {
           </div>
         )}
 
-        {/* --- Full Screen Menu Overlay --- */}
-        {isMenuOpen && (
+        {/* --- Full Screen Menu Overlay (hidden in PWA mode) --- */}
+        {!isPWA && isMenuOpen && (
           <div
             id="mobile-menu"
             className="fixed inset-0 z-[60] bg-[#fcfcfc] flex flex-col items-center justify-center animate-in fade-in slide-in-from-top-5 duration-300"
@@ -331,28 +335,44 @@ function App() {
         )}
 
         {/* Main Content Flow */}
-        <main id="main-content" tabIndex={-1} className="flex-1">
-          <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
-          <Marquee />
-          <Benefits />
-          <About />
-          <Philosophy />
-          <Directions onBook={(type) => openBooking({ type })} />
-          <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
-          <Gallery />
-          <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-          {/* Retreats temporarily hidden - no upcoming retreat info */}
-          {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
-          <Schedule onBook={(details) => openBooking(details)} />
-          <InstagramFeed />
-          <Reviews />
-          <FAQ />
-          <Contact />
-          <Footer
-            onOpenAdmin={() => setIsAdminOpen(true)}
-            onOpenLegal={(type) => setLegalModalType(type)}
-          />
-        </main>
+        {isPWA ? (
+          <PWAShell>
+            <main id="main-content" tabIndex={-1} className="flex-1">
+              <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
+              <About />
+              <Directions onBook={(type) => openBooking({ type })} />
+              <Gallery />
+              <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
+              <Schedule onBook={(details) => openBooking(details)} />
+              <Reviews />
+              <FAQ />
+              <Contact />
+            </main>
+          </PWAShell>
+        ) : (
+          <main id="main-content" tabIndex={-1} className="flex-1">
+            <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
+            <Marquee />
+            <Benefits />
+            <About />
+            <Philosophy />
+            <Directions onBook={(type) => openBooking({ type })} />
+            <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
+            <Gallery />
+            <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
+            {/* Retreats temporarily hidden - no upcoming retreat info */}
+            {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
+            <Schedule onBook={(details) => openBooking(details)} />
+            <InstagramFeed />
+            <Reviews />
+            <FAQ />
+            <Contact />
+            <Footer
+              onOpenAdmin={() => setIsAdminOpen(true)}
+              onOpenLegal={(type) => setLegalModalType(type)}
+            />
+          </main>
+        )}
 
         <BackToTop />
         <ChatWidget />
