@@ -169,6 +169,19 @@ Deno.serve(async (req) => {
   const authInfo = await getAuthInfo(req);
   const cost = getOpCost(body.op);
 
+  // Production rule: expensive operations must require a real user identity.
+  // This prevents abuse when the client is unauthenticated.
+  if (authInfo.kind === 'anon' && cost === 'expensive') {
+    return json(
+      {
+        error: 'Authentication required',
+        message:
+          'Эта AI-функция доступна только авторизованным пользователям. Пожалуйста, войдите в аккаунт.',
+      },
+      { status: 401 }
+    );
+  }
+
   // Rate limit tuning (per edge instance):
   // - anon is stricter than authenticated user
   // - "expensive" ops are stricter than chat

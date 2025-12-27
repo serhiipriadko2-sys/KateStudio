@@ -29,6 +29,16 @@
 - [ ] Rate limit + логирование расходов
 - [ ] Миграция клиентов на proxy
 
+Фактическое состояние (сделано в репозитории):
+
+- [x] `supabase/functions/gemini-proxy/index.ts` добавлен
+- [x] WEB/APP сначала вызывают proxy (`/functions/v1/gemini-proxy`), затем
+      fallback на client key
+- [x] Rate limit по user_id (если есть JWT) иначе по IP
+- [x] Дорогие операции требуют аутентификации (иначе `401`)
+
+Деплой/секреты: см. `supabase/functions/README.md`
+
 ## Фаза 1 — Идентичность и доверие (февраль 2026)
 
 - [ ] Supabase Auth (OTP/Email) в APP
