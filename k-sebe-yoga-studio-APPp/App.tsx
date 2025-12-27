@@ -24,6 +24,7 @@ import { Directions } from './components/Directions';
 import { Gallery } from './components/Gallery';
 import { Image } from './components/Image';
 import { Logo } from './components/Logo';
+import { OnboardingQuizModal, type OnboardingData } from './components/OnboardingQuizModal';
 import { Philosophy } from './components/Philosophy';
 import { Pricing } from './components/Pricing';
 import { Retreats } from './components/Retreats';
@@ -189,6 +190,9 @@ export default function App() {
   const [introFinished, setIntroFinished] = useState(() => {
     return localStorage.getItem('ksebe_intro_complete') === 'true';
   });
+  const [onboardingOpen, setOnboardingOpen] = useState(() => {
+    return localStorage.getItem('ksebe_onboarding_complete') !== 'true';
+  });
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [scrolled, setScrolled] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
@@ -221,6 +225,9 @@ export default function App() {
   const handleIntroComplete = () => {
     localStorage.setItem('ksebe_intro_complete', 'true');
     setIntroFinished(true);
+    if (localStorage.getItem('ksebe_onboarding_complete') !== 'true') {
+      setOnboardingOpen(true);
+    }
   };
 
   if (!introFinished) {
@@ -228,7 +235,23 @@ export default function App() {
   }
 
   if (activeTab === 'profile') {
-    return <Dashboard initialTab="profile" onBack={() => handleTabChange('home')} />;
+    return (
+      <>
+        <Dashboard initialTab="profile" onBack={() => handleTabChange('home')} />
+        <OnboardingQuizModal
+          open={onboardingOpen}
+          onClose={() => {
+            localStorage.setItem('ksebe_onboarding_complete', 'true');
+            setOnboardingOpen(false);
+          }}
+          onComplete={(data: OnboardingData) => {
+            localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
+            localStorage.setItem('ksebe_onboarding_complete', 'true');
+            setOnboardingOpen(false);
+          }}
+        />
+      </>
+    );
   }
 
   return (
@@ -331,6 +354,19 @@ export default function App() {
       </nav>
 
       <ChatWidget hidden={activeTab === 'ai'} />
+
+      <OnboardingQuizModal
+        open={onboardingOpen}
+        onClose={() => {
+          localStorage.setItem('ksebe_onboarding_complete', 'true');
+          setOnboardingOpen(false);
+        }}
+        onComplete={(data: OnboardingData) => {
+          localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
+          localStorage.setItem('ksebe_onboarding_complete', 'true');
+          setOnboardingOpen(false);
+        }}
+      />
     </div>
   );
 }
