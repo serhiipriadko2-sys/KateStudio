@@ -33,6 +33,7 @@ import { Schedule } from './components/Schedule';
 import { StreakCard } from './components/StreakCard';
 import { VideoLibrary } from './components/VideoLibrary';
 import { useAuth } from './context/AuthContext';
+import { retentionService } from './services/retentionService';
 
 type Tab = 'home' | 'schedule' | 'ai' | 'studio' | 'profile';
 
@@ -188,6 +189,7 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
 };
 
 export default function App() {
+  const { authStatus, user } = useAuth();
   const [introFinished, setIntroFinished] = useState(() => {
     return localStorage.getItem('ksebe_intro_complete') === 'true';
   });
@@ -211,6 +213,12 @@ export default function App() {
       console.error('Failed to load theme', e);
     }
   }, []);
+
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !user?.id) return;
+    // Ensure we sync onboarding/streak even if login happened elsewhere.
+    retentionService.bootstrapForUser(user.id).catch(() => {});
+  }, [authStatus, user?.id]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrolled(e.currentTarget.scrollTop > 20);
@@ -249,6 +257,12 @@ export default function App() {
             localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
             localStorage.setItem('ksebe_onboarding_complete', 'true');
             setOnboardingOpen(false);
+            if (authStatus === 'authenticated' && user?.id) {
+              retentionService.saveOnboarding(user.id, data).catch(() => {});
+              retentionService
+                .logEvent(user.id, 'onboarding_completed', { source: 'app' })
+                .catch(() => {});
+            }
           }}
         />
       </>
@@ -366,6 +380,12 @@ export default function App() {
           localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
           localStorage.setItem('ksebe_onboarding_complete', 'true');
           setOnboardingOpen(false);
+          if (authStatus === 'authenticated' && user?.id) {
+            retentionService.saveOnboarding(user.id, data).catch(() => {});
+            retentionService
+              .logEvent(user.id, 'onboarding_completed', { source: 'app' })
+              .catch(() => {});
+          }
         }}
       />
     </div>

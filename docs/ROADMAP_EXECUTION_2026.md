@@ -58,8 +58,10 @@
 
 ## Фаза 2 — Retention‑ядро (март–апрель 2026)
 
-- [ ] Onboarding‑quiz (цели/уровень/время/ограничения)
-- [ ] Streak + мягкие напоминания
+- [x] Onboarding‑quiz (цели/уровень/время/ограничения) — APP (localStorage, v1)
+- [x] Streak + мягкие напоминания — APP (localStorage, v1)
+- [x] Retention sync v1: миграция localStorage → Supabase при первом логине
+      (onboarding + practice streak) + минимальные события (auth-only)
 - [ ] Weekly recap
 - [ ] “Практика дня” (эвристика → позже AI)
 

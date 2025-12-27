@@ -1,9 +1,12 @@
 import { Flame, Sparkles } from 'lucide-react';
 import React, { useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useStreak } from '../hooks/useStreak';
+import { retentionService } from '../services/retentionService';
 
 export const StreakCard: React.FC<{ onOpenRecommended?: () => void }> = ({ onOpenRecommended }) => {
+  const { authStatus, user } = useAuth();
   const { showToast } = useToast();
   const streak = useStreak();
 
@@ -53,6 +56,12 @@ export const StreakCard: React.FC<{ onOpenRecommended?: () => void }> = ({ onOpe
                 if (!streak.hasToday) {
                   streak.logToday();
                   showToast('Практика отмечена!', 'success');
+                  if (authStatus === 'authenticated' && user?.id) {
+                    retentionService.upsertPracticeDay(user.id, streak.today).catch(() => {});
+                    retentionService
+                      .logEvent(user.id, 'practice_logged', { day: streak.today })
+                      .catch(() => {});
+                  }
                 } else {
                   showToast('Сегодня уже отмечено. Молодец!', 'info');
                 }
