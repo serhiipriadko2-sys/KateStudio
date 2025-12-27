@@ -63,13 +63,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       const success = await dataService.bookClass(classDetails, bookingUser);
 
       if (success) {
-        // If user wasn't logged in, we update the global context manually
-        // without firing another API request to 'registerUser'
+        // Ensure we have a cached user profile for UI (even if user didn't run full OTP auth yet).
         if (!user) {
-          const newUser = { ...bookingUser, isRegistered: true };
-          setUser(newUser);
-          // Also cache it locally to match dataService behavior
-          localStorage.setItem('ksebe_user', JSON.stringify(newUser));
+          const cached = await dataService.getUser();
+          if (cached) setUser(cached);
         }
 
         setIsSubmitted(true);

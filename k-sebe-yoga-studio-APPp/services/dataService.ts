@@ -24,9 +24,9 @@ export const dataService = {
   getUser: async (): Promise<UserProfile | null> => cacheAdapter.getUser(),
 
   // Async method to register/login with Supabase
-  registerUser: async (name: string, phone: string): Promise<UserProfile> => {
+  registerUser: async (name: string, phone: string, userId?: string): Promise<UserProfile> => {
     const user: UserProfile = {
-      id: phone, // using phone as ID for simplicity in this demo
+      id: userId || phone, // use Supabase Auth user id when available
       name,
       phone,
       city: 'Москва',

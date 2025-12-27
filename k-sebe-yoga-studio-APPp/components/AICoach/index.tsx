@@ -31,17 +31,22 @@ export const AICoach: React.FC = () => {
     showToast(message, 'error');
   };
 
-  // Check for API key
-  if (!import.meta.env.VITE_GEMINI_API_KEY) {
+  // AI can work either via server-side proxy (recommended) or via client key (demo).
+  const hasSupabase =
+    !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const hasClientGeminiKey = !!import.meta.env.VITE_GEMINI_API_KEY;
+
+  if (!hasSupabase && !hasClientGeminiKey) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-stone-50 rounded-[2rem] border border-stone-100">
         <div className="w-16 h-16 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-4">
           <AlertTriangle className="w-8 h-8" />
         </div>
-        <h3 className="text-xl font-serif text-brand-text mb-2">Требуется API Ключ</h3>
+        <h3 className="text-xl font-serif text-brand-text mb-2">Требуется настройка</h3>
         <p className="text-stone-500 max-w-sm">
-          Для работы AI функций необходимо добавить Google Gemini API ключ в переменную
-          VITE_GEMINI_API_KEY.
+          Для работы AI функций нужна настройка Supabase (VITE_SUPABASE_URL /
+          VITE_SUPABASE_ANON_KEY) или клиентский ключ Gemini (VITE_GEMINI_API_KEY) для локального
+          демо.
         </p>
       </div>
     );

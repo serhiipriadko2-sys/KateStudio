@@ -1,5 +1,6 @@
 import { GoogleGenAI, Chat, GenerateContentResponse, Modality, Type } from '@google/genai';
 import { Source } from '../types';
+import { supabase } from './supabaseClient';
 
 let chatSession: Chat | null = null;
 
@@ -14,9 +15,11 @@ async function callGeminiProxy<T>(payload: unknown): Promise<T> {
   if (!url) throw new Error('Gemini proxy not configured (missing VITE_SUPABASE_URL)');
 
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
-  // APP currently does not use Supabase Auth sessions for AI; use anon key as bearer for now.
-  // When APP migrates to Supabase Auth, send the user's access token here.
-  const bearer = anonKey ? `Bearer ${anonKey}` : undefined;
+  const session = await supabase.auth.getSession();
+  const accessToken = session.data.session?.access_token;
+
+  // Prefer user JWT; fallback to anon key (chat-only in proxy; expensive ops will require auth).
+  const bearer = accessToken ? `Bearer ${accessToken}` : anonKey ? `Bearer ${anonKey}` : undefined;
 
   const res = await fetch(url, {
     method: 'POST',
@@ -30,11 +33,24 @@ async function callGeminiProxy<T>(payload: unknown): Promise<T> {
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');
+    if (res.status === 401) throw new Error('AUTH_REQUIRED');
+    if (res.status === 429) throw new Error('RATE_LIMIT');
     throw new Error(`Gemini proxy error (${res.status}): ${text}`);
   }
 
   return (await res.json()) as T;
 }
+
+const getFriendlyProxyError = (err: unknown): string | null => {
+  if (!(err instanceof Error)) return null;
+  if (err.message === 'AUTH_REQUIRED') {
+    return 'Для этой AI-функции нужно войти в аккаунт (подтвердить телефон).';
+  }
+  if (err.message === 'RATE_LIMIT') {
+    return 'Слишком много запросов. Пожалуйста, подождите минуту и попробуйте снова.';
+  }
+  return null;
+};
 
 const SYSTEM_INSTRUCTION = `
 You are Katya Gabran (Катя Габран), the founder of "K Sebe" (К себе) Yoga Studio.
@@ -300,9 +316,14 @@ export const generateYogaImage = async (
       aspectRatio,
     });
     return response.dataUrl;
-  } catch {
-    // ignore and fallback
+  } catch (e) {
+    const friendly = getFriendlyProxyError(e);
+    if (friendly) return null;
   }
+
+  // Production safety: image generation is expensive → require authenticated session.
+  const session = await supabase.auth.getSession();
+  if (!session.data.session?.access_token) return null;
 
   if (!process.env.API_KEY) return null;
 
@@ -332,6 +353,10 @@ export const editYogaImage = async (
   mimeType: string,
   prompt: string
 ): Promise<string | null> => {
+  // Production safety: image editing is expensive → require authenticated session.
+  const session = await supabase.auth.getSession();
+  if (!session.data.session?.access_token) return null;
+
   if (!process.env.API_KEY) return null;
   try {
     const ai = getAI();
@@ -357,6 +382,10 @@ export const editYogaImage = async (
 
 // --- VIDEO GENERATION (Veo) ---
 export const generateVeoVideo = async (prompt: string): Promise<string | null> => {
+  // Production safety: video generation is expensive → require authenticated session.
+  const session = await supabase.auth.getSession();
+  if (!session.data.session?.access_token) return null;
+
   // Check for paid key selection (Required for Veo)
   if ((window as any).aistudio) {
     const hasKey = await (window as any).aistudio.hasSelectedApiKey();
@@ -410,8 +439,15 @@ export const analyzeMedia = async (
       userPrompt,
     });
     return response.result;
-  } catch {
-    // ignore and fallback
+  } catch (e) {
+    const friendly = getFriendlyProxyError(e);
+    if (friendly) return friendly;
+  }
+
+  // Production safety: media analysis is expensive → require authenticated session.
+  const session = await supabase.auth.getSession();
+  if (!session.data.session?.access_token) {
+    return 'Для анализа фото/видео нужно войти в аккаунт (подтвердить телефон).';
   }
 
   if (!process.env.API_KEY) return 'API Key not found';
