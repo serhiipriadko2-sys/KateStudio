@@ -61,12 +61,12 @@ export const Logo: React.FC<LogoProps> = ({
   const strokeColor = getColor();
 
   return (
-    <div className={`flex flex-col items-center ${className}`}>
+    <div className="flex flex-col items-center">
       <svg
         viewBox="0 0 200 260"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full"
+        className={className}
       >
         {/* "К себе" text ABOVE triangle */}
         <text

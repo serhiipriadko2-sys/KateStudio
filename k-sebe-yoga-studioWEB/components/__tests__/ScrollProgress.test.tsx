@@ -33,7 +33,8 @@ describe('ScrollProgress', () => {
 
     window.dispatchEvent(new Event('scroll'));
 
-    const bar = container.querySelector('div > div');
+    // First match for "div > div" is the wrapper; we need the inner bar element.
+    const bar = container.querySelector('div > div > div');
     expect(bar).not.toBeNull();
     expect((bar as HTMLDivElement).style.transform).toBe('scaleX(0.5)');
   });

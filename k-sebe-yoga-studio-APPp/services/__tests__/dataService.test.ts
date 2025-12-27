@@ -32,9 +32,11 @@ describe('dataService', () => {
     expect(user.avatar).toBe('avatar.png');
     expect(user.createdAt).toBe('2024-01-01T00:00:00.000Z');
 
-    const stored = JSON.parse(localStorage.getItem('ksebe_user') || '{}');
-    expect(stored.name).toBe('Анна');
-    expect(stored.phone).toBe('+79990001122');
+    // Cache layer may be IndexedDB or localStorage depending on environment.
+    // Validate via service API instead of assuming a specific storage backend.
+    const stored = await dataService.getUser();
+    expect(stored?.name).toBe('Анна');
+    expect(stored?.phone).toBe('+79990001122');
   });
 
   it('maps bookings from Supabase payload', async () => {

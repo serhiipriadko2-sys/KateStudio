@@ -4,10 +4,8 @@ import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChatWidget } from '../ChatWidget';
 
-const getGeminiChatResponse = vi.fn().mockResolvedValue({ text: 'Ответ', sources: [] });
-
-vi.mock('../../services/geminiService', () => ({
-  getGeminiChatResponse,
+const geminiMocks = vi.hoisted(() => ({
+  getGeminiChatResponse: vi.fn().mockResolvedValue({ text: 'Ответ', sources: [] }),
   generateSpeech: vi.fn(),
   generateMeditationScript: vi.fn(),
   generateMeditationVideo: vi.fn(),
@@ -16,6 +14,8 @@ vi.mock('../../services/geminiService', () => ({
   generatePersonalProgram: vi.fn(),
   transcribeDiaryEntry: vi.fn(),
 }));
+
+vi.mock('../../services/geminiService', () => geminiMocks);
 
 vi.mock('@google/genai', () => ({
   GoogleGenAI: vi.fn(),
@@ -51,7 +51,10 @@ describe('ChatWidget', () => {
     await user.type(input, 'Привет{enter}');
 
     await waitFor(() =>
-      expect(getGeminiChatResponse).toHaveBeenCalledWith('Привет', { lat: 55.75, lng: 37.61 })
+      expect(geminiMocks.getGeminiChatResponse).toHaveBeenCalledWith('Привет', {
+        lat: 55.75,
+        lng: 37.61,
+      })
     );
 
     expect(await screen.findByText('Ответ')).toBeInTheDocument();

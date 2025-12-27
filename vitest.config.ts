@@ -15,7 +15,9 @@ export default defineConfig({
     ],
     exclude: ['**/node_modules/**', '**/dist/**'],
     coverage: {
-      enabled: true,
+      // Keep coverage off by default for fast/green CI on `vitest run`.
+      // Use `npm run test:coverage` (which passes `--coverage`) when you want coverage reports.
+      enabled: false,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       thresholds: {

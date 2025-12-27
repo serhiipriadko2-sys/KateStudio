@@ -2,6 +2,7 @@
  * Blog Component for APP
  * Mobile-optimized with article reader modal
  */
+import DOMPurify from 'dompurify';
 import {
   ArrowRight,
   BookOpen,
@@ -259,7 +260,28 @@ export const Blog: React.FC<BlogProps> = ({ className = '', compact = false }) =
 
               <div
                 className="prose prose-stone prose-headings:font-serif prose-headings:text-brand-text prose-p:text-stone-600 prose-a:text-brand-green max-w-none"
-                dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(selectedArticle.content, {
+                    ALLOWED_TAGS: [
+                      'h1',
+                      'h2',
+                      'h3',
+                      'h4',
+                      'h5',
+                      'h6',
+                      'p',
+                      'a',
+                      'ul',
+                      'ol',
+                      'li',
+                      'strong',
+                      'em',
+                      'blockquote',
+                      'br',
+                    ],
+                    ALLOWED_ATTR: ['href', 'target', 'rel'],
+                  }),
+                }}
               />
 
               <div className="mt-12 pt-8 border-t border-stone-100">

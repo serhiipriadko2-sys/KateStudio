@@ -1,14 +1,14 @@
 # Дорожная карта развития KateStudio
 
-> **Дата обновления:** 24 декабря 2025
-> **Версия проекта:** 1.1.0
-> **Статус:** Production с активным развитием
+> **Дата обновления:** 24 декабря 2025 **Версия проекта:** 1.1.0 **Статус:**
+> Production с активным развитием
 
 ---
 
 ## Обзор проекта
 
-**K Sebe Yoga Studio** — InsideFlow yoga ecosystem для студии Кати Габран "К себе". Монорепозиторий с двумя приложениями и общей библиотекой.
+**K Sebe Yoga Studio** — InsideFlow yoga ecosystem для студии Кати Габран "К
+себе". Монорепозиторий с двумя приложениями и общей библиотекой.
 
 ### Архитектура
 
@@ -61,44 +61,46 @@ KateStudio/
 
 ### WEB (Landing Page)
 
-| Аспект        | Оценка   | Детали                              |
-| ------------- | -------- | ----------------------------------- |
-| Компоненты    | 30       | Hero, About, Schedule, Gallery, etc |
-| AI-интеграция | 6 режимов| Chat, Vision, Meditation, Art, etc  |
-| PWA           | ✅       | manifest.json + SW                  |
-| SEO           | 8/10     | Schema.org, OG tags                 |
-| Доступность   | 7/10     | Focus visible, scroll behavior      |
+| Аспект        | Оценка    | Детали                              |
+| ------------- | --------- | ----------------------------------- |
+| Компоненты    | 30        | Hero, About, Schedule, Gallery, etc |
+| AI-интеграция | 6 режимов | Chat, Vision, Meditation, Art, etc  |
+| PWA           | ✅        | manifest.json + SW                  |
+| SEO           | 8/10      | Schema.org, OG tags                 |
+| Доступность   | 7/10      | Focus visible, scroll behavior      |
 
 **Критические находки:**
+
 - Gemini API key экспонирован в frontend (контролируется rate limiting)
 - ChatWidget.tsx: 700+ строк (требует рефакторинга)
 - Отсутствуют: favicon.png, apple-touch-icon.png, og-image.jpg
 
 ### APP (PWA Dashboard)
 
-| Аспект          | Оценка | Детали                          |
-| --------------- | ------ | ------------------------------- |
-| Компоненты      | 37     | Dashboard, AICoach, VideoLib    |
-| Offline-support | ✅     | IndexedDB + localStorage        |
-| Auth            | ✅     | Supabase Auth + Context         |
-| AI-интеграция   | 4 режима| Chat, Vision, Meditation, Create|
-| Sync            | ✅     | Realtime subscriptions          |
+| Аспект          | Оценка   | Детали                                                                      |
+| --------------- | -------- | --------------------------------------------------------------------------- |
+| Компоненты      | 37       | Dashboard, AICoach, VideoLib                                                |
+| Offline-support | ✅       | IndexedDB + localStorage                                                    |
+| Auth            | ⚠️       | Локальный профиль (phone) + Supabase таблицы (без OTP/сессий Supabase Auth) |
+| AI-интеграция   | 4 режима | Chat, Vision, Meditation, Create                                            |
+| Sync            | ✅       | Realtime subscriptions                                                      |
 
 **Критические находки:**
-- AICoach.tsx: 837 строк (требует декомпозиции)
+
+- ChatWidget.tsx: 800+ строк (требует рефакторинга)
 - Дублирование AuthContext (можно вынести в shared)
 - Неиспользуемый useLocalStorage hook
 
 ### Shared Library
 
-| Аспект      | Количество | Качество      |
-| ----------- | ---------- | ------------- |
-| Компоненты  | 8          | Production    |
-| Hooks       | 5          | Documented    |
-| Services    | 2          | Typed         |
-| Types       | 25+        | Comprehensive |
-| Utils       | 28         | Well-tested   |
-| Constants   | 4 модуля   | Brand-aligned |
+| Аспект     | Количество | Качество      |
+| ---------- | ---------- | ------------- |
+| Компоненты | 8          | Production    |
+| Hooks      | 5          | Documented    |
+| Services   | 2          | Typed         |
+| Types      | 25+        | Comprehensive |
+| Utils      | 28         | Well-tested   |
+| Constants  | 4 модуля   | Brand-aligned |
 
 **Оценка: 92/100** - хорошо структурирована
 
@@ -108,21 +110,21 @@ KateStudio/
 
 ### Лидеры рынка йога-приложений 2025
 
-| Платформа     | Модель           | Сильные стороны                   | Применимо для K Sebe       |
-| ------------- | ---------------- | --------------------------------- | --------------------------- |
-| **Alo Moves** | $12.99/мес       | 4000+ классов, 70 инструкторов    | Масштабирование контента    |
-| **Down Dog**  | $9.99/мес        | AI-генерация последовательностей  | Персонализация AI           |
-| **Glo**       | $30/мес          | Premium позиционирование          | Высокий ARPU               |
-| **Mindbody**  | B2B SaaS         | Бронирование, платежи, CRM        | Интеграция расписания      |
-| **ClassPass** | Credits система  | Multi-studio marketplace          | Партнёрства                |
+| Платформа     | Модель          | Сильные стороны                  | Применимо для K Sebe     |
+| ------------- | --------------- | -------------------------------- | ------------------------ |
+| **Alo Moves** | $12.99/мес      | 4000+ классов, 70 инструкторов   | Масштабирование контента |
+| **Down Dog**  | $9.99/мес       | AI-генерация последовательностей | Персонализация AI        |
+| **Glo**       | $30/мес         | Premium позиционирование         | Высокий ARPU             |
+| **Mindbody**  | B2B SaaS        | Бронирование, платежи, CRM       | Интеграция расписания    |
+| **ClassPass** | Credits система | Multi-studio marketplace         | Партнёрства              |
 
 ### Inside Flow экосистема
 
-| Ресурс                | Функционал                        |
-| --------------------- | --------------------------------- |
-| insideflow.com        | Официальный сайт, тренинги        |
-| Inside Flow Academy   | Сертификация, levels система      |
-| Young Ho Kim YouTube  | Бесплатный контент, продвижение   |
+| Ресурс               | Функционал                      |
+| -------------------- | ------------------------------- |
+| insideflow.com       | Официальный сайт, тренинги      |
+| Inside Flow Academy  | Сертификация, levels система    |
+| Young Ho Kim YouTube | Бесплатный контент, продвижение |
 
 ### Ключевые инсайты
 
@@ -137,6 +139,7 @@ KateStudio/
 ## "Что если?" — Стратегическое мышление
 
 ### Сценарий A: AI-First Studio
+
 > Что если K Sebe станет первой полностью AI-персонализированной йога-студией?
 
 - Aria генерирует уникальную практику под настроение/цели
@@ -145,6 +148,7 @@ KateStudio/
 - AI-подбор музыки для Inside Flow
 
 ### Сценарий B: Inside Flow Academy RU
+
 > Что если создать русскоязычную сертификацию Inside Flow?
 
 - Партнёрство с Inside Flow International
@@ -153,6 +157,7 @@ KateStudio/
 - White-label решение для студий
 
 ### Сценарий C: Lifestyle Ecosystem
+
 > Что если расширить экосистему за пределы йоги?
 
 - Интеграция с трекерами сна (Apple Health, Google Fit)
@@ -161,6 +166,7 @@ KateStudio/
 - Retreats marketplace
 
 ### Сценарий D: Freemium Scale
+
 > Что если выйти на 100K+ пользователей?
 
 - Бесплатный AI-чат без ограничений
@@ -181,12 +187,14 @@ KateStudio/
 **Текущее состояние:** API ключи в коде (контролируется rate limiting)
 
 **Задачи:**
+
 - [ ] Создать Supabase Edge Function для проксирования Gemini API
 - [ ] Перенести API ключи в Supabase secrets
 - [ ] Обновить frontend для использования Edge Function
 - [ ] Добавить rate limiting на уровне пользователя
 
 **Файлы:**
+
 ```
 supabase/functions/gemini-proxy/index.ts (новый)
 k-sebe-yoga-studioWEB/services/aiService.ts (обновить)
@@ -196,12 +204,14 @@ k-sebe-yoga-studio-APPp/services/geminiService.ts (обновить)
 #### 1.2 Добавить недостающие assets
 
 **Задачи:**
+
 - [ ] Создать favicon.png (192x192)
 - [ ] Создать apple-touch-icon.png (180x180)
 - [ ] Создать og-image.jpg (1200x630)
 - [ ] Добавить иконки для PWA (72-512px)
 
 **Файлы:**
+
 ```
 k-sebe-yoga-studioWEB/public/favicon.png
 k-sebe-yoga-studioWEB/public/apple-touch-icon.png
@@ -212,17 +222,18 @@ k-sebe-yoga-studioWEB/public/icons/ (папка)
 #### 1.3 Рефакторинг больших компонентов
 
 **ChatWidget.tsx (WEB) — 700 → 200 строк:**
+
 - [ ] Выделить `ChatInput.tsx` — ввод сообщений
 - [ ] Выделить `ChatMessages.tsx` — список сообщений
 - [ ] Выделить `ChatModeSelector.tsx` — выбор режима
 - [ ] Создать `useChatWidget.ts` — логика чата
 
-**AICoach.tsx (APP) — 837 → 200 строк:**
-- [ ] Выделить `AICoachChat.tsx` — текстовый чат
-- [ ] Выделить `AICoachVision.tsx` — анализ поз
-- [ ] Выделить `AICoachMeditation.tsx` — медитации
-- [ ] Выделить `AICoachCreate.tsx` — генерация
-- [ ] Создать `useAICoach.ts` — общая логика
+**ChatWidget.tsx (APP) — 800 → 200 строк:**
+
+- [ ] Выделить `ChatInput.tsx` — ввод сообщений
+- [ ] Выделить `ChatMessages.tsx` — список сообщений
+- [ ] Выделить `ChatModeSelector.tsx` — выбор режима
+- [ ] Создать `useChatWidget.ts` — логика чата
 
 ---
 
@@ -233,12 +244,14 @@ k-sebe-yoga-studioWEB/public/icons/ (папка)
 #### 2.1 Геймификация
 
 **Задачи:**
+
 - [ ] Система достижений (badges)
 - [ ] Streak-трекинг практик
 - [ ] Уровни мастерства (Beginner → Advanced)
 - [ ] Leaderboard (опционально)
 
 **Новые компоненты:**
+
 ```
 shared/components/Achievements.tsx
 shared/components/ProgressTracker.tsx
@@ -248,12 +261,14 @@ shared/hooks/useStreak.ts
 #### 2.2 Push-уведомления
 
 **Задачи:**
+
 - [ ] Интеграция Firebase Cloud Messaging
 - [ ] Напоминания о занятиях
 - [ ] Мотивационные пуши
 - [ ] Новости о ретритах
 
 **Файлы:**
+
 ```
 k-sebe-yoga-studio-APPp/services/pushService.ts
 k-sebe-yoga-studio-APPp/public/firebase-messaging-sw.js
@@ -262,6 +277,7 @@ k-sebe-yoga-studio-APPp/public/firebase-messaging-sw.js
 #### 2.3 Улучшение offline-режима
 
 **Задачи:**
+
 - [ ] Скачивание видео для offline просмотра
 - [ ] Offline-доступ к расписанию
 - [ ] Background sync для бронирований
@@ -275,19 +291,21 @@ k-sebe-yoga-studio-APPp/public/firebase-messaging-sw.js
 
 #### 3.1 Подписочные планы
 
-| План      | Цена/мес | Функции                              |
-| --------- | -------- | ------------------------------------ |
-| Free      | 0₽       | AI-чат, 3 видео/неделю               |
-| Premium   | 990₽     | Все видео, offline, без рекламы      |
-| VIP       | 2990₽    | + Личные консультации, приоритет     |
+| План    | Цена/мес | Функции                          |
+| ------- | -------- | -------------------------------- |
+| Free    | 0₽       | AI-чат, 3 видео/неделю           |
+| Premium | 990₽     | Все видео, offline, без рекламы  |
+| VIP     | 2990₽    | + Личные консультации, приоритет |
 
 **Задачи:**
+
 - [ ] Интеграция YooKassa/Stripe
 - [ ] Paywall компонент
 - [ ] Управление подписками в профиле
 - [ ] Webhooks для подтверждения платежей
 
 **Файлы:**
+
 ```
 shared/components/Paywall.tsx
 k-sebe-yoga-studio-APPp/services/paymentService.ts
@@ -297,12 +315,14 @@ supabase/functions/payment-webhook/index.ts
 #### 3.2 Реальное расписание
 
 **Задачи:**
+
 - [ ] CRUD для занятий в Supabase
 - [ ] Admin интерфейс для Кати
 - [ ] Real-time обновления (уже есть subscriptions)
 - [ ] Интеграция с Google Calendar
 
 **Supabase schema:**
+
 ```sql
 create table classes (
   id uuid primary key default gen_random_uuid(),
@@ -328,6 +348,7 @@ create table classes (
 #### 4.1 Персональные программы
 
 **Задачи:**
+
 - [ ] AI-генерация 7-дневных программ
 - [ ] Адаптация под цели (гибкость, сила, релакс)
 - [ ] Учёт уровня и истории практик
@@ -336,6 +357,7 @@ create table classes (
 #### 4.2 Live Voice Coach
 
 **Задачи:**
+
 - [ ] Интеграция Gemini Live API
 - [ ] Голосовое сопровождение практики
 - [ ] Real-time коррекция техники
@@ -344,6 +366,7 @@ create table classes (
 #### 4.3 AI-аналитика прогресса
 
 **Задачи:**
+
 - [ ] Анализ фото асан со временем
 - [ ] Визуализация улучшений
 - [ ] Рекомендации на основе прогресса
@@ -358,6 +381,7 @@ create table classes (
 #### 5.1 Performance-оптимизация
 
 **Задачи:**
+
 - [ ] Lazy loading для всех роутов
 - [ ] Image optimization (WebP, srcset)
 - [ ] CDN для видеоконтента
@@ -368,12 +392,14 @@ create table classes (
 **Цель:** 80% coverage
 
 **Задачи:**
+
 - [ ] Unit тесты для shared компонентов
 - [ ] Integration тесты для сервисов
 - [ ] E2E тесты для критических flows
 - [ ] Visual regression (Chromatic)
 
 **Приоритетные тесты:**
+
 ```
 shared/__tests__/
 ├── components/
@@ -389,6 +415,7 @@ shared/__tests__/
 #### 5.3 Документация
 
 **Задачи:**
+
 - [ ] Storybook для компонентов
 - [ ] API документация (TypeDoc)
 - [ ] Onboarding guide для разработчиков
@@ -411,13 +438,13 @@ shared/__tests__/
 
 ### Бизнес KPI
 
-| Метрика          | Измерение               | Цель (Q2 2026) |
-| ---------------- | ----------------------- | -------------- |
-| PWA installs     | Analytics events        | 5000+          |
-| DAU/MAU          | Supabase analytics      | 30%            |
-| AI sessions/user | Logs                    | 10+/мес        |
-| Conversion rate  | Free → Premium          | 5%             |
-| Retention D30    | Cohort analysis         | 40%            |
+| Метрика          | Измерение          | Цель (Q2 2026) |
+| ---------------- | ------------------ | -------------- |
+| PWA installs     | Analytics events   | 5000+          |
+| DAU/MAU          | Supabase analytics | 30%            |
+| AI sessions/user | Logs               | 10+/мес        |
+| Conversion rate  | Free → Premium     | 5%             |
+| Retention D30    | Cohort analysis    | 40%            |
 
 ---
 
@@ -453,28 +480,29 @@ shared/__tests__/
 
 ## Риски и митигация
 
-| Риск                   | Вероятность | Влияние   | Митигация                        |
-| ---------------------- | ----------- | --------- | -------------------------------- |
-| Gemini API deprecation | Средняя     | Высокое   | Fallback на Claude/GPT-4         |
-| Rate limit exceeded    | Высокая     | Среднее   | Кеширование, Edge Functions      |
-| Supabase outage        | Низкая      | Высокое   | Offline-first уже есть           |
-| Payment integration    | Средняя     | Высокое   | Начать с простого (YooKassa)     |
-| User churn             | Средняя     | Высокое   | Push-уведомления, геймификация   |
+| Риск                   | Вероятность | Влияние | Митигация                      |
+| ---------------------- | ----------- | ------- | ------------------------------ |
+| Gemini API deprecation | Средняя     | Высокое | Fallback на Claude/GPT-4       |
+| Rate limit exceeded    | Высокая     | Среднее | Кеширование, Edge Functions    |
+| Supabase outage        | Низкая      | Высокое | Offline-first уже есть         |
+| Payment integration    | Средняя     | Высокое | Начать с простого (YooKassa)   |
+| User churn             | Средняя     | Высокое | Push-уведомления, геймификация |
 
 ---
 
 ## Заключение
 
-KateStudio — хорошо структурированный проект с уникальным позиционированием в нише Inside Flow. Основные направления развития:
+KateStudio — хорошо структурированный проект с уникальным позиционированием в
+нише Inside Flow. Основные направления развития:
 
 1. **Стабильность** — Assets, безопасность, рефакторинг
 2. **Монетизация** — Подписки, реальное расписание
 3. **AI-дифференциация** — Live coach, персонализация
 4. **Масштаб** — Performance, тесты, документация
 
-Проект готов к переходу от MVP к полноценному продукту с устойчивой бизнес-моделью.
+Проект готов к переходу от MVP к полноценному продукту с устойчивой
+бизнес-моделью.
 
 ---
 
-*Документ обновлён: 24 декабря 2025*
-*Автор: Claude Opus 4.5*
+_Документ обновлён: 24 декабря 2025_ _Автор: Claude Opus 4.5_
