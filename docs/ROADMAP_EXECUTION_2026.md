@@ -24,10 +24,11 @@
 
 ### 0.3 Вынести Gemini в Edge/Proxy (ключевой следующий шаг)
 
-- [ ] Supabase Edge Function `gemini-proxy`
-- [ ] Server secret: `GEMINI_API_KEY`
-- [ ] Rate limit + логирование расходов
-- [ ] Миграция клиентов на proxy
+- [x] Supabase Edge Function `gemini-proxy`
+- [x] Server secret: `GEMINI_API_KEY` (нужно выставить в Supabase secrets)
+- [x] Rate limit + логирование расходов (минимальный контур; расширить в
+      будущем)
+- [x] Миграция клиентов на proxy
 
 Фактическое состояние (сделано в репозитории):
 
@@ -41,12 +42,19 @@
 
 ## Фаза 1 — Идентичность и доверие (февраль 2026)
 
-- [ ] Supabase Auth (OTP/Email) в APP
-- [ ] Профиль: `user_id` → все персональные данные привязаны к `auth.users`
-- [ ] RLS политики для таблиц: `profiles`, `bookings`, будущие `subscriptions`
+- [x] Supabase Auth (OTP по телефону) в APP (код + UI)
+- [x] Профиль: `user_id` → привязка к `auth.users`
+- [x] RLS политики для таблиц: `profiles`, `bookings`
 
 Примечание: базовый OTP‑вход по телефону уже добавлен в UI профиля APP, но
 требует включённого Supabase Phone Auth и корректной настройки проекта.
+
+Что нужно сделать руками в Supabase (чтобы это работало в проде):
+
+- [ ] Включить Phone Auth (OTP) и настроить SMS‑провайдера
+- [ ] Применить миграции: `supabase db push`
+- [ ] (Опционально) миграция/бэкфилл старых записей `profiles/bookings`,
+      созданных до `user_id`
 
 ## Фаза 2 — Retention‑ядро (март–апрель 2026)
 
