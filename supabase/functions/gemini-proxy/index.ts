@@ -15,6 +15,7 @@ import {
   Modality,
   Type,
 } from 'npm:@google/genai@1.33.0';
+import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
 
 type Source = { title: string; uri: string };
 
@@ -40,29 +41,82 @@ const corsHeaders: HeadersInit = {
 type RateBucket = { count: number; resetAt: number };
 const rateBuckets = new Map<string, RateBucket>();
 
-function getClientKey(req: Request): string {
-  // Best-effort key: IP if provided by infra; fallback to a constant bucket.
-  const ip =
+type AuthInfo = { kind: 'user'; userId: string } | { kind: 'anon'; key: string };
+
+function getIp(req: Request): string {
+  return (
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
     req.headers.get('cf-connecting-ip') ??
-    req.headers.get('x-real-ip');
-  return ip || 'anonymous';
+    req.headers.get('x-real-ip') ??
+    'anonymous'
+  );
 }
 
-function rateLimit(req: Request): { ok: true } | { ok: false; retryAfterSeconds: number } {
-  const key = getClientKey(req);
-  const now = Date.now();
+function getBearerToken(req: Request): string | null {
+  const auth = req.headers.get('authorization');
+  if (!auth) return null;
+  const m = auth.match(/^Bearer\s+(.+)$/i);
+  return m?.[1] ?? null;
+}
 
-  const windowMs = 60_000;
-  const limit = 30; // per minute per edge instance (demo-level)
+async function getAuthInfo(req: Request): Promise<AuthInfo> {
+  const token = getBearerToken(req);
+  if (!token) return { kind: 'anon', key: `ip:${getIp(req)}` };
+
+  const url = Deno.env.get('SUPABASE_URL');
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+  if (!url || !anonKey) {
+    // If env is missing, fall back to IP-based limiting rather than failing hard.
+    return { kind: 'anon', key: `ip:${getIp(req)}` };
+  }
+
+  try {
+    const supabase = createClient(url, anonKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    });
+    const { data } = await supabase.auth.getUser(token);
+    if (data.user?.id) return { kind: 'user', userId: data.user.id };
+  } catch {
+    // ignore and fall back
+  }
+
+  return { kind: 'anon', key: `ip:${getIp(req)}` };
+}
+
+function getOpCost(op: ProxyRequest['op']): 'cheap' | 'medium' | 'expensive' {
+  switch (op) {
+    case 'chat':
+      return 'cheap';
+    case 'thinking':
+    case 'generateSpeech':
+    case 'generateMeditationScript':
+    case 'createMeditation':
+      return 'medium';
+    case 'generateYogaImage':
+    case 'generatePersonalProgram':
+    case 'transcribeDiaryEntry':
+    case 'analyzeYogaVideo':
+    case 'analyzeMedia':
+    case 'analyzeImageContent':
+      return 'expensive';
+    default:
+      return 'expensive';
+  }
+}
+
+function rateLimit(
+  key: string,
+  opts: { limit: number; windowMs: number }
+): { ok: true } | { ok: false; retryAfterSeconds: number } {
+  const now = Date.now();
 
   const existing = rateBuckets.get(key);
   if (!existing || now >= existing.resetAt) {
-    rateBuckets.set(key, { count: 1, resetAt: now + windowMs });
+    rateBuckets.set(key, { count: 1, resetAt: now + opts.windowMs });
     return { ok: true };
   }
 
-  if (existing.count >= limit) {
+  if (existing.count >= opts.limit) {
     return {
       ok: false,
       retryAfterSeconds: Math.max(1, Math.ceil((existing.resetAt - now) / 1000)),
@@ -100,14 +154,6 @@ Deno.serve(async (req) => {
     return json({ error: 'Method not allowed' }, { status: 405 });
   }
 
-  const rl = rateLimit(req);
-  if (!rl.ok) {
-    return json(
-      { error: 'Rate limit exceeded', retryAfterSeconds: rl.retryAfterSeconds },
-      { status: 429, headers: { 'retry-after': String(rl.retryAfterSeconds) } }
-    );
-  }
-
   const apiKey = Deno.env.get('GEMINI_API_KEY');
   if (!apiKey) {
     return json({ error: 'Server is missing GEMINI_API_KEY' }, { status: 500 });
@@ -118,6 +164,36 @@ Deno.serve(async (req) => {
     body = (await req.json()) as ProxyRequest;
   } catch {
     return json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const authInfo = await getAuthInfo(req);
+  const cost = getOpCost(body.op);
+
+  // Rate limit tuning (per edge instance):
+  // - anon is stricter than authenticated user
+  // - "expensive" ops are stricter than chat
+  const windowMs = 60_000;
+  const limit =
+    authInfo.kind === 'user'
+      ? cost === 'cheap'
+        ? 120
+        : cost === 'medium'
+          ? 60
+          : 20
+      : cost === 'cheap'
+        ? 30
+        : cost === 'medium'
+          ? 12
+          : 4;
+
+  const rlKey =
+    authInfo.kind === 'user' ? `user:${authInfo.userId}:${cost}` : `${authInfo.key}:${cost}`;
+  const rl = rateLimit(rlKey, { limit, windowMs });
+  if (!rl.ok) {
+    return json(
+      { error: 'Rate limit exceeded', retryAfterSeconds: rl.retryAfterSeconds },
+      { status: 429, headers: { 'retry-after': String(rl.retryAfterSeconds) } }
+    );
   }
 
   const ai = new GoogleGenAI({ apiKey });

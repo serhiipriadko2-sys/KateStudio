@@ -23,9 +23,18 @@ async function callGeminiProxy<T>(payload: unknown): Promise<T> {
   const url = getGeminiProxyUrl();
   if (!url) throw new Error('Gemini proxy not configured (missing VITE_SUPABASE_URL)');
 
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  // We don't have Supabase Auth in WEB yet; use anon key as bearer for now.
+  // When WEB adds Supabase Auth, replace with the user's access token.
+  const bearer = anonKey ? `Bearer ${anonKey}` : undefined;
+
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      ...(anonKey ? { apikey: anonKey } : {}),
+      ...(bearer ? { authorization: bearer } : {}),
+    },
     body: JSON.stringify(payload),
   });
 

@@ -53,6 +53,10 @@
 - Добавлен Supabase Edge Function: `supabase/functions/gemini-proxy/index.ts`
 - WEB/APP `geminiService.ts` сначала пытаются вызвать proxy, и только затем (для
   локального демо) используют клиентский ключ.
+- В proxy добавлен rate limiting:
+  - по `user_id`, если пришёл валидный Supabase JWT
+  - иначе fallback по IP
+  - отдельные лимиты для “дорогих” операций (генерация/анализ медиа)
 
 ### 3.2 Supabase RLS и таблицы
 
