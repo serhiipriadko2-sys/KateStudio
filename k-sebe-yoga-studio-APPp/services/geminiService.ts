@@ -3,6 +3,30 @@ import { Source } from '../types';
 
 let chatSession: Chat | null = null;
 
+const getGeminiProxyUrl = (): string | null => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  if (!supabaseUrl) return null;
+  return `${supabaseUrl.replace(/\/$/, '')}/functions/v1/gemini-proxy`;
+};
+
+async function callGeminiProxy<T>(payload: unknown): Promise<T> {
+  const url = getGeminiProxyUrl();
+  if (!url) throw new Error('Gemini proxy not configured (missing VITE_SUPABASE_URL)');
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Gemini proxy error (${res.status}): ${text}`);
+  }
+
+  return (await res.json()) as T;
+}
+
 const SYSTEM_INSTRUCTION = `
 You are Katya Gabran (Катя Габран), the founder of "K Sebe" (К себе) Yoga Studio.
 You are a warm, empathetic, and highly knowledgeable yoga teacher.
@@ -64,6 +88,16 @@ const ensureSession = () => {
 
 // --- THINKING MODE (New) ---
 export const getThinkingResponse = async (userMessage: string): Promise<string> => {
+  try {
+    const response = await callGeminiProxy<{ text: string }>({
+      op: 'thinking',
+      message: userMessage,
+    });
+    return response.text;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return 'API Key missing';
   try {
     const ai = getAI();
@@ -88,6 +122,16 @@ export const getGeminiChatResponse = async (
   userMessage: string,
   location?: { lat: number; lng: number }
 ): Promise<{ text: string; sources: Source[] }> => {
+  try {
+    return await callGeminiProxy<{ text: string; sources: Source[] }>({
+      op: 'chat',
+      message: userMessage,
+      location,
+    });
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return { text: 'API Key missing', sources: [] };
 
   try {
@@ -116,6 +160,17 @@ export const getGeminiChatResponse = async (
 };
 
 export async function* getGeminiChatStream(userMessage: string) {
+  try {
+    const response = await callGeminiProxy<{ text: string; sources: Source[] }>({
+      op: 'chat',
+      message: userMessage,
+    });
+    yield response.text || '...';
+    return;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) {
     yield 'Пожалуйста, настройте API ключ.';
     return;
@@ -142,6 +197,17 @@ export const createMeditation = async (
   topic: string,
   duration: string
 ): Promise<MeditationResult | null> => {
+  try {
+    const response = await callGeminiProxy<{ result: MeditationResult | null }>({
+      op: 'createMeditation',
+      topic,
+      duration,
+    });
+    return response.result;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return null;
   try {
     const ai = getAI();
@@ -183,6 +249,16 @@ export const createMeditation = async (
 
 // --- TTS ---
 export const generateSpeech = async (text: string): Promise<string | null> => {
+  try {
+    const response = await callGeminiProxy<{ audioBase64: string | null }>({
+      op: 'generateSpeech',
+      text,
+    });
+    return response.audioBase64;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return null;
   try {
     const ai = getAI();
@@ -208,6 +284,17 @@ export const generateYogaImage = async (
   prompt: string,
   aspectRatio: string
 ): Promise<string | null> => {
+  try {
+    const response = await callGeminiProxy<{ dataUrl: string | null }>({
+      op: 'generateYogaImage',
+      prompt,
+      aspectRatio,
+    });
+    return response.dataUrl;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return null;
 
   const ai = getAI();
@@ -306,6 +393,18 @@ export const analyzeMedia = async (
   mimeType: string,
   userPrompt: string
 ): Promise<VisionAnalysisResult | string> => {
+  try {
+    const response = await callGeminiProxy<{ result: VisionAnalysisResult | string }>({
+      op: 'analyzeMedia',
+      fileBase64,
+      mimeType,
+      userPrompt,
+    });
+    return response.result;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return 'API Key not found';
 
   try {
