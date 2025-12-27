@@ -17,7 +17,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   classDetails,
   onSuccess,
 }) => {
-  const { user, setUser } = useAuth();
+  const { user, setUser, authStatus } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,29 +50,25 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (authStatus !== 'authenticated' || !user) {
+      setError('Для бронирования нужно войти в аккаунт (подтвердить телефон).');
+      return;
+    }
     setIsLoading(true);
     setError(null);
 
     try {
-      // Create user profile object for booking
-      // If user is not logged in, we create a temporary object
-      const bookingUser = user || { id: phone, name, phone, city: 'Москва', isRegistered: false };
-
       // Execute booking via Service
-      // This handles registration internally if needed
-      const success = await dataService.bookClass(classDetails, bookingUser);
+      const success = await dataService.bookClass(classDetails, user);
 
       if (success) {
-        // Ensure we have a cached user profile for UI (even if user didn't run full OTP auth yet).
-        if (!user) {
-          const cached = await dataService.getUser();
-          if (cached) setUser(cached);
-        }
+        const cached = await dataService.getUser();
+        if (cached) setUser(cached);
 
         setIsSubmitted(true);
         if (onSuccess) onSuccess();
       } else {
-        setError('Вы уже записаны на это занятие.');
+        setError('Не удалось записаться. Проверьте, что вы вошли в аккаунт.');
       }
     } catch (e) {
       console.error(e);

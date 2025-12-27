@@ -27,6 +27,17 @@ supabase secrets set GEMINI_API_KEY="your-gemini-api-key"
 supabase functions deploy gemini-proxy
 ```
 
+## Миграции (Sprint 1: user_id + RLS)
+
+Миграция лежит в
+`supabase/migrations/20251227160000_profiles_bookings_user_id_rls.sql`.
+
+Применение (через CLI, если проект подключён):
+
+```bash
+supabase db push
+```
+
 ## Проверка (smoke test)
 
 После деплоя:

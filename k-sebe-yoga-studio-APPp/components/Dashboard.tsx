@@ -70,29 +70,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const [otpCode, setOtpCode] = useState('');
 
   const fetchBookings = useCallback(async () => {
-    if (user?.phone) {
+    if (authStatus === 'authenticated' && user?.phone) {
       // Only show loading on initial fetch if list is empty
       if (bookings.length === 0) setLoading(true);
-      const allBookings = await dataService.getBookings(user.phone);
+      const allBookings = await dataService.getBookings(user);
       setBookings(allBookings.sort((a, b) => b.timestamp - a.timestamp));
       setLoading(false);
     }
-  }, [user?.phone, bookings.length]);
+  }, [authStatus, user, bookings.length]);
 
   // Initial Load & Real-time Subscription
   useEffect(() => {
     fetchBookings();
 
-    if (user?.phone) {
+    if (authStatus === 'authenticated' && user?.id) {
       const channel = supabase
-        .channel(`user_bookings:${user.phone}`)
+        .channel(`user_bookings:${user.id}`)
         .on(
           'postgres_changes',
           {
             event: '*',
             schema: 'public',
             table: 'bookings',
-            filter: `phone=eq.${user.phone}`,
+            filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
             // Refresh data on any change (INSERT/DELETE)
@@ -106,7 +106,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         supabase.removeChannel(channel);
       };
     }
-  }, [user?.phone, fetchBookings, showToast]);
+  }, [authStatus, user?.id, fetchBookings, showToast]);
 
   const nextBooking = bookings.length > 0 ? bookings[0] : null;
 
