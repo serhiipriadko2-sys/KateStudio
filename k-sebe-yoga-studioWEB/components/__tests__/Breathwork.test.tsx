@@ -1,5 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
 import { Breathwork } from '../Breathwork';
@@ -14,7 +13,6 @@ describe('Breathwork', () => {
   });
 
   it('cycles through breathing phases after starting', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(
       <Breathwork
         config={{
@@ -28,7 +26,7 @@ describe('Breathwork', () => {
 
     expect(screen.getByText('Дыхание')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button'));
     expect(screen.getByText('Вдох')).toBeInTheDocument();
 
     act(() => {

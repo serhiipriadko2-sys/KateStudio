@@ -1,7 +1,56 @@
 import { GoogleGenAI, Chat, GenerateContentResponse, Modality, Type } from '@google/genai';
 import { Source } from '../types';
+import { supabase } from './supabaseClient';
 
 let chatSession: Chat | null = null;
+
+const getGeminiProxyUrl = (): string | null => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  if (!supabaseUrl) return null;
+  return `${supabaseUrl.replace(/\/$/, '')}/functions/v1/gemini-proxy`;
+};
+
+async function callGeminiProxy<T>(payload: unknown): Promise<T> {
+  const url = getGeminiProxyUrl();
+  if (!url) throw new Error('Gemini proxy not configured (missing VITE_SUPABASE_URL)');
+
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  const session = await supabase.auth.getSession();
+  const accessToken = session.data.session?.access_token;
+
+  // Prefer user JWT; fallback to anon key (chat-only in proxy; expensive ops will require auth).
+  const bearer = accessToken ? `Bearer ${accessToken}` : anonKey ? `Bearer ${anonKey}` : undefined;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(anonKey ? { apikey: anonKey } : {}),
+      ...(bearer ? { authorization: bearer } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    if (res.status === 401) throw new Error('AUTH_REQUIRED');
+    if (res.status === 429) throw new Error('RATE_LIMIT');
+    throw new Error(`Gemini proxy error (${res.status}): ${text}`);
+  }
+
+  return (await res.json()) as T;
+}
+
+const getFriendlyProxyError = (err: unknown): string | null => {
+  if (!(err instanceof Error)) return null;
+  if (err.message === 'AUTH_REQUIRED') {
+    return 'Для этой AI-функции нужно войти в аккаунт (подтвердить телефон).';
+  }
+  if (err.message === 'RATE_LIMIT') {
+    return 'Слишком много запросов. Пожалуйста, подождите минуту и попробуйте снова.';
+  }
+  return null;
+};
 
 const SYSTEM_INSTRUCTION = `
 You are Katya Gabran (Катя Габран), the founder of "K Sebe" (К себе) Yoga Studio.
@@ -64,6 +113,16 @@ const ensureSession = () => {
 
 // --- THINKING MODE (New) ---
 export const getThinkingResponse = async (userMessage: string): Promise<string> => {
+  try {
+    const response = await callGeminiProxy<{ text: string }>({
+      op: 'thinking',
+      message: userMessage,
+    });
+    return response.text;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return 'API Key missing';
   try {
     const ai = getAI();
@@ -88,6 +147,16 @@ export const getGeminiChatResponse = async (
   userMessage: string,
   location?: { lat: number; lng: number }
 ): Promise<{ text: string; sources: Source[] }> => {
+  try {
+    return await callGeminiProxy<{ text: string; sources: Source[] }>({
+      op: 'chat',
+      message: userMessage,
+      location,
+    });
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return { text: 'API Key missing', sources: [] };
 
   try {
@@ -116,6 +185,17 @@ export const getGeminiChatResponse = async (
 };
 
 export async function* getGeminiChatStream(userMessage: string) {
+  try {
+    const response = await callGeminiProxy<{ text: string; sources: Source[] }>({
+      op: 'chat',
+      message: userMessage,
+    });
+    yield response.text || '...';
+    return;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) {
     yield 'Пожалуйста, настройте API ключ.';
     return;
@@ -142,6 +222,17 @@ export const createMeditation = async (
   topic: string,
   duration: string
 ): Promise<MeditationResult | null> => {
+  try {
+    const response = await callGeminiProxy<{ result: MeditationResult | null }>({
+      op: 'createMeditation',
+      topic,
+      duration,
+    });
+    return response.result;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return null;
   try {
     const ai = getAI();
@@ -183,6 +274,16 @@ export const createMeditation = async (
 
 // --- TTS ---
 export const generateSpeech = async (text: string): Promise<string | null> => {
+  try {
+    const response = await callGeminiProxy<{ audioBase64: string | null }>({
+      op: 'generateSpeech',
+      text,
+    });
+    return response.audioBase64;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return null;
   try {
     const ai = getAI();
@@ -208,6 +309,22 @@ export const generateYogaImage = async (
   prompt: string,
   aspectRatio: string
 ): Promise<string | null> => {
+  try {
+    const response = await callGeminiProxy<{ dataUrl: string | null }>({
+      op: 'generateYogaImage',
+      prompt,
+      aspectRatio,
+    });
+    return response.dataUrl;
+  } catch (e) {
+    const friendly = getFriendlyProxyError(e);
+    if (friendly) return null;
+  }
+
+  // Production safety: image generation is expensive → require authenticated session.
+  const session = await supabase.auth.getSession();
+  if (!session.data.session?.access_token) return null;
+
   if (!process.env.API_KEY) return null;
 
   const ai = getAI();
@@ -236,6 +353,10 @@ export const editYogaImage = async (
   mimeType: string,
   prompt: string
 ): Promise<string | null> => {
+  // Production safety: image editing is expensive → require authenticated session.
+  const session = await supabase.auth.getSession();
+  if (!session.data.session?.access_token) return null;
+
   if (!process.env.API_KEY) return null;
   try {
     const ai = getAI();
@@ -261,6 +382,10 @@ export const editYogaImage = async (
 
 // --- VIDEO GENERATION (Veo) ---
 export const generateVeoVideo = async (prompt: string): Promise<string | null> => {
+  // Production safety: video generation is expensive → require authenticated session.
+  const session = await supabase.auth.getSession();
+  if (!session.data.session?.access_token) return null;
+
   // Check for paid key selection (Required for Veo)
   if ((window as any).aistudio) {
     const hasKey = await (window as any).aistudio.hasSelectedApiKey();
@@ -306,6 +431,25 @@ export const analyzeMedia = async (
   mimeType: string,
   userPrompt: string
 ): Promise<VisionAnalysisResult | string> => {
+  try {
+    const response = await callGeminiProxy<{ result: VisionAnalysisResult | string }>({
+      op: 'analyzeMedia',
+      fileBase64,
+      mimeType,
+      userPrompt,
+    });
+    return response.result;
+  } catch (e) {
+    const friendly = getFriendlyProxyError(e);
+    if (friendly) return friendly;
+  }
+
+  // Production safety: media analysis is expensive → require authenticated session.
+  const session = await supabase.auth.getSession();
+  if (!session.data.session?.access_token) {
+    return 'Для анализа фото/видео нужно войти в аккаунт (подтвердить телефон).';
+  }
+
   if (!process.env.API_KEY) return 'API Key not found';
 
   try {

@@ -24,9 +24,9 @@ export const dataService = {
   getUser: async (): Promise<UserProfile | null> => cacheAdapter.getUser(),
 
   // Async method to register/login with Supabase
-  registerUser: async (name: string, phone: string): Promise<UserProfile> => {
+  registerUser: async (name: string, phone: string, userId?: string): Promise<UserProfile> => {
     const user: UserProfile = {
-      id: phone, // using phone as ID for simplicity in this demo
+      id: userId || phone, // use Supabase Auth user id when available
       name,
       phone,
       city: 'Москва',
@@ -35,18 +35,22 @@ export const dataService = {
     };
 
     try {
+      // In auth-first mode we only write to Supabase when userId is present (authenticated).
+      if (!userId) throw new Error('AUTH_REQUIRED');
+
       // Upsert into Supabase profiles
       // We select avatar as well to ensure we get the latest if it exists
       const { data, error } = await supabase
         .from('profiles')
         .upsert(
           {
+            user_id: userId,
             phone: user.phone,
             name: user.name,
             city: user.city,
             // Only set created_at if not exists (handled by DB default usually, but good to pass if table structure supports it)
           },
-          { onConflict: 'phone' }
+          { onConflict: 'user_id' }
         )
         .select()
         .single();
@@ -69,6 +73,8 @@ export const dataService = {
 
   updateUserProfile: async (user: UserProfile): Promise<boolean> => {
     try {
+      // Auth-first: updates must be tied to the authenticated user_id.
+      if (!user.id) throw new Error('Missing user id');
       const updates: any = {
         name: user.name,
         city: user.city,
@@ -78,7 +84,7 @@ export const dataService = {
         updates.avatar = user.avatar;
       }
 
-      const { error } = await supabase.from('profiles').update(updates).eq('phone', user.phone);
+      const { error } = await supabase.from('profiles').update(updates).eq('user_id', user.id);
 
       if (error) throw error;
     } catch (e) {
@@ -214,10 +220,11 @@ export const dataService = {
   },
 
   // --- Booking ---
-  getBookings: async (phone: string): Promise<Booking[]> => {
-    await dataService.syncPendingBookings(phone);
+  getBookings: async (user: UserProfile): Promise<Booking[]> => {
+    await dataService.syncPendingBookings(user);
     try {
-      const { data, error } = await supabase.from('bookings').select('*').eq('phone', phone);
+      if (!user.id) throw new Error('Missing user id');
+      const { data, error } = await supabase.from('bookings').select('*').eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -234,23 +241,33 @@ export const dataService = {
       await cacheAdapter.upsertBookings(
         bookings.map((booking) => ({
           ...booking,
-          phone,
+          phone: user.phone,
           status: 'synced',
         }))
       );
 
-      const pending = await cacheAdapter.getPendingBookings(phone);
+      const pending = await cacheAdapter.getPendingBookings(user.phone);
       return [...bookings, ...pending.map(dataService.stripCachedBooking)];
     } catch (e) {
       console.warn('Failed to fetch bookings from DB', e);
-      const cached = await cacheAdapter.getBookingsByPhone(phone);
+      const cached = await cacheAdapter.getBookingsByPhone(user.phone);
       return cached.map(dataService.stripCachedBooking);
     }
   },
 
   bookClass: async (cls: ClassSession, user: UserProfile): Promise<boolean> => {
-    // 1. Ensure user exists (local or remote)
-    await dataService.registerUser(user.name, user.phone);
+    // Auth-first: real bookings require authenticated user_id (RLS).
+    // If user.id is not a UUID, treat as unauthenticated.
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(user.id);
+    if (!isUuid) {
+      // Keep local profile cached for UX, but don't attempt DB booking.
+      await cacheAdapter.setUser({ ...user, isRegistered: true });
+      return false;
+    }
+
+    // Ensure profile exists server-side (best-effort).
+    await dataService.registerUser(user.name, user.phone, user.id);
 
     const existingLocal = await cacheAdapter.findBookingByClassId(user.phone, cls.id);
     if (existingLocal) {
@@ -258,6 +275,7 @@ export const dataService = {
     }
 
     const bookingPayload = {
+      user_id: user.id,
       phone: user.phone,
       class_id: cls.id,
       class_name: cls.name,
@@ -272,7 +290,7 @@ export const dataService = {
       const { data: existing } = await supabase
         .from('bookings')
         .select('id')
-        .eq('phone', user.phone)
+        .eq('user_id', user.id)
         .eq('class_id', cls.id)
         .single();
 
@@ -306,20 +324,7 @@ export const dataService = {
       return true;
     } catch (e) {
       console.error('Booking error, falling back to simulation', e);
-      const pendingBooking: CachedBooking = {
-        id: `pending-${Date.now()}-${cls.id}`,
-        classId: cls.id,
-        className: cls.name,
-        date: cls.dateStr,
-        time: cls.time,
-        location: cls.location,
-        timestamp: Date.now(),
-        phone: user.phone,
-        status: 'pending',
-      };
-      await cacheAdapter.upsertBookings([pendingBooking]);
-      // Simulate success for demo purposes if backend fails
-      return true;
+      return false;
     }
   },
 
@@ -342,8 +347,13 @@ export const dataService = {
     }
   },
 
-  syncPendingBookings: async (phone: string): Promise<void> => {
-    const pending = await cacheAdapter.getPendingBookings(phone);
+  syncPendingBookings: async (user: UserProfile): Promise<void> => {
+    // Only sync when we have a real authenticated user id.
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(user.id);
+    if (!isUuid) return;
+
+    const pending = await cacheAdapter.getPendingBookings(user.phone);
     if (!pending.length) return;
 
     await Promise.all(
@@ -352,6 +362,7 @@ export const dataService = {
           const { data, error } = await supabase
             .from('bookings')
             .insert({
+              user_id: user.id,
               phone: booking.phone,
               class_id: booking.classId,
               class_name: booking.className,

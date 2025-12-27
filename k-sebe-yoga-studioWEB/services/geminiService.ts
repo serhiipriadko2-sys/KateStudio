@@ -11,6 +11,41 @@ import { Source, AsanaAnalysis } from '../types';
 
 let chatSession: Chat | null = null;
 
+type ProxyChatResponse = { text: string; sources: Source[] };
+
+const getGeminiProxyUrl = (): string | null => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  if (!supabaseUrl) return null;
+  return `${supabaseUrl.replace(/\/$/, '')}/functions/v1/gemini-proxy`;
+};
+
+async function callGeminiProxy<T>(payload: unknown): Promise<T> {
+  const url = getGeminiProxyUrl();
+  if (!url) throw new Error('Gemini proxy not configured (missing VITE_SUPABASE_URL)');
+
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  // We don't have Supabase Auth in WEB yet; use anon key as bearer for now.
+  // When WEB adds Supabase Auth, replace with the user's access token.
+  const bearer = anonKey ? `Bearer ${anonKey}` : undefined;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(anonKey ? { apikey: anonKey } : {}),
+      ...(bearer ? { authorization: bearer } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Gemini proxy error (${res.status}): ${text}`);
+  }
+
+  return (await res.json()) as T;
+}
+
 // --- STUDIO KNOWLEDGE BASE ---
 const KNOWLEDGE_BASE = {
   identity: {
@@ -48,6 +83,13 @@ export const getGeminiChatResponse = async (
   userMessage: string,
   location?: { lat: number; lng: number }
 ): Promise<{ text: string; sources: Source[] }> => {
+  // Prefer server-side proxy (production-safe). Fallback to client key for local demo.
+  try {
+    return await callGeminiProxy<ProxyChatResponse>({ op: 'chat', message: userMessage, location });
+  } catch {
+    // ignore and try client-side
+  }
+
   if (!process.env.API_KEY) return { text: 'Пожалуйста, настройте API ключ.', sources: [] };
 
   try {
@@ -92,6 +134,8 @@ export const getGeminiChatResponse = async (
 
 // --- 2. VEO VIDEO GENERATION ---
 export const generateMeditationVideo = async (prompt: string): Promise<string | null> => {
+  // NOTE: Veo URIs often require attaching the API key to fetch the asset.
+  // For now we keep this as a client-side (demo) feature.
   if (!process.env.API_KEY) return null;
   await ensureBillingKey();
 
@@ -129,6 +173,17 @@ export const generateMeditationVideo = async (prompt: string): Promise<string | 
 
 // --- 3. IMAGEN / NANO BANANA (Image Gen) ---
 export const generateYogaImage = async (prompt: string): Promise<string | null> => {
+  try {
+    const response = await callGeminiProxy<{ dataUrl: string | null }>({
+      op: 'generateYogaImage',
+      prompt,
+      aspectRatio: '1:1',
+    });
+    return response.dataUrl;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return null;
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -160,6 +215,16 @@ export const generateYogaImage = async (prompt: string): Promise<string | null> 
 
 // --- 4. VIDEO UNDERSTANDING (AI Coach) ---
 export const analyzeYogaVideo = async (base64Video: string): Promise<string> => {
+  try {
+    const response = await callGeminiProxy<{ text: string }>({
+      op: 'analyzeYogaVideo',
+      base64Video,
+    });
+    return response.text;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return 'Ошибка ключа';
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -185,6 +250,16 @@ export const analyzeYogaVideo = async (base64Video: string): Promise<string> => 
 
 // --- 5. THINKING MODE (Complex Program) ---
 export const generatePersonalProgram = async (request: string): Promise<string> => {
+  try {
+    const response = await callGeminiProxy<{ text: string }>({
+      op: 'generatePersonalProgram',
+      request,
+    });
+    return response.text;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return 'Ошибка ключа';
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -208,6 +283,15 @@ export const generatePersonalProgram = async (request: string): Promise<string> 
 export const transcribeDiaryEntry = async (
   audioBase64: string
 ): Promise<{ text: string; summary: string }> => {
+  try {
+    return await callGeminiProxy<{ text: string; summary: string }>({
+      op: 'transcribeDiaryEntry',
+      audioBase64,
+    });
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return { text: '', summary: 'Ошибка' };
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -234,6 +318,16 @@ export const transcribeDiaryEntry = async (
 
 // --- EXISTING HELPERS ---
 export const generateSpeech = async (text: string): Promise<string | null> => {
+  try {
+    const response = await callGeminiProxy<{ audioBase64: string | null }>({
+      op: 'generateSpeech',
+      text,
+    });
+    return response.audioBase64;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return null;
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -255,6 +349,17 @@ export const generateMeditationScript = async (
   topic: string,
   duration: 'short' | 'medium'
 ): Promise<string> => {
+  try {
+    const response = await callGeminiProxy<{ text: string }>({
+      op: 'generateMeditationScript',
+      topic,
+      duration,
+    });
+    return response.text;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return 'Ошибка ключа';
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -269,6 +374,16 @@ export const generateMeditationScript = async (
 };
 
 export const analyzeImageContent = async (base64Image: string): Promise<AsanaAnalysis | string> => {
+  try {
+    const response = await callGeminiProxy<{ result: AsanaAnalysis | string }>({
+      op: 'analyzeImageContent',
+      base64Image,
+    });
+    return response.result;
+  } catch {
+    // ignore and fallback
+  }
+
   if (!process.env.API_KEY) return 'API ключ не настроен';
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });

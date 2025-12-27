@@ -27,14 +27,20 @@ describe('dataService', () => {
       }),
     });
 
-    const user = await dataService.registerUser('Анна', '+79990001122');
+    const user = await dataService.registerUser(
+      'Анна',
+      '+79990001122',
+      '11111111-1111-4111-8111-111111111111'
+    );
 
     expect(user.avatar).toBe('avatar.png');
     expect(user.createdAt).toBe('2024-01-01T00:00:00.000Z');
 
-    const stored = JSON.parse(localStorage.getItem('ksebe_user') || '{}');
-    expect(stored.name).toBe('Анна');
-    expect(stored.phone).toBe('+79990001122');
+    // Cache layer may be IndexedDB or localStorage depending on environment.
+    // Validate via service API instead of assuming a specific storage backend.
+    const stored = await dataService.getUser();
+    expect(stored?.name).toBe('Анна');
+    expect(stored?.phone).toBe('+79990001122');
   });
 
   it('maps bookings from Supabase payload', async () => {
@@ -57,7 +63,14 @@ describe('dataService', () => {
       }),
     });
 
-    const bookings = await dataService.getBookings('+79990001122');
+    const bookings = await dataService.getBookings({
+      id: '11111111-1111-4111-8111-111111111111',
+      name: 'Анна',
+      phone: '+79990001122',
+      city: 'Москва',
+      isRegistered: true,
+      createdAt: '2024-01-01T00:00:00.000Z',
+    });
 
     expect(bookings).toHaveLength(1);
     expect(bookings[0]).toMatchObject({
@@ -73,7 +86,7 @@ describe('dataService', () => {
 
   it('returns false for duplicate bookings', async () => {
     const registerSpy = vi.spyOn(dataService, 'registerUser').mockResolvedValue({
-      id: '+79990001122',
+      id: '11111111-1111-4111-8111-111111111111',
       name: 'Анна',
       phone: '+79990001122',
       city: 'Москва',
@@ -107,7 +120,7 @@ describe('dataService', () => {
         isOnline: false,
       },
       {
-        id: '+79990001122',
+        id: '11111111-1111-4111-8111-111111111111',
         name: 'Анна',
         phone: '+79990001122',
         city: 'Москва',
