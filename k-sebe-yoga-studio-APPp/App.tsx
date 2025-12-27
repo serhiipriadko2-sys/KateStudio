@@ -30,6 +30,7 @@ import { Pricing } from './components/Pricing';
 import { Retreats } from './components/Retreats';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
+import { StreakCard } from './components/StreakCard';
 import { VideoLibrary } from './components/VideoLibrary';
 import { useAuth } from './context/AuthContext';
 
@@ -472,6 +473,8 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
             </div>
           </div>
         </div>
+
+        <StreakCard onOpenRecommended={() => setActiveTab('ai')} />
 
         <div className="mt-12 mb-6">
           <div className="px-6 mb-2 flex justify-between items-end">
