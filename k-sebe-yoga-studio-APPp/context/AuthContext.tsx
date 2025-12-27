@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
+import { retentionService } from '../services/retentionService';
 import { supabase } from '../services/supabaseClient';
 import { UserProfile } from '../types';
 
@@ -59,6 +60,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (phone) {
           const profile = await dataService.registerUser(name, phone, session.user.id);
           setUser(profile);
+        }
+
+        // Retention bootstrap: migrate local onboarding/streak → Supabase on first login.
+        if (session.user?.id) {
+          retentionService.bootstrapForUser(session.user.id).catch(() => {});
         }
       } else {
         setAuthStatus('anonymous');

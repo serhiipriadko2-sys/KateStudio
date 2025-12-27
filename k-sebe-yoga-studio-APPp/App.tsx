@@ -24,13 +24,16 @@ import { Directions } from './components/Directions';
 import { Gallery } from './components/Gallery';
 import { Image } from './components/Image';
 import { Logo } from './components/Logo';
+import { OnboardingQuizModal, type OnboardingData } from './components/OnboardingQuizModal';
 import { Philosophy } from './components/Philosophy';
 import { Pricing } from './components/Pricing';
 import { Retreats } from './components/Retreats';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
+import { StreakCard } from './components/StreakCard';
 import { VideoLibrary } from './components/VideoLibrary';
 import { useAuth } from './context/AuthContext';
+import { retentionService } from './services/retentionService';
 
 type Tab = 'home' | 'schedule' | 'ai' | 'studio' | 'profile';
 
@@ -186,8 +189,12 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
 };
 
 export default function App() {
+  const { authStatus, user } = useAuth();
   const [introFinished, setIntroFinished] = useState(() => {
     return localStorage.getItem('ksebe_intro_complete') === 'true';
+  });
+  const [onboardingOpen, setOnboardingOpen] = useState(() => {
+    return localStorage.getItem('ksebe_onboarding_complete') !== 'true';
   });
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [scrolled, setScrolled] = useState(false);
@@ -207,6 +214,12 @@ export default function App() {
     }
   }, []);
 
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !user?.id) return;
+    // Ensure we sync onboarding/streak even if login happened elsewhere.
+    retentionService.bootstrapForUser(user.id).catch(() => {});
+  }, [authStatus, user?.id]);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrolled(e.currentTarget.scrollTop > 20);
   };
@@ -221,6 +234,9 @@ export default function App() {
   const handleIntroComplete = () => {
     localStorage.setItem('ksebe_intro_complete', 'true');
     setIntroFinished(true);
+    if (localStorage.getItem('ksebe_onboarding_complete') !== 'true') {
+      setOnboardingOpen(true);
+    }
   };
 
   if (!introFinished) {
@@ -228,7 +244,29 @@ export default function App() {
   }
 
   if (activeTab === 'profile') {
-    return <Dashboard initialTab="profile" onBack={() => handleTabChange('home')} />;
+    return (
+      <>
+        <Dashboard initialTab="profile" onBack={() => handleTabChange('home')} />
+        <OnboardingQuizModal
+          open={onboardingOpen}
+          onClose={() => {
+            localStorage.setItem('ksebe_onboarding_complete', 'true');
+            setOnboardingOpen(false);
+          }}
+          onComplete={(data: OnboardingData) => {
+            localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
+            localStorage.setItem('ksebe_onboarding_complete', 'true');
+            setOnboardingOpen(false);
+            if (authStatus === 'authenticated' && user?.id) {
+              retentionService.saveOnboarding(user.id, data).catch(() => {});
+              retentionService
+                .logEvent(user.id, 'onboarding_completed', { source: 'app' })
+                .catch(() => {});
+            }
+          }}
+        />
+      </>
+    );
   }
 
   return (
@@ -331,6 +369,25 @@ export default function App() {
       </nav>
 
       <ChatWidget hidden={activeTab === 'ai'} />
+
+      <OnboardingQuizModal
+        open={onboardingOpen}
+        onClose={() => {
+          localStorage.setItem('ksebe_onboarding_complete', 'true');
+          setOnboardingOpen(false);
+        }}
+        onComplete={(data: OnboardingData) => {
+          localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
+          localStorage.setItem('ksebe_onboarding_complete', 'true');
+          setOnboardingOpen(false);
+          if (authStatus === 'authenticated' && user?.id) {
+            retentionService.saveOnboarding(user.id, data).catch(() => {});
+            retentionService
+              .logEvent(user.id, 'onboarding_completed', { source: 'app' })
+              .catch(() => {});
+          }
+        }}
+      />
     </div>
   );
 }
@@ -436,6 +493,8 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
             </div>
           </div>
         </div>
+
+        <StreakCard onOpenRecommended={() => setActiveTab('ai')} />
 
         <div className="mt-12 mb-6">
           <div className="px-6 mb-2 flex justify-between items-end">
