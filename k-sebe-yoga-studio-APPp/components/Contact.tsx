@@ -1,34 +1,99 @@
-import { Send, Phone, MapPin, Navigation, Loader2, Check, MessageCircle } from 'lucide-react';
+import {
+  Phone,
+  MapPin,
+  Navigation,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  MessageCircle,
+} from 'lucide-react';
 import React, { useState } from 'react';
-import { useToast } from '../context/ToastContext';
+import { supabase } from '../services/supabaseClient';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
 
 export const Contact: React.FC = () => {
-  const { showToast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    message: '',
+  });
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [touched, setTouched] = useState<{ name?: boolean; phone?: boolean }>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const formatPhoneNumber = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length === 0) return '';
+    if (numbers.length <= 1) return `+7 (${numbers}`;
+    if (numbers.length <= 4) return `+7 (${numbers.slice(1)}`;
+    if (numbers.length <= 7) return `+7 (${numbers.slice(1, 4)}) ${numbers.slice(4)}`;
+    if (numbers.length <= 9)
+      return `+7 (${numbers.slice(1, 4)}) ${numbers.slice(4, 7)}-${numbers.slice(7)}`;
+    return `+7 (${numbers.slice(1, 4)}) ${numbers.slice(4, 7)}-${numbers.slice(7, 9)}-${numbers.slice(9, 11)}`;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    if (name === 'phone') {
+      const raw = value.replace(/\D/g, '');
+      if (raw.length === 0) {
+        setFormData((prev) => ({ ...prev, phone: '' }));
+      } else {
+        setFormData((prev) => ({ ...prev, phone: formatPhoneNumber(value) }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setTouched((prev) => ({ ...prev, [e.target.name]: true }));
+  };
+
+  const isPhoneValid = formData.phone.length >= 16; // relaxed
+  const isNameValid = formData.name.trim().length > 1;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (!isPhoneValid || !isNameValid) {
+      setTouched({ name: true, phone: true });
+      return;
+    }
 
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      setSent(true);
-      showToast('Заявка отправлена! Мы свяжемся с вами.', 'success');
+    setStatus('loading');
 
-      // Reset form after 3 seconds
-      setTimeout(() => setSent(false), 3000);
-    }, 1500);
+    try {
+      if (supabase) {
+        const { error } = await supabase.from('contacts').insert([
+          {
+            name: formData.name,
+            phone: formData.phone,
+            message: formData.message,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+        if (error) throw error;
+      } else {
+        // no credentials: simulate
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+
+      setStatus('success');
+      setFormData({ name: '', phone: '', message: '' });
+      setTouched({});
+
+      setTimeout(() => setStatus('idle'), 5000);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setStatus('error');
+    }
   };
 
   return (
     <section id="contact" className="py-24 px-6 max-w-7xl mx-auto mb-10">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Contact Form */}
-        <div className="bg-[#1a1a1a] text-white rounded-[3rem] p-8 md:p-16 relative overflow-hidden flex flex-col justify-center">
+        <div className="bg-[#1a1a1a] text-white rounded-[3rem] p-8 md:p-16 relative overflow-hidden flex flex-col justify-center shadow-2xl">
           <div className="absolute top-0 right-0 w-96 h-96 bg-brand-green/20 rounded-full blur-[100px] pointer-events-none"></div>
 
           <div className="relative z-10">
@@ -41,44 +106,91 @@ export const Contact: React.FC = () => {
 
             <form className="space-y-6" onSubmit={handleSubmit}>
               <FadeIn delay={100} fullWidth>
-                <input
-                  type="text"
-                  placeholder="Ваше имя"
-                  required
-                  className="w-full bg-transparent border-b border-white/20 text-white px-4 py-4 focus:outline-none focus:border-brand-green placeholder:text-white/30 transition-all text-lg"
-                />
+                <div className="relative group">
+                  <label htmlFor="name" className="sr-only">
+                    Ваше имя
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Ваше имя"
+                    className={`w-full bg-transparent border-b px-4 py-4 focus:outline-none placeholder:text-white/30 transition-all text-lg focus:bg-white/5 rounded-t-lg
+                        ${touched.name && !isNameValid ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/20 focus:border-brand-green'}
+                    `}
+                  />
+                  {touched.name && !isNameValid && (
+                    <span className="absolute right-4 top-4 text-rose-500">
+                      <AlertCircle className="w-5 h-5" />
+                    </span>
+                  )}
+                </div>
               </FadeIn>
               <FadeIn delay={200} fullWidth>
-                <input
-                  type="tel"
-                  placeholder="Телефон"
-                  required
-                  className="w-full bg-transparent border-b border-white/20 text-white px-4 py-4 focus:outline-none focus:border-brand-green placeholder:text-white/30 transition-all text-lg"
-                />
+                <div className="relative group">
+                  <label htmlFor="phone" className="sr-only">
+                    Телефон
+                  </label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="+7 (999) 000-00-00"
+                    maxLength={18}
+                    className={`w-full bg-transparent border-b px-4 py-4 focus:outline-none placeholder:text-white/30 transition-all text-lg focus:bg-white/5 rounded-t-lg
+                        ${touched.phone && !isPhoneValid ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/20 focus:border-brand-green'}
+                    `}
+                  />
+                  {touched.phone && !isPhoneValid && (
+                    <span className="absolute right-4 top-4 text-rose-500">
+                      <AlertCircle className="w-5 h-5" />
+                    </span>
+                  )}
+                </div>
               </FadeIn>
               <FadeIn delay={300} fullWidth>
                 <textarea
+                  id="message"
                   rows={2}
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
                   placeholder="Ваш вопрос"
-                  className="w-full bg-transparent border-b border-white/20 text-white px-4 py-4 focus:outline-none focus:border-brand-green placeholder:text-white/30 transition-all resize-none text-lg"
+                  className="w-full bg-transparent border-b border-white/20 text-white px-4 py-4 focus:outline-none focus:border-brand-green placeholder:text-white/30 transition-all resize-none text-lg focus:bg-white/5 rounded-t-lg"
                 />
               </FadeIn>
               <FadeIn delay={400} fullWidth>
                 <button
                   type="submit"
-                  disabled={loading || sent}
-                  className={`
-                        w-full font-medium py-5 rounded-full mt-8 transition-all shadow-lg tracking-widest text-xs uppercase flex items-center justify-center gap-2
-                        ${sent ? 'bg-brand-green text-white' : 'bg-white text-brand-dark hover:bg-brand-mint hover:shadow-white/10'}
-                    `}
+                  disabled={status === 'loading' || status === 'success'}
+                  className={`w-full font-medium py-5 rounded-full mt-8 transition-all shadow-lg tracking-widest text-xs uppercase flex items-center justify-center gap-2
+                    ${
+                      status === 'success'
+                        ? 'bg-green-500 text-white cursor-default'
+                        : status === 'error'
+                          ? 'bg-rose-500 text-white'
+                          : 'bg-white text-brand-dark hover:bg-brand-mint hover:shadow-white/10 active:scale-95'
+                    }
+                  `}
                 >
-                  {loading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : sent ? (
-                    <Check className="w-5 h-5" />
-                  ) : (
-                    'Отправить'
+                  {status === 'loading' && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {status === 'success' && (
+                    <>
+                      <CheckCircle className="w-5 h-5" /> Отправлено
+                    </>
                   )}
+                  {status === 'error' && (
+                    <>
+                      <AlertCircle className="w-5 h-5" /> Ошибка. Повторить?
+                    </>
+                  )}
+                  {status === 'idle' && 'Отправить'}
                 </button>
                 <p className="text-[10px] text-white/20 text-center px-4 pt-4">
                   Нажимая кнопку, вы соглашаетесь с условиями обработки данных

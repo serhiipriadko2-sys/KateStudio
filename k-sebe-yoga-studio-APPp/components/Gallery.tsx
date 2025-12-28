@@ -3,30 +3,39 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
 
-const galleryImages = [
+type GalleryMediaItem = {
+  id: number;
+  url: string;
+  alt: string;
+  wrapperClassName?: string;
+  imageClassName?: string;
+};
+
+const galleryImages: GalleryMediaItem[] = [
   {
     id: 1,
-    url: 'https://images.unsplash.com/photo-1552196563-55cd4e45efb3?q=80&w=600&auto=format&fit=crop',
+    url: `${import.meta.env.BASE_URL}images/gallery/gallery-image-1.jpg`,
     alt: 'Meditation Atmosphere',
-    className: 'md:col-span-1 row-span-1',
+    wrapperClassName: 'md:col-span-1 row-span-1',
   },
   {
     id: 2,
-    url: 'https://images.unsplash.com/photo-1510894347713-fc3ed6fdf539?q=80&w=800&auto=format&fit=crop',
+    url: `${import.meta.env.BASE_URL}images/gallery/gallery-image-2.jpg`,
     alt: 'Stretching Flow',
-    className: 'md:col-span-2 row-span-1 object-[50%_40%]',
+    wrapperClassName: 'md:col-span-2 row-span-1',
+    imageClassName: 'object-[50%_40%]',
   },
   {
     id: 3,
-    url: 'https://images.unsplash.com/photo-1552196563-55cd4e45efb3?q=80&w=800&auto=format&fit=crop',
+    url: `${import.meta.env.BASE_URL}images/gallery/gallery-image-3.jpg`,
     alt: 'Yoga Studio Vibe',
-    className: 'md:col-span-2 row-span-1',
+    wrapperClassName: 'md:col-span-2 row-span-1',
   },
   {
     id: 4,
-    url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=600&auto=format&fit=crop',
+    url: `${import.meta.env.BASE_URL}images/gallery/gallery-image-4.jpg`,
     alt: 'Peaceful Moment',
-    className: 'md:col-span-1 row-span-1',
+    wrapperClassName: 'md:col-span-1 row-span-1',
   },
 ];
 
@@ -103,7 +112,7 @@ export const Gallery: React.FC = () => {
               key={img.id}
               delay={idx * 150}
               direction="up"
-              className={`${img.className} h-full`}
+              className={`${img.wrapperClassName ?? ''} h-full`}
             >
               <div
                 className={`h-full w-full rounded-[2.5rem] overflow-hidden relative group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500`}
@@ -114,7 +123,7 @@ export const Gallery: React.FC = () => {
                   alt={img.alt}
                   storageKey={`gallery-image-${img.id}`}
                   containerClassName="w-full h-full"
-                  className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${img.id === 2 ? 'object-[50%_40%]' : ''}`}
+                  className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${img.imageClassName ?? ''}`}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 duration-300 z-20 pointer-events-none">
                   <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white">
@@ -161,13 +170,17 @@ export const Gallery: React.FC = () => {
           </button>
 
           <div className="relative max-w-full max-h-[85vh]">
-            <img
-              key={selectedIndex} // Force re-render for fade-in effect on change
-              src={galleryImages[selectedIndex].url}
-              alt="Full view"
-              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-500 select-none pointer-events-none md:pointer-events-auto"
-              onClick={(e) => e.stopPropagation()}
-            />
+            <div onClick={(e) => e.stopPropagation()}>
+              <Image
+                key={selectedIndex}
+                src={galleryImages[selectedIndex].url}
+                alt={galleryImages[selectedIndex].alt}
+                storageKey={`gallery-image-${galleryImages[selectedIndex].id}`}
+                containerClassName="max-w-full max-h-[85vh]"
+                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-500 select-none"
+                controlsClassName="hidden"
+              />
+            </div>
           </div>
 
           <div className="absolute bottom-10 left-0 right-0 text-center text-white/50 text-sm md:hidden pointer-events-none">
