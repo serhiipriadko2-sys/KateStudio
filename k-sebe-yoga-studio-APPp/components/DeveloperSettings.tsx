@@ -1,3 +1,4 @@
+import { saveImageMapping, uploadImage } from '@ksebe/shared';
 import {
   Save,
   RotateCcw,
@@ -34,6 +35,41 @@ const THEME_VARS = [
   { name: '--brand-text', label: 'Текст', default: '#333333' },
   { name: '--brand-yellow', label: 'Желтый (Неон)', default: '#fceeb5' },
 ];
+
+const isQuotaExceeded = (err: unknown): boolean => {
+  if (!err || typeof err !== 'object') return false;
+  const anyErr = err as any;
+  return (
+    anyErr?.name === 'QuotaExceededError' ||
+    anyErr?.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+    String(anyErr?.message ?? '')
+      .toLowerCase()
+      .includes('quota')
+  );
+};
+
+const dataUrlToFile = (dataUrl: string, key: string): File | null => {
+  const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!match) return null;
+  const mime = match[1];
+  const base64 = match[2];
+
+  const ext =
+    mime === 'image/png'
+      ? 'png'
+      : mime === 'image/webp'
+        ? 'webp'
+        : mime === 'image/gif'
+          ? 'gif'
+          : 'jpg';
+
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+  const blob = new Blob([bytes], { type: mime });
+  return new File([blob], `${key}.${ext}`, { type: mime });
+};
 
 export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const { showToast } = useToast();
@@ -147,42 +183,85 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string) as any;
+      const apply = async () => {
+        try {
+          const json = JSON.parse(event.target?.result as string) as any;
 
-        // --- Format A (APP backup): { theme: string, user: string, assets: Record<string,string> }
-        if (typeof json.theme === 'string') {
-          localStorage.setItem('ksebe_theme_config', json.theme);
-        }
-        if (typeof json.user === 'string') {
-          localStorage.setItem('ksebe_user', json.user);
-        }
-        if (json.assets && typeof json.assets === 'object') {
-          Object.entries(json.assets as Record<string, unknown>).forEach(([key, val]) => {
-            if (typeof val === 'string') localStorage.setItem(key, val);
-          });
-        }
+          // --- Theme ---
+          if (typeof json.theme === 'string') {
+            localStorage.setItem('ksebe_theme_config', json.theme);
+          } else if (json.theme && typeof json.theme === 'object' && !Array.isArray(json.theme)) {
+            localStorage.setItem('ksebe_theme_config', JSON.stringify(json.theme));
+          }
 
-        // --- Format B (WEB export): { theme: object, images: Record<string,string> }
-        if (json.theme && typeof json.theme === 'object' && !Array.isArray(json.theme)) {
-          localStorage.setItem('ksebe_theme_config', JSON.stringify(json.theme));
-        }
-        if (json.images && typeof json.images === 'object') {
-          Object.entries(json.images as Record<string, unknown>).forEach(([key, val]) => {
-            if (typeof val === 'string') {
-              // Store as-is (APP reads plain keys), plus keep WEB-compatible key too
+          // --- User (APP backup only) ---
+          if (typeof json.user === 'string') {
+            localStorage.setItem('ksebe_user', json.user);
+          }
+
+          // --- Assets (APP backup) + Images (WEB export) ---
+          const entries: Array<[string, string]> = [];
+          if (json.assets && typeof json.assets === 'object') {
+            Object.entries(json.assets as Record<string, unknown>).forEach(([key, val]) => {
+              if (typeof val === 'string') entries.push([key, val]);
+            });
+          }
+          if (json.images && typeof json.images === 'object') {
+            Object.entries(json.images as Record<string, unknown>).forEach(([key, val]) => {
+              if (typeof val === 'string') entries.push([key, val]);
+            });
+          }
+
+          let stored = 0;
+          let uploaded = 0;
+
+          for (const [key, val] of entries) {
+            // Save for Image component compatibility
+            try {
               localStorage.setItem(key, val);
               localStorage.setItem(`ksebe-img-${key}`, val);
-            }
-          });
-        }
+              stored += 1;
+            } catch (err) {
+              if (!isQuotaExceeded(err)) throw err;
 
-        showToast('Импорт выполнен! Перезагрузка...', 'success');
-        setTimeout(() => window.location.reload(), 1500);
-      } catch (err) {
-        console.error(err);
-        showToast('Ошибка чтения файла', 'error');
-      }
+              // If we got base64 (data URL) — try to upload to Supabase Storage and store URL instead.
+              if (val.startsWith('data:')) {
+                const file = dataUrlToFile(val, key);
+                if (file) {
+                  const publicUrl = await uploadImage(file, key);
+                  if (publicUrl) {
+                    localStorage.setItem(key, publicUrl);
+                    localStorage.setItem(`ksebe-img-${key}`, publicUrl);
+                    // Best-effort mapping (optional)
+                    await saveImageMapping(key, publicUrl);
+                    uploaded += 1;
+                    stored += 1;
+                    continue;
+                  }
+                }
+              }
+
+              // Couldn't store it; skip but keep going
+            }
+          }
+
+          showToast(
+            uploaded > 0
+              ? `Импорт: сохранено ${stored}, загружено в облако ${uploaded}. Перезагрузка...`
+              : `Импорт: сохранено ${stored}. Перезагрузка...`,
+            'success'
+          );
+          setTimeout(() => window.location.reload(), 1500);
+        } catch (err) {
+          console.error(err);
+          showToast(
+            'Импорт не удался. Если файл большой (base64) — включите Supabase в APP, чтобы загружать в облако.',
+            'error'
+          );
+        }
+      };
+
+      void apply();
     };
     reader.readAsText(file);
   };
