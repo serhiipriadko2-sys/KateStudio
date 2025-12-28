@@ -8,14 +8,14 @@ export const Hero: React.FC = () => {
     <section className="relative h-screen min-h-[600px] flex flex-col justify-end pb-24 px-6 md:px-12 overflow-hidden">
       <div className="absolute inset-0 z-0">
         <Image
-          src="/hero.jpg"
-          fallbackSrc="https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=1920&auto=format&fit=crop"
+          src={`${import.meta.env.BASE_URL}images/hero/hero-bg.jpg`}
           alt="Yoga Pose"
-          storageKey="hero-main-bg-v4"
-          showControlsLabel={true} // Explicitly show the "Change Photo" text
+          storageKey="hero-main-bg"
           containerClassName="w-full h-full"
           className="w-full h-full object-cover object-center brightness-[0.85]"
           controlsClassName="top-24 right-6 md:top-28 md:right-8"
+          loading="eager"
+          fetchPriority="high"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none z-10"></div>
       </div>
