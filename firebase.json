@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "katestudio-46812323",
+    "site": "artful-striker-476211-h4",
     "public": "k-sebe-yoga-studio-APPp/dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
