@@ -16,8 +16,9 @@ import { useToast } from '../context/ToastContext';
 // Define the critical image keys used in the app
 const ASSET_SLOTS = [
   { key: 'hero-main-bg-v4', label: 'Главный экран (Hero)', desc: '1920x1080, затемненный' },
-  { key: 'retreat-cover', label: 'Обложка Ретритов', desc: '1200x800' },
-  { key: 'retreat-modal', label: 'Ретрит (Внутри)', desc: '800x600' },
+  // Match WEB keys so one config works for both
+  { key: 'retreat-cover-main', label: 'Обложка Ретритов', desc: '1200x800' },
+  { key: 'retreat-modal-sidebar', label: 'Ретрит (Внутри)', desc: '800x600' },
   { key: 'home-studio-promo', label: 'Промо Студии (Главная)', desc: 'Вертикальное' },
   { key: 'about-katya-portrait', label: 'Портрет Кати (Обо мне)', desc: '600x800' },
   { key: 'contact-map-bg', label: 'Фон карты (Контакты)', desc: 'Широкое' },
@@ -147,25 +148,36 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const json = JSON.parse(event.target?.result as string);
+        const json = JSON.parse(event.target?.result as string) as any;
 
-        if (json.theme) {
+        // --- Format A (APP backup): { theme: string, user: string, assets: Record<string,string> }
+        if (typeof json.theme === 'string') {
           localStorage.setItem('ksebe_theme_config', json.theme);
         }
-
-        if (json.user) {
+        if (typeof json.user === 'string') {
           localStorage.setItem('ksebe_user', json.user);
         }
+        if (json.assets && typeof json.assets === 'object') {
+          Object.entries(json.assets as Record<string, unknown>).forEach(([key, val]) => {
+            if (typeof val === 'string') localStorage.setItem(key, val);
+          });
+        }
 
-        if (json.assets) {
-          Object.entries(json.assets).forEach(([key, val]) => {
+        // --- Format B (WEB export): { theme: object, images: Record<string,string> }
+        if (json.theme && typeof json.theme === 'object' && !Array.isArray(json.theme)) {
+          localStorage.setItem('ksebe_theme_config', JSON.stringify(json.theme));
+        }
+        if (json.images && typeof json.images === 'object') {
+          Object.entries(json.images as Record<string, unknown>).forEach(([key, val]) => {
             if (typeof val === 'string') {
+              // Store as-is (APP reads plain keys), plus keep WEB-compatible key too
               localStorage.setItem(key, val);
+              localStorage.setItem(`ksebe-img-${key}`, val);
             }
           });
         }
 
-        showToast('Бэкап восстановлен! Перезагрузка...', 'success');
+        showToast('Импорт выполнен! Перезагрузка...', 'success');
         setTimeout(() => window.location.reload(), 1500);
       } catch (err) {
         console.error(err);

@@ -78,7 +78,7 @@ export const Retreats: React.FC = () => {
               <Image
                 src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop"
                 alt="Yoga Retreat Altai"
-                storageKey="retreat-cover"
+                storageKey="retreat-cover-main"
                 containerClassName="absolute inset-0 w-full h-full"
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
@@ -134,7 +134,7 @@ export const Retreats: React.FC = () => {
               <Image
                 src="https://images.unsplash.com/photo-1518182170546-0766be6f5a56?q=80&w=800&auto=format&fit=crop"
                 alt="Altai Nature Detail"
-                storageKey="retreat-modal"
+                storageKey="retreat-modal-sidebar"
                 containerClassName="w-full h-full"
                 className="w-full h-full object-cover"
               />
