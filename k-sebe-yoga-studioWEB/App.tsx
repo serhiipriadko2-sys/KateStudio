@@ -1,10 +1,9 @@
-import { ScrollProgress, BackToTop, CookieBanner, Marquee, useIsPWA } from '@ksebe/shared';
+import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { About } from './components/About';
 import { AdminPanel } from './components/AdminPanel';
 import { Benefits } from './components/Benefits';
-import { InstagramFeed } from './components/InstagramFeed';
 import { BookingModal } from './components/BookingModal';
 import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
@@ -14,12 +13,12 @@ import { FirstVisit } from './components/FirstVisit';
 import { Footer } from './components/Footer';
 import { Gallery } from './components/Gallery';
 import { Hero } from './components/Hero';
+import { InstagramFeed } from './components/InstagramFeed';
 import { LegalModals } from './components/LegalModals';
 import { Logo } from './components/Logo';
 import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
 import { Pricing } from './components/Pricing';
-import { PWAShell } from './components/PWAShell';
 import { Retreats } from './components/Retreats';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
@@ -28,7 +27,6 @@ import { loadTheme, applyTheme } from './services/theme';
 import { BookingDetails } from './types';
 
 function App() {
-  const isPWA = useIsPWA();
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
@@ -187,26 +185,26 @@ function App() {
 
         {/* --- Smart Glass Navigation Bar (hidden in PWA mode) --- */}
         {!isPWA && (
-        <nav
-          className={`fixed top-0 left-0 right-0 z-50 flex justify-between items-center transition-all duration-500 ease-in-out pointer-events-none
+          <nav
+            className={`fixed top-0 left-0 right-0 z-50 flex justify-between items-center transition-all duration-500 ease-in-out pointer-events-none
             ${isScrolled ? 'py-3 px-6 bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20' : 'py-6 px-6 bg-transparent'}
           `}
-        >
-          <div
-            onClick={scrollToTop}
-            className={`relative z-50 pointer-events-auto transition-all duration-500 cursor-pointer ${isScrolled ? 'w-10 h-10' : 'w-16 h-16'}`}
-            title="Наверх"
           >
-            <Logo
-              className="w-full h-full drop-shadow-sm transition-colors duration-300"
-              color={isScrolled && !isMenuOpen ? '#57a773' : '#fff'}
-            />
-          </div>
+            <div
+              onClick={scrollToTop}
+              className={`relative z-50 pointer-events-auto transition-all duration-500 cursor-pointer ${isScrolled ? 'w-10 h-10' : 'w-16 h-16'}`}
+              title="Наверх"
+            >
+              <Logo
+                className="w-full h-full drop-shadow-sm transition-colors duration-300"
+                color={isScrolled && !isMenuOpen ? '#57a773' : '#fff'}
+              />
+            </div>
 
-          <button
-            onClick={toggleMenu}
-            aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
-            className={`
+            <button
+              onClick={toggleMenu}
+              aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+              className={`
               group p-3 rounded-full transition-all z-50 pointer-events-auto shadow-sm hover:shadow-md
               ${
                 isScrolled
@@ -214,18 +212,18 @@ function App() {
                   : 'bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20'
               }
             `}
-          >
-            {isMenuOpen ? (
-              <X
-                className={`w-6 h-6 transition-colors ${isScrolled ? 'text-stone-800' : 'text-brand-dark md:text-white'}`}
-              />
-            ) : (
-              <Menu
-                className={`w-6 h-6 transition-colors ${isScrolled ? 'text-brand-green' : 'text-white'}`}
-              />
-            )}
-          </button>
-        </nav>
+            >
+              {isMenuOpen ? (
+                <X
+                  className={`w-6 h-6 transition-colors ${isScrolled ? 'text-stone-800' : 'text-brand-dark md:text-white'}`}
+                />
+              ) : (
+                <Menu
+                  className={`w-6 h-6 transition-colors ${isScrolled ? 'text-brand-green' : 'text-white'}`}
+                />
+              )}
+            </button>
+          </nav>
         )}
 
         {(isOffline || updateAvailable) && (
@@ -335,44 +333,28 @@ function App() {
         )}
 
         {/* Main Content Flow */}
-        {isPWA ? (
-          <PWAShell>
-            <main id="main-content" tabIndex={-1} className="flex-1">
-              <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
-              <About />
-              <Directions onBook={(type) => openBooking({ type })} />
-              <Gallery />
-              <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-              <Schedule onBook={(details) => openBooking(details)} />
-              <Reviews />
-              <FAQ />
-              <Contact />
-            </main>
-          </PWAShell>
-        ) : (
-          <main id="main-content" tabIndex={-1} className="flex-1">
-            <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
-            <Marquee />
-            <Benefits />
-            <About />
-            <Philosophy />
-            <Directions onBook={(type) => openBooking({ type })} />
-            <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
-            <Gallery />
-            <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-            {/* Retreats temporarily hidden - no upcoming retreat info */}
-            {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
-            <Schedule onBook={(details) => openBooking(details)} />
-            <InstagramFeed />
-            <Reviews />
-            <FAQ />
-            <Contact />
-            <Footer
-              onOpenAdmin={() => setIsAdminOpen(true)}
-              onOpenLegal={(type) => setLegalModalType(type)}
-            />
-          </main>
-        )}
+        <main id="main-content" tabIndex={-1} className="flex-1">
+          <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
+          <Marquee />
+          <Benefits />
+          <About />
+          <Philosophy />
+          <Directions onBook={(type) => openBooking({ type })} />
+          <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
+          <Gallery />
+          <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
+          {/* Retreats temporarily hidden - no upcoming retreat info */}
+          {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
+          <Schedule onBook={(details) => openBooking(details)} />
+          <InstagramFeed />
+          <Reviews />
+          <FAQ />
+          <Contact />
+          <Footer
+            onOpenAdmin={() => setIsAdminOpen(true)}
+            onOpenLegal={(type) => setLegalModalType(type)}
+          />
+        </main>
 
         <BackToTop />
         <ChatWidget />
