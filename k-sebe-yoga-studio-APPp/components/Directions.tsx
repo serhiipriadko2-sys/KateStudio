@@ -1,137 +1,108 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import React, { useState } from 'react';
+import { ArrowRight } from 'lucide-react';
+import React from 'react';
+import { useToast } from '../context/ToastContext';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
 
 export const Directions: React.FC = () => {
-  const [expanded, setExpanded] = useState<string | null>(null);
-
-  const toggle = (id: string) => {
-    setExpanded((prev) => (prev === id ? null : id));
+  const { showToast } = useToast();
+  const handleBook = (type: string) => {
+    window.dispatchEvent(
+      new CustomEvent('ksebe-open-chat', {
+        detail: {
+          message: `Здравствуйте! Я хочу записаться на "${type}". Подскажите, пожалуйста.`,
+        },
+      })
+    );
+    showToast('Переходим в чат для записи...', 'success');
   };
 
   return (
     <section id="directions" className="px-4 pb-24 scroll-mt-20">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Inside Flow Card */}
         <FadeIn delay={100} direction="up">
-          <div className="group bg-[#EBF7F1] rounded-[3rem] p-8 md:p-16 transition-colors hover:bg-[#E1F2EA]">
+          <div className="group bg-[#EBF7F1] rounded-[3rem] p-8 md:p-16 transition-all hover:shadow-2xl hover:shadow-brand-green/10">
             <div className="flex flex-col md:flex-row items-center gap-10 md:gap-20">
               <div className="md:w-1/2 order-2 md:order-1">
                 <h3 className="text-3xl md:text-5xl font-serif text-brand-text mb-6">
                   Inside Flow
                 </h3>
-
-                <div
-                  className={`overflow-hidden transition-all duration-500 ease-in-out ${expanded === 'flow' ? 'max-h-[500px]' : 'max-h-[100px] md:max-h-full'}`}
+                <p className="text-brand-text/70 text-lg leading-relaxed mb-8">
+                  Практика, вобравшая в себя лучшее из йоги, танца и музыки. Асаны сменяют друг
+                  друга, превращаясь в плавные, ритмичные движения.
+                  <span className="block mt-4 font-medium text-brand-green">
+                    Это танец твоего дыхания.
+                  </span>
+                </p>
+                <div className="flex flex-wrap gap-3 mb-8">
+                  {['Ритм', 'Музыка', 'Поток'].map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-5 py-2 bg-white rounded-full text-xs text-brand-green font-bold tracking-wider uppercase border border-white group-hover:border-brand-green transition-colors"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <button
+                  onClick={() => handleBook('Inside Flow')}
+                  className="flex items-center gap-2 text-brand-green font-medium group/btn w-fit"
                 >
-                  <p className="text-brand-text/70 text-lg leading-relaxed mb-4">
-                    Практика, вобравшая в себя лучшее из йоги, танца и музыки. Асаны сменяют друг
-                    друга, превращаясь в плавные, ритмичные и красивые движения. Это танец твоего
-                    дыхания.
-                  </p>
-                  <p
-                    className={`text-brand-text/70 text-lg leading-relaxed mb-8 ${expanded === 'flow' ? 'block' : 'hidden'}`}
-                  >
-                    Мы движемся в такт современной музыке, создавая единый поток энергии. Это
-                    помогает отключить голову и полностью погрузиться в ощущения тела. Подходит для
-                    тех, кто ищет динамику и эстетику в йоге.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-wrap gap-3">
-                    <span className="px-4 py-2 bg-white rounded-full text-xs text-brand-green font-medium">
-                      Ритм
-                    </span>
-                    <span className="px-4 py-2 bg-white rounded-full text-xs text-brand-green font-medium">
-                      Музыка
-                    </span>
-                    <span className="px-4 py-2 bg-white rounded-full text-xs text-brand-green font-medium">
-                      Поток
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => toggle('flow')}
-                    className="md:hidden p-2 bg-white rounded-full text-brand-green shadow-sm"
-                  >
-                    {expanded === 'flow' ? (
-                      <ChevronUp className="w-5 h-5" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
+                  <span>Записаться</span>
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-2 transition-transform" />
+                </button>
               </div>
-              <div className="md:w-1/2 w-full aspect-square md:aspect-[4/3] rounded-[2.5rem] overflow-hidden order-1 md:order-2 shadow-sm">
+              <div className="md:w-1/2 w-full aspect-square md:aspect-[4/3] rounded-[2.5rem] overflow-hidden order-1 md:order-2 shadow-lg rotate-2 group-hover:rotate-0 transition-transform duration-700">
                 <Image
-                  src="https://images.unsplash.com/photo-1552196563-55cd4e45efb3?q=80&w=800&auto=format&fit=crop"
+                  src={`${import.meta.env.BASE_URL}images/directions/direction-inside-flow.jpg`}
                   alt="Inside Flow - Warrior Pose"
                   storageKey="direction-inside-flow"
                   containerClassName="w-full h-full"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                 />
               </div>
             </div>
           </div>
         </FadeIn>
 
-        {/* Hatha Yoga Card */}
         <FadeIn delay={200} direction="up">
-          <div className="group bg-[#f5f5f4] rounded-[3rem] p-8 md:p-16 transition-colors hover:bg-[#ebebea]">
+          <div className="group bg-[#f5f5f4] rounded-[3rem] p-8 md:p-16 transition-all hover:shadow-2xl hover:shadow-stone-200">
             <div className="flex flex-col md:flex-row items-center gap-10 md:gap-20">
-              <div className="md:w-1/2 w-full aspect-square md:aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-sm">
+              <div className="md:w-1/2 w-full aspect-square md:aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-lg -rotate-2 group-hover:rotate-0 transition-transform duration-700">
                 <Image
-                  src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=800&auto=format&fit=crop"
+                  src={`${import.meta.env.BASE_URL}images/directions/direction-hatha.jpg`}
                   alt="Hatha Yoga"
                   storageKey="direction-hatha"
                   containerClassName="w-full h-full"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                 />
               </div>
               <div className="md:w-1/2">
                 <h3 className="text-3xl md:text-5xl font-serif text-brand-text mb-6">Хатха йога</h3>
-
-                <div
-                  className={`overflow-hidden transition-all duration-500 ease-in-out ${expanded === 'hatha' ? 'max-h-[500px]' : 'max-h-[100px] md:max-h-full'}`}
+                <p className="text-brand-text/70 text-lg leading-relaxed mb-8">
+                  Классическая форма йоги для работы с телом и умом. Включает дыхательные
+                  упражнения, асаны и очищающие практики.
+                  <span className="block mt-4 font-medium text-stone-600">
+                    Основа силы и баланса.
+                  </span>
+                </p>
+                <div className="flex flex-wrap gap-3 mb-8">
+                  {['Сила', 'Баланс', 'Дыхание'].map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-5 py-2 bg-white rounded-full text-xs text-stone-500 font-bold tracking-wider uppercase border border-white group-hover:border-stone-400 transition-colors"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <button
+                  onClick={() => handleBook('Хатха Йога')}
+                  className="flex items-center gap-2 text-stone-600 font-medium group/btn w-fit"
                 >
-                  <p className="text-brand-text/70 text-lg leading-relaxed mb-4">
-                    Физическая форма йоги, включающая дыхательные упражнения, асаны и очищающие
-                    практики. Улучшает гибкость, силу, снижает стресс, повышает осознанность и
-                    баланс.
-                  </p>
-                  <p
-                    className={`text-brand-text/70 text-lg leading-relaxed mb-8 ${expanded === 'hatha' ? 'block' : 'hidden'}`}
-                  >
-                    Мы уделяем особое внимание отстройке асан и безопасности. Практика подходит как
-                    для начинающих, так и для продвинутых, так как всегда есть варианты упрощения и
-                    усложнения.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-wrap gap-3">
-                    <span className="px-4 py-2 bg-white rounded-full text-xs text-stone-500 font-medium">
-                      Сила
-                    </span>
-                    <span className="px-4 py-2 bg-white rounded-full text-xs text-stone-500 font-medium">
-                      Баланс
-                    </span>
-                    <span className="px-4 py-2 bg-white rounded-full text-xs text-stone-500 font-medium">
-                      Дыхание
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => toggle('hatha')}
-                    className="md:hidden p-2 bg-white rounded-full text-stone-500 shadow-sm"
-                  >
-                    {expanded === 'hatha' ? (
-                      <ChevronUp className="w-5 h-5" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
+                  <span>Записаться</span>
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-2 transition-transform" />
+                </button>
               </div>
             </div>
           </div>

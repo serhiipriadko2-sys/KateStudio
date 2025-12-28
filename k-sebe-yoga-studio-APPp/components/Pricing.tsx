@@ -25,14 +25,14 @@ const yogaSubscriptions: PriceOption[] = [
     title: '4 занятия',
     price: '2 500 ₽',
     description: 'Срок 1 месяц с первого посещения',
-    features: ['625 ₽ за занятие', '4 посещения', 'Экономия 300 ₽', 'Срок: 30 дней'],
+    features: ['625 ₽ за занятие', '4 посещения', 'Экономия 300 ₽', 'Срок действия: 30 дней'],
     isPopular: false,
   },
   {
     title: '9 занятий',
     price: '5 000 ₽',
     description: 'Срок 1 месяц с первого посещения',
-    features: ['556 ₽ за занятие', '9 посещений', 'Экономия 1 300 ₽', 'Срок: 30 дней'],
+    features: ['556 ₽ за занятие', '9 посещений', 'Экономия 1 300 ₽', 'Срок действия: 30 дней'],
     isPopular: true,
   },
 ];
@@ -70,7 +70,12 @@ const soundHealing: PriceOption[] = [
     title: 'Индивидуальная',
     price: 'от 3 000 ₽',
     description: 'Персональная сессия',
-    features: ['Чаши — 3 000 ₽', 'Гонг + чаши — 3 500 ₽', 'Индивидуальный подход', 'Глубокое исцеление'],
+    features: [
+      'Чаши — 3 000 ₽',
+      'Гонг + чаши — 3 500 ₽',
+      'Индивидуальный подход',
+      'Глубокое исцеление',
+    ],
     isPopular: true,
   },
   {
@@ -88,14 +93,24 @@ const tibetanMassage: PriceOption[] = [
     title: 'Индивидуальный',
     price: '3 500 ₽',
     description: 'Массаж тибетскими чашами',
-    features: ['Глубокое расслабление', 'Снятие мышечных зажимов', 'Улучшение сна', 'Энергетический баланс'],
+    features: [
+      'Глубокое расслабление',
+      'Снятие мышечных зажимов',
+      'Улучшение сна',
+      'Энергетический баланс',
+    ],
     isPopular: false,
   },
   {
     title: 'Для двоих',
     price: '6 000 ₽',
     description: 'Массаж для пары',
-    features: ['Совместное расслабление', 'Гармонизация энергии', 'Улучшение кровообращения', 'Медитативное погружение'],
+    features: [
+      'Совместное расслабление',
+      'Гармонизация энергии',
+      'Улучшение кровообращения',
+      'Медитативное погружение',
+    ],
     isPopular: false,
     isDark: true,
   },
@@ -143,9 +158,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ option, onSelect, delay }) =>
       <ul className="space-y-4 mb-10 flex-1 relative z-10">
         {option.features.map((feature, fIdx) => (
           <li key={fIdx} className="flex items-start gap-3 text-sm">
-            <div
-              className={`mt-0.5 min-w-[16px] text-brand-green`}
-            >
+            <div className={`mt-0.5 min-w-[16px] text-brand-green`}>
               <Check className="w-4 h-4" />
             </div>
             <span className={option.isDark ? 'text-white/80' : 'text-brand-text/70'}>
@@ -198,9 +211,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
         <h3 className="text-2xl md:text-3xl font-serif text-brand-text/90 mb-2 text-center">
           {title}
         </h3>
-        {subtitle && (
-          <p className="text-stone-400 text-sm text-center mb-6">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-stone-400 text-sm text-center mb-6">{subtitle}</p>}
       </FadeIn>
       <div className={`grid grid-cols-1 ${gridCols} gap-6 mt-6`}>
         {options.map((option, idx) => (

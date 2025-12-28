@@ -21,8 +21,10 @@ import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
 import { Dashboard } from './components/Dashboard';
 import { Directions } from './components/Directions';
+import { Footer } from './components/Footer';
 import { Gallery } from './components/Gallery';
 import { Image } from './components/Image';
+import { LegalModals } from './components/LegalModals';
 import { Logo } from './components/Logo';
 import { OnboardingQuizModal, type OnboardingData } from './components/OnboardingQuizModal';
 import { Philosophy } from './components/Philosophy';
@@ -622,20 +624,26 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
   );
 };
 
-const StudioView = () => (
-  <div className="view-transition">
-    <div className="pt-24 px-6 mb-8">
-      <h1 className="text-4xl font-serif text-brand-text mb-2">Пространство</h1>
-      <p className="text-stone-400">Где живет тишина.</p>
+const StudioView: React.FC = () => {
+  const [legalOpen, setLegalOpen] = useState<'privacy' | 'offer' | null>(null);
+
+  return (
+    <div className="view-transition">
+      <div className="pt-24 px-6 mb-8">
+        <h1 className="text-4xl font-serif text-brand-text mb-2">Пространство</h1>
+        <p className="text-stone-400">Где живет тишина.</p>
+      </div>
+      <About />
+      <Directions />
+      <Pricing />
+      <Retreats />
+      <Gallery />
+      <Reviews />
+      <div className="px-4 pb-8">
+        <Contact />
+      </div>
+      <Footer onOpenLegal={(t) => setLegalOpen(t)} />
+      <LegalModals type={legalOpen} onClose={() => setLegalOpen(null)} />
     </div>
-    <About />
-    <Directions />
-    <Pricing />
-    <Retreats />
-    <Gallery />
-    <Reviews />
-    <div className="px-4 pb-8">
-      <Contact />
-    </div>
-  </div>
-);
+  );
+};

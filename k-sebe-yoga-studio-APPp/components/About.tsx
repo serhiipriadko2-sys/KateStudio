@@ -11,7 +11,7 @@ export const About: React.FC = () => {
             <div className="absolute inset-0 bg-brand-mint rounded-[3rem] rotate-3 group-hover:rotate-6 transition-transform duration-500"></div>
             <div className="relative w-full aspect-[3/4] rounded-[3rem] overflow-hidden shadow-xl">
               <Image
-                src="https://images.unsplash.com/photo-1541625602330-2277a4c46182?q=80&w=800&auto=format&fit=crop"
+                src={`${import.meta.env.BASE_URL}images/about/katya-portrait.jpg`}
                 alt="Катя Габран"
                 storageKey="about-katya-portrait"
                 containerClassName="w-full h-full"
@@ -56,7 +56,31 @@ export const About: React.FC = () => {
             </div>
           </FadeIn>
 
+          {/* Statistics / Social Proof */}
           <FadeIn delay={500}>
+            <div className="grid grid-cols-3 gap-4 md:gap-8 mt-12 pt-8 border-t border-brand-green/10">
+              <div>
+                <div className="text-3xl md:text-4xl font-serif text-brand-green mb-1">3+</div>
+                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">
+                  Года практики
+                </div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-serif text-brand-green mb-1">100+</div>
+                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">
+                  Счастливых учеников
+                </div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-serif text-brand-green mb-1">7</div>
+                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">
+                  Ретритов
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={600}>
             <div className="mt-10">
               <img
                 src="/signature.png"
