@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "site": "katestudio-46812323",
     "public": "k-sebe-yoga-studio-APPp/dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
