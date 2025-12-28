@@ -4,9 +4,10 @@ import { FadeIn } from './FadeIn';
 
 interface FAQItemProps {
   question: string;
+  answer: string;
 }
 
-const FAQItem: React.FC<FAQItemProps> = ({ question }) => {
+const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="border-b border-brand-green/10 py-6 last:border-0">
@@ -28,15 +29,32 @@ const FAQItem: React.FC<FAQItemProps> = ({ question }) => {
       >
         <div className="overflow-hidden">
           <p className="text-brand-text/70 text-sm md:text-base leading-relaxed font-light pl-0 md:w-3/4">
-            Для начала занятий вам понадобится только удобная одежда и коврик. Если у вас нет
-            коврика, мы предоставим студийный. Рекомендуем не есть плотно за 2 часа до практики,
-            чтобы чувствовать легкость.
+            {answer}
           </p>
         </div>
       </div>
     </div>
   );
 };
+
+const faqData = [
+  {
+    question: 'С чего начать, если я никогда не занималась?',
+    answer: 'Приходите на любое групповое занятие! Все практики адаптированы для начинающих. Преподаватель поможет с техникой и предложит упрощённые варианты асан.',
+  },
+  {
+    question: 'Нужна ли специальная подготовка?',
+    answer: 'Нет, специальная подготовка не требуется. Достаточно желания и удобной одежды. Мы работаем с любым уровнем физической формы.',
+  },
+  {
+    question: 'Что обязательно нужно взять с собой?',
+    answer: 'Возьмите удобную одежду, в которой комфортно двигаться. Коврики есть в студии. Рекомендуем не есть плотно за 2 часа до практики.',
+  },
+  {
+    question: 'Сколько времени длятся занятия?',
+    answer: 'Групповые занятия длятся 1 час. Индивидуальные тренировки — по договорённости, обычно от 60 до 90 минут.',
+  },
+];
 
 export const FAQ: React.FC = () => {
   return (
@@ -47,18 +65,11 @@ export const FAQ: React.FC = () => {
         </h2>
       </FadeIn>
       <div className="space-y-2">
-        <FadeIn delay={100} direction="up">
-          <FAQItem question="С чего начать, если я никогда не занималась?" />
-        </FadeIn>
-        <FadeIn delay={200} direction="up">
-          <FAQItem question="Нужна ли специальная подготовка?" />
-        </FadeIn>
-        <FadeIn delay={300} direction="up">
-          <FAQItem question="Что обязательно нужно взять с собой?" />
-        </FadeIn>
-        <FadeIn delay={400} direction="up">
-          <FAQItem question="Сколько времени длятся занятия?" />
-        </FadeIn>
+        {faqData.map((item, idx) => (
+          <FadeIn key={idx} delay={(idx + 1) * 100} direction="up">
+            <FAQItem question={item.question} answer={item.answer} />
+          </FadeIn>
+        ))}
       </div>
     </section>
   );

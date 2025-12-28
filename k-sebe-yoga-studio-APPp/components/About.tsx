@@ -56,7 +56,31 @@ export const About: React.FC = () => {
             </div>
           </FadeIn>
 
+          {/* Statistics / Social Proof */}
           <FadeIn delay={500}>
+            <div className="grid grid-cols-3 gap-4 md:gap-8 mt-12 pt-8 border-t border-brand-green/10">
+              <div>
+                <div className="text-3xl md:text-4xl font-serif text-brand-green mb-1">3+</div>
+                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">
+                  Года практики
+                </div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-serif text-brand-green mb-1">100+</div>
+                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">
+                  Счастливых учеников
+                </div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-serif text-brand-green mb-1">7</div>
+                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">
+                  Ретритов
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={600}>
             <div className="mt-10">
               <img
                 src="/signature.png"
