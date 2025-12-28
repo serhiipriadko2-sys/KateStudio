@@ -183,28 +183,27 @@ function App() {
 
         <ScrollProgress />
 
-        {/* --- Smart Glass Navigation Bar (hidden in PWA mode) --- */}
-        {!isPWA && (
-          <nav
-            className={`fixed top-0 left-0 right-0 z-50 flex justify-between items-center transition-all duration-500 ease-in-out pointer-events-none
+        {/* --- Smart Glass Navigation Bar --- */}
+        <nav
+          className={`fixed top-0 left-0 right-0 z-50 flex justify-between items-center transition-all duration-500 ease-in-out pointer-events-none
             ${isScrolled ? 'py-3 px-6 bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20' : 'py-6 px-6 bg-transparent'}
           `}
+        >
+          <div
+            onClick={scrollToTop}
+            className={`relative z-50 pointer-events-auto transition-all duration-500 cursor-pointer ${isScrolled ? 'w-10 h-10' : 'w-16 h-16'}`}
+            title="Наверх"
           >
-            <div
-              onClick={scrollToTop}
-              className={`relative z-50 pointer-events-auto transition-all duration-500 cursor-pointer ${isScrolled ? 'w-10 h-10' : 'w-16 h-16'}`}
-              title="Наверх"
-            >
-              <Logo
-                className="w-full h-full drop-shadow-sm transition-colors duration-300"
-                color={isScrolled && !isMenuOpen ? '#57a773' : '#fff'}
-              />
-            </div>
+            <Logo
+              className="w-full h-full drop-shadow-sm transition-colors duration-300"
+              color={isScrolled && !isMenuOpen ? '#57a773' : '#fff'}
+            />
+          </div>
 
-            <button
-              onClick={toggleMenu}
-              aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
-              className={`
+          <button
+            onClick={toggleMenu}
+            aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+            className={`
               group p-3 rounded-full transition-all z-50 pointer-events-auto shadow-sm hover:shadow-md
               ${
                 isScrolled
@@ -212,19 +211,18 @@ function App() {
                   : 'bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20'
               }
             `}
-            >
-              {isMenuOpen ? (
-                <X
-                  className={`w-6 h-6 transition-colors ${isScrolled ? 'text-stone-800' : 'text-brand-dark md:text-white'}`}
-                />
-              ) : (
-                <Menu
-                  className={`w-6 h-6 transition-colors ${isScrolled ? 'text-brand-green' : 'text-white'}`}
-                />
-              )}
-            </button>
-          </nav>
-        )}
+          >
+            {isMenuOpen ? (
+              <X
+                className={`w-6 h-6 transition-colors ${isScrolled ? 'text-stone-800' : 'text-brand-dark md:text-white'}`}
+              />
+            ) : (
+              <Menu
+                className={`w-6 h-6 transition-colors ${isScrolled ? 'text-brand-green' : 'text-white'}`}
+              />
+            )}
+          </button>
+        </nav>
 
         {(isOffline || updateAvailable) && (
           <div className="fixed bottom-6 right-6 z-[70] flex flex-col gap-3 max-w-xs">
@@ -271,8 +269,8 @@ function App() {
           </div>
         )}
 
-        {/* --- Full Screen Menu Overlay (hidden in PWA mode) --- */}
-        {!isPWA && isMenuOpen && (
+        {/* --- Full Screen Menu Overlay --- */}
+        {isMenuOpen && (
           <div
             id="mobile-menu"
             className="fixed inset-0 z-[60] bg-[#fcfcfc] flex flex-col items-center justify-center animate-in fade-in slide-in-from-top-5 duration-300"
