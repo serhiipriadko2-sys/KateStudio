@@ -1,7 +1,7 @@
 {
   "name": "К себе - Йога Студия",
   "short_name": "К себе",
-  "description": "Студия йоги Кати Габран. Inside Flow, Хатха-йога, медитации и ретриты.",
+  "description": "Студия йоги Кати Габран в Дубне. Inside Flow, Хатха-йога, саундхилинг и массаж тибетскими чашами.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -60,15 +60,7 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshots/home.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Главный экран приложения К себе"
-    }
-  ],
+  "screenshots": [],
   "shortcuts": [
     {
       "name": "Расписание",
