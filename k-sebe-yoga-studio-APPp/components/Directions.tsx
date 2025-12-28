@@ -65,7 +65,7 @@ export const Directions: React.FC = () => {
               </div>
               <div className="md:w-1/2 w-full aspect-square md:aspect-[4/3] rounded-[2.5rem] overflow-hidden order-1 md:order-2 shadow-sm">
                 <Image
-                  src="https://images.unsplash.com/photo-1552196563-55cd4e45efb3?q=80&w=800&auto=format&fit=crop"
+                  src={`${import.meta.env.BASE_URL}images/directions/direction-inside-flow.jpg`}
                   alt="Inside Flow - Warrior Pose"
                   storageKey="direction-inside-flow"
                   containerClassName="w-full h-full"
@@ -82,7 +82,7 @@ export const Directions: React.FC = () => {
             <div className="flex flex-col md:flex-row items-center gap-10 md:gap-20">
               <div className="md:w-1/2 w-full aspect-square md:aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-sm">
                 <Image
-                  src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=800&auto=format&fit=crop"
+                  src={`${import.meta.env.BASE_URL}images/directions/direction-hatha.jpg`}
                   alt="Hatha Yoga"
                   storageKey="direction-hatha"
                   containerClassName="w-full h-full"

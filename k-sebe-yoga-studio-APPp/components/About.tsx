@@ -11,7 +11,7 @@ export const About: React.FC = () => {
             <div className="absolute inset-0 bg-brand-mint rounded-[3rem] rotate-3 group-hover:rotate-6 transition-transform duration-500"></div>
             <div className="relative w-full aspect-[3/4] rounded-[3rem] overflow-hidden shadow-xl">
               <Image
-                src="https://images.unsplash.com/photo-1541625602330-2277a4c46182?q=80&w=800&auto=format&fit=crop"
+                src={`${import.meta.env.BASE_URL}images/about/katya-portrait.jpg`}
                 alt="Катя Габран"
                 storageKey="about-katya-portrait"
                 containerClassName="w-full h-full"
