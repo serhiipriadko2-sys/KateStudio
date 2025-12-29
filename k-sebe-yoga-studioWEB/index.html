@@ -35,7 +35,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS now via PostCSS build -->
+    <link rel="stylesheet" href="/index.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap"
       rel="stylesheet"
@@ -86,98 +87,7 @@
       }
     </script>
 
-    <style>
-      :root {
-        --color-brand-green: #57a773;
-        --color-brand-mint: #d4eadd;
-        --color-brand-dark: #1a1a1a;
-        --color-brand-text: #333333;
-        --color-brand-light: #f9f9f9;
-        --color-brand-accent: #fceeb5;
-      }
-
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 10px;
-      }
-      ::-webkit-scrollbar-track {
-        background: var(--color-brand-light);
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #d1d5db;
-        border-radius: 5px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: var(--color-brand-green);
-      }
-
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-
-      /* Smooth scroll behavior */
-      html {
-        scroll-behavior: smooth;
-      }
-
-      /* Focus Visible for Accessibility */
-      :focus-visible {
-        outline: 2px solid var(--color-brand-green);
-        outline-offset: 2px;
-      }
-    </style>
-
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                green: 'var(--color-brand-green)',
-                mint: 'var(--color-brand-mint)',
-                dark: 'var(--color-brand-dark)',
-                text: 'var(--color-brand-text)',
-                light: 'var(--color-brand-light)',
-                accent: 'var(--color-brand-accent)',
-              },
-            },
-            fontFamily: {
-              sans: ['Manrope', 'sans-serif'],
-              serif: ['Playfair Display', 'serif'],
-            },
-            animation: {
-              marquee: 'marquee 40s linear infinite',
-              'spin-slow': 'spin 3s linear infinite',
-              shimmer: 'shimmer 2.5s linear infinite',
-              float: 'float 6s ease-in-out infinite',
-              waveform: 'waveform 1s infinite ease-in-out',
-            },
-            keyframes: {
-              marquee: {
-                '0%': { transform: 'translateX(0)' },
-                '100%': { transform: 'translateX(-50%)' },
-              },
-              shimmer: {
-                '0%': { backgroundPosition: '200% 0' },
-                '100%': { backgroundPosition: '-200% 0' },
-              },
-              float: {
-                '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(-20px)' },
-              },
-              waveform: {
-                '0%, 100%': { height: '8px', opacity: '0.5' },
-                '50%': { height: '24px', opacity: '1' },
-              },
-            },
-          },
-        },
-      };
-    </script>
+    <!-- Styles moved to index.css with Tailwind build -->
     <script type="importmap">
       {
         "imports": {
