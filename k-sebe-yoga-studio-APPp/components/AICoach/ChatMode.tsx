@@ -2,7 +2,7 @@
  * ChatMode - AI Chat interface with streaming support
  */
 import { Send, Sparkles, Brain } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { getGeminiChatStream, getThinkingResponse } from '../../services/geminiService';
 import { FormattedText } from './FormattedText';
 import { ChatMessage, SUGGESTED_PROMPTS } from './types';

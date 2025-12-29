@@ -1,4 +1,4 @@
-import { FadeIn } from '@ksebe/shared';
+// FadeIn available from '@ksebe/shared' when needed
 import {
   Home,
   Calendar,
@@ -410,10 +410,10 @@ const NavButton = ({
     className={`flex flex-col items-center justify-center w-16 h-full gap-1 transition-all duration-300 ${active ? 'text-brand-green' : 'text-stone-400 hover:text-stone-600'}`}
   >
     <div className={`transition-transform duration-300 ${active ? '-translate-y-1' : ''}`}>
-      {React.cloneElement(
-        icon as React.ReactElement,
-        { size: 24, strokeWidth: active ? 2.5 : 2 } as any
-      )}
+      {React.cloneElement(icon as React.ReactElement<{ size?: number; strokeWidth?: number }>, {
+        size: 24,
+        strokeWidth: active ? 2.5 : 2,
+      })}
     </div>
     <span
       className={`text-[10px] font-bold tracking-wide transition-all duration-300 ${active ? 'opacity-100' : 'opacity-0 hidden'}`}
@@ -558,7 +558,7 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
                       ${isActive ? `${item.activeColor} scale-110 border-transparent rotate-3` : `${item.color} border-white group-hover:scale-105 group-hover:-rotate-3`}
                    `}
                   >
-                    {React.cloneElement(item.icon as React.ReactElement<any>, {
+                    {React.cloneElement(item.icon as React.ReactElement<{ className?: string }>, {
                       className: `w-7 h-7 transition-colors ${isActive ? 'text-white' : ''}`,
                     })}
                   </div>

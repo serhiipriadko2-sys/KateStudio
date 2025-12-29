@@ -27,7 +27,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
   const isSpecificClass = !!(details.date && details.time);
 
   const validate = () => {
-    const newErrors: any = {};
+    const newErrors: Record<string, boolean> = {};
     if (!name.trim()) newErrors.name = true;
     if (phone.length < 10) newErrors.phone = true;
     setErrors(newErrors);

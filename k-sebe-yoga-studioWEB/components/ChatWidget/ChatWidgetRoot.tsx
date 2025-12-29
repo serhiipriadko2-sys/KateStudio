@@ -46,7 +46,7 @@ export const ChatWidget: React.FC = () => {
   const [permissionError, setPermissionError] = useState(false);
   const inputAudioContextRef = useRef<AudioContext | null>(null);
   const outputAudioContextRef = useRef<AudioContext | null>(null);
-  const sessionPromiseRef = useRef<Promise<any> | null>(null);
+  const sessionPromiseRef = useRef<Promise<unknown> | null>(null);
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
 

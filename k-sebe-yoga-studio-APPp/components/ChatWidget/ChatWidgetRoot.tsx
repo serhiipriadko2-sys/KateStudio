@@ -62,7 +62,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
   const inputAudioContextRef = useRef<AudioContext | null>(null);
   const outputAudioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
-  const sessionPromiseRef = useRef<Promise<any> | null>(null);
+  const sessionPromiseRef = useRef<Promise<unknown> | null>(null);
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
 
@@ -255,10 +255,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-      const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({
+      // Safari compatibility
+      type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext };
+      const AudioContextClass = window.AudioContext || (window as WebkitWindow).webkitAudioContext;
+      const inputCtx = new AudioContextClass!({
         sampleRate: 16000,
       });
-      const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({
+      const outputCtx = new AudioContextClass!({
         sampleRate: 24000,
       });
 
@@ -381,9 +384,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
 
     if (sessionPromiseRef.current) {
       sessionPromiseRef.current.then((session) => {
-        if (typeof (session as any).close === 'function') {
+        const liveSession = session as { close?: () => void };
+        if (typeof liveSession?.close === 'function') {
           try {
-            (session as any).close();
+            liveSession.close();
           } catch (error) {
             console.warn('Failed to close live session', error);
           }
