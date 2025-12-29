@@ -48,6 +48,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     authError,
     authLoading,
     pendingPhone,
+    demoLogin,
+    isSupabaseConfigured,
   } = useAuth();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<
@@ -577,6 +579,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                           'Получить код'
                         )}
                       </button>
+
+                      {/* Demo login when Supabase not configured */}
+                      {!isSupabaseConfigured && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const name = (loginName || 'Гость').trim();
+                            try {
+                              await demoLogin(name);
+                              showToast('Добро пожаловать!', 'success');
+                            } catch {
+                              // error shown in UI
+                            }
+                          }}
+                          disabled={authLoading}
+                          className="w-full py-3 rounded-2xl border-2 border-dashed border-stone-200 text-stone-500 font-medium hover:border-brand-green hover:text-brand-green transition-colors disabled:opacity-70"
+                        >
+                          Войти без SMS (демо)
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
