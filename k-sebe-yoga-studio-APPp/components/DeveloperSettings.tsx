@@ -38,11 +38,11 @@ const THEME_VARS = [
 
 const isQuotaExceeded = (err: unknown): boolean => {
   if (!err || typeof err !== 'object') return false;
-  const anyErr = err as any;
+  const errorObj = err as { name?: string; message?: string };
   return (
-    anyErr?.name === 'QuotaExceededError' ||
-    anyErr?.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
-    String(anyErr?.message ?? '')
+    errorObj?.name === 'QuotaExceededError' ||
+    errorObj?.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+    String(errorObj?.message ?? '')
       .toLowerCase()
       .includes('quota')
   );
@@ -139,8 +139,15 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
   };
 
   // --- BACKUP LOGIC ---
+  interface BackupData {
+    version: string;
+    timestamp: string;
+    theme: string | null;
+    user: string | null;
+    assets: Record<string, string>;
+  }
   const handleExportBackup = () => {
-    const backupData: any = {
+    const backupData: BackupData = {
       version: '1.1',
       timestamp: new Date().toISOString(),
       theme: localStorage.getItem('ksebe_theme_config'),
@@ -185,7 +192,13 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
     reader.onload = (event) => {
       const apply = async () => {
         try {
-          const json = JSON.parse(event.target?.result as string) as any;
+          interface BackupFile {
+            version?: string;
+            theme?: string | object;
+            user?: string;
+            assets?: Record<string, string>;
+          }
+          const json = JSON.parse(event.target?.result as string) as BackupFile;
 
           // --- Theme ---
           if (typeof json.theme === 'string') {

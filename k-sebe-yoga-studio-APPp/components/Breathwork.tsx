@@ -10,8 +10,8 @@ export const Breathwork: React.FC = () => {
   const [subText, setSubText] = useState('Квадратное дыхание');
 
   useEffect(() => {
-    let interval: any;
-    let timer: any;
+    let interval: ReturnType<typeof setInterval>;
+    let timer: ReturnType<typeof setTimeout>;
 
     if (isActive) {
       const runCycle = () => {

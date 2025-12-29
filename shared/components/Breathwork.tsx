@@ -74,8 +74,8 @@ export const Breathwork: React.FC<BreathworkProps> = ({
       setPhase('idle');
       setText('Дыхание');
       setSubText('Нажмите Play для старта');
-      if (timer!) clearTimeout(timer);
-      if (interval!) clearInterval(interval);
+      if (timer) clearTimeout(timer);
+      if (interval) clearInterval(interval);
     }
 
     return () => {

@@ -139,7 +139,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       } else {
         throw new Error('Cloud unavailable');
       }
-    } catch (e: any) {
+    } catch (_e: unknown) {
       // 3. Fallback to Local Storage
       try {
         localStorage.setItem(`ksebe-img-${key}`, base64Fallback);

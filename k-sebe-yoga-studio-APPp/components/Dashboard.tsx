@@ -26,7 +26,7 @@ import { Booking } from '../types';
 import { AICoach } from './AICoach';
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
-import { FadeIn } from './FadeIn';
+// FadeIn available from './FadeIn' when needed
 import { Image } from './Image';
 import { Logo } from './Logo';
 import { VideoLibrary } from './VideoLibrary';
@@ -194,7 +194,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   };
 
-  const navItems = [
+  type DashboardTab = 'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
+  const navItems: { id: DashboardTab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'Главная', icon: <LayoutDashboard className="w-6 h-6" /> },
     { id: 'videos', label: 'Практики', icon: <Video className="w-6 h-6" /> },
     { id: 'breath', label: 'Дыхание', icon: <Wind className="w-6 h-6" /> },
@@ -222,7 +223,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
+              onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 text-sm font-semibold tracking-wide ${
                 activeTab === item.id
                   ? 'bg-brand-green text-white shadow-xl shadow-brand-green/20 scale-105'
@@ -748,7 +749,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
+              onClick={() => setActiveTab(item.id)}
               className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-300 min-w-[60px] relative ${isActive ? 'text-brand-green' : 'text-stone-400'}`}
             >
               <div

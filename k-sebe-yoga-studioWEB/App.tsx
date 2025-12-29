@@ -19,7 +19,7 @@ import { Logo } from './components/Logo';
 import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
 import { Pricing } from './components/Pricing';
-import { Retreats } from './components/Retreats';
+// Retreats component available from './components/Retreats' when needed
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
 import { registerServiceWorker } from './services/serviceWorker';
