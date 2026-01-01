@@ -62,12 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const name = cached?.name || pendingName || 'Пользователь';
 
         if (sessionUserId && phone) {
-          if (!cached || cached.id !== sessionUserId) {
-            const profile = await dataService.registerUser(name, phone, sessionUserId);
-            setUser(profile);
-          } else {
-            setUser(cached);
-          }
+          const profile = await dataService.registerUser(name, phone, sessionUserId);
+          setUser(profile);
         } else if (cached) {
           setUser(cached);
         }
@@ -138,7 +134,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
 
       // Cache / sync profile for UI
-      const supabaseUserId = data.user?.id;
+      const session = await supabase.auth.getSession();
+      const supabaseUserId = session.data.session?.user?.id || data.user?.id;
+      if (!supabaseUserId) {
+        throw new Error('AUTH_REQUIRED');
+      }
       const profile = await dataService.registerUser(
         pendingName || 'Пользователь',
         pendingPhone,

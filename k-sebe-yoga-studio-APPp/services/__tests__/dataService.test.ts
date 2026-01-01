@@ -6,6 +6,15 @@ import { supabase } from '../supabaseClient';
 vi.mock('../supabaseClient', () => ({
   supabase: {
     from: vi.fn(),
+    auth: {
+      getSession: vi.fn().mockResolvedValue({
+        data: {
+          session: {
+            user: { id: '11111111-1111-4111-8111-111111111111' },
+          },
+        },
+      }),
+    },
   },
 }));
 

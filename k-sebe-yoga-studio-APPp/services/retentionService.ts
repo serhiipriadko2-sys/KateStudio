@@ -7,6 +7,18 @@ const PRACTICE_COMPLETIONS_PENDING_KEY = 'ksebe_practice_completions_pending';
 const ONBOARDING_KEY = 'ksebe_onboarding';
 const ONBOARDING_COMPLETE_KEY = 'ksebe_onboarding_complete';
 
+const isUuid = (value?: string) =>
+  !!value &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
+const getAuthenticatedUserId = async (expectedUserId: string): Promise<string | null> => {
+  if (!isUuid(expectedUserId)) return null;
+  const session = await supabase.auth.getSession();
+  const sessionUserId = session.data.session?.user?.id;
+  if (!sessionUserId || sessionUserId !== expectedUserId) return null;
+  return sessionUserId;
+};
+
 function safeReadJson<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key);
@@ -53,8 +65,10 @@ export type AppEventName =
 export const retentionService = {
   async logEvent(userId: string, name: AppEventName, props?: Record<string, unknown>) {
     try {
+      const authUserId = await getAuthenticatedUserId(userId);
+      if (!authUserId) throw new Error('AUTH_REQUIRED');
       await supabase.from('app_events').insert({
-        user_id: userId,
+        user_id: authUserId,
         name,
         props: props ?? null,
       });
@@ -65,9 +79,11 @@ export const retentionService = {
 
   async upsertPracticeDay(userId: string, day: string, kind: string = 'streak', source = 'app') {
     try {
+      const authUserId = await getAuthenticatedUserId(userId);
+      if (!authUserId) throw new Error('AUTH_REQUIRED');
       const { error } = await supabase.from('practice_events').upsert(
         {
-          user_id: userId,
+          user_id: authUserId,
           day,
           kind,
           source,
@@ -85,9 +101,11 @@ export const retentionService = {
   },
   async upsertPracticeCompletion(userId: string, day: string, source = 'app') {
     try {
+      const authUserId = await getAuthenticatedUserId(userId);
+      if (!authUserId) throw new Error('AUTH_REQUIRED');
       const { error } = await supabase.from('practice_events').upsert(
         {
-          user_id: userId,
+          user_id: authUserId,
           day,
           kind: 'completion',
           source,
@@ -137,10 +155,12 @@ export const retentionService = {
   },
 
   async saveOnboarding(userId: string, onboarding: unknown) {
+    const authUserId = await getAuthenticatedUserId(userId);
+    if (!authUserId) throw new Error('AUTH_REQUIRED');
     const now = new Date().toISOString();
     await supabase.from('user_preferences').upsert(
       {
-        user_id: userId,
+        user_id: authUserId,
         onboarding,
         updated_at: now,
       },
@@ -149,10 +169,12 @@ export const retentionService = {
   },
 
   async fetchRemotePracticeDays(userId: string, kind: 'streak' | 'completion' = 'streak') {
+    const authUserId = await getAuthenticatedUserId(userId);
+    if (!authUserId) throw new Error('AUTH_REQUIRED');
     const { data, error } = await supabase
       .from('practice_events')
       .select('day')
-      .eq('user_id', userId)
+      .eq('user_id', authUserId)
       .eq('kind', kind)
       .order('day', { ascending: true });
     if (error) throw error;
@@ -160,12 +182,14 @@ export const retentionService = {
   },
 
   async bootstrapForUser(userId: string) {
+    const authUserId = await getAuthenticatedUserId(userId);
+    if (!authUserId) return;
     const markerKey = `ksebe_retention_migrated:${userId}`;
     const alreadyMigrated = localStorage.getItem(markerKey) === 'true';
 
     // Always attempt to sync pending streak days
-    await this.syncPendingPracticeDays(userId);
-    await this.syncPendingPracticeCompletions(userId);
+    await this.syncPendingPracticeDays(authUserId);
+    await this.syncPendingPracticeCompletions(authUserId);
 
     if (alreadyMigrated) return;
 
@@ -174,8 +198,8 @@ export const retentionService = {
     const onboarding = safeReadJson<unknown>(ONBOARDING_KEY);
     if (onboardingCompleted && onboarding) {
       try {
-        await this.saveOnboarding(userId, onboarding);
-        await this.logEvent(userId, 'onboarding_completed', { source: 'migration' });
+        await this.saveOnboarding(authUserId, onboarding);
+        await this.logEvent(authUserId, 'onboarding_completed', { source: 'migration' });
       } catch {
         // ignore
       }
@@ -187,7 +211,7 @@ export const retentionService = {
       let inserted = 0;
       for (const part of chunk(localDays, 50)) {
         const rows = part.map((day) => ({
-          user_id: userId,
+          user_id: authUserId,
           day,
           kind: 'streak',
           source: 'migration',
@@ -197,7 +221,7 @@ export const retentionService = {
         });
         if (!error) inserted += part.length;
       }
-      await this.logEvent(userId, 'practice_migrated', {
+      await this.logEvent(authUserId, 'practice_migrated', {
         count: localDays.length,
         attempted: inserted,
       });
@@ -209,7 +233,7 @@ export const retentionService = {
       let inserted = 0;
       for (const part of chunk(localCompletions, 50)) {
         const rows = part.map((day) => ({
-          user_id: userId,
+          user_id: authUserId,
           day,
           kind: 'completion',
           source: 'migration',
@@ -219,7 +243,7 @@ export const retentionService = {
         });
         if (!error) inserted += part.length;
       }
-      await this.logEvent(userId, 'practice_migrated_completions', {
+      await this.logEvent(authUserId, 'practice_migrated_completions', {
         count: localCompletions.length,
         attempted: inserted,
       });
@@ -227,7 +251,7 @@ export const retentionService = {
 
     // 4) Pull remote days back to local (cross-device)
     try {
-      const remoteDays = uniqueSortedDays(await this.fetchRemotePracticeDays(userId));
+      const remoteDays = uniqueSortedDays(await this.fetchRemotePracticeDays(authUserId));
       const merged = uniqueSortedDays([...localDays, ...remoteDays]);
       safeWriteJson(PRACTICE_DAYS_KEY, merged);
     } catch {
@@ -237,7 +261,7 @@ export const retentionService = {
     // 5) Pull remote completions back to local (cross-device)
     try {
       const remoteCompletions = uniqueSortedDays(
-        await this.fetchRemotePracticeDays(userId, 'completion')
+        await this.fetchRemotePracticeDays(authUserId, 'completion')
       );
       const merged = uniqueSortedDays([...localCompletions, ...remoteCompletions]);
       safeWriteJson(PRACTICE_COMPLETIONS_KEY, merged);
