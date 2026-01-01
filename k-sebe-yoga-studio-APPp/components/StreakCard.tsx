@@ -2,6 +2,7 @@ import { Flame, Sparkles } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { usePracticeCompletions } from '../hooks/usePracticeCompletions';
 import { useStreak } from '../hooks/useStreak';
 import { retentionService } from '../services/retentionService';
 
@@ -9,6 +10,7 @@ export const StreakCard: React.FC<{ onOpenRecommended?: () => void }> = ({ onOpe
   const { authStatus, user } = useAuth();
   const { showToast } = useToast();
   const streak = useStreak();
+  const practice = usePracticeCompletions();
 
   useEffect(() => {
     if (!streak.shouldShowReminder) return;
@@ -55,11 +57,20 @@ export const StreakCard: React.FC<{ onOpenRecommended?: () => void }> = ({ onOpe
               onClick={() => {
                 if (!streak.hasToday) {
                   streak.logToday();
+                  if (!practice.hasToday) {
+                    practice.logDay(streak.today);
+                  }
                   showToast('Практика отмечена!', 'success');
                   if (authStatus === 'authenticated' && user?.id) {
                     retentionService.upsertPracticeDay(user.id, streak.today).catch(() => {});
                     retentionService
+                      .upsertPracticeCompletion(user.id, streak.today)
+                      .catch(() => {});
+                    retentionService
                       .logEvent(user.id, 'practice_logged', { day: streak.today })
+                      .catch(() => {});
+                    retentionService
+                      .logEvent(user.id, 'practice_completed', { day: streak.today })
                       .catch(() => {});
                   }
                 } else {
