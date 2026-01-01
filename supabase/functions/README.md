@@ -3,6 +3,8 @@
 ## Функции
 
 - `gemini-proxy` — серверный прокси для Gemini (ключ хранится в secrets)
+- `create-payment` — создание платежа/подписки
+- `payment-webhook` — webhook обновления статусов подписки
 
 ## Настройка секретов (обязательно)
 
@@ -10,6 +12,9 @@
 
 ```bash
 supabase secrets set GEMINI_API_KEY="your-gemini-api-key"
+supabase secrets set PAYMENT_CHECKOUT_URL="https://pay.example.com/checkout"
+supabase secrets set PAYMENT_WEBHOOK_SECRET="super-secret"
+supabase secrets set SUPABASE_SERVICE_ROLE_KEY="service-role-key"
 ```
 
 ## Переменные окружения
@@ -25,6 +30,8 @@ supabase secrets set GEMINI_API_KEY="your-gemini-api-key"
 
 ```bash
 supabase functions deploy gemini-proxy
+supabase functions deploy create-payment
+supabase functions deploy payment-webhook
 ```
 
 ## Миграции (Sprint 1: user_id + RLS)

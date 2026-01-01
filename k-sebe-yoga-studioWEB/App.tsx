@@ -22,6 +22,7 @@ import { Pricing } from './components/Pricing';
 // Retreats component available from './components/Retreats' when needed
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
+import { SubscriptionProfile } from './components/SubscriptionProfile';
 import { registerServiceWorker } from './services/serviceWorker';
 import { loadTheme, applyTheme } from './services/theme';
 import { BookingDetails } from './types';
@@ -341,6 +342,11 @@ function App() {
           <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
           <Gallery />
           <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
+          <SubscriptionProfile
+            onRequestPlan={(plan) =>
+              openBooking({ type: `AI Подписка: ${plan.toUpperCase()}`, price: 'от 990 ₽/мес' })
+            }
+          />
           {/* Retreats temporarily hidden - no upcoming retreat info */}
           {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
           <Schedule onBook={(details) => openBooking(details)} />
