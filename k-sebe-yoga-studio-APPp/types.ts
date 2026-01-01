@@ -61,3 +61,17 @@ export interface ClassSession {
   price: number;
   isOnline: boolean;
 }
+
+export type SubscriptionPlan = 'free' | 'premium' | 'vip';
+
+export type SubscriptionStatus = 'active' | 'pending' | 'canceled' | 'past_due' | 'trialing';
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  current_period_end?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}

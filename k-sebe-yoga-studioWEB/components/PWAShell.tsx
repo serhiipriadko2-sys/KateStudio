@@ -17,7 +17,7 @@ const tabs: { id: Tab; icon: React.ElementType; label: string; href: string }[] 
   { id: 'schedule', icon: Calendar, label: 'Расписание', href: '#schedule' },
   { id: 'chat', icon: MessageCircle, label: 'Чат', href: '#contact' },
   { id: 'studio', icon: MapPin, label: 'Студия', href: '#about' },
-  { id: 'profile', icon: User, label: 'Профиль', href: '#pricing' },
+  { id: 'profile', icon: User, label: 'Профиль', href: '#profile' },
 ];
 
 export const PWAShell: React.FC<PWAShellProps> = ({ children }) => {
@@ -53,9 +53,7 @@ export const PWAShell: React.FC<PWAShellProps> = ({ children }) => {
       {/* App Header */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled
-            ? 'bg-white/95 backdrop-blur-md shadow-sm py-3'
-            : 'bg-transparent py-4'
+          isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-4'
         }`}
       >
         <div className="flex items-center justify-between px-4">
@@ -74,9 +72,7 @@ export const PWAShell: React.FC<PWAShellProps> = ({ children }) => {
       </header>
 
       {/* Main Content */}
-      <main className="pt-0">
-        {children}
-      </main>
+      <main className="pt-0">{children}</main>
 
       {/* Bottom Tab Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-stone-100 safe-area-pb">
@@ -88,15 +84,11 @@ export const PWAShell: React.FC<PWAShellProps> = ({ children }) => {
                 key={id}
                 onClick={() => handleTabClick(id, href)}
                 className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all ${
-                  isActive
-                    ? 'text-brand-green scale-105'
-                    : 'text-stone-400 hover:text-stone-600'
+                  isActive ? 'text-brand-green scale-105' : 'text-stone-400 hover:text-stone-600'
                 }`}
               >
                 <div
-                  className={`p-2 rounded-xl transition-all ${
-                    isActive ? 'bg-brand-green/10' : ''
-                  }`}
+                  className={`p-2 rounded-xl transition-all ${isActive ? 'bg-brand-green/10' : ''}`}
                 >
                   <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
                 </div>

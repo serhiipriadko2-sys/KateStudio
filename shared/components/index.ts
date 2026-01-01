@@ -12,6 +12,7 @@ export { ScrollProgress } from './ScrollProgress';
 export { BackToTop } from './BackToTop';
 export { ErrorBoundary } from './ErrorBoundary';
 export { CookieBanner } from './CookieBanner';
+export { Paywall } from './Paywall';
 
 // Feature Components
 export { Breathwork } from './Breathwork';
@@ -21,6 +22,7 @@ export { Pricing } from './Pricing';
 // Types
 export type { AsanaAnalysis, ImageServices } from './Image';
 export type { MarqueeConfig } from './Marquee';
+export type { PaywallPlanId, PaywallStatus } from './Paywall';
 
 // Re-export types for convenience
 export type { BlogArticle, PriceOption, BreathPhase, BreathworkConfig } from '../types';

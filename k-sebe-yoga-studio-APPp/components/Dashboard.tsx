@@ -1,3 +1,4 @@
+import { Paywall } from '@ksebe/shared';
 import {
   LogOut,
   LayoutDashboard,
@@ -21,8 +22,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { dataService } from '../services/dataService';
+import { subscriptionService } from '../services/subscriptionService';
 import { uploadFile, supabase } from '../services/supabaseClient';
-import { Booking } from '../types';
+import { Booking, Subscription, SubscriptionPlan, SubscriptionStatus } from '../types';
 import { AICoach } from './AICoach';
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
@@ -58,6 +60,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedQr, setExpandedQr] = useState<string | null>(null);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
 
   // Profile Edit State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -80,6 +85,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       setLoading(false);
     }
   }, [authStatus, user, bookings.length]);
+
+  const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
+    active: 'Активна',
+    pending: 'Ожидает оплаты',
+    canceled: 'Отменена',
+    past_due: 'Проблема оплаты',
+    trialing: 'Пробный период',
+  };
+
+  const subscriptionPlanLabels: Record<SubscriptionPlan, string> = {
+    free: 'Free',
+    premium: 'Premium',
+    vip: 'VIP',
+  };
+
+  const loadSubscription = useCallback(async () => {
+    if (authStatus !== 'authenticated' || !isSupabaseConfigured) {
+      setSubscription(null);
+      return;
+    }
+    setSubscriptionLoading(true);
+    const current = await subscriptionService.getCurrentSubscription();
+    setSubscription(current);
+    setSubscriptionLoading(false);
+  }, [authStatus, isSupabaseConfigured]);
 
   // Initial Load & Real-time Subscription
   useEffect(() => {
@@ -110,12 +140,59 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   }, [authStatus, user?.id, fetchBookings, showToast]);
 
+  useEffect(() => {
+    loadSubscription();
+  }, [loadSubscription]);
+
   const nextBooking = bookings.length > 0 ? bookings[0] : null;
 
   const handleLogout = () => {
     logout();
     onBack();
     showToast('Вы вышли из системы', 'info');
+  };
+
+  const handleSubscribePlan = async (plan: SubscriptionPlan) => {
+    if (!isSupabaseConfigured) {
+      showToast('Подписки доступны после настройки Supabase', 'info');
+      return;
+    }
+    if (authStatus !== 'authenticated') {
+      showToast('Войдите, чтобы оформить подписку', 'info');
+      return;
+    }
+    setSubscriptionActionLoading(true);
+    try {
+      const result = await subscriptionService.createPayment(plan, window.location.href);
+      setSubscription(result.subscription);
+      if (result.paymentUrl) {
+        window.location.href = result.paymentUrl;
+      } else if (result.message) {
+        showToast(result.message, 'info');
+      } else {
+        showToast('Ссылка на оплату недоступна', 'info');
+      }
+    } catch (e) {
+      console.error('Subscription payment error', e);
+      showToast('Не удалось начать оплату подписки', 'error');
+    } finally {
+      setSubscriptionActionLoading(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    setSubscriptionActionLoading(true);
+    try {
+      const success = await subscriptionService.cancelSubscription();
+      if (success) {
+        showToast('Подписка отменена', 'success');
+        await loadSubscription();
+      } else {
+        showToast('Не удалось отменить подписку', 'error');
+      }
+    } finally {
+      setSubscriptionActionLoading(false);
+    }
   };
 
   const handleCancelBooking = async (id: string, e: React.MouseEvent) => {
@@ -604,6 +681,88 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   )}
                 </div>
               )}
+
+              <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-serif text-brand-text">AI-подписка</h3>
+                    <p className="text-sm text-stone-400">Управляйте лимитами и тарифами.</p>
+                  </div>
+                  {subscription && (
+                    <span className="text-xs uppercase tracking-[0.2em] text-brand-green">
+                      {subscriptionPlanLabels[subscription.plan]}
+                    </span>
+                  )}
+                </div>
+
+                {!isSupabaseConfigured && (
+                  <p className="text-sm text-stone-400">
+                    Настройте Supabase, чтобы подключить подписку и управлять лимитами AI.
+                  </p>
+                )}
+
+                {isSupabaseConfigured && authStatus !== 'authenticated' && (
+                  <p className="text-sm text-stone-400">
+                    Войдите, чтобы увидеть текущую подписку и управлять тарифом.
+                  </p>
+                )}
+
+                {isSupabaseConfigured && authStatus === 'authenticated' && (
+                  <>
+                    {subscriptionLoading ? (
+                      <div className="flex items-center gap-2 text-sm text-stone-400">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Загружаем статус подписки…
+                      </div>
+                    ) : (
+                      <div className="mb-4 rounded-2xl bg-stone-50 p-4 text-sm text-stone-600">
+                        <div className="flex items-center justify-between">
+                          <span>Тариф:</span>
+                          <span className="font-medium">
+                            {subscription ? subscriptionPlanLabels[subscription.plan] : 'Free'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between mt-1">
+                          <span>Статус:</span>
+                          <span className="font-medium">
+                            {subscription
+                              ? subscriptionStatusLabels[subscription.status]
+                              : 'Базовый'}
+                          </span>
+                        </div>
+                        {subscription?.current_period_end && (
+                          <div className="flex items-center justify-between mt-1">
+                            <span>Оплачено до:</span>
+                            <span className="font-medium">
+                              {new Date(subscription.current_period_end).toLocaleDateString(
+                                'ru-RU'
+                              )}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <Paywall
+                      currentPlan={subscription?.plan ?? 'free'}
+                      currentStatus={subscription?.status ?? 'active'}
+                      onSelectPlan={handleSubscribePlan}
+                      isLoading={subscriptionActionLoading}
+                    />
+
+                    {subscription?.status === 'active' && subscription.plan !== 'free' && (
+                      <button
+                        type="button"
+                        onClick={handleCancelSubscription}
+                        disabled={subscriptionActionLoading}
+                        className="mt-6 w-full py-3 rounded-xl text-sm font-medium text-rose-500 bg-rose-50 hover:bg-rose-100 transition-colors disabled:opacity-70"
+                      >
+                        Отменить подписку
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
 
               <div className="flex flex-col items-center mb-8 relative">
                 <div

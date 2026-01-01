@@ -42,6 +42,7 @@ type RateBucket = { count: number; resetAt: number };
 const rateBuckets = new Map<string, RateBucket>();
 
 type AuthInfo = { kind: 'user'; userId: string } | { kind: 'anon'; key: string };
+type SubscriptionPlan = 'free' | 'premium' | 'vip';
 
 function getIp(req: Request): string {
   return (
@@ -81,6 +82,37 @@ async function getAuthInfo(req: Request): Promise<AuthInfo> {
   }
 
   return { kind: 'anon', key: `ip:${getIp(req)}` };
+}
+
+async function getSubscriptionPlan(req: Request, userId: string): Promise<SubscriptionPlan> {
+  const url = Deno.env.get('SUPABASE_URL');
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+  if (!url || !anonKey) return 'free';
+
+  const token = getBearerToken(req);
+  if (!token) return 'free';
+
+  try {
+    const supabase = createClient(url, anonKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('plan,status,current_period_end')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error || !data?.plan) return 'free';
+    const isActive =
+      data.status === 'active' || data.status === 'trialing'
+        ? !data.current_period_end || new Date(data.current_period_end) > new Date()
+        : false;
+
+    return isActive && ['free', 'premium', 'vip'].includes(data.plan) ? data.plan : 'free';
+  } catch {
+    return 'free';
+  }
 }
 
 function getOpCost(op: ProxyRequest['op']): 'cheap' | 'medium' | 'expensive' {
@@ -168,6 +200,8 @@ Deno.serve(async (req) => {
 
   const authInfo = await getAuthInfo(req);
   const cost = getOpCost(body.op);
+  const subscriptionPlan =
+    authInfo.kind === 'user' ? await getSubscriptionPlan(req, authInfo.userId) : 'free';
 
   // Production rule: expensive operations must require a real user identity.
   // This prevents abuse when the client is unauthenticated.
@@ -186,13 +220,16 @@ Deno.serve(async (req) => {
   // - anon is stricter than authenticated user
   // - "expensive" ops are stricter than chat
   const windowMs = 60_000;
+  const planLimits: Record<SubscriptionPlan, { cheap: number; medium: number; expensive: number }> =
+    {
+      free: { cheap: 80, medium: 24, expensive: 6 },
+      premium: { cheap: 160, medium: 64, expensive: 24 },
+      vip: { cheap: 320, medium: 140, expensive: 48 },
+    };
+
   const limit =
     authInfo.kind === 'user'
-      ? cost === 'cheap'
-        ? 120
-        : cost === 'medium'
-          ? 60
-          : 20
+      ? planLimits[subscriptionPlan][cost]
       : cost === 'cheap'
         ? 30
         : cost === 'medium'
