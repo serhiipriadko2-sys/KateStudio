@@ -11,6 +11,19 @@ export const DATA_SOURCES = {
   pendingBookings: 'local-cache',
 } as const;
 
+const isUuid = (value?: string) =>
+  !!value &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
+const getAuthenticatedUserId = async (expectedUserId?: string): Promise<string | null> => {
+  if (expectedUserId && !isUuid(expectedUserId)) return null;
+  const session = await supabase.auth.getSession();
+  const sessionUserId = session.data.session?.user?.id;
+  if (!sessionUserId) return null;
+  if (expectedUserId && sessionUserId !== expectedUserId) return null;
+  return sessionUserId;
+};
+
 // --- Mock Data Generators ---
 const pseudoRandom = (seed: number) => {
   const x = Math.sin(seed) * 10000;
@@ -36,7 +49,9 @@ export const dataService = {
 
     try {
       // In auth-first mode we only write to Supabase when userId is present (authenticated).
-      if (!userId) throw new Error('AUTH_REQUIRED');
+      const authUserId = await getAuthenticatedUserId(userId);
+      if (!authUserId) throw new Error('AUTH_REQUIRED');
+      user.id = authUserId;
 
       // Upsert into Supabase profiles
       // We select avatar as well to ensure we get the latest if it exists
@@ -44,7 +59,7 @@ export const dataService = {
         .from('profiles')
         .upsert(
           {
-            user_id: userId,
+            user_id: authUserId,
             phone: user.phone,
             name: user.name,
             city: user.city,
@@ -74,7 +89,8 @@ export const dataService = {
   updateUserProfile: async (user: UserProfile): Promise<boolean> => {
     try {
       // Auth-first: updates must be tied to the authenticated user_id.
-      if (!user.id) throw new Error('Missing user id');
+      const authUserId = await getAuthenticatedUserId(user.id);
+      if (!authUserId) throw new Error('Missing authenticated user id');
       const updates: any = {
         name: user.name,
         city: user.city,
@@ -84,7 +100,7 @@ export const dataService = {
         updates.avatar = user.avatar;
       }
 
-      const { error } = await supabase.from('profiles').update(updates).eq('user_id', user.id);
+      const { error } = await supabase.from('profiles').update(updates).eq('user_id', authUserId);
 
       if (error) throw error;
     } catch (e) {
@@ -223,8 +239,9 @@ export const dataService = {
   getBookings: async (user: UserProfile): Promise<Booking[]> => {
     await dataService.syncPendingBookings(user);
     try {
-      if (!user.id) throw new Error('Missing user id');
-      const { data, error } = await supabase.from('bookings').select('*').eq('user_id', user.id);
+      const authUserId = await getAuthenticatedUserId(user.id);
+      if (!authUserId) throw new Error('Missing user id');
+      const { data, error } = await supabase.from('bookings').select('*').eq('user_id', authUserId);
 
       if (error) throw error;
 
@@ -258,16 +275,15 @@ export const dataService = {
   bookClass: async (cls: ClassSession, user: UserProfile): Promise<boolean> => {
     // Auth-first: real bookings require authenticated user_id (RLS).
     // If user.id is not a UUID, treat as unauthenticated.
-    const isUuid =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(user.id);
-    if (!isUuid) {
+    const authUserId = await getAuthenticatedUserId(user.id);
+    if (!authUserId) {
       // Keep local profile cached for UX, but don't attempt DB booking.
       await cacheAdapter.setUser({ ...user, isRegistered: true });
       return false;
     }
 
     // Ensure profile exists server-side (best-effort).
-    await dataService.registerUser(user.name, user.phone, user.id);
+    await dataService.registerUser(user.name, user.phone, authUserId);
 
     const existingLocal = await cacheAdapter.findBookingByClassId(user.phone, cls.id);
     if (existingLocal) {
@@ -275,7 +291,7 @@ export const dataService = {
     }
 
     const bookingPayload = {
-      user_id: user.id,
+      user_id: authUserId,
       phone: user.phone,
       class_id: cls.id,
       class_name: cls.name,
@@ -290,7 +306,7 @@ export const dataService = {
       const { data: existing } = await supabase
         .from('bookings')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', authUserId)
         .eq('class_id', cls.id)
         .single();
 
@@ -336,6 +352,8 @@ export const dataService = {
     }
 
     try {
+      const authUserId = await getAuthenticatedUserId();
+      if (!authUserId) throw new Error('AUTH_REQUIRED');
       const { error } = await supabase.from('bookings').delete().eq('id', bookingId);
 
       if (error) throw error;
@@ -349,9 +367,8 @@ export const dataService = {
 
   syncPendingBookings: async (user: UserProfile): Promise<void> => {
     // Only sync when we have a real authenticated user id.
-    const isUuid =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(user.id);
-    if (!isUuid) return;
+    const authUserId = await getAuthenticatedUserId(user.id);
+    if (!authUserId) return;
 
     const pending = await cacheAdapter.getPendingBookings(user.phone);
     if (!pending.length) return;
@@ -362,7 +379,7 @@ export const dataService = {
           const { data, error } = await supabase
             .from('bookings')
             .insert({
-              user_id: user.id,
+              user_id: authUserId,
               phone: booking.phone,
               class_id: booking.classId,
               class_name: booking.className,
