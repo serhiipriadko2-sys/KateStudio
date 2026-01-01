@@ -42,8 +42,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
 
     try {
       if (supabase) {
+        const session = await supabase.auth.getSession();
+        const userId = session.data.session?.user?.id;
+        if (!userId) {
+          throw new Error('AUTH_REQUIRED');
+        }
         const { error } = await supabase.from('bookings').insert([
           {
+            user_id: userId,
             name: name,
             phone: phone,
             class_type: details.type,
