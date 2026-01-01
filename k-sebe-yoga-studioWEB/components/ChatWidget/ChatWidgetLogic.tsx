@@ -1,5 +1,5 @@
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   analyzeYogaVideo,
   generateMeditationScript,
@@ -41,11 +41,7 @@ export interface ChatWidgetLogicState {
   clearMessages: () => void;
 }
 
-interface ChatWidgetLogicProps {
-  children: (state: ChatWidgetLogicState) => React.ReactNode;
-}
-
-export const ChatWidgetLogic: React.FC<ChatWidgetLogicProps> = ({ children }) => {
+export const useChatWidgetLogic = (): ChatWidgetLogicState => {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<ChatMode>('chat');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -339,35 +335,31 @@ export const ChatWidgetLogic: React.FC<ChatWidgetLogicProps> = ({ children }) =>
 
   const clearMessages = () => setMessages([]);
 
-  return (
-    <>
-      {children({
-        isOpen,
-        setIsOpen,
-        mode,
-        setMode,
-        isMenuOpen,
-        setIsMenuOpen,
-        isLiveMode,
-        setIsLiveMode,
-        messages,
-        inputValue,
-        setInputValue,
-        isLoading,
-        loadingText,
-        playingMessageId,
-        toggleAudio,
-        handleSend,
-        handleFileUpload,
-        isRecording,
-        toggleRecording,
-        isLiveConnected,
-        isLiveSpeaking,
-        permissionError,
-        startLiveSession,
-        stopLiveSession,
-        clearMessages,
-      })}
-    </>
-  );
+  return {
+    isOpen,
+    setIsOpen,
+    mode,
+    setMode,
+    isMenuOpen,
+    setIsMenuOpen,
+    isLiveMode,
+    setIsLiveMode,
+    messages,
+    inputValue,
+    setInputValue,
+    isLoading,
+    loadingText,
+    playingMessageId,
+    toggleAudio,
+    handleSend,
+    handleFileUpload,
+    isRecording,
+    toggleRecording,
+    isLiveConnected,
+    isLiveSpeaking,
+    permissionError,
+    startLiveSession,
+    stopLiveSession,
+    clearMessages,
+  };
 };

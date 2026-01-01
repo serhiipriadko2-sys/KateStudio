@@ -1,5 +1,5 @@
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useToast } from '../../context/ToastContext';
 import { getGeminiChatResponse, generateSpeech } from '../../services/geminiService';
 import type { ChatMessage } from '../../types';
@@ -46,11 +46,7 @@ export interface ChatWidgetLogicState {
   consentMeta: Record<ConsentKey, { title: string; description: string }>;
 }
 
-interface ChatWidgetLogicProps {
-  children: (state: ChatWidgetLogicState) => React.ReactNode;
-}
-
-export const ChatWidgetLogic: React.FC<ChatWidgetLogicProps> = ({ children }) => {
+export const useChatWidgetLogic = (): ChatWidgetLogicState => {
   const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isLiveMode, setIsLiveMode] = useState(false);
@@ -433,36 +429,32 @@ export const ChatWidgetLogic: React.FC<ChatWidgetLogicProps> = ({ children }) =>
     },
   };
 
-  return (
-    <>
-      {children({
-        isOpen,
-        setIsOpen,
-        isLiveMode,
-        isLiveConnected,
-        liveError,
-        messages,
-        inputValue,
-        setInputValue,
-        inputRef,
-        isLoading,
-        handleSend,
-        handleKeyPress,
-        handlePlayTts,
-        handleClearHistory,
-        handleStartLiveSession,
-        stopLiveSession,
-        consents,
-        consentRequest,
-        settingsOpen,
-        setSettingsOpen,
-        confirmConsent,
-        requestConsent,
-        updateConsent,
-        resetConsents,
-        clearGeolocation,
-        consentMeta,
-      })}
-    </>
-  );
+  return {
+    isOpen,
+    setIsOpen,
+    isLiveMode,
+    isLiveConnected,
+    liveError,
+    messages,
+    inputValue,
+    setInputValue,
+    inputRef,
+    isLoading,
+    handleSend,
+    handleKeyPress,
+    handlePlayTts,
+    handleClearHistory,
+    handleStartLiveSession,
+    stopLiveSession,
+    consents,
+    consentRequest,
+    settingsOpen,
+    setSettingsOpen,
+    confirmConsent,
+    requestConsent,
+    updateConsent,
+    resetConsents,
+    clearGeolocation,
+    consentMeta,
+  };
 };
