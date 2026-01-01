@@ -14,28 +14,70 @@ import {
   ChevronRight,
   X,
 } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
-import { About } from './components/About';
-import { AICoach } from './components/AICoach';
-import { ChatWidget } from './components/ChatWidget';
-import { Contact } from './components/Contact';
-import { Dashboard } from './components/Dashboard';
-import { Directions } from './components/Directions';
-import { Footer } from './components/Footer';
-import { Gallery } from './components/Gallery';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { Image } from './components/Image';
-import { LegalModals } from './components/LegalModals';
 import { Logo } from './components/Logo';
-import { OnboardingQuizModal, type OnboardingData } from './components/OnboardingQuizModal';
-import { Philosophy } from './components/Philosophy';
-import { Pricing } from './components/Pricing';
-import { Retreats } from './components/Retreats';
-import { Reviews } from './components/Reviews';
-import { Schedule } from './components/Schedule';
-import { StreakCard } from './components/StreakCard';
-import { VideoLibrary } from './components/VideoLibrary';
+import type { OnboardingData } from './components/OnboardingQuizModal';
 import { useAuth } from './context/AuthContext';
 import { retentionService } from './services/retentionService';
+
+const About = React.lazy(() =>
+  import('./components/About').then((module) => ({ default: module.About }))
+);
+const AICoach = React.lazy(() =>
+  import('./components/AICoach').then((module) => ({ default: module.AICoach }))
+);
+const ChatWidget = React.lazy(() =>
+  import('./components/ChatWidget').then((module) => ({ default: module.ChatWidget }))
+);
+const Contact = React.lazy(() =>
+  import('./components/Contact').then((module) => ({ default: module.Contact }))
+);
+const Dashboard = React.lazy(() =>
+  import('./components/Dashboard').then((module) => ({ default: module.Dashboard }))
+);
+const Directions = React.lazy(() =>
+  import('./components/Directions').then((module) => ({ default: module.Directions }))
+);
+const Footer = React.lazy(() =>
+  import('./components/Footer').then((module) => ({ default: module.Footer }))
+);
+const Gallery = React.lazy(() =>
+  import('./components/Gallery').then((module) => ({ default: module.Gallery }))
+);
+const LegalModals = React.lazy(() =>
+  import('./components/LegalModals').then((module) => ({ default: module.LegalModals }))
+);
+const OnboardingQuizModal = React.lazy(() =>
+  import('./components/OnboardingQuizModal').then((module) => ({
+    default: module.OnboardingQuizModal,
+  }))
+);
+const Philosophy = React.lazy(() =>
+  import('./components/Philosophy').then((module) => ({ default: module.Philosophy }))
+);
+const Pricing = React.lazy(() =>
+  import('./components/Pricing').then((module) => ({ default: module.Pricing }))
+);
+const Retreats = React.lazy(() =>
+  import('./components/Retreats').then((module) => ({ default: module.Retreats }))
+);
+const Reviews = React.lazy(() =>
+  import('./components/Reviews').then((module) => ({ default: module.Reviews }))
+);
+const Schedule = React.lazy(() =>
+  import('./components/Schedule').then((module) => ({ default: module.Schedule }))
+);
+const StreakCard = React.lazy(() =>
+  import('./components/StreakCard').then((module) => ({ default: module.StreakCard }))
+);
+const VideoLibrary = React.lazy(() =>
+  import('./components/VideoLibrary').then((module) => ({ default: module.VideoLibrary }))
+);
+
+const SectionFallback = ({ className }: { className?: string }) => (
+  <div className={className ?? 'py-10'} aria-hidden="true" />
+);
 
 type Tab = 'home' | 'schedule' | 'ai' | 'studio' | 'profile';
 
@@ -248,25 +290,29 @@ export default function App() {
   if (activeTab === 'profile') {
     return (
       <>
-        <Dashboard initialTab="profile" onBack={() => handleTabChange('home')} />
-        <OnboardingQuizModal
-          open={onboardingOpen}
-          onClose={() => {
-            localStorage.setItem('ksebe_onboarding_complete', 'true');
-            setOnboardingOpen(false);
-          }}
-          onComplete={(data: OnboardingData) => {
-            localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
-            localStorage.setItem('ksebe_onboarding_complete', 'true');
-            setOnboardingOpen(false);
-            if (authStatus === 'authenticated' && user?.id) {
-              retentionService.saveOnboarding(user.id, data).catch(() => {});
-              retentionService
-                .logEvent(user.id, 'onboarding_completed', { source: 'app' })
-                .catch(() => {});
-            }
-          }}
-        />
+        <Suspense fallback={<SectionFallback className="min-h-[40vh]" />}>
+          <Dashboard initialTab="profile" onBack={() => handleTabChange('home')} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <OnboardingQuizModal
+            open={onboardingOpen}
+            onClose={() => {
+              localStorage.setItem('ksebe_onboarding_complete', 'true');
+              setOnboardingOpen(false);
+            }}
+            onComplete={(data: OnboardingData) => {
+              localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
+              localStorage.setItem('ksebe_onboarding_complete', 'true');
+              setOnboardingOpen(false);
+              if (authStatus === 'authenticated' && user?.id) {
+                retentionService.saveOnboarding(user.id, data).catch(() => {});
+                retentionService
+                  .logEvent(user.id, 'onboarding_completed', { source: 'app' })
+                  .catch(() => {});
+              }
+            }}
+          />
+        </Suspense>
       </>
     );
   }
@@ -318,13 +364,17 @@ export default function App() {
 
         {activeTab === 'schedule' && (
           <div className="pt-20 view-transition">
-            <Schedule />
+            <Suspense fallback={<SectionFallback className="min-h-[40vh]" />}>
+              <Schedule />
+            </Suspense>
           </div>
         )}
 
         {activeTab === 'ai' && (
           <div className="pt-24 px-4 h-full flex flex-col view-transition">
-            <AICoach />
+            <Suspense fallback={<SectionFallback className="min-h-[40vh]" />}>
+              <AICoach />
+            </Suspense>
           </div>
         )}
 
@@ -370,26 +420,30 @@ export default function App() {
         </div>
       </nav>
 
-      <ChatWidget hidden={activeTab === 'ai'} />
+      <Suspense fallback={null}>
+        <ChatWidget hidden={activeTab === 'ai'} />
+      </Suspense>
 
-      <OnboardingQuizModal
-        open={onboardingOpen}
-        onClose={() => {
-          localStorage.setItem('ksebe_onboarding_complete', 'true');
-          setOnboardingOpen(false);
-        }}
-        onComplete={(data: OnboardingData) => {
-          localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
-          localStorage.setItem('ksebe_onboarding_complete', 'true');
-          setOnboardingOpen(false);
-          if (authStatus === 'authenticated' && user?.id) {
-            retentionService.saveOnboarding(user.id, data).catch(() => {});
-            retentionService
-              .logEvent(user.id, 'onboarding_completed', { source: 'app' })
-              .catch(() => {});
-          }
-        }}
-      />
+      <Suspense fallback={null}>
+        <OnboardingQuizModal
+          open={onboardingOpen}
+          onClose={() => {
+            localStorage.setItem('ksebe_onboarding_complete', 'true');
+            setOnboardingOpen(false);
+          }}
+          onComplete={(data: OnboardingData) => {
+            localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
+            localStorage.setItem('ksebe_onboarding_complete', 'true');
+            setOnboardingOpen(false);
+            if (authStatus === 'authenticated' && user?.id) {
+              retentionService.saveOnboarding(user.id, data).catch(() => {});
+              retentionService
+                .logEvent(user.id, 'onboarding_completed', { source: 'app' })
+                .catch(() => {});
+            }
+          }}
+        />
+      </Suspense>
     </div>
   );
 }
@@ -496,7 +550,9 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
           </div>
         </div>
 
-        <StreakCard onOpenRecommended={() => setActiveTab('ai')} />
+        <Suspense fallback={<SectionFallback className="min-h-[160px]" />}>
+          <StreakCard onOpenRecommended={() => setActiveTab('ai')} />
+        </Suspense>
 
         <div className="mt-12 mb-6">
           <div className="px-6 mb-2 flex justify-between items-end">
@@ -617,7 +673,9 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
           <h2 className="text-2xl font-serif text-brand-text mb-4 px-2">
             {selectedMood ? 'Рекомендуемые практики' : 'Популярные практики'}
           </h2>
-          <VideoLibrary selectedMood={selectedMood} />
+          <Suspense fallback={<SectionFallback className="min-h-[40vh]" />}>
+            <VideoLibrary selectedMood={selectedMood} />
+          </Suspense>
         </div>
       </div>
     </div>
@@ -633,17 +691,37 @@ const StudioView: React.FC = () => {
         <h1 className="text-4xl font-serif text-brand-text mb-2">Пространство</h1>
         <p className="text-stone-400">Где живет тишина.</p>
       </div>
-      <About />
-      <Directions />
-      <Pricing />
-      <Retreats />
-      <Gallery />
-      <Reviews />
+      <Suspense fallback={<SectionFallback />}>
+        <About />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <Directions />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <Pricing />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <Retreats />
+      </Suspense>
+      <Suspense fallback={<SectionFallback className="py-16" />}>
+        <Gallery />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <Reviews />
+      </Suspense>
       <div className="px-4 pb-8">
-        <Contact />
+        <Suspense fallback={<SectionFallback />}>
+          <Contact />
+        </Suspense>
       </div>
-      <Footer onOpenLegal={(t) => setLegalOpen(t)} />
-      <LegalModals type={legalOpen} onClose={() => setLegalOpen(null)} />
+      <Suspense fallback={<SectionFallback />}>
+        <Footer onOpenLegal={(t) => setLegalOpen(t)} />
+      </Suspense>
+      {legalOpen && (
+        <Suspense fallback={null}>
+          <LegalModals type={legalOpen} onClose={() => setLegalOpen(null)} />
+        </Suspense>
+      )}
     </div>
   );
 };

@@ -85,6 +85,9 @@ export const Image: React.FC<ImageProps> = ({
   showControlsLabel = false,
   enableAnalysis = false,
   services,
+  loading = 'lazy',
+  decoding = 'async',
+  fetchPriority,
   ...props
 }) => {
   // --- STATE ---
@@ -362,6 +365,9 @@ export const Image: React.FC<ImageProps> = ({
           className={`transition-all duration-700 ${isLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'} ${className}`}
           onLoad={() => setIsLoaded(true)}
           onError={handleError}
+          loading={loading}
+          decoding={decoding}
+          fetchPriority={fetchPriority}
           {...props}
         />
       )}

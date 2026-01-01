@@ -1,30 +1,69 @@
 import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import { About } from './components/About';
-import { AdminPanel } from './components/AdminPanel';
-import { Benefits } from './components/Benefits';
-import { BookingModal } from './components/BookingModal';
-import { ChatWidget } from './components/ChatWidget';
-import { Contact } from './components/Contact';
-import { Directions } from './components/Directions';
-import { FAQ } from './components/FAQ';
-import { FirstVisit } from './components/FirstVisit';
-import { Footer } from './components/Footer';
-import { Gallery } from './components/Gallery';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Hero } from './components/Hero';
-import { InstagramFeed } from './components/InstagramFeed';
-import { LegalModals } from './components/LegalModals';
 import { Logo } from './components/Logo';
-import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
-import { Pricing } from './components/Pricing';
 // Retreats component available from './components/Retreats' when needed
-import { Reviews } from './components/Reviews';
-import { Schedule } from './components/Schedule';
 import { registerServiceWorker } from './services/serviceWorker';
 import { loadTheme, applyTheme } from './services/theme';
 import { BookingDetails } from './types';
+
+const About = React.lazy(() =>
+  import('./components/About').then((module) => ({ default: module.About }))
+);
+const AdminPanel = React.lazy(() =>
+  import('./components/AdminPanel').then((module) => ({ default: module.AdminPanel }))
+);
+const Benefits = React.lazy(() =>
+  import('./components/Benefits').then((module) => ({ default: module.Benefits }))
+);
+const BookingModal = React.lazy(() =>
+  import('./components/BookingModal').then((module) => ({ default: module.BookingModal }))
+);
+const ChatWidget = React.lazy(() =>
+  import('./components/ChatWidget').then((module) => ({ default: module.ChatWidget }))
+);
+const Contact = React.lazy(() =>
+  import('./components/Contact').then((module) => ({ default: module.Contact }))
+);
+const Directions = React.lazy(() =>
+  import('./components/Directions').then((module) => ({ default: module.Directions }))
+);
+const FAQ = React.lazy(() =>
+  import('./components/FAQ').then((module) => ({ default: module.FAQ }))
+);
+const FirstVisit = React.lazy(() =>
+  import('./components/FirstVisit').then((module) => ({ default: module.FirstVisit }))
+);
+const Footer = React.lazy(() =>
+  import('./components/Footer').then((module) => ({ default: module.Footer }))
+);
+const Gallery = React.lazy(() =>
+  import('./components/Gallery').then((module) => ({ default: module.Gallery }))
+);
+const InstagramFeed = React.lazy(() =>
+  import('./components/InstagramFeed').then((module) => ({ default: module.InstagramFeed }))
+);
+const LegalModals = React.lazy(() =>
+  import('./components/LegalModals').then((module) => ({ default: module.LegalModals }))
+);
+const Philosophy = React.lazy(() =>
+  import('./components/Philosophy').then((module) => ({ default: module.Philosophy }))
+);
+const Pricing = React.lazy(() =>
+  import('./components/Pricing').then((module) => ({ default: module.Pricing }))
+);
+const Reviews = React.lazy(() =>
+  import('./components/Reviews').then((module) => ({ default: module.Reviews }))
+);
+const Schedule = React.lazy(() =>
+  import('./components/Schedule').then((module) => ({ default: module.Schedule }))
+);
+
+const SectionFallback = ({ className }: { className?: string }) => (
+  <div className={className ?? 'py-16'} aria-hidden="true" />
+);
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -334,40 +373,80 @@ function App() {
         <main id="main-content" tabIndex={-1} className="flex-1">
           <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
           <Marquee />
-          <Benefits />
-          <About />
-          <Philosophy />
-          <Directions onBook={(type) => openBooking({ type })} />
-          <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
-          <Gallery />
-          <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
+          <Suspense fallback={<SectionFallback />}>
+            <Benefits />
+          </Suspense>
+          <Suspense fallback={<SectionFallback />}>
+            <About />
+          </Suspense>
+          <Suspense fallback={<SectionFallback />}>
+            <Philosophy />
+          </Suspense>
+          <Suspense fallback={<SectionFallback />}>
+            <Directions onBook={(type) => openBooking({ type })} />
+          </Suspense>
+          <Suspense fallback={<SectionFallback />}>
+            <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
+          </Suspense>
+          <Suspense fallback={<SectionFallback className="py-20" />}>
+            <Gallery />
+          </Suspense>
+          <Suspense fallback={<SectionFallback />}>
+            <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
+          </Suspense>
           {/* Retreats temporarily hidden - no upcoming retreat info */}
           {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
-          <Schedule onBook={(details) => openBooking(details)} />
-          <InstagramFeed />
-          <Reviews />
-          <FAQ />
-          <Contact />
-          <Footer
-            onOpenAdmin={() => setIsAdminOpen(true)}
-            onOpenLegal={(type) => setLegalModalType(type)}
-          />
+          <Suspense fallback={<SectionFallback />}>
+            <Schedule onBook={(details) => openBooking(details)} />
+          </Suspense>
+          <Suspense fallback={<SectionFallback />}>
+            <InstagramFeed />
+          </Suspense>
+          <Suspense fallback={<SectionFallback />}>
+            <Reviews />
+          </Suspense>
+          <Suspense fallback={<SectionFallback />}>
+            <FAQ />
+          </Suspense>
+          <Suspense fallback={<SectionFallback />}>
+            <Contact />
+          </Suspense>
+          <Suspense fallback={<SectionFallback />}>
+            <Footer
+              onOpenAdmin={() => setIsAdminOpen(true)}
+              onOpenLegal={(type) => setLegalModalType(type)}
+            />
+          </Suspense>
         </main>
 
         <BackToTop />
-        <ChatWidget />
+        <Suspense fallback={null}>
+          <ChatWidget />
+        </Suspense>
         <CookieBanner />
 
         {/* Global Booking Modal */}
-        <BookingModal
-          isOpen={bookingModalData.isOpen}
-          onClose={closeBooking}
-          details={bookingModalData.details}
-        />
+        {bookingModalData.isOpen && (
+          <Suspense fallback={null}>
+            <BookingModal
+              isOpen={bookingModalData.isOpen}
+              onClose={closeBooking}
+              details={bookingModalData.details}
+            />
+          </Suspense>
+        )}
 
         {/* Other Modals */}
-        <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
-        <LegalModals type={legalModalType} onClose={() => setLegalModalType(null)} />
+        {isAdminOpen && (
+          <Suspense fallback={null}>
+            <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
+          </Suspense>
+        )}
+        {legalModalType && (
+          <Suspense fallback={null}>
+            <LegalModals type={legalModalType} onClose={() => setLegalModalType(null)} />
+          </Suspense>
+        )}
       </div>
     </>
   );
