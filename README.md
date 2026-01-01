@@ -332,6 +332,19 @@ npm run build:app
 k-sebe-yoga-studio-APPp/dist
 ```
 
+### Supabase (DB/RLS)
+
+1. Применить миграции (включая RLS и политики для `profiles`/`bookings`):
+   ```bash
+   supabase db push
+   ```
+2. Проверить, что в базе активированы:
+   - RLS на таблицах `profiles`, `bookings`
+   - политики read/write `auth.uid() = user_id`
+3. Убедиться, что клиент работает через Supabase Auth и отправляет `user_id` в
+   запросах к `profiles`/`bookings` (см.
+   `supabase/migrations/20251227160000_profiles_bookings_user_id_rls.sql`).
+
 ---
 
 ## Вклад в проект
