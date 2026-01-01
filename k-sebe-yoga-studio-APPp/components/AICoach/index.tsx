@@ -34,7 +34,7 @@ export const AICoach: React.FC = () => {
   // AI can work either via server-side proxy (recommended) or via client key (demo).
   const hasSupabase =
     !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
-  const hasClientGeminiKey = !!import.meta.env.VITE_GEMINI_API_KEY;
+  const hasClientGeminiKey = import.meta.env.DEV && !!import.meta.env.VITE_GEMINI_API_KEY;
 
   if (!hasSupabase && !hasClientGeminiKey) {
     return (
@@ -45,8 +45,10 @@ export const AICoach: React.FC = () => {
         <h3 className="text-xl font-serif text-brand-text mb-2">Требуется настройка</h3>
         <p className="text-stone-500 max-w-sm">
           Для работы AI функций нужна настройка Supabase (VITE_SUPABASE_URL /
-          VITE_SUPABASE_ANON_KEY) или клиентский ключ Gemini (VITE_GEMINI_API_KEY) для локального
-          демо.
+          VITE_SUPABASE_ANON_KEY)
+          {import.meta.env.DEV
+            ? ' или клиентский ключ Gemini (VITE_GEMINI_API_KEY) для локального демо.'
+            : '.'}
         </p>
       </div>
     );

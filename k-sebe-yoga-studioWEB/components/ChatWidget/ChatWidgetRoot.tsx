@@ -20,6 +20,7 @@ import { ToolMenu } from './ToolMenu';
 import { TOOLS } from './tools';
 
 export const ChatWidget: React.FC = () => {
+  const allowClientFallback = import.meta.env.DEV;
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<ChatMode>('chat');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -234,6 +235,10 @@ export const ChatWidget: React.FC = () => {
   const startLiveSession = async () => {
     setIsLiveMode(true);
     setPermissionError(false);
+    if (!allowClientFallback) {
+      setPermissionError(true);
+      return;
+    }
     if (!process.env.API_KEY) return;
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => {

@@ -3,6 +3,7 @@ import { Source } from '../types';
 import { supabase } from './supabaseClient';
 
 let chatSession: Chat | null = null;
+const allowClientFallback = import.meta.env.DEV;
 
 const getGeminiProxyUrl = (): string | null => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -91,6 +92,7 @@ export interface MeditationResult {
 // Helper to init AI
 // Note: For Veo, we re-instantiate this in the function to capture the latest key if selected via dialog
 const getAI = () => {
+  if (!allowClientFallback) throw new Error('Client Gemini key disabled in production');
   if (!process.env.API_KEY) throw new Error('API Key missing');
   return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
@@ -119,10 +121,14 @@ export const getThinkingResponse = async (userMessage: string): Promise<string> 
       message: userMessage,
     });
     return response.text;
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return 'Сервис временно недоступен. Попробуйте позже.';
+    }
   }
 
+  if (!allowClientFallback) return 'Сервис временно недоступен. Попробуйте позже.';
   if (!process.env.API_KEY) return 'API Key missing';
   try {
     const ai = getAI();
@@ -153,10 +159,15 @@ export const getGeminiChatResponse = async (
       message: userMessage,
       location,
     });
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return { text: 'Сервис временно недоступен. Попробуйте позже.', sources: [] };
+    }
   }
 
+  if (!allowClientFallback)
+    return { text: 'Сервис временно недоступен. Попробуйте позже.', sources: [] };
   if (!process.env.API_KEY) return { text: 'API Key missing', sources: [] };
 
   try {
@@ -192,10 +203,18 @@ export async function* getGeminiChatStream(userMessage: string) {
     });
     yield response.text || '...';
     return;
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      yield 'Сервис временно недоступен. Попробуйте позже.';
+      return;
+    }
   }
 
+  if (!allowClientFallback) {
+    yield 'Сервис временно недоступен. Попробуйте позже.';
+    return;
+  }
   if (!process.env.API_KEY) {
     yield 'Пожалуйста, настройте API ключ.';
     return;
@@ -229,10 +248,14 @@ export const createMeditation = async (
       duration,
     });
     return response.result;
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return null;
+    }
   }
 
+  if (!allowClientFallback) return null;
   if (!process.env.API_KEY) return null;
   try {
     const ai = getAI();
@@ -280,10 +303,14 @@ export const generateSpeech = async (text: string): Promise<string | null> => {
       text,
     });
     return response.audioBase64;
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return null;
+    }
   }
 
+  if (!allowClientFallback) return null;
   if (!process.env.API_KEY) return null;
   try {
     const ai = getAI();
@@ -319,12 +346,17 @@ export const generateYogaImage = async (
   } catch (e) {
     const friendly = getFriendlyProxyError(e);
     if (friendly) return null;
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', e);
+      return null;
+    }
   }
 
   // Production safety: image generation is expensive → require authenticated session.
   const session = await supabase.auth.getSession();
   if (!session.data.session?.access_token) return null;
 
+  if (!allowClientFallback) return null;
   if (!process.env.API_KEY) return null;
 
   const ai = getAI();
@@ -357,6 +389,7 @@ export const editYogaImage = async (
   const session = await supabase.auth.getSession();
   if (!session.data.session?.access_token) return null;
 
+  if (!allowClientFallback) return null;
   if (!process.env.API_KEY) return null;
   try {
     const ai = getAI();
@@ -386,6 +419,7 @@ export const generateVeoVideo = async (prompt: string): Promise<string | null> =
   const session = await supabase.auth.getSession();
   if (!session.data.session?.access_token) return null;
 
+  if (!allowClientFallback) return null;
   // Check for paid key selection (Required for Veo)
   if ((window as any).aistudio) {
     const hasKey = await (window as any).aistudio.hasSelectedApiKey();
@@ -442,6 +476,10 @@ export const analyzeMedia = async (
   } catch (e) {
     const friendly = getFriendlyProxyError(e);
     if (friendly) return friendly;
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', e);
+      return 'Сервис временно недоступен. Попробуйте позже.';
+    }
   }
 
   // Production safety: media analysis is expensive → require authenticated session.
@@ -450,6 +488,7 @@ export const analyzeMedia = async (
     return 'Для анализа фото/видео нужно войти в аккаунт (подтвердить телефон).';
   }
 
+  if (!allowClientFallback) return 'Сервис временно недоступен. Попробуйте позже.';
   if (!process.env.API_KEY) return 'API Key not found';
 
   try {

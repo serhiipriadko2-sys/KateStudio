@@ -56,18 +56,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!isMounted) return;
       if (session?.access_token) {
         setAuthStatus('authenticated');
-        // Ensure we have a local profile cached for UI even if DB is unavailable.
         const cached = await dataService.getUser();
-        if (cached) {
-          setUser(cached);
-          return;
-        }
+        const sessionUserId = session.user?.id;
+        const phone = session.user?.phone || cached?.phone || pendingPhone;
+        const name = cached?.name || pendingName || 'Пользователь';
 
-        const phone = session.user?.phone || pendingPhone;
-        const name = pendingName || 'Пользователь';
-        if (phone) {
-          const profile = await dataService.registerUser(name, phone, session.user.id);
-          setUser(profile);
+        if (sessionUserId && phone) {
+          if (!cached || cached.id !== sessionUserId) {
+            const profile = await dataService.registerUser(name, phone, sessionUserId);
+            setUser(profile);
+          } else {
+            setUser(cached);
+          }
+        } else if (cached) {
+          setUser(cached);
         }
 
         // Retention bootstrap: migrate local onboarding/streak → Supabase on first login.
