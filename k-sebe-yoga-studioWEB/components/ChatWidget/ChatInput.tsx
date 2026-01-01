@@ -2,7 +2,7 @@ import { FileVideo, Mic, Send, StopCircle } from 'lucide-react';
 import React from 'react';
 import type { ChatMode } from '../../types';
 
-export const ChatControlsPanel: React.FC<{
+export const ChatInput: React.FC<{
   mode: ChatMode;
   inputValue: string;
   onInputChange: (value: string) => void;

@@ -2,7 +2,7 @@ import { Brain, Loader2, Pause, Play } from 'lucide-react';
 import React from 'react';
 import type { ChatMessage } from '../../types';
 
-export const ChatMessagesPanel: React.FC<{
+export const ChatMessages: React.FC<{
   messages: ChatMessage[];
   isLoading: boolean;
   loadingText: string;
@@ -20,7 +20,6 @@ export const ChatMessagesPanel: React.FC<{
           <div
             className={`flex flex-col gap-2 max-w-[90%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
           >
-            {/* Rich Content Bubbles */}
             {msg.generatedVideoUrl && (
               <div className="w-full max-w-[240px] rounded-2xl overflow-hidden shadow-lg border border-brand-green/20 mb-1">
                 <video
