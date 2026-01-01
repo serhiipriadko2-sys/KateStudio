@@ -28,6 +28,7 @@ interface ChatWidgetProps {
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
+  const allowClientFallback = import.meta.env.DEV;
   const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isLiveMode, setIsLiveMode] = useState(false);
@@ -247,6 +248,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
 
     setIsLiveMode(true);
     setLiveError(null);
+    if (!allowClientFallback) {
+      setLiveError('Live-сессия доступна только в режиме разработки.');
+      return;
+    }
     if (!process.env.API_KEY) {
       setLiveError('API ключ не найден');
       return;

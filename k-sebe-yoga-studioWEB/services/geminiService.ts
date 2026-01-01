@@ -10,6 +10,7 @@ import {
 import { Source, AsanaAnalysis } from '../types';
 
 let chatSession: Chat | null = null;
+const allowClientFallback = import.meta.env.DEV;
 
 type ProxyChatResponse = { text: string; sources: Source[] };
 
@@ -86,8 +87,11 @@ export const getGeminiChatResponse = async (
   // Prefer server-side proxy (production-safe). Fallback to client key for local demo.
   try {
     return await callGeminiProxy<ProxyChatResponse>({ op: 'chat', message: userMessage, location });
-  } catch {
-    // ignore and try client-side
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return { text: 'Сервис временно недоступен. Попробуйте позже.', sources: [] };
+    }
   }
 
   if (!process.env.API_KEY) return { text: 'Пожалуйста, настройте API ключ.', sources: [] };
@@ -136,6 +140,7 @@ export const getGeminiChatResponse = async (
 export const generateMeditationVideo = async (prompt: string): Promise<string | null> => {
   // NOTE: Veo URIs often require attaching the API key to fetch the asset.
   // For now we keep this as a client-side (demo) feature.
+  if (!allowClientFallback) return null;
   if (!process.env.API_KEY) return null;
   await ensureBillingKey();
 
@@ -180,10 +185,14 @@ export const generateYogaImage = async (prompt: string): Promise<string | null> 
       aspectRatio: '1:1',
     });
     return response.dataUrl;
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return null;
+    }
   }
 
+  if (!allowClientFallback) return null;
   if (!process.env.API_KEY) return null;
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -221,10 +230,14 @@ export const analyzeYogaVideo = async (base64Video: string): Promise<string> => 
       base64Video,
     });
     return response.text;
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return 'Сервис временно недоступен. Попробуйте позже.';
+    }
   }
 
+  if (!allowClientFallback) return 'Сервис временно недоступен. Попробуйте позже.';
   if (!process.env.API_KEY) return 'Ошибка ключа';
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -256,10 +269,14 @@ export const generatePersonalProgram = async (request: string): Promise<string> 
       request,
     });
     return response.text;
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return 'Сервис временно недоступен. Попробуйте позже.';
+    }
   }
 
+  if (!allowClientFallback) return 'Сервис временно недоступен. Попробуйте позже.';
   if (!process.env.API_KEY) return 'Ошибка ключа';
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -288,10 +305,14 @@ export const transcribeDiaryEntry = async (
       op: 'transcribeDiaryEntry',
       audioBase64,
     });
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return { text: '', summary: 'Сервис временно недоступен. Попробуйте позже.' };
+    }
   }
 
+  if (!allowClientFallback) return { text: '', summary: 'Сервис временно недоступен.' };
   if (!process.env.API_KEY) return { text: '', summary: 'Ошибка' };
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -324,10 +345,14 @@ export const generateSpeech = async (text: string): Promise<string | null> => {
       text,
     });
     return response.audioBase64;
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return null;
+    }
   }
 
+  if (!allowClientFallback) return null;
   if (!process.env.API_KEY) return null;
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -356,10 +381,14 @@ export const generateMeditationScript = async (
       duration,
     });
     return response.text;
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return 'Сервис временно недоступен. Попробуйте позже.';
+    }
   }
 
+  if (!allowClientFallback) return 'Сервис временно недоступен. Попробуйте позже.';
   if (!process.env.API_KEY) return 'Ошибка ключа';
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -380,10 +409,14 @@ export const analyzeImageContent = async (base64Image: string): Promise<AsanaAna
       base64Image,
     });
     return response.result;
-  } catch {
-    // ignore and fallback
+  } catch (error) {
+    if (!allowClientFallback) {
+      console.error('Gemini proxy error:', error);
+      return 'Сервис временно недоступен. Попробуйте позже.';
+    }
   }
 
+  if (!allowClientFallback) return 'Сервис временно недоступен. Попробуйте позже.';
   if (!process.env.API_KEY) return 'API ключ не настроен';
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
