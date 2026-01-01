@@ -34,6 +34,7 @@ import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
 import { StreakCard } from './components/StreakCard';
 import { VideoLibrary } from './components/VideoLibrary';
+import { WeeklyRecapCard } from './components/WeeklyRecapCard';
 import { useAuth } from './context/AuthContext';
 import { retentionService } from './services/retentionService';
 
@@ -497,6 +498,7 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
         </div>
 
         <StreakCard onOpenRecommended={() => setActiveTab('ai')} />
+        <WeeklyRecapCard />
 
         <div className="mt-12 mb-6">
           <div className="px-6 mb-2 flex justify-between items-end">

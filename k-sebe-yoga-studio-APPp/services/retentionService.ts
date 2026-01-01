@@ -1,7 +1,9 @@
 import { supabase } from './supabaseClient';
 
 const PRACTICE_DAYS_KEY = 'ksebe_practice_days';
+const PRACTICE_COMPLETIONS_KEY = 'ksebe_practice_completions';
 const PRACTICE_PENDING_KEY = 'ksebe_practice_days_pending';
+const PRACTICE_COMPLETIONS_PENDING_KEY = 'ksebe_practice_completions_pending';
 const ONBOARDING_KEY = 'ksebe_onboarding';
 const ONBOARDING_COMPLETE_KEY = 'ksebe_onboarding_complete';
 
@@ -44,6 +46,8 @@ export type AppEventName =
   | 'onboarding_completed'
   | 'practice_logged'
   | 'practice_migrated'
+  | 'practice_completed'
+  | 'practice_migrated_completions'
   | 'streak_shown';
 
 export const retentionService = {
@@ -79,6 +83,41 @@ export const retentionService = {
       return { ok: false as const, error: e };
     }
   },
+  async upsertPracticeCompletion(userId: string, day: string, source = 'app') {
+    try {
+      const { error } = await supabase.from('practice_events').upsert(
+        {
+          user_id: userId,
+          day,
+          kind: 'completion',
+          source,
+        },
+        { onConflict: 'user_id,day,kind' }
+      );
+      if (error) throw error;
+      return { ok: true as const };
+    } catch (e) {
+      const pending = safeReadStringArray(PRACTICE_COMPLETIONS_PENDING_KEY);
+      safeWriteJson(PRACTICE_COMPLETIONS_PENDING_KEY, uniqueSortedDays([...pending, day]));
+      return { ok: false as const, error: e };
+    }
+  },
+  async syncPendingPracticeCompletions(userId: string) {
+    const pending = safeReadStringArray(PRACTICE_COMPLETIONS_PENDING_KEY);
+    if (!pending.length) return { synced: 0 };
+
+    let synced = 0;
+    const remaining: string[] = [];
+
+    for (const day of pending) {
+      const res = await this.upsertPracticeCompletion(userId, day, 'pending');
+      if (res.ok) synced += 1;
+      else remaining.push(day);
+    }
+
+    safeWriteJson(PRACTICE_COMPLETIONS_PENDING_KEY, remaining);
+    return { synced };
+  },
 
   async syncPendingPracticeDays(userId: string) {
     const pending = safeReadStringArray(PRACTICE_PENDING_KEY);
@@ -109,12 +148,12 @@ export const retentionService = {
     );
   },
 
-  async fetchRemotePracticeDays(userId: string): Promise<string[]> {
+  async fetchRemotePracticeDays(userId: string, kind: 'streak' | 'completion' = 'streak') {
     const { data, error } = await supabase
       .from('practice_events')
       .select('day')
       .eq('user_id', userId)
-      .eq('kind', 'streak')
+      .eq('kind', kind)
       .order('day', { ascending: true });
     if (error) throw error;
     return (data ?? []).map((r) => String((r as any).day));
@@ -126,6 +165,7 @@ export const retentionService = {
 
     // Always attempt to sync pending streak days
     await this.syncPendingPracticeDays(userId);
+    await this.syncPendingPracticeCompletions(userId);
 
     if (alreadyMigrated) return;
 
@@ -163,11 +203,44 @@ export const retentionService = {
       });
     }
 
-    // 3) Pull remote days back to local (cross-device)
+    // 3) Practice completions → Supabase
+    const localCompletions = uniqueSortedDays(safeReadStringArray(PRACTICE_COMPLETIONS_KEY));
+    if (localCompletions.length) {
+      let inserted = 0;
+      for (const part of chunk(localCompletions, 50)) {
+        const rows = part.map((day) => ({
+          user_id: userId,
+          day,
+          kind: 'completion',
+          source: 'migration',
+        }));
+        const { error } = await supabase.from('practice_events').upsert(rows, {
+          onConflict: 'user_id,day,kind',
+        });
+        if (!error) inserted += part.length;
+      }
+      await this.logEvent(userId, 'practice_migrated_completions', {
+        count: localCompletions.length,
+        attempted: inserted,
+      });
+    }
+
+    // 4) Pull remote days back to local (cross-device)
     try {
       const remoteDays = uniqueSortedDays(await this.fetchRemotePracticeDays(userId));
       const merged = uniqueSortedDays([...localDays, ...remoteDays]);
       safeWriteJson(PRACTICE_DAYS_KEY, merged);
+    } catch {
+      // ignore
+    }
+
+    // 5) Pull remote completions back to local (cross-device)
+    try {
+      const remoteCompletions = uniqueSortedDays(
+        await this.fetchRemotePracticeDays(userId, 'completion')
+      );
+      const merged = uniqueSortedDays([...localCompletions, ...remoteCompletions]);
+      safeWriteJson(PRACTICE_COMPLETIONS_KEY, merged);
     } catch {
       // ignore
     }
