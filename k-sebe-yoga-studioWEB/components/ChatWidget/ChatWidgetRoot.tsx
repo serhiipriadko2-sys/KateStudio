@@ -20,7 +20,10 @@ import { ToolMenu } from './ToolMenu';
 import { TOOLS } from './tools';
 
 export const ChatWidget: React.FC = () => {
-  const allowClientFallback = import.meta.env.DEV;
+  const clientApiKey = import.meta.env.DEV
+    ? (import.meta.env.VITE_GEMINI_API_KEY as string | undefined)
+    : undefined;
+  const allowClientFallback = import.meta.env.DEV && !!clientApiKey;
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<ChatMode>('chat');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -239,12 +242,12 @@ export const ChatWidget: React.FC = () => {
       setPermissionError(true);
       return;
     }
-    if (!process.env.API_KEY) return;
+    if (!clientApiKey) return;
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => {
         throw new Error('PERMISSION_DENIED');
       });
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: clientApiKey });
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({
         sampleRate: 16000,
       });

@@ -28,7 +28,10 @@ interface ChatWidgetProps {
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
-  const allowClientFallback = import.meta.env.DEV;
+  const clientApiKey = import.meta.env.DEV
+    ? (import.meta.env.VITE_GEMINI_API_KEY as string | undefined)
+    : undefined;
+  const allowClientFallback = import.meta.env.DEV && !!clientApiKey;
   const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isLiveMode, setIsLiveMode] = useState(false);
@@ -252,13 +255,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
       setLiveError('Live-сессия доступна только в режиме разработки.');
       return;
     }
-    if (!process.env.API_KEY) {
+    if (!clientApiKey) {
       setLiveError('API ключ не найден');
       return;
     }
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: clientApiKey });
 
       // Safari compatibility
       type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext };

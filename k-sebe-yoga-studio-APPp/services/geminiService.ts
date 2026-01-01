@@ -3,7 +3,10 @@ import { Source } from '../types';
 import { supabase } from './supabaseClient';
 
 let chatSession: Chat | null = null;
-const allowClientFallback = import.meta.env.DEV;
+const clientApiKey = import.meta.env.DEV
+  ? (import.meta.env.VITE_GEMINI_API_KEY as string | undefined)
+  : undefined;
+const allowClientFallback = import.meta.env.DEV && !!clientApiKey;
 
 const getGeminiProxyUrl = (): string | null => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -11,7 +14,16 @@ const getGeminiProxyUrl = (): string | null => {
   return `${supabaseUrl.replace(/\/$/, '')}/functions/v1/gemini-proxy`;
 };
 
+const assertProxyConfigured = () => {
+  if (import.meta.env.PROD && !getGeminiProxyUrl()) {
+    throw new Error('Gemini proxy is required in production (missing VITE_SUPABASE_URL)');
+  }
+};
+
+assertProxyConfigured();
+
 async function callGeminiProxy<T>(payload: unknown): Promise<T> {
+  assertProxyConfigured();
   const url = getGeminiProxyUrl();
   if (!url) throw new Error('Gemini proxy not configured (missing VITE_SUPABASE_URL)');
 
@@ -93,8 +105,8 @@ export interface MeditationResult {
 // Note: For Veo, we re-instantiate this in the function to capture the latest key if selected via dialog
 const getAI = () => {
   if (!allowClientFallback) throw new Error('Client Gemini key disabled in production');
-  if (!process.env.API_KEY) throw new Error('API Key missing');
-  return new GoogleGenAI({ apiKey: process.env.API_KEY });
+  if (!clientApiKey) throw new Error('API Key missing');
+  return new GoogleGenAI({ apiKey: clientApiKey });
 };
 
 // --- CHAT (Standard & Streaming) ---
@@ -129,7 +141,7 @@ export const getThinkingResponse = async (userMessage: string): Promise<string> 
   }
 
   if (!allowClientFallback) return 'Сервис временно недоступен. Попробуйте позже.';
-  if (!process.env.API_KEY) return 'API Key missing';
+  if (!clientApiKey) return 'API Key missing';
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
@@ -168,7 +180,7 @@ export const getGeminiChatResponse = async (
 
   if (!allowClientFallback)
     return { text: 'Сервис временно недоступен. Попробуйте позже.', sources: [] };
-  if (!process.env.API_KEY) return { text: 'API Key missing', sources: [] };
+  if (!clientApiKey) return { text: 'API Key missing', sources: [] };
 
   try {
     const session = ensureSession();
@@ -215,7 +227,7 @@ export async function* getGeminiChatStream(userMessage: string) {
     yield 'Сервис временно недоступен. Попробуйте позже.';
     return;
   }
-  if (!process.env.API_KEY) {
+  if (!clientApiKey) {
     yield 'Пожалуйста, настройте API ключ.';
     return;
   }
@@ -256,7 +268,7 @@ export const createMeditation = async (
   }
 
   if (!allowClientFallback) return null;
-  if (!process.env.API_KEY) return null;
+  if (!clientApiKey) return null;
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
@@ -311,7 +323,7 @@ export const generateSpeech = async (text: string): Promise<string | null> => {
   }
 
   if (!allowClientFallback) return null;
-  if (!process.env.API_KEY) return null;
+  if (!clientApiKey) return null;
   try {
     const ai = getAI();
     // Clean text from instructions for TTS
@@ -357,7 +369,7 @@ export const generateYogaImage = async (
   if (!session.data.session?.access_token) return null;
 
   if (!allowClientFallback) return null;
-  if (!process.env.API_KEY) return null;
+  if (!clientApiKey) return null;
 
   const ai = getAI();
   let safeRatio = aspectRatio;
@@ -390,7 +402,7 @@ export const editYogaImage = async (
   if (!session.data.session?.access_token) return null;
 
   if (!allowClientFallback) return null;
-  if (!process.env.API_KEY) return null;
+  if (!clientApiKey) return null;
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
@@ -430,7 +442,8 @@ export const generateVeoVideo = async (prompt: string): Promise<string | null> =
   }
 
   // Create fresh instance to pick up new key if just selected
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  if (!clientApiKey) return null;
+  const ai = new GoogleGenAI({ apiKey: clientApiKey });
 
   try {
     let operation = await ai.models.generateVideos({
@@ -450,7 +463,7 @@ export const generateVeoVideo = async (prompt: string): Promise<string | null> =
 
     const videoUri = operation.response?.generatedVideos?.[0]?.video?.uri;
     if (videoUri) {
-      return `${videoUri}&key=${process.env.API_KEY}`;
+      return `${videoUri}&key=${clientApiKey}`;
     }
     return null;
   } catch (e) {
@@ -489,7 +502,7 @@ export const analyzeMedia = async (
   }
 
   if (!allowClientFallback) return 'Сервис временно недоступен. Попробуйте позже.';
-  if (!process.env.API_KEY) return 'API Key not found';
+  if (!clientApiKey) return 'API Key not found';
 
   try {
     const ai = getAI();
