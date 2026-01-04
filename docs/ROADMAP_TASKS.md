@@ -31,7 +31,7 @@
      `supabase/functions/create-payment/index.ts`,
      `supabase/functions/payment-webhook/index.ts`.
 4. **Тесты критических потоков (цель: 40% coverage).**
-   - Результат: Vitest-сьюты для Pricing/Blog/ChatWidget/dataService.
+   - Результат: Vitest-сьюиты для Pricing/Blog/ChatWidget/dataService.
    - Артефакты: `shared/__tests__/`,
      `k-sebe-yoga-studioWEB/components/__tests__/`,
      `k-sebe-yoga-studio-APPp/services/__tests__/`.
