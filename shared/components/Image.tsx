@@ -318,7 +318,7 @@ export const Image: React.FC<ImageProps> = ({
           ))}
         </div>
 
-        <p className="text-sm text-stone-600 italic">"{analysisResult.description}"</p>
+        <p className="text-sm text-stone-600 italic">&ldquo;{analysisResult.description}&rdquo;</p>
 
         <div className="bg-brand-mint/30 p-3 rounded-xl flex gap-2">
           <Brain className="w-4 h-4 text-brand-green shrink-0 mt-0.5" />
@@ -396,6 +396,9 @@ export const Image: React.FC<ImageProps> = ({
         <div
           className={`absolute z-30 flex flex-col items-end gap-2 transition-opacity duration-300 ${showControlsLabel || hasError ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} ${controlsClassName || 'top-4 right-4'}`}
           onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.key === 'Escape' && e.stopPropagation()}
+          role="group"
+          aria-label="Управление изображением"
         >
           <div className="flex gap-2">
             {/* Analysis button */}
@@ -457,6 +460,9 @@ export const Image: React.FC<ImageProps> = ({
             <div
               className="flex gap-2 p-1.5 bg-white rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 w-64 border border-stone-100"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.key === 'Escape' && setIsUrlInputOpen(false)}
+              role="group"
+              aria-label="Ввод URL изображения"
             >
               <input
                 type="text"

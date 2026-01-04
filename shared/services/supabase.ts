@@ -72,7 +72,7 @@ export const uploadFile = async (
     } = supabase.storage.from(bucket).getPublicUrl(data.path);
 
     return publicUrl;
-  } catch (err) {
+  } catch (_err) {
     console.warn('Unexpected upload error. Using local storage.');
     return null;
   }
@@ -83,7 +83,7 @@ export const uploadFile = async (
  */
 export const queryTable = async <T>(
   table: string,
-  query: (q: ReturnType<typeof supabase.from>) => any
+  query: (q: ReturnType<typeof supabase.from>) => Promise<{ data: T[] | null; error: Error | null }>
 ): Promise<T[] | null> => {
   try {
     const { data, error } = await query(supabase.from(table));

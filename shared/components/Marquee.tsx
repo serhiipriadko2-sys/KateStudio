@@ -38,7 +38,6 @@ export const Marquee: React.FC<MarqueeConfig> = ({
 
   const isInhale = phase === 'inhale';
   const transitionDuration = `${cycleDuration}ms`;
-  const breathingTransition = `transition-all duration-[${transitionDuration}] ease-[cubic-bezier(0.4,0,0.2,1)]`;
 
   const renderStrip = (words: string[], label: string, isActive: boolean) => (
     <div

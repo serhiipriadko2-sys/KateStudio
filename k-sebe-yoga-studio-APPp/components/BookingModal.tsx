@@ -94,6 +94,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={onClose}
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}
       role="dialog"
       aria-modal="true"
       aria-labelledby="app-booking-modal-title"
@@ -101,6 +102,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       <div
         className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="document"
       >
         <button
           onClick={onClose}

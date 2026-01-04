@@ -624,7 +624,7 @@ shared/components/Paywall.tsx
 
 - [x] Рефакторинг ChatWidget.tsx → 4 компонента
 - [x] Рефакторинг APP ChatWidget.tsx → 4 компонента
-- [ ] Добавить `.env.example` в APP
+- [x] Добавить `.env.example` в APP
 - [ ] Настроить Supabase Auth (Phone OTP)
 - [ ] Создать AuthModal компонент
 - [ ] Интегрировать YooKassa
@@ -633,6 +633,8 @@ shared/components/Paywall.tsx
 
 - [x] Добавить sitemap.xml
 - [x] Добавить robots.txt
+- [x] Добавить sitemap.xml в APP
+- [x] Добавить robots.txt в APP
 - [ ] Настроить rate limiting
 - [ ] Добавить Sentry
 - [ ] Увеличить тестовое покрытие до 50%
