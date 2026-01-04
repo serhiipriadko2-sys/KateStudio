@@ -124,6 +124,19 @@ export function isMobile(): boolean {
 export { logger, type LogLevel, type LogContext } from './logger';
 
 /**
+ * Async utilities for error handling and control flow
+ */
+export {
+  safeAsync,
+  retryAsync,
+  parallelAsync,
+  batchAsync,
+  debounceAsync,
+  throttleAsync,
+  type AsyncResult,
+} from './async';
+
+/**
  * Check if iOS device
  */
 export function isIOS(): boolean {

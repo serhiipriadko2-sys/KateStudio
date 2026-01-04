@@ -4,8 +4,9 @@
  * Catches JavaScript errors in child components
  */
 
-import { AlertTriangle, RotateCcw } from 'lucide-react';
+import { AlertTriangle, RotateCcw, Home } from 'lucide-react';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { logger } from '../utils/logger';
 
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -31,9 +32,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+    // Use structured logging instead of console.error
+    logger.error('React Error Boundary caught error', error, {
+      componentStack: errorInfo.componentStack,
+    });
     this.props.onError?.(error, errorInfo);
+
+    // In production, this is where you'd send to error tracking service
+    // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
   }
+
+  private handleGoHome = () => {
+    window.location.href = '/';
+  };
 
   public render() {
     if (this.state.hasError) {
@@ -64,13 +75,36 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </div>
             )}
 
-            <button
-              onClick={() => window.location.reload()}
-              className="flex items-center justify-center gap-2 w-full py-4 bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors font-medium shadow-lg hover:shadow-xl transform active:scale-95 duration-200"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Перезагрузить страницу
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center justify-center gap-2 w-full py-4 bg-stone-900 text-white rounded-xl hover:bg-stone-800 transition-colors font-medium shadow-lg hover:shadow-xl transform active:scale-95 duration-200"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Перезагрузить страницу
+              </button>
+
+              <button
+                onClick={this.handleGoHome}
+                className="flex items-center justify-center gap-2 w-full py-3 text-brand-green hover:text-brand-green/80 transition-colors font-medium"
+              >
+                <Home className="w-4 h-4" />
+                Вернуться на главную
+              </button>
+            </div>
+
+            {/* Support Link */}
+            <p className="mt-6 text-sm text-stone-500">
+              Если проблема повторяется,{' '}
+              <a
+                href="https://t.me/k_sebe_dubna"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-green hover:underline"
+              >
+                свяжитесь с нами
+              </a>
+            </p>
           </div>
         </div>
       );
