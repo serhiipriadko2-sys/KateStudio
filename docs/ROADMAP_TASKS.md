@@ -16,8 +16,8 @@
 
 1. **Запустить Supabase Phone Auth в проде + применить миграции RLS.**
    - Результат: OTP-вход работает; `profiles/bookings` привязаны к `auth.users`.
-   - Артефакты: `supabase/migrations/*`, `supabase/.env.local.example`,
-     `k-sebe-yoga-studio-APPp/components/Profile.tsx`.
+   - Артефакты: `supabase/migrations/*`, `supabase/.env.local.example`, APP
+     workspace (`Profile.tsx`).
 2. **Закрыть Gemini proxy секреты и лимиты.**
    - Результат: `GEMINI_API_KEY` в secrets, логирование квот, отказ для дорогих
      операций без JWT.
@@ -26,15 +26,15 @@
 3. **Монетизация: каркас платежей.**
    - Результат: Paywall UI + драфт edge functions
      `create-payment`/`payment-webhook`.
-   - Артефакты: `shared/components/Paywall.tsx`,
-     `k-sebe-yoga-studio-APPp/services/paymentService.ts`,
+   - Артефакты: `shared/components/Paywall.tsx`, APP workspace
+     (`services/paymentService.ts`),
      `supabase/functions/create-payment/index.ts`,
      `supabase/functions/payment-webhook/index.ts`.
 4. **Тесты критических потоков (цель: 40% coverage).**
    - Результат: Vitest-сюиты для Pricing/Blog/ChatWidget/dataService.
    - Артефакты: `shared/__tests__/`, WEB workspace
      (`k-sebe-yoga-studioWEB/components/__tests__/`), APP workspace
-     (`k-sebe-yoga-studio-APPp/services/__tests__/`).
+     (`services/__tests__/`).
 
 ### NEXT (февраль–март 2026)
 
