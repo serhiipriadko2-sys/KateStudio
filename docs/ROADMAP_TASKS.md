@@ -1,4 +1,4 @@
-# Roadmap задач после анализа
+# ROADMAP задач после анализа
 
 > Обновлено: 4 января 2026 · Основано на `ANALYSIS.md`, `ROADMAP.md` и
 > `docs/ROADMAP_EXECUTION_2026.md`
@@ -32,9 +32,9 @@
      `supabase/functions/payment-webhook/index.ts`.
 4. **Тесты критических потоков (цель: 40% coverage).**
    - Результат: Vitest-сюиты для Pricing/Blog/ChatWidget/dataService.
-   - Артефакты: `shared/__tests__/`,
-     `k-sebe-yoga-studioWEB/components/__tests__/`,
-     `k-sebe-yoga-studio-APPp/services/__tests__/`.
+   - Артефакты: `shared/__tests__/`, WEB workspace
+     (`k-sebe-yoga-studioWEB/components/__tests__/`), APP workspace
+     (`k-sebe-yoga-studio-APPp/services/__tests__/`).
 
 ### NEXT (февраль–март 2026)
 
