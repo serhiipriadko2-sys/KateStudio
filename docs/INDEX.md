@@ -12,6 +12,7 @@
   `docs/PRODUCT_GROWTH_PLAYBOOK.md`
 - **Исполнительная дорожная карта 2026 (по шагам)**:
   `docs/ROADMAP_EXECUTION_2026.md`
+- **Roadmap задач (концентрат после анализа)**: `docs/ROADMAP_TASKS.md`
 
 ## Связанные документы в корне репозитория
 
