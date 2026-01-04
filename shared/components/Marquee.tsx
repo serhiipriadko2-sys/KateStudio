@@ -95,20 +95,23 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale');
   const [currentWords, setCurrentWords] = useState<string[]>([]);
 
-  // Generate random words from the word list using Fisher-Yates shuffle
+  // Generate random words from the word list using partial Fisher-Yates shuffle
+  // Only shuffles the first 'count' elements for better performance
   const getRandomWords = (words: string[], count: number): string[] => {
     const shuffled = [...words];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+    const n = Math.min(count, shuffled.length);
+    for (let i = 0; i < n; i++) {
+      const j = i + Math.floor(Math.random() * (shuffled.length - i));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled.slice(0, count);
   };
 
-  // Initialize with random words
+  // Initialize with random words from the current phase
   useEffect(() => {
-    setCurrentWords(getRandomWords(inhaleWords, WORDS_DISPLAYED));
-  }, [inhaleWords]);
+    const words = phase === 'inhale' ? inhaleWords : exhaleWords;
+    setCurrentWords(getRandomWords(words, WORDS_DISPLAYED));
+  }, [inhaleWords, exhaleWords, phase]);
 
   useEffect(() => {
     const interval = setInterval(() => {
