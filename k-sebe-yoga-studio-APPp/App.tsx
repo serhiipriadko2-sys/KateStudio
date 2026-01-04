@@ -73,7 +73,7 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
     setShake(0);
   };
 
-  const startPress = (e?: React.MouseEvent | React.TouchEvent) => {
+  const startPress = () => {
     if (isCompleteRef.current) return;
     if (rewindRef.current) {
       clearInterval(rewindRef.current);
@@ -138,12 +138,27 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label="Удерживайте чтобы начать"
       className={`fixed inset-0 z-[100] bg-[#0F2820] flex flex-col items-center justify-center select-none touch-none transition-opacity duration-1000 ${showWelcome ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
       onMouseDown={startPress}
       onMouseUp={endPress}
       onMouseLeave={endPress}
       onTouchStart={startPress}
       onTouchEnd={endPress}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          startPress();
+        }
+      }}
+      onKeyUp={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          endPress();
+        }
+      }}
       onContextMenu={(e) => e.preventDefault()}
     >
       <div
@@ -274,6 +289,8 @@ export default function App() {
 
   return (
     <div
+      role="application"
+      aria-label="К себе - приложение для йоги"
       className="flex flex-col h-[100dvh] bg-[#FDFBF7] text-brand-text overflow-hidden relative selection:bg-brand-green selection:text-white animate-in fade-in duration-1000"
       onContextMenu={(e) => e.preventDefault()}
     >
@@ -550,7 +567,17 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
               return (
                 <div
                   key={i}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isActive}
+                  aria-label={`${item.title} настроение`}
                   onClick={() => toggleMood(item.title)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleMood(item.title);
+                    }
+                  }}
                   className="snap-center shrink-0 flex flex-col items-center gap-3 cursor-pointer group"
                 >
                   <div
@@ -579,13 +606,20 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
         <Philosophy />
 
         <div className="px-4 mb-8 mt-12">
-          <div className="bg-[#1a1a1a] rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl group">
-            <div
-              onClick={() => setActiveTab('studio')}
-              className="absolute inset-0 z-0 cursor-pointer"
-            ></div>
-
-            <div className="relative z-10 pointer-events-none">
+          <div
+            role="button"
+            tabIndex={0}
+            aria-label="Узнать больше о Inside Flow"
+            onClick={() => setActiveTab('studio')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setActiveTab('studio');
+              }
+            }}
+            className="bg-[#1a1a1a] rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl group cursor-pointer"
+          >
+            <div className="relative z-10">
               <span className="px-3 py-1 bg-brand-green rounded-full text-[10px] font-bold uppercase mb-4 inline-block">
                 Новое
               </span>
@@ -593,10 +627,7 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
               <p className="text-white/60 text-sm mb-6 max-w-[200px]">
                 Танцуй своим дыханием под современную музыку.
               </p>
-              <div
-                onClick={() => setActiveTab('studio')}
-                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-green pointer-events-auto cursor-pointer"
-              >
+              <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-green">
                 Подробнее <ChevronRight className="w-4 h-4" />
               </div>
             </div>

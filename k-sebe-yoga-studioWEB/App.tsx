@@ -190,16 +190,16 @@ function App() {
             ${isScrolled ? 'py-3 px-6 bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20' : 'py-6 px-6 bg-transparent'}
           `}
         >
-          <div
+          <button
             onClick={scrollToTop}
+            aria-label="Наверх"
             className={`relative z-50 pointer-events-auto transition-all duration-500 cursor-pointer ${isScrolled ? 'w-10 h-10' : 'w-16 h-16'}`}
-            title="Наверх"
           >
             <Logo
               className="w-full h-full drop-shadow-sm transition-colors duration-300"
               color={isScrolled && !isMenuOpen ? '#57a773' : '#fff'}
             />
-          </div>
+          </button>
 
           <button
             onClick={toggleMenu}
@@ -315,13 +315,19 @@ function App() {
               style={{ animation: 'fade-in 0.5s ease-out 0.8s forwards', opacity: 0 }}
             >
               <a
-                href="#"
+                href="https://instagram.com/kate_gabran"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
                 className="bg-brand-mint/50 p-4 rounded-full hover:bg-brand-mint transition-colors"
               >
                 <Instagram className="w-6 h-6 text-brand-green" />
               </a>
               <a
-                href="#"
+                href="https://t.me/k_sebe_dubna"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Telegram"
                 className="bg-brand-mint/50 p-4 rounded-full hover:bg-brand-mint transition-colors"
               >
                 <Send className="w-6 h-6 text-brand-green" />
