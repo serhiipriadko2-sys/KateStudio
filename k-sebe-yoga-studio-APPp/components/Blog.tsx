@@ -153,6 +153,10 @@ export const Blog: React.FC<BlogProps> = ({ className = '', compact = false }) =
             <article
               className="group h-full flex flex-col cursor-pointer"
               onClick={() => setSelectedArticle(article)}
+              onKeyDown={(e) => e.key === 'Enter' && setSelectedArticle(article)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Читать статью: ${article.title}`}
             >
               <div className="relative overflow-hidden rounded-[2rem] aspect-[4/3] mb-6 shadow-sm group-hover:shadow-xl transition-all duration-500">
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold text-brand-text z-10">
@@ -205,10 +209,16 @@ export const Blog: React.FC<BlogProps> = ({ className = '', compact = false }) =
         <div
           className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
           onClick={() => setSelectedArticle(null)}
+          onKeyDown={(e) => e.key === 'Escape' && setSelectedArticle(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Статья: ${selectedArticle.title}`}
         >
           <div
             className="bg-white w-full md:max-w-2xl md:rounded-[2rem] rounded-t-[2rem] max-h-[90vh] md:h-[85vh] overflow-hidden relative flex flex-col animate-in slide-in-from-bottom-10 duration-300"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="document"
           >
             {/* Header Image */}
             <div className="h-48 md:h-64 relative shrink-0">
@@ -286,7 +296,7 @@ export const Blog: React.FC<BlogProps> = ({ className = '', compact = false }) =
 
               <div className="mt-12 pt-8 border-t border-stone-100">
                 <p className="text-center text-stone-400 italic font-serif text-lg">
-                  "Практикуй, и все придет"
+                  &ldquo;Практикуй, и все придет&rdquo;
                 </p>
               </div>
             </div>

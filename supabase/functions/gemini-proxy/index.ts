@@ -278,10 +278,12 @@ Deno.serve(async (req) => {
         const response = await chat.sendMessage({ message: body.message, ...toolConfig });
 
         const sources: Source[] = [];
-        response.candidates?.[0]?.groundingMetadata?.groundingChunks?.forEach((chunk: any) => {
-          if (chunk.web?.uri && chunk.web?.title)
-            sources.push({ title: chunk.web.title, uri: chunk.web.uri });
-        });
+        response.candidates?.[0]?.groundingMetadata?.groundingChunks?.forEach(
+          (chunk: { web?: { uri?: string; title?: string } }) => {
+            if (chunk.web?.uri && chunk.web?.title)
+              sources.push({ title: chunk.web.title, uri: chunk.web.uri });
+          }
+        );
 
         return json({ text: response.text || '...', sources });
       }

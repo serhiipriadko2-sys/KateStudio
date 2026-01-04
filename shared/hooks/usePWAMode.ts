@@ -21,7 +21,7 @@ export function usePWAMode(): DisplayMode {
       }
 
       // Check for iOS standalone mode
-      if ((navigator as any).standalone === true) {
+      if ((navigator as unknown as { standalone?: boolean }).standalone === true) {
         return 'standalone';
       }
 
