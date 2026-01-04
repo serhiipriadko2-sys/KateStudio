@@ -143,7 +143,7 @@ const PaywallCard: React.FC<{
             }
           `}
         >
-          {isLoading && isCurrent ? 'Обновляем…' : buttonLabel}
+          {isLoading ? (isCurrent ? 'Обновляем…' : 'Выбираем…') : buttonLabel}
         </button>
       </div>
     </FadeIn>
