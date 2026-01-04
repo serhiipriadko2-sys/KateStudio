@@ -20,15 +20,17 @@ export type AsyncResult<T, E = Error> = { success: true; data: T } | { success: 
  *
  * @example
  * ```typescript
+ * import { logger } from '@ksebe/shared';
+ *
  * const result = await safeAsync(
  *   () => fetchUserData(userId),
  *   { userId, operation: 'fetchUser' }
  * );
  *
  * if (result.success) {
- *   console.log(result.data);
+ *   logger.info('User data fetched', { data: result.data });
  * } else {
- *   console.error(result.error);
+ *   logger.error('Failed to fetch user data', result.error);
  * }
  * ```
  */
@@ -111,6 +113,8 @@ export async function retryAsync<T>(
  *
  * @example
  * ```typescript
+ * import { logger } from '@ksebe/shared';
+ *
  * const results = await parallelAsync([
  *   () => fetchUser(1),
  *   () => fetchUser(2),
@@ -119,9 +123,9 @@ export async function retryAsync<T>(
  *
  * results.forEach((result, i) => {
  *   if (result.success) {
- *     console.log(`User ${i}:`, result.data);
+ *     logger.info(`User ${i} fetched`, { data: result.data });
  *   } else {
- *     console.error(`User ${i} failed:`, result.error);
+ *     logger.error(`User ${i} failed`, result.error);
  *   }
  * });
  * ```
