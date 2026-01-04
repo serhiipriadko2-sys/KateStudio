@@ -29,6 +29,9 @@ const EXHALE_WORDS = [
   'Умиротворение',
 ];
 
+// Number of words displayed simultaneously in the animation
+const WORDS_DISPLAYED = 4;
+
 export const Marquee: React.FC = () => {
   const [isInhale, setIsInhale] = useState(true);
   const [wordOffset, setWordOffset] = useState(0);
@@ -40,7 +43,9 @@ export const Marquee: React.FC = () => {
       setIsInhale((prev) => {
         // Rotate words when transitioning from exhale to inhale
         if (!prev) {
-          setWordOffset((offset) => (offset + 1) % Math.max(INHALE_WORDS.length - 3, 1));
+          setWordOffset(
+            (offset) => (offset + 1) % Math.max(INHALE_WORDS.length - WORDS_DISPLAYED + 1, 1)
+          );
         }
         return !prev;
       });
@@ -51,10 +56,10 @@ export const Marquee: React.FC = () => {
 
   const transitionDuration = `${cycleDuration}ms`;
 
-  // Get rotated words (4 words starting from offset)
+  // Get rotated words (WORDS_DISPLAYED words starting from offset)
   const getRotatedWords = (words: string[]) => {
     const result = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < WORDS_DISPLAYED; i++) {
       result.push(words[(wordOffset + i) % words.length]);
     }
     return result;
