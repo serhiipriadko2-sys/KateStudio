@@ -108,8 +108,7 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   // Initialize with random words
   useEffect(() => {
     setCurrentWords(getRandomWords(inhaleWords, WORDS_DISPLAYED));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [inhaleWords]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -168,7 +167,7 @@ export const Marquee: React.FC<MarqueeConfig> = ({
           style={{ transitionDuration }}
         >
           {label}
-          {showIndicator && isActive && phase === 'inhale' && (
+          {showIndicator && isActive && isInhale && (
             <span className="inline-block w-1.5 h-1.5 bg-brand-green rounded-full ml-2 animate-ping" />
           )}
         </span>
