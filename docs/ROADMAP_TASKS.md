@@ -1,7 +1,7 @@
 # ROADMAP задач после анализа
 
-> Обновлено: 4 января 2026 · Основано на `ANALYSIS.md`, `ROADMAP.md` и
-> `docs/ROADMAP_EXECUTION_2026.md`
+> Обновлено: 4 января 2026 · Основано на `../ANALYSIS.md`, `../ROADMAP.md` и
+> `./ROADMAP_EXECUTION_2026.md`
 
 ## Краткие выводы анализа
 
