@@ -27,16 +27,12 @@ const DEFAULT_INHALE = [
   'Благодарность',
   'Радость',
   'Надежда',
-  'Гармония',
   'Присутствие',
   'Открытость',
   'Жизнь',
-  'Тепло',
   'Свобода',
   'Красота',
-  'Доверие',
   'Мечта',
-  'Ясность',
   'Смелость',
   'Щедрость',
   'Вера',
@@ -48,6 +44,10 @@ const DEFAULT_INHALE = [
   'Творчество',
   'Осознанность',
   'Возрождение',
+  'Восторг',
+  'Пробуждение',
+  'Рост',
+  'Подъём',
 ];
 const DEFAULT_EXHALE = [
   'Тишина',
@@ -95,9 +95,13 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale');
   const [currentWords, setCurrentWords] = useState<string[]>([]);
 
-  // Generate random words from the word list
+  // Generate random words from the word list using Fisher-Yates shuffle
   const getRandomWords = (words: string[], count: number): string[] => {
-    const shuffled = [...words].sort(() => Math.random() - 0.5);
+    const shuffled = [...words];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
     return shuffled.slice(0, count);
   };
 
