@@ -30,6 +30,24 @@ const DEFAULT_INHALE = [
   'Гармония',
   'Присутствие',
   'Открытость',
+  'Жизнь',
+  'Тепло',
+  'Свобода',
+  'Красота',
+  'Доверие',
+  'Мечта',
+  'Ясность',
+  'Смелость',
+  'Щедрость',
+  'Вера',
+  'Нежность',
+  'Чистота',
+  'Целостность',
+  'Связь',
+  'Сияние',
+  'Творчество',
+  'Осознанность',
+  'Возрождение',
 ];
 const DEFAULT_EXHALE = [
   'Тишина',
@@ -44,10 +62,28 @@ const DEFAULT_EXHALE = [
   'Доверие',
   'Тепло',
   'Умиротворение',
+  'Безмятежность',
+  'Гармония',
+  'Созерцание',
+  'Мир',
+  'Благость',
+  'Простота',
+  'Комфорт',
+  'Нирвана',
+  'Затишье',
+  'Плавность',
+  'Неторопливость',
+  'Пустота',
+  'Ясность',
+  'Освобождение',
+  'Растворение',
+  'Завершение',
+  'Заземление',
+  'Центрирование',
 ];
 
 // Number of words displayed simultaneously in the animation
-const WORDS_DISPLAYED = 4;
+const WORDS_DISPLAYED = 3;
 
 export const Marquee: React.FC<MarqueeConfig> = ({
   inhaleWords = DEFAULT_INHALE,
@@ -57,37 +93,37 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   showIndicator = false,
 }) => {
   const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale');
-  const [wordOffset, setWordOffset] = useState(0);
+  const [currentWords, setCurrentWords] = useState<string[]>([]);
+
+  // Generate random words from the word list
+  const getRandomWords = (words: string[], count: number): string[] => {
+    const shuffled = [...words].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  };
+
+  // Initialize with random words
+  useEffect(() => {
+    setCurrentWords(getRandomWords(inhaleWords, WORDS_DISPLAYED));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setPhase((prev) => {
-        // Rotate words when transitioning from exhale to inhale (start of new cycle)
-        if (prev === 'exhale') {
-          setWordOffset(
-            (offset) => (offset + 1) % Math.max(inhaleWords.length - WORDS_DISPLAYED + 1, 1)
-          );
-        }
-        return prev === 'inhale' ? 'exhale' : 'inhale';
+        const nextPhase = prev === 'inhale' ? 'exhale' : 'inhale';
+        // Select random words for the next phase
+        const wordsToUse = nextPhase === 'inhale' ? inhaleWords : exhaleWords;
+        setCurrentWords(getRandomWords(wordsToUse, WORDS_DISPLAYED));
+        return nextPhase;
       });
     }, cycleDuration);
     return () => clearInterval(interval);
-  }, [cycleDuration, inhaleWords.length]);
+  }, [cycleDuration, inhaleWords, exhaleWords]);
 
   const isInhale = phase === 'inhale';
   const transitionDuration = `${cycleDuration}ms`;
 
-  // Get rotated words (WORDS_DISPLAYED words starting from offset)
-  const getRotatedWords = (words: string[]) => {
-    const result = [];
-    for (let i = 0; i < WORDS_DISPLAYED; i++) {
-      result.push(words[(wordOffset + i) % words.length]);
-    }
-    return result;
-  };
-
   const renderStrip = (words: string[], label: string, isActive: boolean) => {
-    const rotatedWords = getRotatedWords(words);
     return (
       <div
         className={`
@@ -98,23 +134,8 @@ export const Marquee: React.FC<MarqueeConfig> = ({
         `}
         style={{ transitionDuration }}
       >
-        {/* First Label */}
-        <span
-          className={`
-            text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] text-brand-green/60 shrink-0
-            transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-            ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
-          `}
-          style={{ transitionDuration }}
-        >
-          {label}
-          {showIndicator && isActive && phase === 'inhale' && (
-            <span className="inline-block w-1.5 h-1.5 bg-brand-green rounded-full ml-2 animate-ping" />
-          )}
-        </span>
-
-        {rotatedWords.map((word, i) => (
-          <React.Fragment key={`${wordOffset}-${i}`}>
+        {words.map((word, i) => (
+          <React.Fragment key={`${word}-${i}`}>
             {/* Word */}
             <span
               className={`
@@ -130,20 +151,23 @@ export const Marquee: React.FC<MarqueeConfig> = ({
             >
               {word}
             </span>
-
-            {/* Label */}
-            <span
-              className={`
-                text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] text-brand-green/60 shrink-0
-                transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-                ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
-              `}
-              style={{ transitionDuration }}
-            >
-              {label}
-            </span>
           </React.Fragment>
         ))}
+
+        {/* Phase Label at the end */}
+        <span
+          className={`
+            text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] text-brand-green/60 shrink-0
+            transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
+            ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
+          `}
+          style={{ transitionDuration }}
+        >
+          {label}
+          {showIndicator && isActive && phase === 'inhale' && (
+            <span className="inline-block w-1.5 h-1.5 bg-brand-green rounded-full ml-2 animate-ping" />
+          )}
+        </span>
       </div>
     );
   };
@@ -201,8 +225,7 @@ export const Marquee: React.FC<MarqueeConfig> = ({
 
       {/* Main Content */}
       <div className="relative w-full h-full flex items-center justify-center select-none overflow-hidden max-w-[1920px] mx-auto">
-        {renderStrip(inhaleWords, 'Вдох', isInhale)}
-        {renderStrip(exhaleWords, 'Выдох', !isInhale)}
+        {renderStrip(currentWords, isInhale ? 'Вдох' : 'Выдох', true)}
       </div>
     </section>
   );
