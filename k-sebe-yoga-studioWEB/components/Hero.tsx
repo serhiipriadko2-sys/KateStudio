@@ -35,8 +35,8 @@ export const Hero: React.FC<HeroProps> = ({ onBook }) => {
   }, []);
 
   return (
-    <section className="relative h-screen min-h-[600px] flex flex-col justify-end pb-24 px-6 md:px-12 overflow-hidden bg-brand-dark rounded-3xl shadow-soft">
-      <div ref={parallaxRef} className="absolute inset-0 z-0 will-change-transform rounded-3xl">
+    <section className="relative h-screen min-h-[600px] flex flex-col justify-end pb-24 px-6 md:px-12 overflow-hidden bg-brand-dark rounded-b-6xl shadow-soft">
+      <div ref={parallaxRef} className="absolute inset-0 z-0 will-change-transform rounded-b-6xl">
         <Image
           src={`${import.meta.env.BASE_URL}images/hero/hero-bg.jpg`}
           alt="Yoga Pose"
