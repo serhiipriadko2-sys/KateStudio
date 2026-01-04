@@ -71,6 +71,15 @@ export const Retreats: React.FC<RetreatsProps> = ({ onBook }) => {
             <div
               className="relative rounded-[3rem] overflow-hidden min-h-[500px] group cursor-pointer shadow-2xl"
               onClick={() => setIsModalOpen(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsModalOpen(true);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Открыть детали йога-тура"
             >
               {/* High quality Altai/Mountain image */}
               <Image

@@ -73,6 +73,15 @@ export const Retreats: React.FC = () => {
             <div
               className="relative rounded-[3rem] overflow-hidden min-h-[500px] group cursor-pointer shadow-2xl"
               onClick={() => setIsModalOpen(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsModalOpen(true);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Открыть детали йога-тура Сила Тишины"
             >
               {/* Using 'retreat-cover' simple key to try and catch legacy user upload */}
               <Image
@@ -94,7 +103,7 @@ export const Retreats: React.FC = () => {
                   </span>
                 </div>
                 <h2 className="text-4xl md:text-6xl font-serif mb-6 leading-tight">
-                  Йога-тур "Сила Тишины"
+                  Йога-тур &quot;Сила Тишины&quot;
                 </h2>
                 <p className="text-lg text-white/80 mb-8 leading-relaxed max-w-xl">
                   7 дней перезагрузки в горах. Ежедневные практики на рассвете, медитации у горной

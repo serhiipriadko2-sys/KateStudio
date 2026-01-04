@@ -87,6 +87,11 @@ export const LegalModals: React.FC<LegalModalProps> = ({ type, onClose }) => {
     <div
       className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-300"
       onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="legal-modal-title"
@@ -94,6 +99,8 @@ export const LegalModals: React.FC<LegalModalProps> = ({ type, onClose }) => {
       <div
         className="bg-white w-full max-w-2xl max-h-[80vh] rounded-[2rem] shadow-2xl flex flex-col animate-in slide-in-from-bottom-10 duration-300 relative"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="document"
       >
         <div className="flex items-center justify-between p-6 md:p-8 border-b border-stone-100">
           <div className="flex items-center gap-3">

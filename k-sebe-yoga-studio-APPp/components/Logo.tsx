@@ -40,7 +40,7 @@ export const Logo: React.FC<LogoProps> = ({
   className = 'w-full h-full',
   color,
   progress = 100,
-  isSparking = false,
+  isSparking: _isSparking = false,
   isIgnited = false,
   variant = 'full',
 }) => {

@@ -56,7 +56,7 @@ const TestimonialCard: React.FC<TestimonialProps> = ({ id, name, text, image }) 
           ))}
         </div>
         <p className="text-brand-text/80 text-base md:text-lg leading-relaxed font-light italic">
-          "{text}"
+          &quot;{text}&quot;
         </p>
       </div>
 

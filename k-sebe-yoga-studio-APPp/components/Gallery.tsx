@@ -117,6 +117,15 @@ export const Gallery: React.FC = () => {
               <div
                 className={`h-full w-full rounded-[2.5rem] overflow-hidden relative group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500`}
                 onClick={() => setSelectedIndex(idx)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedIndex(idx);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Открыть ${img.alt}`}
               >
                 <Image
                   src={img.url}
@@ -141,6 +150,11 @@ export const Gallery: React.FC = () => {
         <div
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-300"
           onClick={() => setSelectedIndex(null)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setSelectedIndex(null);
+            }
+          }}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
@@ -170,7 +184,12 @@ export const Gallery: React.FC = () => {
           </button>
 
           <div className="relative max-w-full max-h-[85vh]">
-            <div onClick={(e) => e.stopPropagation()}>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="img"
+              aria-label={galleryImages[selectedIndex].alt}
+            >
               <Image
                 key={selectedIndex}
                 src={galleryImages[selectedIndex].url}
