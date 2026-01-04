@@ -26,6 +26,28 @@ export const Blog: React.FC = () => {
   useScrollLock(!!selectedArticle);
   useFocusTrap(dialogRef, !!selectedArticle, closeButtonRef);
 
+  React.useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectedArticle(null);
+      }
+    };
+
+    if (selectedArticle) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [selectedArticle]);
+
+  const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) {
+      setSelectedArticle(null);
+    }
+  };
+
   const handleShare = () => {
     // In a real app with routing, this would copy the specific URL like /blog/1
     const url = window.location.href.split('#')[0] + '#blog';
@@ -59,6 +81,15 @@ export const Blog: React.FC = () => {
             <article
               className="group h-full flex flex-col cursor-pointer"
               onClick={() => setSelectedArticle(article)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  setSelectedArticle(article);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Читать статью: ${article.title}`}
             >
               <div className="relative overflow-hidden rounded-[2rem] aspect-[4/3] mb-6 shadow-sm group-hover:shadow-xl transition-all duration-500">
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold text-brand-text z-10">
@@ -110,7 +141,15 @@ export const Blog: React.FC = () => {
       {selectedArticle && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
-          onClick={() => setSelectedArticle(null)}
+          onClick={handleOverlayClick}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              setSelectedArticle(null);
+            }
+          }}
+          tabIndex={0}
+          aria-label="Закрыть статью"
         >
           <div
             ref={dialogRef}
@@ -119,7 +158,6 @@ export const Blog: React.FC = () => {
             aria-labelledby="blog-modal-title"
             tabIndex={-1}
             className="bg-white w-full max-w-2xl h-[85vh] rounded-[2rem] shadow-2xl overflow-hidden relative flex flex-col animate-in slide-in-from-bottom-10 duration-300"
-            onClick={(e) => e.stopPropagation()}
           >
             {/* Header Image */}
             <div className="h-64 relative shrink-0">
@@ -203,7 +241,7 @@ export const Blog: React.FC = () => {
 
               <div className="mt-12 pt-8 border-t border-stone-100">
                 <p className="text-center text-stone-400 italic font-serif text-lg">
-                  "Практикуй, и все придет"
+                  «Практикуй, и всё придет»
                 </p>
               </div>
             </div>
