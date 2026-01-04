@@ -24,4 +24,22 @@ describe('Blog', () => {
 
     expect(screen.queryByText('Катя Габран')).not.toBeInTheDocument();
   });
+
+  it('supports keyboard interaction for opening and closing', async () => {
+    const user = userEvent.setup();
+    render(<Blog />);
+
+    const articleCard = screen.getByRole('button', {
+      name: /Как начать медитировать/i,
+    });
+
+    articleCard.focus();
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 });
