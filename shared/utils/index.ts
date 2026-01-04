@@ -119,6 +119,11 @@ export function isMobile(): boolean {
 }
 
 /**
+ * Logger utility for structured logging
+ */
+export { logger, type LogLevel, type LogContext } from './logger';
+
+/**
  * Check if iOS device
  */
 export function isIOS(): boolean {
