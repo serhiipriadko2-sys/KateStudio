@@ -1,8 +1,5 @@
 import {
-  Calendar as CalendarIcon,
   MapPin,
-  Video,
-  Clock,
   ChevronRight,
   ChevronLeft,
   Users,
@@ -130,7 +127,7 @@ export const Schedule: React.FC = () => {
   // Refetch when dependencies change
   useEffect(() => {
     fetchClasses(true);
-  }, [currentMonth, selectedDateNum, activeTab]);
+  }, [currentMonth, selectedDateNum, activeTab, fetchClasses]);
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();

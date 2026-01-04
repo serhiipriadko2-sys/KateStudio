@@ -87,6 +87,11 @@ export const LegalModals: React.FC<LegalModalProps> = ({ type, onClose }) => {
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-300"
       onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="legal-modal-title"

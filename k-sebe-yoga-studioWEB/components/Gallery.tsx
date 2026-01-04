@@ -99,6 +99,15 @@ export const Gallery: React.FC = () => {
                     transform hover:-translate-y-1
                   `}
                 onClick={() => setSelectedIndex(idx)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedIndex(idx);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Открыть ${img.alt}`}
               >
                 <Image
                   src={img.url}

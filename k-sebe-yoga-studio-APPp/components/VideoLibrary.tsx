@@ -98,6 +98,15 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
           <FadeIn key={vid.id} className="h-full">
             <div
               onClick={() => handleVideoClick(vid)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleVideoClick(vid);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Открыть видео ${vid.title}`}
               className="group relative bg-white rounded-[2rem] overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all cursor-pointer active:scale-[0.98] duration-300 h-full flex flex-col"
             >
               <div className="aspect-video relative overflow-hidden">
@@ -193,6 +202,14 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
         <div
           className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4 animate-in fade-in duration-300 backdrop-blur-sm"
           onClick={handleClose}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              handleClose();
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Видео плеер"
         >
           <div
             className="w-full max-w-4xl bg-black rounded-3xl overflow-hidden relative shadow-2xl aspect-video animate-in zoom-in-95 duration-300 ring-1 ring-white/10"

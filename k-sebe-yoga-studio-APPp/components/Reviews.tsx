@@ -47,7 +47,7 @@ const TestimonialCard: React.FC<TestimonialProps> = ({ id, name, text, image }) 
   <div className="relative mt-12 mb-8 mx-4 flex-shrink-0 w-80 md:w-96 snap-center group">
     <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-green/10 h-full flex flex-col justify-between group-hover:shadow-xl group-hover:border-brand-green/30 transition-all duration-500">
       <p className="text-brand-text/80 text-sm md:text-base leading-relaxed mb-6 font-light italic">
-        "{text}"
+        &quot;{text}&quot;
       </p>
       <div className="flex items-center justify-end gap-3">
         <div className="h-[1px] w-8 bg-brand-green/30"></div>
@@ -155,8 +155,10 @@ export const Reviews: React.FC = () => {
             onMouseLeave={handleMouseLeave}
             onTouchStart={handleMouseEnter}
             onTouchEnd={handleMouseLeave}
+            role="region"
+            aria-label="Отзывы клиентов"
           >
-            {testimonials.map((t, i) => (
+            {testimonials.map((t) => (
               <TestimonialCard key={t.id} {...t} />
             ))}
           </div>
