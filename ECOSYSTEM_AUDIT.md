@@ -612,18 +612,18 @@ shared/components/Paywall.tsx
 
 ### Критические (неделя 1)
 
-- [ ] Создать `supabase/functions/gemini-proxy/`
-- [ ] Обновить geminiService.ts в WEB
-- [ ] Обновить geminiService.ts в APP
-- [ ] Добавить `ALLOWED_ATTR: []` в DOMPurify
-- [ ] Генерировать PWA иконки (72-512px)
-- [ ] Создать `APP/public/icons/`
-- [ ] Обновить manifest.json со всеми иконками
+- [x] Создать `supabase/functions/gemini-proxy/`
+- [x] Обновить geminiService.ts в WEB
+- [x] Обновить geminiService.ts в APP
+- [x] Добавить `ALLOWED_ATTR: []` в DOMPurify
+- [x] Генерировать PWA иконки (72-512px)
+- [x] Создать `APP/public/icons/`
+- [x] Обновить manifest.json со всеми иконками
 
 ### Высокий приоритет (неделя 2-3)
 
-- [ ] Рефакторинг ChatWidget.tsx → 4 компонента
-- [ ] Рефакторинг APP ChatWidget.tsx → 4 компонента
+- [x] Рефакторинг ChatWidget.tsx → 4 компонента
+- [x] Рефакторинг APP ChatWidget.tsx → 4 компонента
 - [ ] Добавить `.env.example` в APP
 - [ ] Настроить Supabase Auth (Phone OTP)
 - [ ] Создать AuthModal компонент
@@ -631,8 +631,8 @@ shared/components/Paywall.tsx
 
 ### Средний приоритет (неделя 4+)
 
-- [ ] Добавить sitemap.xml
-- [ ] Добавить robots.txt
+- [x] Добавить sitemap.xml
+- [x] Добавить robots.txt
 - [ ] Настроить rate limiting
 - [ ] Добавить Sentry
 - [ ] Увеличить тестовое покрытие до 50%
