@@ -201,7 +201,103 @@ import type {
   BlogArticle,
   PriceOption,
   BreathPhase,
+  // Gamification 2026
+  Achievement,
+  StreakData,
+  WeeklyRecap,
+  // AI Personalization 2026
+  DailyRecommendation,
+  PersonalProgram,
+  OnboardingData,
+  // Notifications 2026
+  NotificationPreferences,
+  PushNotification,
 } from '@ksebe/shared';
+```
+
+### Gamification Components (2026)
+
+```tsx
+import {
+  WeeklyRecap,
+  StreakCalendar,
+  OnboardingQuiz,
+  NotificationPreferences,
+  AchievementsGrid,
+  DailyRecommendation,
+  ProgressSummary,
+} from '@ksebe/shared';
+
+// Weekly progress summary with AI insights
+<WeeklyRecap
+  recap={weeklyData}
+  onShare={() => shareToInstagram()}
+/>
+
+// Streak calendar visualization
+<StreakCalendar
+  practiceData={calendarData}
+  currentStreak={7}
+/>
+
+// Personalization quiz
+<OnboardingQuiz
+  onComplete={(data) => savePreferences(data)}
+  onSkip={() => navigate('/home')}
+/>
+
+// Push notification settings
+<NotificationPreferences
+  preferences={userPrefs}
+  onChange={updatePreferences}
+  isPushEnabled={true}
+/>
+
+// Achievements grid
+<AchievementsGrid
+  achievements={userAchievements}
+  showProgress={true}
+  onSelect={(achievement) => showDetails(achievement)}
+/>
+```
+
+### useAchievements Hook
+
+```tsx
+import { useAchievements } from '@ksebe/shared';
+
+function Profile() {
+  const {
+    achievements,
+    unlockedCount,
+    totalCount,
+    recentUnlock,
+    incrementProgress,
+    clearRecentUnlock,
+  } = useAchievements({
+    onUnlock: (achievement) => showCelebration(achievement),
+  });
+
+  // Track practice completion
+  const onPracticeComplete = () => {
+    incrementProgress('practices_10');
+    incrementProgress('streak_7');
+  };
+
+  return (
+    <div>
+      <p>
+        Achievements: {unlockedCount}/{totalCount}
+      </p>
+      {recentUnlock && (
+        <AchievementUnlockedModal
+          achievement={recentUnlock}
+          onClose={clearRecentUnlock}
+        />
+      )}
+    </div>
+  );
+}
 ```
 
 ---
@@ -282,18 +378,19 @@ const audioUrl = await geminiService.textToSpeech(text, 'ru');
 
 ## Документация
 
-| Документ                                                 | Описание                               |
-| -------------------------------------------------------- | -------------------------------------- |
-| [docs/INDEX.md](./docs/INDEX.md)                         | Единая точка входа в рабочие документы |
-| [STRATEGIC_ROADMAP_2026.md](./STRATEGIC_ROADMAP_2026.md) | **Стратегическая дорожная карта 2026** |
-| [ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md)             | Краткий план действий                  |
-| [ECOSYSTEM_AUDIT.md](./ECOSYSTEM_AUDIT.md)               | Всеобъемлющий 17-шаговый аудит         |
-| [ROADMAP.md](./ROADMAP.md)                               | Дорожная карта развития                |
-| [ANALYSIS.md](./ANALYSIS.md)                             | Технический аудит репозитория          |
-| [SYNC_REPORT.md](./SYNC_REPORT.md)                       | Отчёт о синхронизации WEB/APP          |
-| [CLAUDE.md](./CLAUDE.md)                                 | Инструкции для AI агентов              |
-| [CONTRIBUTING.md](./CONTRIBUTING.md)                     | Руководство для контрибьюторов         |
-| [shared/README.md](./shared/README.md)                   | Документация shared библиотеки         |
+| Документ                                                           | Описание                               |
+| ------------------------------------------------------------------ | -------------------------------------- |
+| [docs/INDEX.md](./docs/INDEX.md)                                   | Единая точка входа в рабочие документы |
+| [docs/RESEARCH_INSIGHTS_2026.md](./docs/RESEARCH_INSIGHTS_2026.md) | **Исследование трендов 2026** (NEW)    |
+| [docs/DEEP_ANALYSIS_2026.md](./docs/DEEP_ANALYSIS_2026.md)         | Глубокий анализ проекта 2026           |
+| [STRATEGIC_ROADMAP_2026.md](./STRATEGIC_ROADMAP_2026.md)           | Стратегическая дорожная карта 2026     |
+| [ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md)                       | Краткий план действий                  |
+| [ECOSYSTEM_AUDIT.md](./ECOSYSTEM_AUDIT.md)                         | Всеобъемлющий 17-шаговый аудит         |
+| [ROADMAP.md](./ROADMAP.md)                                         | Дорожная карта развития                |
+| [ANALYSIS.md](./ANALYSIS.md)                                       | Технический аудит репозитория          |
+| [CLAUDE.md](./CLAUDE.md)                                           | Инструкции для AI агентов              |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)                               | Руководство для контрибьюторов         |
+| [shared/README.md](./shared/README.md)                             | Документация shared библиотеки         |
 
 ---
 
