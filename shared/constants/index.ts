@@ -447,6 +447,87 @@ export const ACHIEVEMENTS = [
     target: 10,
     rarity: 'rare' as const,
   },
+  // New achievements 2026
+  {
+    id: 'music_sync',
+    name: 'Music Flow',
+    nameRu: 'В ритме музыки',
+    description: '5 практик Inside Flow с музыкой',
+    icon: '🎧',
+    category: 'practice' as const,
+    target: 5,
+    rarity: 'common' as const,
+  },
+  {
+    id: 'ai_daily_7',
+    name: 'AI Assistant',
+    nameRu: 'AI-ассистент',
+    description: 'Общение с Aria 7 дней подряд',
+    icon: '🤖',
+    category: 'ai' as const,
+    target: 7,
+    rarity: 'common' as const,
+  },
+  {
+    id: 'vision_progress',
+    name: 'Visible Progress',
+    nameRu: 'Видимый прогресс',
+    description: '10 анализов асан с улучшением',
+    icon: '📈',
+    category: 'ai' as const,
+    target: 10,
+    rarity: 'rare' as const,
+  },
+  {
+    id: 'breathwork_master',
+    name: 'Breathwork Master',
+    nameRu: 'Мастер дыхания',
+    description: '20 дыхательных практик',
+    icon: '💨',
+    category: 'practice' as const,
+    target: 20,
+    rarity: 'rare' as const,
+  },
+  {
+    id: 'morning_bird',
+    name: 'Early Bird',
+    nameRu: 'Ранняя пташка',
+    description: '10 утренних практик (до 9:00)',
+    icon: '🌅',
+    category: 'milestone' as const,
+    target: 10,
+    rarity: 'common' as const,
+  },
+  {
+    id: 'evening_calm',
+    name: 'Evening Calm',
+    nameRu: 'Вечерний покой',
+    description: '10 вечерних практик (после 19:00)',
+    icon: '🌙',
+    category: 'milestone' as const,
+    target: 10,
+    rarity: 'common' as const,
+  },
+  {
+    id: 'weekly_goal',
+    name: 'Goal Achiever',
+    nameRu: 'Цель достигнута',
+    description: 'Выполнить недельную цель 4 раза',
+    icon: '🎯',
+    category: 'milestone' as const,
+    target: 4,
+    rarity: 'rare' as const,
+  },
+  {
+    id: 'personal_program',
+    name: 'Program Complete',
+    nameRu: 'Программа завершена',
+    description: 'Завершить 7-дневную AI-программу',
+    icon: '📋',
+    category: 'ai' as const,
+    target: 1,
+    rarity: 'rare' as const,
+  },
 ] as const;
 
 // ============================================
@@ -558,13 +639,58 @@ export const INSIDE_FLOW = {
   globalCommunity: {
     certifiedTeachers: '10,000+',
     countries: '50+',
-    annualSummits: ['Global Summit', 'Rome Summit', 'Taipei Workshop'],
+    annualSummits: [
+      'Global Summit Thailand',
+      'European Summit Budapest',
+      'Elite Training Frankfurt',
+    ],
   },
+  // Training & Certification 2026
+  certification: {
+    levels: [
+      'Flow Lover',
+      'Silver Instructor',
+      'Gold Instructor',
+      'Junior Teacher',
+      'Senior Teacher',
+      'Pro Teacher',
+      'Master Teacher',
+    ],
+    fundamentalsTraining: {
+      name: 'Inside Flow Fundamentals',
+      credits: 50, // TRC - Training Credits
+      format: 'Online + Hybrid',
+      duration: '4-5 weeks',
+    },
+    annualLicenseFee: 108, // EUR
+  },
+  // Events 2026
+  events2026: [
+    {
+      name: 'Inside Flow Fundamentals Training',
+      date: '2026-03-21',
+      location: 'Online',
+      description: 'Онлайн-тренинг от Young Ho Kim',
+    },
+    {
+      name: 'European Summit',
+      date: '2026-05',
+      location: 'Budapest, Hungary',
+      description: 'Региональный саммит для европейских учителей',
+    },
+    {
+      name: 'Elite Training',
+      date: '2026-05-31 to 2026-06-06',
+      location: 'Frankfurt, Germany',
+      description: 'Продвинутый тренинг в штаб-квартире Inside Flow',
+    },
+  ],
   links: {
     official: 'https://insideflow.com',
     academy: 'https://insideyoga.org',
     online: 'https://online.insideyoga.org',
     flowShow: 'https://insideyoga.org/flow-show/',
+    fundamentals: 'https://online.insideyoga.org/programs/inside-flow-fundamentals',
   },
 } as const;
 

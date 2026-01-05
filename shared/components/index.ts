@@ -24,6 +24,10 @@ export { DailyRecommendation } from './DailyRecommendation';
 export { AchievementUnlockedModal } from './AchievementUnlockedModal';
 export { AchievementsGrid } from './AchievementsGrid';
 export { ProgressSummary } from './ProgressSummary';
+export { WeeklyRecap } from './WeeklyRecap';
+export { StreakCalendar } from './StreakCalendar';
+export { OnboardingQuiz } from './OnboardingQuiz';
+export { NotificationPreferences } from './NotificationPreferences';
 
 // Types
 export type { AsanaAnalysis, ImageServices } from './Image';
@@ -33,6 +37,10 @@ export type { DailyRecommendationProps } from './DailyRecommendation';
 export type { AchievementUnlockedModalProps } from './AchievementUnlockedModal';
 export type { AchievementsGridProps } from './AchievementsGrid';
 export type { ProgressSummaryProps } from './ProgressSummary';
+export type { WeeklyRecapProps } from './WeeklyRecap';
+export type { StreakCalendarProps } from './StreakCalendar';
+export type { OnboardingQuizProps } from './OnboardingQuiz';
+export type { NotificationPreferencesProps } from './NotificationPreferences';
 
 // Re-export types for convenience
 export type {
@@ -40,13 +48,14 @@ export type {
   PriceOption,
   BreathPhase,
   BreathworkConfig,
+  StreakCalendarDay,
   // Gamification types (2026)
   Achievement,
   AchievementCategory,
   AchievementRarity,
   StreakData,
   StreakMilestone,
-  WeeklyRecap,
+  WeeklyRecap as WeeklyRecapType,
   // AI Personalization types (2026)
   DailyRecommendation as DailyRecommendationType,
   PersonalProgram,
@@ -64,6 +73,6 @@ export type {
   OnboardingData,
   // Notification types (2026)
   NotificationType,
-  NotificationPreferences,
+  NotificationPreferences as NotificationPreferencesType,
   PushNotification,
 } from '../types';
