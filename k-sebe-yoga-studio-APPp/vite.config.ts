@@ -40,12 +40,11 @@ export default defineConfig(({ mode }) => {
       // Enable minification with esbuild (default, no extra install needed)
       minify: 'esbuild',
     },
-    // esbuild options for production optimization
-    esbuild:
-      mode === 'production'
-        ? {
-            drop: ['console', 'debugger'],
-          }
-        : {},
+    // esbuild options for production optimization (drop console/debugger in prod)
+    ...(mode === 'production' && {
+      esbuild: {
+        drop: ['console', 'debugger'],
+      },
+    }),
   };
 });
