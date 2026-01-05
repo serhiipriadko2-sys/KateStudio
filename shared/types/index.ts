@@ -225,3 +225,241 @@ export interface BreathworkConfig {
   exhaleDuration: number;
   holdEmptyDuration: number;
 }
+
+// ============================================
+// GAMIFICATION & RETENTION (2026)
+// ============================================
+
+export type AchievementCategory = 'streak' | 'practice' | 'ai' | 'community' | 'milestone';
+export type AchievementRarity = 'common' | 'rare' | 'epic' | 'legendary';
+
+export interface Achievement {
+  id: string;
+  name: string;
+  nameRu: string;
+  description: string;
+  icon: string;
+  category: AchievementCategory;
+  progress: number;
+  target: number;
+  unlocked: boolean;
+  unlockedAt?: string;
+  rarity: AchievementRarity;
+}
+
+export interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  lastPracticeDate: string;
+  totalPractices: number;
+  weeklyGoal: number;
+  weeklyProgress: number;
+  streakFreezes: number;
+  milestones: StreakMilestone[];
+}
+
+export interface StreakMilestone {
+  days: number;
+  achieved: boolean;
+  achievedAt?: string;
+  reward?: string;
+}
+
+export interface StreakCalendarDay {
+  practiced: boolean;
+  duration: number;
+  type: string;
+}
+
+export interface WeeklyRecap {
+  weekNumber: number;
+  year: number;
+  dateRange: { start: string; end: string };
+  practiceStats: WeeklyPracticeStats;
+  streakStatus: WeeklyStreakStatus;
+  aiUsage: WeeklyAIUsage;
+  newAchievements: Achievement[];
+  insights: WeeklyInsights;
+  shareCard?: WeeklyShareCard;
+}
+
+export interface WeeklyPracticeStats {
+  total: number;
+  totalDuration: number;
+  types: Record<string, number>;
+  avgDuration: number;
+}
+
+export interface WeeklyStreakStatus {
+  maintained: boolean;
+  currentStreak: number;
+  daysThisWeek: number;
+}
+
+export interface WeeklyAIUsage {
+  chatMessages: number;
+  visionAnalyses: number;
+  meditations: number;
+}
+
+export interface WeeklyInsights {
+  summary: string;
+  improvement: string;
+  recommendation: string;
+}
+
+export interface WeeklyShareCard {
+  imageUrl: string;
+  text: string;
+}
+
+// ============================================
+// AI PERSONALIZATION (2026)
+// ============================================
+
+export type PracticeType = 'inside-flow' | 'hatha' | 'meditation' | 'breathwork';
+export type PracticeGoal = 'flexibility' | 'strength' | 'relaxation' | 'energy' | 'balance';
+export type PracticeLevel = 'beginner' | 'intermediate' | 'advanced';
+
+export interface DailyRecommendation {
+  practiceId: string;
+  title: string;
+  duration: number;
+  type: PracticeType;
+  reason: string;
+  matchScore: number;
+  musicMood?: string;
+  generatedAt: string;
+}
+
+export interface PersonalProgram {
+  id: string;
+  userId: string;
+  goal: PracticeGoal;
+  level: PracticeLevel;
+  durationDays: number;
+  days: ProgramDay[];
+  createdAt: string;
+  completedDays: number;
+  completedAt?: string;
+}
+
+export interface ProgramDay {
+  day: number;
+  practiceType: PracticeType;
+  duration: number;
+  focus: string;
+  aiNotes: string;
+  completed: boolean;
+  completedAt?: string;
+}
+
+export interface EnhancedAsanaAnalysis extends AsanaAnalysis {
+  overallScore: number;
+  feedback: string[];
+  bodyParts: BodyPartAnalysis[];
+  comparisonWithIdeal: IdealComparison;
+  progressTracking?: ProgressTracking;
+}
+
+export interface BodyPartAnalysis {
+  part: 'spine' | 'shoulders' | 'hips' | 'knees' | 'ankles';
+  alignment: 'correct' | 'needs_adjustment';
+  suggestion: string;
+  confidence: number;
+}
+
+export interface IdealComparison {
+  overallSimilarity: number;
+  keyDifferences: string[];
+}
+
+export interface ProgressTracking {
+  previousAnalyses: AsanaAnalysis[];
+  improvementAreas: string[];
+  trend: 'improving' | 'stable' | 'needs_attention';
+  weeksOfProgress: number;
+}
+
+// ============================================
+// SUBSCRIPTION & MONETIZATION (2026)
+// ============================================
+
+export type SubscriptionPlan = 'free' | 'premium' | 'vip';
+export type SubscriptionStatus = 'active' | 'cancelled' | 'past_due' | 'trialing';
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubscriptionPlanDetails {
+  id: SubscriptionPlan;
+  name: string;
+  nameRu: string;
+  price: number;
+  currency: 'RUB';
+  interval: 'month';
+  features: string[];
+  limits: SubscriptionLimits;
+}
+
+export interface SubscriptionLimits {
+  aiMessagesPerDay: number;
+  videosPerWeek: number;
+  offlineDownloads: boolean;
+  personalPrograms: boolean;
+  visionAnalysesPerMonth: number;
+  prioritySupport: boolean;
+}
+
+// ============================================
+// ONBOARDING (2026)
+// ============================================
+
+export interface OnboardingData {
+  goals: PracticeGoal[];
+  level: PracticeLevel;
+  preferredDuration: number;
+  preferredTime: 'morning' | 'afternoon' | 'evening' | 'flexible';
+  limitations?: string[];
+  completedAt: string;
+}
+
+// ============================================
+// NOTIFICATIONS (2026)
+// ============================================
+
+export type NotificationType =
+  | 'streak_reminder'
+  | 'streak_at_risk'
+  | 'achievement_unlocked'
+  | 'new_content'
+  | 'class_reminder'
+  | 'weekly_summary'
+  | 'ai_recommendation';
+
+export interface NotificationPreferences {
+  streakReminder: boolean;
+  newContent: boolean;
+  weeklySummary: boolean;
+  aiRecommendations: boolean;
+  reminderTime: string;
+}
+
+export interface PushNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
+  sentAt: string;
+  readAt?: string;
+}
