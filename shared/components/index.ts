@@ -22,6 +22,8 @@ export { Pricing } from './Pricing';
 // Gamification & AI Components (2026)
 export { DailyRecommendation } from './DailyRecommendation';
 export { AchievementUnlockedModal } from './AchievementUnlockedModal';
+export { AchievementsGrid } from './AchievementsGrid';
+export { ProgressSummary } from './ProgressSummary';
 
 // Types
 export type { AsanaAnalysis, ImageServices } from './Image';
@@ -29,6 +31,8 @@ export type { MarqueeConfig } from './Marquee';
 export type { PaywallPlanId, PaywallStatus } from './Paywall';
 export type { DailyRecommendationProps } from './DailyRecommendation';
 export type { AchievementUnlockedModalProps } from './AchievementUnlockedModal';
+export type { AchievementsGridProps } from './AchievementsGrid';
+export type { ProgressSummaryProps } from './ProgressSummary';
 
 // Re-export types for convenience
 export type {

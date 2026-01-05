@@ -164,28 +164,6 @@ export function AchievementUnlockedModal({
           )}
         </div>
       </div>
-
-      <style>{`
-        @keyframes bounce-in {
-          0% {
-            transform: scale(0.3);
-            opacity: 0;
-          }
-          50% {
-            transform: scale(1.05);
-          }
-          70% {
-            transform: scale(0.95);
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-        .animate-bounce-in {
-          animation: bounce-in 0.6s ease-out;
-        }
-      `}</style>
     </div>
   );
 }
