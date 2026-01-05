@@ -179,3 +179,199 @@ npm run test        # Run tests (when configured)
 - Accessible design (WCAG 2.1 AA)
 - Mobile-first responsive layouts
 - Calm, mindful user experience
+
+## 2026 Updates and Best Practices
+
+### Latest Research (January 2026)
+
+The project has been comprehensively analyzed against 2026 industry trends. See
+[DEEP_ANALYSIS_2026.md](./docs/DEEP_ANALYSIS_2026.md) for full details.
+
+#### Key Findings
+
+**Inside Flow Ecosystem:**
+
+- 10,000+ certified teachers globally
+- Elite Training Frankfurt (May-June 2026)
+- Annual licensing model (€108/year)
+- Strong emphasis on emotional storytelling and music integration
+
+**AI Trends:**
+
+- Gemini 2.5: Deep Think mode, 1M token context, native audio I/O
+- Real-time computer vision for pose correction
+- Hyper-personalization through ML
+- Voice coaching becoming standard
+
+**Monetization:**
+
+- Freemium conversion: 6-8% (top tier)
+- Subscription: Primary revenue model ($10-15/month)
+- Gamification: +50% retention improvement
+- Community features: +50% retention
+
+**Tech Stack Updates:**
+
+- React 19: Automatic memoization, improved batching
+- Vite 6: Smarter HMR, 40% faster builds
+- TypeScript 5.8: Granular checks, better performance
+- Tailwind 4 (beta): 5-10x faster builds with Oxide engine
+
+### Critical Security Priorities
+
+⚠️ **URGENT:** API keys currently exposed in client-side code
+
+1. **Implement Edge Function Proxy**
+
+   ```
+   Create: supabase/functions/gemini-proxy/index.ts
+   Move GEMINI_API_KEY to Supabase secrets
+   Update: WEB & APP geminiService.ts to use proxy
+   ```
+
+2. **Add Rate Limiting**
+
+   ```
+   Per-user limits: 100 requests/hour
+   Track via Supabase user_id
+   Implement exponential backoff
+   ```
+
+3. **Input Validation**
+   ```
+   Sanitize all user inputs
+   Prevent prompt injection attacks
+   Add content moderation
+   ```
+
+### Gamification Strategy (Proven ROI)
+
+**Priority 1: Streaks** (+30-40% DAU)
+
+- Already have StreakCard component
+- Add streak notifications
+- Calendar visualization
+- Streak recovery mechanism
+
+**Priority 2: Achievements** (+20-25% engagement)
+
+- 10 baseline achievements (see DEEP_ANALYSIS_2026.md)
+- Achievement unlock animations
+- Social sharing integration
+- Progress tracking
+
+**Priority 3: Push Notifications** (Essential for retention)
+
+- Firebase Cloud Messaging setup
+- Notification types: streak reminders, new content, achievements
+- User preferences management
+- Optimal timing (9AM default)
+
+### Monetization Roadmap
+
+**Recommended Pricing (Russia):**
+
+```
+Free:     0₽      - AI Chat (100 msg/day), 3 videos/week
+Premium:  990₽/mo - All videos, offline, AI programs
+VIP:      2,990₽  - Premium + consultations with Katya (2/month)
+```
+
+**Implementation:**
+
+```
+Q1 2026: YooKassa (Russia) + Stripe (international)
+Q2 2026: Optimize conversion with A/B testing
+Target:  8% conversion rate by Q4 2026
+```
+
+### AI Differentiation
+
+**Unique Competitive Advantages:**
+
+1. ✅ Inside Flow specialization (vs. generic yoga apps)
+2. ✅ AI Vision analysis (Gemini 2.5 Pro)
+3. ✅ Personal brand (Katya Gabran)
+4. ✅ Russian language native support
+5. 🔄 Daily AI recommendations (planned)
+6. 🔄 7-day personalized programs (planned)
+
+### Performance Targets 2026
+
+| Metric             | Current | Q4 2026 Target |
+| ------------------ | ------- | -------------- |
+| Lighthouse Score   | 75      | 90+            |
+| Test Coverage      | 50%     | 70%+           |
+| Bundle Size (gzip) | ~300KB  | <200KB         |
+| LCP                | ~3s     | <2.5s          |
+
+### Development Workflow
+
+**Before Making Changes:**
+
+1. Check existing tests: `npm run test:run`
+2. Run type check: `npm run typecheck`
+3. Run linter: `npm run lint`
+
+**When Adding AI Features:**
+
+1. Use Edge Functions proxy (security)
+2. Implement rate limiting
+3. Add error handling and fallbacks
+4. Cache responses where possible
+5. Monitor usage and costs
+
+**When Adding Gamification:**
+
+1. Track engagement metrics
+2. A/B test mechanics
+3. Balance fun vs. pressure
+4. Provide opt-out options
+
+### Code Patterns 2026
+
+**React 19:**
+
+```typescript
+// Automatic memoization (no React.memo needed)
+function VideoCard({ video }: { video: Video }) {
+  return <div>{video.title}</div>;
+}
+
+// useOptimistic for optimistic updates
+function AddBooking() {
+  const [optimisticBookings, addOptimistic] = useOptimistic(
+    bookings,
+    (state, newBooking) => [...state, newBooking]
+  );
+}
+```
+
+**Error Boundaries:**
+
+```typescript
+// Already have ErrorBoundary in shared
+import { ErrorBoundary } from '@ksebe/shared';
+
+<ErrorBoundary fallback={<ErrorView />}>
+  <YourComponent />
+</ErrorBoundary>
+```
+
+**Offline-First:**
+
+```typescript
+// Already implemented with IndexedDB
+import { storage } from '@ksebe/shared';
+
+// Check online status
+import { useOnlineStatus } from '@ksebe/shared';
+const isOnline = useOnlineStatus();
+```
+
+### Resources
+
+- [Strategic Roadmap 2026](./STRATEGIC_ROADMAP_2026.md)
+- [Deep Analysis 2026](./docs/DEEP_ANALYSIS_2026.md)
+- [Action Plan 2026](./ACTION_PLAN_2026.md)
+- [Architecture](./docs/ARCHITECTURE.md)
