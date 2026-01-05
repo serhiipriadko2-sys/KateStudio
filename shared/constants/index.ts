@@ -210,8 +210,8 @@ export const CONTACT = {
   addressFull: 'Станционная ул., 5Б, Дубна, Московская область, 141981 (этаж 2)',
   city: 'Дубна',
   coordinates: {
-    lat: 56.732390,
-    lng: 37.141690,
+    lat: 56.73239,
+    lng: 37.14169,
   },
   workingHours: {
     weekdays: '09:00 - 21:00',
@@ -316,4 +316,318 @@ export const PATTERNS = {
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   phoneRu: /^(\+7|8)?[\s-]?\(?[0-9]{3}\)?[\s-]?[0-9]{3}[\s-]?[0-9]{2}[\s-]?[0-9]{2}$/,
   cyrillic: /^[а-яА-ЯёЁ\s]+$/,
+} as const;
+
+// ============================================
+// ACHIEVEMENTS (2026)
+// ============================================
+
+export const ACHIEVEMENTS = [
+  // Streak achievements
+  {
+    id: 'first_practice',
+    name: 'First Step',
+    nameRu: 'Первый шаг',
+    description: 'Завершите первую практику',
+    icon: '🌱',
+    category: 'practice' as const,
+    target: 1,
+    rarity: 'common' as const,
+  },
+  {
+    id: 'streak_7',
+    name: 'Weekly Warrior',
+    nameRu: 'Неделя силы',
+    description: '7 дней практики подряд',
+    icon: '🔥',
+    category: 'streak' as const,
+    target: 7,
+    rarity: 'common' as const,
+  },
+  {
+    id: 'streak_30',
+    name: 'Monthly Master',
+    nameRu: 'Месяц трансформации',
+    description: '30 дней практики подряд',
+    icon: '⭐',
+    category: 'streak' as const,
+    target: 30,
+    rarity: 'rare' as const,
+  },
+  {
+    id: 'streak_100',
+    name: 'Century Champion',
+    nameRu: 'Мастер дисциплины',
+    description: '100 дней практики подряд',
+    icon: '👑',
+    category: 'streak' as const,
+    target: 100,
+    rarity: 'legendary' as const,
+  },
+  // Practice achievements
+  {
+    id: 'practices_10',
+    name: 'Getting Started',
+    nameRu: 'Начинающий йог',
+    description: '10 завершённых практик',
+    icon: '🧘',
+    category: 'practice' as const,
+    target: 10,
+    rarity: 'common' as const,
+  },
+  {
+    id: 'practices_50',
+    name: 'Dedicated Practitioner',
+    nameRu: 'Опытный практик',
+    description: '50 завершённых практик',
+    icon: '💪',
+    category: 'practice' as const,
+    target: 50,
+    rarity: 'rare' as const,
+  },
+  {
+    id: 'practices_100',
+    name: 'Yoga Enthusiast',
+    nameRu: 'Йога-энтузиаст',
+    description: '100 завершённых практик',
+    icon: '🎯',
+    category: 'practice' as const,
+    target: 100,
+    rarity: 'epic' as const,
+  },
+  // AI achievements
+  {
+    id: 'vision_first',
+    name: 'AI Analysis',
+    nameRu: 'AI-анализ',
+    description: 'Первый анализ асаны с AI',
+    icon: '📸',
+    category: 'ai' as const,
+    target: 1,
+    rarity: 'common' as const,
+  },
+  {
+    id: 'meditation_first',
+    name: 'Inner Peace',
+    nameRu: 'Внутренний покой',
+    description: 'Первая AI-медитация',
+    icon: '🕊️',
+    category: 'ai' as const,
+    target: 1,
+    rarity: 'common' as const,
+  },
+  {
+    id: 'all_modes',
+    name: 'AI Explorer',
+    nameRu: 'Исследователь AI',
+    description: 'Попробовать все режимы Aria',
+    icon: '🔮',
+    category: 'ai' as const,
+    target: 6,
+    rarity: 'rare' as const,
+  },
+  // Inside Flow achievements
+  {
+    id: 'inside_flow_first',
+    name: 'Flow Beginner',
+    nameRu: 'Поток начинается',
+    description: 'Первый Inside Flow класс',
+    icon: '🎵',
+    category: 'practice' as const,
+    target: 1,
+    rarity: 'common' as const,
+  },
+  {
+    id: 'inside_flow_10',
+    name: 'Flow Master',
+    nameRu: 'Мастер потока',
+    description: '10 Inside Flow классов',
+    icon: '🎶',
+    category: 'practice' as const,
+    target: 10,
+    rarity: 'rare' as const,
+  },
+] as const;
+
+// ============================================
+// STREAK MILESTONES (2026)
+// ============================================
+
+export const STREAK_MILESTONES = [
+  { days: 3, reward: 'Bronze Badge', rewardRu: 'Бронзовый значок', icon: '🥉' },
+  { days: 7, reward: 'Silver Badge', rewardRu: 'Серебряный значок', icon: '🥈' },
+  { days: 14, reward: 'Gold Badge', rewardRu: 'Золотой значок', icon: '🥇' },
+  { days: 30, reward: 'Diamond Badge', rewardRu: 'Бриллиантовый значок', icon: '💎' },
+  { days: 60, reward: 'Platinum Badge', rewardRu: 'Платиновый значок', icon: '🏆' },
+  { days: 100, reward: 'Legend Badge', rewardRu: 'Легендарный значок', icon: '👑' },
+] as const;
+
+// ============================================
+// SUBSCRIPTION PLANS (2026)
+// ============================================
+
+export const SUBSCRIPTION_PLANS = [
+  {
+    id: 'free' as const,
+    name: 'Free',
+    nameRu: 'Бесплатный',
+    price: 0,
+    currency: 'RUB' as const,
+    interval: 'month' as const,
+    features: [
+      'AI-чат с Арией (100 сообщений/день)',
+      '3 видео в неделю',
+      'Дыхательные практики',
+      'Базовый трекинг прогресса',
+    ],
+    limits: {
+      aiMessagesPerDay: 100,
+      videosPerWeek: 3,
+      offlineDownloads: false,
+      personalPrograms: false,
+      visionAnalysesPerMonth: 5,
+      prioritySupport: false,
+    },
+  },
+  {
+    id: 'premium' as const,
+    name: 'Premium',
+    nameRu: 'Премиум',
+    price: 990,
+    currency: 'RUB' as const,
+    interval: 'month' as const,
+    features: [
+      'Все функции Free',
+      'Безлимитные AI-сообщения',
+      'Полная видеотека',
+      'Скачивание для offline',
+      'Персональные AI-программы',
+      'Безлимитный анализ асан',
+    ],
+    limits: {
+      aiMessagesPerDay: -1, // unlimited
+      videosPerWeek: -1, // unlimited
+      offlineDownloads: true,
+      personalPrograms: true,
+      visionAnalysesPerMonth: -1, // unlimited
+      prioritySupport: false,
+    },
+  },
+  {
+    id: 'vip' as const,
+    name: 'VIP',
+    nameRu: 'VIP',
+    price: 2990,
+    currency: 'RUB' as const,
+    interval: 'month' as const,
+    features: [
+      'Все функции Premium',
+      'Личные консультации с Катей (2/мес)',
+      'Приоритетная поддержка',
+      'Эксклюзивный контент',
+      'Ранний доступ к новым функциям',
+    ],
+    limits: {
+      aiMessagesPerDay: -1,
+      videosPerWeek: -1,
+      offlineDownloads: true,
+      personalPrograms: true,
+      visionAnalysesPerMonth: -1,
+      prioritySupport: true,
+    },
+  },
+] as const;
+
+// ============================================
+// INSIDE FLOW INFO (2026)
+// ============================================
+
+export const INSIDE_FLOW = {
+  founder: 'Young Ho Kim',
+  origin: 'Inside Yoga Academy, Germany',
+  description:
+    'Inside Flow — это современный стиль йоги, созданный Young Ho Kim, который сочетает vinyasa flow с музыкой и эмоциональным сторителлингом. Каждая практика построена вокруг песни, создавая уникальный опыт движения в потоке.',
+  philosophy: 'Движение как выражение эмоций, синхронизация с музыкой, storytelling through yoga',
+  keyElements: [
+    'Музыкальная интеграция',
+    'Эмоциональный сторителлинг',
+    'Breath-to-beat координация',
+    'Creative sequencing',
+    'Community connection',
+  ],
+  globalCommunity: {
+    certifiedTeachers: '10,000+',
+    countries: '50+',
+    annualSummits: ['Global Summit', 'Rome Summit', 'Taipei Workshop'],
+  },
+  links: {
+    official: 'https://insideflow.com',
+    academy: 'https://insideyoga.org',
+    online: 'https://online.insideyoga.org',
+    flowShow: 'https://insideyoga.org/flow-show/',
+  },
+} as const;
+
+// ============================================
+// AI COACH ARIA (2026)
+// ============================================
+
+export const ARIA_CONFIG = {
+  name: 'Aria',
+  nameRu: 'Ария',
+  role: 'AI Yoga Coach',
+  roleRu: 'AI-коуч по йоге',
+  personality:
+    'Добрый, поддерживающий, знающий. Говорит на русском языке. Эксперт в Inside Flow, хатха-йоге и медитации.',
+  modes: [
+    {
+      id: 'chat',
+      name: 'Chat',
+      nameRu: 'Чат',
+      description: 'Общение о йоге, здоровье, осознанности',
+      icon: '💬',
+    },
+    {
+      id: 'vision',
+      name: 'Vision',
+      nameRu: 'Анализ асан',
+      description: 'AI-анализ вашей позы по фото',
+      icon: '📸',
+    },
+    {
+      id: 'meditation',
+      name: 'Meditation',
+      nameRu: 'Медитация',
+      description: 'Персонализированные медитации',
+      icon: '🧘',
+    },
+    {
+      id: 'program',
+      name: 'Program',
+      nameRu: 'Программа',
+      description: 'Персональная 7-дневная программа',
+      icon: '📋',
+    },
+    {
+      id: 'create',
+      name: 'Create',
+      nameRu: 'Творчество',
+      description: 'Арт-терапия и визуализация',
+      icon: '🎨',
+    },
+    {
+      id: 'coach',
+      name: 'Coach',
+      nameRu: 'Коуч',
+      description: 'Голосовой коучинг во время практики',
+      icon: '🎤',
+    },
+  ],
+  geminiModels: {
+    chat: 'gemini-2.5-flash',
+    vision: 'gemini-2.5-flash',
+    thinking: 'gemini-2.5-pro',
+    image: 'imagen-3.0-generate-002',
+    video: 'veo-2.0-generate-001',
+  },
 } as const;

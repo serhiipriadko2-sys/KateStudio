@@ -19,10 +19,51 @@ export { Breathwork } from './Breathwork';
 export { Blog } from './Blog';
 export { Pricing } from './Pricing';
 
+// Gamification & AI Components (2026)
+export { DailyRecommendation } from './DailyRecommendation';
+export { AchievementUnlockedModal } from './AchievementUnlockedModal';
+export { AchievementsGrid } from './AchievementsGrid';
+export { ProgressSummary } from './ProgressSummary';
+
 // Types
 export type { AsanaAnalysis, ImageServices } from './Image';
 export type { MarqueeConfig } from './Marquee';
 export type { PaywallPlanId, PaywallStatus } from './Paywall';
+export type { DailyRecommendationProps } from './DailyRecommendation';
+export type { AchievementUnlockedModalProps } from './AchievementUnlockedModal';
+export type { AchievementsGridProps } from './AchievementsGrid';
+export type { ProgressSummaryProps } from './ProgressSummary';
 
 // Re-export types for convenience
-export type { BlogArticle, PriceOption, BreathPhase, BreathworkConfig } from '../types';
+export type {
+  BlogArticle,
+  PriceOption,
+  BreathPhase,
+  BreathworkConfig,
+  // Gamification types (2026)
+  Achievement,
+  AchievementCategory,
+  AchievementRarity,
+  StreakData,
+  StreakMilestone,
+  WeeklyRecap,
+  // AI Personalization types (2026)
+  DailyRecommendation as DailyRecommendationType,
+  PersonalProgram,
+  ProgramDay,
+  EnhancedAsanaAnalysis,
+  PracticeType,
+  PracticeGoal,
+  PracticeLevel,
+  // Subscription types (2026)
+  Subscription,
+  SubscriptionPlan,
+  SubscriptionPlanDetails,
+  SubscriptionLimits,
+  // Onboarding types (2026)
+  OnboardingData,
+  // Notification types (2026)
+  NotificationType,
+  NotificationPreferences,
+  PushNotification,
+} from '../types';

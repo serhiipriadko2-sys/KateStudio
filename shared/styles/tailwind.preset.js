@@ -77,6 +77,7 @@ module.exports = {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'hand-swipe': 'handSwipe 2s ease-in-out infinite',
         scan: 'scan 2s linear infinite',
+        'bounce-in': 'bounceIn 0.6s ease-out',
       },
 
       keyframes: {
@@ -113,6 +114,12 @@ module.exports = {
         scan: {
           '0%': { transform: 'translateY(-100%)' },
           '100%': { transform: 'translateY(100%)' },
+        },
+        bounceIn: {
+          '0%': { transform: 'scale(0.3)', opacity: '0' },
+          '50%': { transform: 'scale(1.05)' },
+          '70%': { transform: 'scale(0.95)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
 
