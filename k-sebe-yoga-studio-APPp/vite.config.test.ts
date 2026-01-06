@@ -14,13 +14,12 @@ const loadConfig = async () => {
   };
   const resolved = typeof configExport === 'function' ? await configExport(buildEnv) : configExport;
 
-  return await Promise.resolve(resolved);
+  return resolved;
 };
 
 describe('vite config (app)', () => {
   it('uses esbuild minifier', async () => {
     const config = await loadConfig();
     expect(config.build?.minify).toBe('esbuild');
-    expect(config.build?.minify).not.toBe('terser');
   });
 });
