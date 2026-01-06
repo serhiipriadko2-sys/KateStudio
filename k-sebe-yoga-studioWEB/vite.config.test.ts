@@ -1,18 +1,20 @@
 /** @vitest-environment node */
 import { TextDecoder, TextEncoder } from 'util';
+import type { ConfigEnv, UserConfigExport } from 'vite';
 
 globalThis.TextEncoder = TextEncoder as typeof globalThis.TextEncoder;
 globalThis.TextDecoder = TextDecoder as typeof globalThis.TextDecoder;
 
 const loadConfig = async () => {
   const configModule = await import('./vite.config');
-  const configExport = configModule.default;
-  const resolved =
-    typeof configExport === 'function'
-      ? await configExport({ command: 'build', mode: 'production' } as any)
-      : configExport;
+  const configExport = configModule.default as UserConfigExport;
+  const buildEnv: ConfigEnv = {
+    command: 'build',
+    mode: 'production',
+  };
+  const resolved = typeof configExport === 'function' ? await configExport(buildEnv) : configExport;
 
-  return resolved;
+  return await Promise.resolve(resolved);
 };
 
 describe('vite config (web)', () => {
