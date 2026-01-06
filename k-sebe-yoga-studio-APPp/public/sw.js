@@ -1,9 +1,15 @@
 /**
  * K Sebe Yoga Studio - Service Worker
  * Provides offline support and caching strategies
+ *
+ * IMPORTANT: skipWaiting() is only called on explicit user request
+ * to avoid breaking resource consistency during runtime.
+ * @see https://web.dev/articles/service-worker-lifecycle
  */
 
-const CACHE_NAME = 'ksebe-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `ksebe-app-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `ksebe-runtime-${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline.html';
 
 // Assets to cache on install
@@ -17,6 +23,7 @@ const PRECACHE_ASSETS = [
 ];
 
 // Install event - precache essential assets
+// NOTE: We do NOT call skipWaiting() here - only on user request
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -24,8 +31,6 @@ self.addEventListener('install', (event) => {
       return cache.addAll(PRECACHE_ASSETS);
     })
   );
-  // Activate immediately
-  self.skipWaiting();
 });
 
 // Activate event - clean up old caches
@@ -34,7 +39,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
+          .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
           .map((name) => {
             console.log('[SW] Deleting old cache:', name);
             return caches.delete(name);
@@ -46,7 +51,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - Network first, falling back to cache
+// Fetch event - implements different strategies per resource type
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -70,9 +75,9 @@ self.addEventListener('fetch', (event) => {
       );
       return;
     }
-    // For CDN resources (Tailwind, fonts), cache them
+    // For CDN resources (Tailwind, fonts) - Stale While Revalidate
     event.respondWith(
-      caches.open(CACHE_NAME).then((cache) => {
+      caches.open(RUNTIME_CACHE).then((cache) => {
         return cache.match(request).then((cachedResponse) => {
           const fetchPromise = fetch(request)
             .then((networkResponse) => {
@@ -90,7 +95,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For navigation requests (HTML pages)
+  // For navigation requests (HTML pages) - Network First
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -114,9 +119,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For other assets - Stale While Revalidate
+  // For JS/CSS assets - Network First to ensure fresh code
+  if (url.pathname.match(/\.(js|css|mjs)$/)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, responseClone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // For images and other assets - Cache First (Stale While Revalidate)
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(RUNTIME_CACHE).then((cache) => {
       return cache.match(request).then((cachedResponse) => {
         const fetchPromise = fetch(request)
           .then((networkResponse) => {

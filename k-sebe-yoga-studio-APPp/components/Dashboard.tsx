@@ -497,8 +497,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                             <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8F9FA] rounded-full hidden md:block"></div>
 
                             <div
+                              role="button"
+                              tabIndex={0}
+                              aria-label="Показать QR-код"
                               className="opacity-20 hover:opacity-100 transition-opacity flex flex-col items-center gap-1 cursor-pointer"
                               onClick={() => setExpandedQr(b.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  setExpandedQr(b.id);
+                                }
+                              }}
                             >
                               <QrCode className="w-16 h-16" />
                               <span className="text-[9px] font-mono tracking-widest">SCAN</span>
@@ -766,8 +775,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
               <div className="flex flex-col items-center mb-8 relative">
                 <div
+                  role={isEditingProfile ? 'button' : undefined}
+                  tabIndex={isEditingProfile ? 0 : -1}
+                  aria-label={isEditingProfile ? 'Загрузить новое фото профиля' : undefined}
                   className={`w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-xl mb-4 relative group ${isEditingProfile ? 'cursor-pointer hover:border-brand-green/50' : ''}`}
                   onClick={() => isEditingProfile && fileInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (isEditingProfile && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
                 >
                   {isAvatarUploading ? (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
@@ -884,8 +902,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       {/* QR Modal */}
       {expandedQr && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="QR-код бронирования"
           className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-8 animate-in fade-in"
           onClick={() => setExpandedQr(null)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setExpandedQr(null);
+            }
+          }}
         >
           <div className="bg-white p-8 rounded-[3rem] w-full max-w-sm aspect-square flex items-center justify-center relative">
             <div className="absolute top-0 left-0 w-full h-2 bg-brand-green/20 animate-scan"></div>

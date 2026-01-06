@@ -28,10 +28,25 @@ export default defineConfig(({ mode }) => {
       // Optimize chunk splitting for better caching
       rollupOptions: {
         output: {
-          manualChunks: {
-            // Separate vendor chunks for better caching
-            'react-vendor': ['react', 'react-dom'],
-            'lucide-icons': ['lucide-react'],
+          manualChunks: (id) => {
+            // React and ReactDOM in separate chunk
+            if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+              return 'react-vendor';
+            }
+            // Lucide icons in separate chunk
+            if (id.includes('node_modules/lucide-react')) {
+              return 'lucide-icons';
+            }
+            // @google/genai SDK in separate chunk if present
+            if (id.includes('node_modules/@google/generative-ai')) {
+              return 'ai-sdk';
+            }
+            // Supabase SDK in separate chunk
+            if (id.includes('node_modules/@supabase')) {
+              return 'supabase-sdk';
+            }
+            // Let dynamic imports create their own chunks
+            return undefined;
           },
         },
       },
