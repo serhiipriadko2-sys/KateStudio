@@ -177,6 +177,35 @@ module.exports = {
         '.animation-delay-4000': {
           'animation-delay': '4s',
         },
+        // WCAG 2.2 Target Size utilities (2.5.8)
+        // Minimum 24x24px for touch targets
+        '.touch-target': {
+          'min-width': '44px',
+          'min-height': '44px',
+        },
+        '.touch-target-sm': {
+          'min-width': '24px',
+          'min-height': '24px',
+        },
+        // Ensure tap target is at least 44px even if icon is smaller
+        '.tap-highlight': {
+          '-webkit-tap-highlight-color': 'transparent',
+        },
+        // Focus visible styles for keyboard navigation
+        '.focus-ring': {
+          'outline': 'none',
+          '&:focus-visible': {
+            'outline': '2px solid #57a773',
+            'outline-offset': '2px',
+          },
+        },
+        // Reduced motion for accessibility
+        '.motion-reduce': {
+          '@media (prefers-reduced-motion: reduce)': {
+            'animation': 'none',
+            'transition': 'none',
+          },
+        },
       });
     },
   ],
