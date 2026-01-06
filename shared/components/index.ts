@@ -13,6 +13,9 @@ export { BackToTop } from './BackToTop';
 export { ErrorBoundary } from './ErrorBoundary';
 export { CookieBanner } from './CookieBanner';
 export { Paywall } from './Paywall';
+export { UpdateBanner } from './UpdateBanner';
+export { OfflineBanner } from './OfflineBanner';
+export { Skeleton, SkeletonVideoCard, SkeletonAvatar, SkeletonText } from './Skeleton';
 
 // Feature Components
 export { Breathwork } from './Breathwork';
@@ -41,6 +44,9 @@ export type { WeeklyRecapProps } from './WeeklyRecap';
 export type { StreakCalendarProps } from './StreakCalendar';
 export type { OnboardingQuizProps } from './OnboardingQuiz';
 export type { NotificationPreferencesProps } from './NotificationPreferences';
+export type { UpdateBannerProps } from './UpdateBanner';
+export type { OfflineBannerProps } from './OfflineBanner';
+export type { SkeletonProps } from './Skeleton';
 
 // Re-export types for convenience
 export type {

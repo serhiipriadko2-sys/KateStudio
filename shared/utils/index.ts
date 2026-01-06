@@ -137,6 +137,21 @@ export {
 } from './async';
 
 /**
+ * Core Web Vitals monitoring utilities
+ */
+export {
+  observeLCP,
+  observeINP,
+  observeCLS,
+  observeFCP,
+  observeTTFB,
+  observeWebVitals,
+  logWebVitals,
+  reportWebVitals,
+  type WebVitalMetric,
+} from './webVitals';
+
+/**
  * Check if iOS device
  */
 export function isIOS(): boolean {

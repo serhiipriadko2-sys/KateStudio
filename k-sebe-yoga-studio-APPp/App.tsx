@@ -1,4 +1,6 @@
 // FadeIn available from '@ksebe/shared' when needed
+import { UpdateBanner, OfflineBanner } from '@ksebe/shared';
+import { useOnlineStatus } from '@ksebe/shared';
 import {
   Home,
   Calendar,
@@ -13,16 +15,14 @@ import {
   Activity,
   ChevronRight,
   X,
+  Loader2,
 } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { About } from './components/About';
-import { AICoach } from './components/AICoach';
 import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
-import { Dashboard } from './components/Dashboard';
 import { Directions } from './components/Directions';
 import { Footer } from './components/Footer';
-import { Gallery } from './components/Gallery';
 import { Image } from './components/Image';
 import { LegalModals } from './components/LegalModals';
 import { Logo } from './components/Logo';
@@ -33,10 +33,27 @@ import { Retreats } from './components/Retreats';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
 import { StreakCard } from './components/StreakCard';
-import { VideoLibrary } from './components/VideoLibrary';
 import { WeeklyRecapCard } from './components/WeeklyRecapCard';
 import { useAuth } from './context/AuthContext';
+import { usePWAUpdate } from './hooks/usePWAUpdate';
 import { retentionService } from './services/retentionService';
+
+// Lazy load heavy components for better initial bundle size
+const AICoach = lazy(() => import('./components/AICoach').then((m) => ({ default: m.AICoach })));
+const Dashboard = lazy(() =>
+  import('./components/Dashboard').then((m) => ({ default: m.Dashboard }))
+);
+const Gallery = lazy(() => import('./components/Gallery').then((m) => ({ default: m.Gallery })));
+const VideoLibrary = lazy(() =>
+  import('./components/VideoLibrary').then((m) => ({ default: m.VideoLibrary }))
+);
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center py-12">
+    <Loader2 className="w-8 h-8 text-brand-green animate-spin" />
+  </div>
+);
 
 type Tab = 'home' | 'schedule' | 'ai' | 'studio' | 'profile';
 
@@ -208,6 +225,8 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
 
 export default function App() {
   const { authStatus, user } = useAuth();
+  const isOnline = useOnlineStatus();
+  const { updateAvailable, updating, triggerUpdate, dismissUpdate } = usePWAUpdate();
   const [introFinished, setIntroFinished] = useState(() => {
     return localStorage.getItem('ksebe_intro_complete') === 'true';
   });
@@ -264,7 +283,9 @@ export default function App() {
   if (activeTab === 'profile') {
     return (
       <>
-        <Dashboard initialTab="profile" onBack={() => handleTabChange('home')} />
+        <Suspense fallback={<LoadingFallback />}>
+          <Dashboard initialTab="profile" onBack={() => handleTabChange('home')} />
+        </Suspense>
         <OnboardingQuizModal
           open={onboardingOpen}
           onClose={() => {
@@ -342,7 +363,9 @@ export default function App() {
 
         {activeTab === 'ai' && (
           <div className="pt-24 px-4 h-full flex flex-col view-transition">
-            <AICoach />
+            <Suspense fallback={<LoadingFallback />}>
+              <AICoach />
+            </Suspense>
           </div>
         )}
 
@@ -389,6 +412,15 @@ export default function App() {
       </nav>
 
       <ChatWidget hidden={activeTab === 'ai'} />
+
+      {/* PWA Update & Offline Banners */}
+      <UpdateBanner
+        visible={updateAvailable}
+        updating={updating}
+        onUpdate={triggerUpdate}
+        onDismiss={dismissUpdate}
+      />
+      <OfflineBanner visible={!isOnline && !updateAvailable} />
 
       <OnboardingQuizModal
         open={onboardingOpen}
@@ -650,7 +682,9 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
           <h2 className="text-2xl font-serif text-brand-text mb-4 px-2">
             {selectedMood ? 'Рекомендуемые практики' : 'Популярные практики'}
           </h2>
-          <VideoLibrary selectedMood={selectedMood} />
+          <Suspense fallback={<LoadingFallback />}>
+            <VideoLibrary selectedMood={selectedMood} />
+          </Suspense>
         </div>
       </div>
     </div>
@@ -670,7 +704,9 @@ const StudioView: React.FC = () => {
       <Directions />
       <Pricing />
       <Retreats />
-      <Gallery />
+      <Suspense fallback={<LoadingFallback />}>
+        <Gallery />
+      </Suspense>
       <Reviews />
       <div className="px-4 pb-8">
         <Contact />
