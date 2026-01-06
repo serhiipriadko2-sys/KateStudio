@@ -6,18 +6,27 @@
  * @see https://web.dev/articles/vitals
  */
 
+/**
+ * Represents a web performance metric measurement
+ */
 export type WebVitalMetric = {
+  /** Metric name (LCP, INP, CLS, FCP, TTFB) */
   name: 'LCP' | 'INP' | 'CLS' | 'FCP' | 'TTFB';
+  /** Current metric value in milliseconds (or unitless for CLS) */
   value: number;
+  /** Quality rating based on Google's thresholds */
   rating: 'good' | 'needs-improvement' | 'poor';
+  /** Change from previous measurement */
   delta: number;
+  /** Unique identifier for this measurement */
   id: string;
+  /** How the user navigated to the page (navigate, reload, back_forward, prerender) */
   navigationType: string;
 };
 
 type ReportCallback = (metric: WebVitalMetric) => void;
 
-// Thresholds based on Google's Core Web Vitals recommendations
+// Thresholds based on Google's Core Web Vitals recommendations (in ms)
 const THRESHOLDS = {
   LCP: { good: 2500, poor: 4000 },
   INP: { good: 200, poor: 500 },
@@ -25,6 +34,15 @@ const THRESHOLDS = {
   FCP: { good: 1800, poor: 3000 },
   TTFB: { good: 800, poor: 1800 },
 };
+
+// CLS session window constants (see https://web.dev/articles/cls)
+/** Gap between layout shifts to start a new session (1 second) */
+const CLS_SESSION_GAP_MS = 1000;
+/** Maximum session duration before starting a new one (5 seconds) */
+const CLS_MAX_SESSION_DURATION_MS = 5000;
+
+/** Minimum event duration to consider for INP measurement (40ms) */
+const INP_DURATION_THRESHOLD_MS = 40;
 
 function generateId(): string {
   return `v${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
@@ -61,19 +79,19 @@ export function observeLCP(callback: ReportCallback): () => void {
   try {
     const observer = new PerformanceObserver((entryList) => {
       const entries = entryList.getEntries();
+      if (entries.length === 0) return;
+
       const lastEntry = entries[entries.length - 1] as PerformanceEntry & { startTime: number };
-      if (lastEntry) {
-        const value = lastEntry.startTime;
-        callback({
-          name: 'LCP',
-          value,
-          delta: value - lastValue,
-          rating: getRating('LCP', value),
-          id,
-          navigationType: getNavigationType(),
-        });
-        lastValue = value;
-      }
+      const value = lastEntry.startTime;
+      callback({
+        name: 'LCP',
+        value,
+        delta: value - lastValue,
+        rating: getRating('LCP', value),
+        id,
+        navigationType: getNavigationType(),
+      });
+      lastValue = value;
     });
 
     observer.observe({ type: 'largest-contentful-paint', buffered: true });
@@ -115,7 +133,12 @@ export function observeINP(callback: ReportCallback): () => void {
       }
     });
 
-    observer.observe({ type: 'event', buffered: true, durationThreshold: 40 });
+    // durationThreshold filters out interactions shorter than this value
+    observer.observe({
+      type: 'event',
+      buffered: true,
+      durationThreshold: INP_DURATION_THRESHOLD_MS,
+    });
 
     return () => observer.disconnect();
   } catch {
@@ -154,11 +177,12 @@ export function observeCLS(callback: ReportCallback): () => void {
             | (PerformanceEntry & { startTime: number })
             | undefined;
 
-          // Start new session if gap is > 1s or total > 5s
+          // Start new session if gap exceeds threshold or total duration exceeds max
+          const gapFromLast = entry.startTime - (lastEntry?.startTime || 0);
+          const durationFromFirst = entry.startTime - (firstEntry?.startTime || 0);
           if (
             sessionValue &&
-            (entry.startTime - (lastEntry?.startTime || 0) > 1000 ||
-              entry.startTime - (firstEntry?.startTime || 0) > 5000)
+            (gapFromLast > CLS_SESSION_GAP_MS || durationFromFirst > CLS_MAX_SESSION_DURATION_MS)
           ) {
             clsValue = Math.max(clsValue, sessionValue);
             sessionValue = 0;
