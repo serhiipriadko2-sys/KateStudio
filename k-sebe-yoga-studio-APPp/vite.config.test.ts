@@ -1,12 +1,24 @@
-import fs from 'fs';
-import path from 'path';
+/** @vitest-environment node */
+import { TextDecoder, TextEncoder } from 'util';
 
-const viteConfigPath = path.resolve(__dirname, 'vite.config.ts');
+globalThis.TextEncoder = TextEncoder as typeof globalThis.TextEncoder;
+globalThis.TextDecoder = TextDecoder as typeof globalThis.TextDecoder;
+
+const loadConfig = async () => {
+  const configModule = await import('./vite.config');
+  const configExport = configModule.default;
+  const resolved =
+    typeof configExport === 'function'
+      ? await configExport({ command: 'build', mode: 'production' } as any)
+      : configExport;
+
+  return resolved;
+};
 
 describe('vite config (app)', () => {
-  it('uses esbuild minifier', () => {
-    const content = fs.readFileSync(viteConfigPath, 'utf-8');
-    expect(content).toMatch(/minify:\s*['"]esbuild['"]/);
-    expect(content).not.toMatch(/minify:\s*['"]terser['"]/);
+  it('uses esbuild minifier', async () => {
+    const config = await loadConfig();
+    expect(config.build?.minify).toBe('esbuild');
+    expect(config.build?.minify).not.toBe('terser');
   });
 });
