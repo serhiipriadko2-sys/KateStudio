@@ -210,8 +210,8 @@ export const CONTACT = {
   addressFull: 'Станционная ул., 5Б, Дубна, Московская область, 141981 (этаж 2)',
   city: 'Дубна',
   coordinates: {
-    lat: 56.73239,
-    lng: 37.14169,
+    lat: 56.7327,
+    lng: 37.1534,
   },
   workingHours: {
     weekdays: '09:00 - 21:00',
