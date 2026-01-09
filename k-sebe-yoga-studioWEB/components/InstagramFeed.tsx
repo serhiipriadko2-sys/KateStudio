@@ -5,39 +5,29 @@ import { FadeIn } from './FadeIn';
 const INSTAGRAM_USERNAME = 'kate_gabran';
 const INSTAGRAM_URL = `https://instagram.com/${INSTAGRAM_USERNAME}`;
 
-// Elfsight Widget ID - get yours at https://elfsight.com/instagram-feed-instashow/
-// 1. Go to elfsight.com → Sign up (free plan available)
-// 2. Create "Instagram Feed" widget
-// 3. Connect @kate_gabran account
-// 4. Customize: Grid layout, 6-9 posts, hover effects
-// 5. Copy Widget ID from installation code
-const ELFSIGHT_WIDGET_ID = ''; // e.g., 'xxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+// Elfsight Widget ID - Active widget for @kate_gabran
+// Widget URL: https://c9682b51c4384ad0a8cfb41a1354ddf0.elf.site
+// Dashboard: https://elfsight.com/instagram-feed-instashow/
+const ELFSIGHT_WIDGET_ID = 'c9682b51-c438-4ad0-a8cf-b41a1354ddf0';
 
 export const InstagramFeed: React.FC = () => {
   const widgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Load Elfsight platform script if widget ID is configured
-    if (ELFSIGHT_WIDGET_ID && widgetRef.current) {
-      // Check if script already exists to avoid duplicates
-      const existingScript = document.querySelector(
-        'script[src="https://static.elfsight.com/platform/platform.js"]'
-      );
+    if (ELFSIGHT_WIDGET_ID && !document.querySelector('script[src*="elfsightcdn.com"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://elfsightcdn.com/platform.js';
+      script.async = true;
+      document.body.appendChild(script);
 
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.src = 'https://static.elfsight.com/platform/platform.js';
-        script.async = true;
-        script.defer = true;
-        document.body.appendChild(script);
-
-        return () => {
-          // Only remove if script exists
-          if (script.parentNode) {
-            document.body.removeChild(script);
-          }
-        };
-      }
+      return () => {
+        // Cleanup script on unmount
+        const existingScript = document.querySelector('script[src*="elfsightcdn.com"]');
+        if (existingScript) {
+          document.body.removeChild(existingScript);
+        }
+      };
     }
   }, []);
 
@@ -69,9 +59,9 @@ export const InstagramFeed: React.FC = () => {
       <FadeIn delay={300}>
         <div ref={widgetRef} className="flex justify-center">
           {ELFSIGHT_WIDGET_ID ? (
-            // Elfsight embed with lazy loading
-            <div
-              className={`elfsight-app-${ELFSIGHT_WIDGET_ID} w-full max-w-4xl`}
+            // Elfsight widget embed
+            <div 
+              className={`elfsight-app-${ELFSIGHT_WIDGET_ID} w-full`}
               data-elfsight-app-lazy
             />
           ) : (

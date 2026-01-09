@@ -1,92 +1,126 @@
-# 🎨 Настройка Instagram Feed (Elfsight)
+# 🎨 Instagram Feed - Документация
 
-## Регистрация и создание виджета
+## Активный виджет
 
-1. Перейдите на https://elfsight.com/instagram-feed-instashow/
-2. Нажмите "Try for Free" (бесплатный план: до 5000 просмотров/мес)
-3. Зарегистрируйтесь через email или Google
-
-## Настройка виджета
-
-1. Создайте "Instagram Feed" widget
-2. Подключите аккаунт @kate_gabran
-3. Рекомендуемые настройки:
-   - **Layout**: Grid (сетка 3x3)
-   - **Posts to show**: 6-9 постов
-   - **Hover effect**: Zoom + overlay
-   - **Spacing**: 16px
-   - **Border radius**: 12px
-   - **Show captions**: On hover
-
-## Получение Widget ID
-
-После создания виджета скопируйте ID из кода:
-
-```html
-<div class="elfsight-app-xxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
-```
-
-Widget ID это часть после `elfsight-app-`: `xxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
-
-## Установка
-
-В файле `k-sebe-yoga-studioWEB/components/InstagramFeed.tsx`:
-
-```typescript
-const ELFSIGHT_WIDGET_ID = 'xxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-```
-
-Замените `xxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` на ваш реальный Widget ID.
-
-## Преимущества Elfsight
-
-✅ **Автообновление постов** - новые посты появляются автоматически  
-✅ **Красивые hover эффекты** - zoom, overlay с информацией  
-✅ **Lightbox** - открытие постов в модальном окне  
-✅ **Полная адаптивность** - отлично работает на мобильных  
-✅ **Lazy loading** - загрузка только при прокрутке к виджету  
-✅ **Модерация контента** - возможность скрывать ненужные посты  
-✅ **Кастомизация** - настройка цветов, шрифтов, размеров
+**Widget ID:** `c9682b51-c438-4ad0-a8cf-b41a1354ddf0`  
+**Preview URL:** https://c9682b51c4384ad0a8cfb41a1354ddf0.elf.site  
+**Instagram Account:** @kate_gabran  
+**Provider:** Elfsight Instagram Feed
 
 ## Технические детали
 
-- **Скрипт**: `https://static.elfsight.com/platform/platform.js`
-- **Lazy loading**: Атрибут `data-elfsight-app-lazy`
-- **Проверка дублирования**: Скрипт загружается только один раз
-- **Fallback**: При отсутствии Widget ID показывается красивая CTA-карточка
+### Интеграция
 
-## Альтернативные варианты
+Компонент: `k-sebe-yoga-studioWEB/components/InstagramFeed.tsx`
 
-Если Elfsight не подходит, можно рассмотреть:
+```typescript
+const ELFSIGHT_WIDGET_ID = 'c9682b51-c438-4ad0-a8cf-b41a1354ddf0';
+```
 
-- **Curator.io** - похожий функционал, другая ценовая политика
-- **EmbedSocial** - больше соцсетей, не только Instagram
-- **Flockler** - корпоративное решение
-- **SnapWidget** - предыдущее решение (более простое)
+### Загрузка скрипта
 
-## Поддержка
+```html
+<script src="https://elfsightcdn.com/platform.js" async></script>
+```
 
-- 📚 [Документация Elfsight](https://elfsight.com/help/)
-- 💬 [Поддержка Elfsight](https://elfsight.com/support/)
-- 🔧 [Platform.js API](https://static.elfsight.com/platform/platform.js)
+Скрипт загружается динамически через React useEffect с автоматической очисткой при размонтировании компонента.
 
-## Часто задаваемые вопросы
+### Embed код
 
-### Как часто обновляются посты?
+```html
+<div class="elfsight-app-c9682b51-c438-4ad0-a8cf-b41a1354ddf0" data-elfsight-app-lazy></div>
+```
 
-Elfsight обновляет ленту каждые 1-2 часа автоматически.
+Атрибут `data-elfsight-app-lazy` обеспечивает ленивую загрузку для оптимизации производительности.
 
-### Можно ли модерировать контент?
+## Управление виджетом
 
-Да, в панели управления Elfsight можно скрыть нежелательные посты.
+### Доступ к панели управления
 
-### Что делать если виджет не загружается?
+1. Войдите в аккаунт Elfsight: https://elfsight.com
+2. Перейдите в раздел "My Widgets"
+3. Найдите "Instagram Feed | Untitled Instagram Feed"
 
-1. Проверьте правильность Widget ID
-2. Убедитесь что аккаунт @kate_gabran публичный
-3. Проверьте лимиты бесплатного плана (5000 просмотров/мес)
-4. Очистите кеш браузера
+### Настройки виджета
 
-### Как перейти на платный план?
+Рекомендуемые параметры для студии йоги:
 
-В панели Elfsight можно в любой момент upgrade до Pro плана за $5-10/мес.
+- **Layout:** Grid (сетка)
+- **Columns:** 3 (на десктопе)
+- **Posts to show:** 6-9 постов
+- **Hover effect:** Zoom + caption overlay
+- **Spacing:** 16-20px
+- **Border radius:** 12px
+- **Show captions:** On hover
+- **Theme:** Light (соответствует дизайну сайта)
+
+### Обновление контента
+
+Виджет автоматически синхронизируется с аккаунтом @kate_gabran:
+- Новые посты появляются автоматически
+- Удаленные посты исчезают из ленты
+- Изменения в описаниях отражаются в реальном времени
+
+## Производительность
+
+### Оптимизации
+
+✅ **Lazy Loading:** Виджет загружается только при прокрутке к секции  
+✅ **Async Script:** Не блокирует загрузку страницы  
+✅ **CDN:** Скрипт загружается с быстрого CDN Elfsight  
+✅ **Cleanup:** Скрипт удаляется при размонтировании компонента
+
+### Лимиты бесплатного плана
+
+- **Просмотры:** 5,000/месяц
+- **Виджеты:** 1 активный
+- **Обновления:** Автоматические
+- **Поддержка:** Email
+
+## Fallback режим
+
+Если Widget ID не указан или виджет недоступен, отображается красивая карточка-призыв:
+
+- Градиентный дизайн Instagram
+- Кнопка "Подписаться" с внешней ссылкой
+- Описание контента аккаунта
+- Hover эффекты
+
+## Troubleshooting
+
+### Виджет не отображается
+
+1. Проверьте консоль браузера на ошибки
+2. Убедитесь, что Widget ID корректен
+3. Проверьте подключение к интернету
+4. Очистите кэш браузера
+5. Убедитесь, что скрипт elfsightcdn.com не блокируется
+
+### Посты не обновляются
+
+1. Проверьте статус виджета в панели Elfsight
+2. Убедитесь, что аккаунт @kate_gabran активен
+3. Проверьте лимиты тарифного плана
+
+### Проблемы с производительностью
+
+1. Уменьшите количество отображаемых постов (6 вместо 9)
+2. Отключите hover эффекты в настройках виджета
+3. Проверьте размер изображений в Instagram
+
+## Альтернативы
+
+Если Elfsight не подходит, можно использовать:
+
+- **SnapWidget** (бесплатно, базовый функционал)
+- **Instagram Graph API** (требует FB Business, полный контроль)
+- **Curator.io** (платно, расширенные возможности)
+
+## Контакты поддержки
+
+**Elfsight Support:**  
+Email: support@elfsight.com  
+Docs: https://elfsight.com/help/
+
+**Разработка сайта:**  
+Telegram: @k_sebe_dubna
