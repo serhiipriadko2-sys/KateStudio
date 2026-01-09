@@ -5,7 +5,7 @@ interface LogoProps {
   color?: string;
   showText?: boolean;
   loading?: 'lazy' | 'eager';
-  fetchPriority?: 'high' | 'low' | 'auto';
+  fetchpriority?: 'high' | 'low' | 'auto';
 }
 
 export const Logo: React.FC<LogoProps> = ({
@@ -13,7 +13,7 @@ export const Logo: React.FC<LogoProps> = ({
   color,
   showText = true,
   loading = 'lazy',
-  fetchPriority = 'auto',
+  fetchpriority = 'auto',
 }) => {
   // Determine filter based on color
   const getFilter = () => {
@@ -39,7 +39,7 @@ export const Logo: React.FC<LogoProps> = ({
         className="w-full h-full object-contain"
         style={filter ? { filter } : undefined}
         loading={loading}
-        fetchPriority={fetchPriority}
+        fetchpriority={fetchpriority}
         width="600"
         height="668"
       />

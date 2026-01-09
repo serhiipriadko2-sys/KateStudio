@@ -17,9 +17,21 @@ export const Logo: React.FC<LogoProps> = ({
   variant = 'default',
   showText = true,
 }) => {
-  // Determine filter based on variant
+  // Determine filter based on variant or color
   const getFilter = () => {
-    if (color) return undefined; // Custom color not supported with image
+    // If custom color is provided, map common colors to filters
+    if (color) {
+      if (color === '#ffffff' || color === 'white') {
+        return 'brightness(0) invert(1)'; // White variant
+      }
+      if (color === '#000000' || color === 'black' || color === '#1a1a1a') {
+        return 'brightness(0)'; // Black variant
+      }
+      // For other custom colors, use the default golden logo
+      // (Custom color tinting with filters would distort the logo)
+      return undefined;
+    }
+
     switch (variant) {
       case 'light':
         return 'brightness(0) invert(1)'; // White variant
