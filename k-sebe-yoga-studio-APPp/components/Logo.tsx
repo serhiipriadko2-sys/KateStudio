@@ -48,11 +48,25 @@ export const Logo: React.FC<LogoProps> = ({
   // Create drop-shadow filter for ignition effect using fillColor
   const getDropShadow = () => {
     if (!isIgnited) return undefined;
+
+    // Only process hex colors for drop-shadow
+    if (!fillColor.startsWith('#')) {
+      // For named colors, use a default golden glow
+      return 'drop-shadow(0 0 8px rgba(212, 191, 107, 0.8)) drop-shadow(0 0 16px rgba(212, 191, 107, 0.4))';
+    }
+
     // Convert hex color to RGB for drop-shadow
     const hex = fillColor.replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
+
+    // Validate RGB values
+    if (isNaN(r) || isNaN(g) || isNaN(b)) {
+      // Fallback to default golden glow if parsing fails
+      return 'drop-shadow(0 0 8px rgba(212, 191, 107, 0.8)) drop-shadow(0 0 16px rgba(212, 191, 107, 0.4))';
+    }
+
     return `drop-shadow(0 0 8px rgba(${r}, ${g}, ${b}, 0.8)) drop-shadow(0 0 16px rgba(${r}, ${g}, ${b}, 0.4))`;
   };
 

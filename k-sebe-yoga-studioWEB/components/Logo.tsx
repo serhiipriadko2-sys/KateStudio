@@ -7,21 +7,37 @@ import React from 'react';
 interface LogoProps {
   className?: string;
   color?: string;
+  variant?: 'default' | 'light' | 'dark';
   showText?: boolean;
 }
 
-export const Logo: React.FC<LogoProps> = ({ className = 'w-24 h-28', color, showText = true }) => {
-  // Determine color based on custom color prop
+export const Logo: React.FC<LogoProps> = ({
+  className = 'w-24 h-28',
+  color,
+  variant = 'default',
+  showText = true,
+}) => {
+  // Determine color based on variant or custom color prop
   const getColor = () => {
-    if (!color) return '#d4bf6b'; // Default golden color
+    if (color) {
+      if (color === '#ffffff' || color === 'white') {
+        return '#ffffff';
+      }
+      if (color === '#000000' || color === 'black' || color === '#1a1a1a') {
+        return '#1a1a1a';
+      }
+      return color;
+    }
 
-    if (color === '#ffffff' || color === 'white') {
-      return '#ffffff';
+    // Apply variant if no custom color is provided
+    switch (variant) {
+      case 'light':
+        return '#ffffff';
+      case 'dark':
+        return '#1a1a1a';
+      default:
+        return '#d4bf6b'; // Default golden color
     }
-    if (color === '#000000' || color === 'black' || color === '#1a1a1a') {
-      return '#1a1a1a';
-    }
-    return color;
   };
 
   const fillColor = getColor();
