@@ -45,6 +45,17 @@ export const Logo: React.FC<LogoProps> = ({
   // Show text only for 'full' variant
   const showText = variant === 'full';
 
+  // Create drop-shadow filter for ignition effect using fillColor
+  const getDropShadow = () => {
+    if (!isIgnited) return undefined;
+    // Convert hex color to RGB for drop-shadow
+    const hex = fillColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `drop-shadow(0 0 8px rgba(${r}, ${g}, ${b}, 0.8)) drop-shadow(0 0 16px rgba(${r}, ${g}, ${b}, 0.4))`;
+  };
+
   return (
     <svg
       viewBox="0 0 200 240"
@@ -53,9 +64,7 @@ export const Logo: React.FC<LogoProps> = ({
       className={`transition-all duration-300 ${className}`}
       style={{
         opacity: isIgnited ? 1 : opacity,
-        filter: isIgnited
-          ? 'drop-shadow(0 0 8px rgba(212, 191, 107, 0.8)) drop-shadow(0 0 16px rgba(212, 191, 107, 0.4))'
-          : undefined,
+        filter: getDropShadow(),
       }}
       aria-label="К себе - Йога Студия"
     >
