@@ -72,11 +72,7 @@ export const Logo: React.FC<LogoProps> = ({
 
         {/* Spiral inside triangle */}
         <path
-          d="M 0,0 
-             C 0,-10 10,-10 10,0 
-             C 10,15 -10,15 -15,0 
-             C -15,-20 20,-20 25,0 
-             C 25,30 -30,30 -35,0"
+          d="M 0,0 C 0,-10 10,-10 10,0 C 10,15 -10,15 -15,0 C -15,-20 20,-20 25,0 C 25,30 -30,30 -35,0"
           stroke={fillColor}
           strokeWidth="2"
           fill="none"
