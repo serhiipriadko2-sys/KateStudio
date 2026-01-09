@@ -62,6 +62,12 @@ export const Philosophy: React.FC = () => {
 
         <FadeIn delay={500}>
           <div className="flex flex-col items-center justify-center gap-4">
+            {/* Временно скрыто: signature.png */}
+            {/* <img
+              src="/signature.png"
+              alt="Signature"
+              className="h-20 opacity-60 mix-blend-multiply transform -rotate-2"
+            /> */}
             <p className="font-serif italic text-2xl text-brand-green/60 transform -rotate-2">
               ~ Катя Габран
             </p>

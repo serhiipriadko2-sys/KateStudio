@@ -348,11 +348,12 @@ function App() {
           <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
           <Gallery />
           <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-          <SubscriptionProfile
+          {/* Временно скрыто: AI-подписка */}
+          {/* <SubscriptionProfile
             onRequestPlan={(plan) =>
               openBooking({ type: `AI Подписка: ${plan.toUpperCase()}`, price: 'от 990 ₽/мес' })
             }
-          />
+          /> */}
           {/* Retreats temporarily hidden - no upcoming retreat info */}
           {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
           <Schedule onBook={(details) => openBooking(details)} />

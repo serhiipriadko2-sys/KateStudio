@@ -1,4 +1,4 @@
-import { Paywall } from '@ksebe/shared';
+// import { Paywall } from '@ksebe/shared'; // Временно скрыто вместе с AI-подпиской
 import {
   LogOut,
   LayoutDashboard,
@@ -22,9 +22,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { dataService } from '../services/dataService';
-import { subscriptionService } from '../services/subscriptionService';
+// import { subscriptionService } from '../services/subscriptionService'; // Временно скрыто вместе с AI-подпиской
 import { uploadFile, supabase } from '../services/supabaseClient';
-import { Booking, Subscription, SubscriptionPlan, SubscriptionStatus } from '../types';
+import { Booking } from '../types';
+// import { Subscription, SubscriptionPlan, SubscriptionStatus } from '../types'; // Временно скрыто вместе с AI-подпиской
 import { AICoach } from './AICoach';
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
@@ -60,9 +61,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedQr, setExpandedQr] = useState<string | null>(null);
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
-  const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
+  // Временно скрыто вместе с AI-подпиской
+  // const [subscription, setSubscription] = useState<Subscription | null>(null);
+  // const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  // const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
 
   // Profile Edit State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -86,30 +88,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   }, [authStatus, user, bookings.length]);
 
-  const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
-    active: 'Активна',
-    pending: 'Ожидает оплаты',
-    canceled: 'Отменена',
-    past_due: 'Проблема оплаты',
-    trialing: 'Пробный период',
-  };
+  // Временно скрыто вместе с AI-подпиской
+  // const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
+  //   active: 'Активна',
+  //   pending: 'Ожидает оплаты',
+  //   canceled: 'Отменена',
+  //   past_due: 'Проблема оплаты',
+  //   trialing: 'Пробный период',
+  // };
 
-  const subscriptionPlanLabels: Record<SubscriptionPlan, string> = {
-    free: 'Free',
-    premium: 'Premium',
-    vip: 'VIP',
-  };
+  // const subscriptionPlanLabels: Record<SubscriptionPlan, string> = {
+  //   free: 'Free',
+  //   premium: 'Premium',
+  //   vip: 'VIP',
+  // };
 
-  const loadSubscription = useCallback(async () => {
-    if (authStatus !== 'authenticated' || !isSupabaseConfigured) {
-      setSubscription(null);
-      return;
-    }
-    setSubscriptionLoading(true);
-    const current = await subscriptionService.getCurrentSubscription();
-    setSubscription(current);
-    setSubscriptionLoading(false);
-  }, [authStatus, isSupabaseConfigured]);
+  // const loadSubscription = useCallback(async () => {
+  //   if (authStatus !== 'authenticated' || !isSupabaseConfigured) {
+  //     setSubscription(null);
+  //     return;
+  //   }
+  //   setSubscriptionLoading(true);
+  //   const current = await subscriptionService.getCurrentSubscription();
+  //   setSubscription(current);
+  //   setSubscriptionLoading(false);
+  // }, [authStatus, isSupabaseConfigured]);
 
   // Initial Load & Real-time Subscription
   useEffect(() => {
@@ -140,9 +143,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   }, [authStatus, user?.id, fetchBookings, showToast]);
 
-  useEffect(() => {
-    loadSubscription();
-  }, [loadSubscription]);
+  // Временно скрыто вместе с AI-подпиской
+  // useEffect(() => {
+  //   loadSubscription();
+  // }, [loadSubscription]);
 
   const nextBooking = bookings.length > 0 ? bookings[0] : null;
 
@@ -152,48 +156,49 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     showToast('Вы вышли из системы', 'info');
   };
 
-  const handleSubscribePlan = async (plan: SubscriptionPlan) => {
-    if (!isSupabaseConfigured) {
-      showToast('Подписки доступны после настройки Supabase', 'info');
-      return;
-    }
-    if (authStatus !== 'authenticated') {
-      showToast('Войдите, чтобы оформить подписку', 'info');
-      return;
-    }
-    setSubscriptionActionLoading(true);
-    try {
-      const result = await subscriptionService.createPayment(plan, window.location.href);
-      setSubscription(result.subscription);
-      if (result.paymentUrl) {
-        window.location.href = result.paymentUrl;
-      } else if (result.message) {
-        showToast(result.message, 'info');
-      } else {
-        showToast('Ссылка на оплату недоступна', 'info');
-      }
-    } catch (e) {
-      console.error('Subscription payment error', e);
-      showToast('Не удалось начать оплату подписки', 'error');
-    } finally {
-      setSubscriptionActionLoading(false);
-    }
-  };
+  // Временно скрыто вместе с AI-подпиской
+  // const handleSubscribePlan = async (plan: SubscriptionPlan) => {
+  //   if (!isSupabaseConfigured) {
+  //     showToast('Подписки доступны после настройки Supabase', 'info');
+  //     return;
+  //   }
+  //   if (authStatus !== 'authenticated') {
+  //     showToast('Войдите, чтобы оформить подписку', 'info');
+  //     return;
+  //   }
+  //   setSubscriptionActionLoading(true);
+  //   try {
+  //     const result = await subscriptionService.createPayment(plan, window.location.href);
+  //     setSubscription(result.subscription);
+  //     if (result.paymentUrl) {
+  //       window.location.href = result.paymentUrl;
+  //     } else if (result.message) {
+  //       showToast(result.message, 'info');
+  //     } else {
+  //       showToast('Ссылка на оплату недоступна', 'info');
+  //     }
+  //   } catch (e) {
+  //     console.error('Subscription payment error', e);
+  //     showToast('Не удалось начать оплату подписки', 'error');
+  //   } finally {
+  //     setSubscriptionActionLoading(false);
+  //   }
+  // };
 
-  const handleCancelSubscription = async () => {
-    setSubscriptionActionLoading(true);
-    try {
-      const success = await subscriptionService.cancelSubscription();
-      if (success) {
-        showToast('Подписка отменена', 'success');
-        await loadSubscription();
-      } else {
-        showToast('Не удалось отменить подписку', 'error');
-      }
-    } finally {
-      setSubscriptionActionLoading(false);
-    }
-  };
+  // const handleCancelSubscription = async () => {
+  //   setSubscriptionActionLoading(true);
+  //   try {
+  //     const success = await subscriptionService.cancelSubscription();
+  //     if (success) {
+  //       showToast('Подписка отменена', 'success');
+  //       await loadSubscription();
+  //     } else {
+  //       showToast('Не удалось отменить подписку', 'error');
+  //     }
+  //   } finally {
+  //     setSubscriptionActionLoading(false);
+  //   }
+  // };
 
   const handleCancelBooking = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -691,7 +696,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 </div>
               )}
 
-              <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
+              {/* Временно скрыто: AI-подписка */}
+              {/* <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-xl font-serif text-brand-text">AI-подписка</h3>
@@ -771,7 +777,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                     )}
                   </>
                 )}
-              </div>
+              </div> */}
 
               <div className="flex flex-col items-center mb-8 relative">
                 <div
