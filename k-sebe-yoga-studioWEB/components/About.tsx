@@ -82,6 +82,12 @@ export const About: React.FC = () => {
 
           <FadeIn delay={600}>
             <div className="mt-10">
+              {/* Временно скрыто: signature.png */}
+              {/* <img
+                src="/signature.png"
+                alt="Signature"
+                className="h-16 opacity-50 mx-auto md:mx-0 mix-blend-multiply"
+              /> */}
               <p className="font-serif italic text-2xl text-brand-green/60 mx-auto md:mx-0">
                 ~ Катя Габран
               </p>
