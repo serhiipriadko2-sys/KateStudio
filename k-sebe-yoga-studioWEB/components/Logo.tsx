@@ -34,13 +34,14 @@ export const Logo: React.FC<LogoProps> = ({
     <div className={`flex flex-col items-center justify-center ${className}`}>
       <img
         src={`${import.meta.env.BASE_URL}images/logo.png`}
+        srcSet={`${import.meta.env.BASE_URL}images/logo.png 1x, ${import.meta.env.BASE_URL}images/logo@2x.png 2x`}
         alt="К себе - Йога Студия"
         className="w-full h-full object-contain"
         style={filter ? { filter } : undefined}
         loading={loading}
         fetchPriority={fetchPriority}
-        width="200"
-        height="260"
+        width="600"
+        height="668"
       />
     </div>
   );
