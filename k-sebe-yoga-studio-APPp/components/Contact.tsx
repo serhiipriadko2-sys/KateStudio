@@ -10,7 +10,6 @@ import {
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { FadeIn } from './FadeIn';
-import { Image } from './Image';
 
 export const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -229,46 +228,44 @@ export const Contact: React.FC = () => {
         {/* Map & Info */}
         <div className="flex flex-col gap-6">
           {/* Map Card */}
-          <div className="flex-1 bg-stone-100 rounded-[3rem] overflow-hidden relative group min-h-[400px]">
+          <div className="flex-1 bg-stone-100 rounded-[3rem] overflow-hidden relative group min-h-[500px]">
             <FadeIn className="h-full w-full">
-              {/* Static Map Image / Placeholder */}
-              <Image
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1200&auto=format&fit=crop"
-                alt="Map Location"
-                storageKey="contact-map-bg"
-                containerClassName="absolute inset-0 w-full h-full"
-                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+              {/* Яндекс.Карты iframe */}
+              <iframe
+                src="https://yandex.ru/map-widget/v1/?ll=37.141690%2C56.732390&mode=search&ol=geo&ouri=ymapsbm1%3A%2F%2Fgeo%3Fdata%3DCgg1MzkwNzQ0NhI_0KDQvtGB0YHQuNGPLCDQnNC-0YHQutC-0LLRgdC60LDRjyDQvtCx0LvQsNGB0YLRjCwg0JTRg9Cx0L3QsCIKDYClTEIV1CJjQg%2C%2C&z=16"
+                className="w-full h-full border-0"
+                allowFullScreen
+                style={{ position: 'relative' }}
+                title="Яндекс.Карты - Студия К Себе"
               />
 
-              <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors pointer-events-none"></div>
+              {/* Затемнение при ховере */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none group-hover:from-black/40 transition-all"></div>
 
-              {/* Overlay Pin */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="relative">
-                  <div className="w-4 h-4 bg-brand-green rounded-full animate-ping absolute top-0 left-0"></div>
-                  <div className="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center text-brand-green relative z-10">
-                    <MapPin className="w-8 h-8" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Actions */}
-              <div className="absolute bottom-8 left-8 right-8">
+              {/* Карточка с адресом внизу */}
+              <div className="absolute bottom-6 left-6 right-6 z-10">
                 <a
                   href="https://yandex.ru/navi/org/k_sebe/7167334007"
                   target="_blank"
                   rel="noreferrer"
-                  className="block w-full bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all group/card"
+                  className="block bg-white rounded-2xl p-5 shadow-2xl hover:shadow-3xl hover:scale-[1.02] transition-all group/card"
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-stone-400 uppercase tracking-wider font-bold mb-1">
-                        Студия К Себе
-                      </p>
-                      <p className="text-brand-text font-serif text-xl">Станционная ул., 5Б</p>
-                      <p className="text-xs text-stone-400 mt-1">г. Дубна, этаж 2</p>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="w-10 h-10 bg-brand-green/10 rounded-full flex items-center justify-center shrink-0">
+                        <MapPin className="w-5 h-5 text-brand-green" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-stone-400 uppercase tracking-wider font-bold mb-0.5">
+                          Студия К Себе
+                        </p>
+                        <p className="text-brand-text font-serif text-lg font-medium">
+                          Станционная ул., 5Б
+                        </p>
+                        <p className="text-xs text-stone-500 mt-0.5">г. Дубна, этаж 2</p>
+                      </div>
                     </div>
-                    <div className="w-12 h-12 bg-brand-green text-white rounded-full flex items-center justify-center group-hover/card:scale-110 transition-transform">
+                    <div className="w-11 h-11 bg-brand-green text-white rounded-full flex items-center justify-center group-hover/card:scale-110 group-hover/card:rotate-12 transition-all shadow-md">
                       <Navigation className="w-5 h-5" />
                     </div>
                   </div>
