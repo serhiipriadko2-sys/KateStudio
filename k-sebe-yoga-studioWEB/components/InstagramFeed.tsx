@@ -5,26 +5,39 @@ import { FadeIn } from './FadeIn';
 const INSTAGRAM_USERNAME = 'kate_gabran';
 const INSTAGRAM_URL = `https://instagram.com/${INSTAGRAM_USERNAME}`;
 
-// SnapWidget embed ID - get yours at https://snapwidget.com
-// 1. Go to snapwidget.com → Create Free Widget
-// 2. Enter @kate_gabran, customize layout
-// 3. Copy the widget ID from embed code
-const SNAPWIDGET_ID = ''; // e.g., '1082085'
+// Elfsight Widget ID - get yours at https://elfsight.com/instagram-feed-instashow/
+// 1. Go to elfsight.com → Sign up (free plan available)
+// 2. Create "Instagram Feed" widget
+// 3. Connect @kate_gabran account
+// 4. Customize: Grid layout, 6-9 posts, hover effects
+// 5. Copy Widget ID from installation code
+const ELFSIGHT_WIDGET_ID = ''; // e.g., 'xxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
 
 export const InstagramFeed: React.FC = () => {
   const widgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Load SnapWidget script if widget ID is configured
-    if (SNAPWIDGET_ID && widgetRef.current) {
-      const script = document.createElement('script');
-      script.src = 'https://snapwidget.com/js/snapwidget.js';
-      script.async = true;
-      document.body.appendChild(script);
+    // Load Elfsight platform script if widget ID is configured
+    if (ELFSIGHT_WIDGET_ID && widgetRef.current) {
+      // Check if script already exists to avoid duplicates
+      const existingScript = document.querySelector(
+        'script[src="https://static.elfsight.com/platform/platform.js"]'
+      );
 
-      return () => {
-        document.body.removeChild(script);
-      };
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://static.elfsight.com/platform/platform.js';
+        script.async = true;
+        script.defer = true;
+        document.body.appendChild(script);
+
+        return () => {
+          // Only remove if script exists
+          if (script.parentNode) {
+            document.body.removeChild(script);
+          }
+        };
+      }
     }
   }, []);
 
@@ -35,9 +48,7 @@ export const InstagramFeed: React.FC = () => {
           <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">
             Instagram
           </h4>
-          <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">
-            Следите за нами
-          </h2>
+          <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Следите за нами</h2>
         </FadeIn>
 
         <FadeIn delay={200} direction="left">
@@ -54,19 +65,14 @@ export const InstagramFeed: React.FC = () => {
         </FadeIn>
       </div>
 
-      {/* SnapWidget Instagram Feed */}
+      {/* Elfsight Instagram Feed */}
       <FadeIn delay={300}>
         <div ref={widgetRef} className="flex justify-center">
-          {SNAPWIDGET_ID ? (
-            // SnapWidget embed
-            <iframe
-              src={`https://snapwidget.com/embed/${SNAPWIDGET_ID}`}
-              className="snapwidget-widget w-full max-w-4xl"
-              style={{ border: 'none', overflow: 'hidden', height: '400px' }}
-              allowTransparency
-              frameBorder="0"
-              scrolling="no"
-              title="Instagram Feed"
+          {ELFSIGHT_WIDGET_ID ? (
+            // Elfsight embed with lazy loading
+            <div
+              className={`elfsight-app-${ELFSIGHT_WIDGET_ID} w-full max-w-4xl`}
+              data-elfsight-app-lazy
             />
           ) : (
             // Fallback: Beautiful CTA card when widget not configured
@@ -80,11 +86,10 @@ export const InstagramFeed: React.FC = () => {
                 <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Instagram className="w-10 h-10 text-white" />
                 </div>
-                <h3 className="text-2xl font-serif text-brand-text mb-3">
-                  @{INSTAGRAM_USERNAME}
-                </h3>
+                <h3 className="text-2xl font-serif text-brand-text mb-3">@{INSTAGRAM_USERNAME}</h3>
                 <p className="text-stone-500 mb-6 max-w-md mx-auto">
-                  Фото и видео из студии, анонсы занятий, полезные советы по йоге и здоровому образу жизни
+                  Фото и видео из студии, анонсы занятий, полезные советы по йоге и здоровому образу
+                  жизни
                 </p>
                 <span className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white rounded-full font-medium group-hover:gap-4 transition-all duration-300">
                   Подписаться
@@ -99,9 +104,7 @@ export const InstagramFeed: React.FC = () => {
       {/* CTA */}
       <FadeIn delay={500}>
         <div className="mt-12 text-center">
-          <p className="text-stone-500">
-            Больше фото, видео и историй из жизни студии
-          </p>
+          <p className="text-stone-500">Больше фото, видео и историй из жизни студии</p>
         </div>
       </FadeIn>
     </section>
