@@ -232,7 +232,7 @@ export const Contact: React.FC = () => {
             <FadeIn className="h-full w-full">
               {/* Яндекс.Карты iframe */}
               <iframe
-                src="https://yandex.ru/map-widget/v1/?ll=37.1534%2C56.7327&mode=search&oid=7167334007&ol=biz&z=17"
+                src="https://yandex.ru/map-widget/v1/?ll=37.121500%2C56.742200&mode=search&oid=7167334007&ol=biz&z=17"
                 className="w-full h-full border-0"
                 allowFullScreen
                 style={{ position: 'relative' }}
