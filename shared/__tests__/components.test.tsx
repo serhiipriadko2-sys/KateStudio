@@ -32,14 +32,15 @@ describe('Shared Components', () => {
   });
 
   describe('Logo', () => {
-    it('should render SVG logo', () => {
-      const { container } = render(<Logo />);
-      expect(container.querySelector('svg')).toBeInTheDocument();
+    it('should render image logo', () => {
+      render(<Logo />);
+      expect(screen.getByAltText('К себе - Йога Студия')).toBeInTheDocument();
+      expect(screen.getByRole('img')).toHaveAttribute('src', expect.stringContaining('logo.png'));
     });
 
     it('should accept custom className', () => {
-      const { container } = render(<Logo className="w-24 h-24" />);
-      expect(container.querySelector('svg')).toHaveClass('w-24', 'h-24');
+      render(<Logo className="w-24 h-24" />);
+      expect(screen.getByRole('img')).toHaveClass('w-24', 'h-24');
     });
   });
 

@@ -1,478 +1,71 @@
-# K Sebe Yoga Studio | InsideFlow Ecosystem
+# K Sebe Yoga Studio Ecosystem
 
-[![CI](https://github.com/serhiipriadko2-sys/KateStudio/actions/workflows/ci.yml/badge.svg)](https://github.com/serhiipriadko2-sys/KateStudio/actions/workflows/ci.yml)
-[![Deploy](https://github.com/serhiipriadko2-sys/KateStudio/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/serhiipriadko2-sys/KateStudio/actions/workflows/deploy-pages.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19.2-61dafb.svg)](https://react.dev/)
-[![Node](https://img.shields.io/badge/Node-%3E%3D18-339933.svg)](https://nodejs.org/)
+## Overview
 
-> **"Йога — это не про то, чтобы дотянуться руками до пальцев ног, а про то, что
-> мы узнаем на пути вниз"**
+This is a Monorepo containing the digital ecosystem for "K Sebe" Yoga Studio. It consists of a Web Application (Landing & Booking), a Mobile-first Web App (PWA), and a Shared Codebase.
 
-Экосистема для йога-студии **"К себе"** (Катя Габран) — веб-сайт, PWA-приложение
-и общая библиотека компонентов в стиле Inside Flow.
+### Structure
 
----
+- **`k-sebe-yoga-studioWEB/`**: Main website (Landing Page, Schedule, Booking). Built with Vite + React.
+- **`k-sebe-yoga-studio-APPp/`**: Mobile/PWA Application (User Dashboard, AI Coach, Video Library). Built with Vite + React.
+- **`shared/`**: Shared UI components, hooks, services, and utilities used by both applications.
+- **`supabase/`**: Backend configuration, Edge Functions (Payment, Webhooks).
+- **`raw_assets/`**: Collection of raw design assets (images, screenshots) used for development.
 
-## Возможности
+## Getting Started
 
-- **AI-коуч Aria** — персональный ассистент на базе Google Gemini
-- **Анализ асан** — компьютерное зрение для оценки техники
-- **Видеотека** — Inside Flow классы и уроки
-- **Расписание** — бронирование занятий в реальном времени
-- **Дыхательные практики** — квадратное дыхание и пранаяма
-- **Блог** — статьи о йоге, осознанности и здоровье
-
----
-
-## Структура проекта
-
-```
-KateStudio/
-├── shared/                    # @ksebe/shared - Общая библиотека
-│   ├── components/           # React компоненты (Pricing, Blog, Breathwork...)
-│   ├── hooks/                # Кастомные хуки (useScrollLock...)
-│   ├── services/             # API сервисы (Supabase)
-│   ├── types/                # TypeScript типы (25+ интерфейсов)
-│   ├── utils/                # Утилиты (cn, formatDate, debounce...)
-│   ├── constants/            # Константы бренда (COLORS, PRICING...)
-│   └── styles/               # Tailwind preset
-│
-├── k-sebe-yoga-studioWEB/    # Веб-сайт (Лендинг)
-├── k-sebe-yoga-studio-APPp/  # PWA Приложение
-│
-├── .github/                  # GitHub конфигурация
-│   ├── workflows/           # CI/CD (lint, build, deploy)
-│   ├── ISSUE_TEMPLATE/      # Шаблоны issues
-│   └── PULL_REQUEST_TEMPLATE.md
-│
-├── .husky/                   # Git hooks (pre-commit)
-├── .eslintrc.cjs             # ESLint конфигурация
-├── .prettierrc               # Prettier конфигурация
-├── tsconfig.json             # TypeScript с path aliases
-└── package.json              # Monorepo workspaces
-```
-
----
-
-## Быстрый старт
-
-### Требования
+### Prerequisites
 
 - Node.js >= 18.0.0
-- npm >= 9.0.0
+- npm
 
-### 1. Клонирование и установка
+### Installation
 
 ```bash
-git clone https://github.com/serhiipriadko2-sys/KateStudio.git
-cd KateStudio
 npm install
 ```
 
-### 2. Настройка окружения
+### Development
+
+You can run the applications independently:
 
 ```bash
-cp .env.example .env
-```
-
-Заполните переменные:
-
-```env
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_GEMINI_API_KEY=your-gemini-key
-```
-
-### 3. Запуск в режиме разработки
-
-```bash
-# Веб-сайт (localhost:5173)
+# Run the Web Portal
 npm run dev:web
 
-# PWA Приложение (localhost:5174)
+# Run the Mobile App
 npm run dev:app
 ```
 
-### 4. Сборка для продакшена
+### Building
+
+To build all applications for production:
 
 ```bash
 npm run build:all
 ```
 
----
+Artifacts will be generated in `k-sebe-yoga-studioWEB/dist` and `k-sebe-yoga-studio-APPp/dist`.
 
-## Технологический стек
+### Testing
 
-| Категория    | Технология        | Версия    |
-| ------------ | ----------------- | --------- |
-| **Frontend** | React             | 19.2      |
-| **Language** | TypeScript        | 5.8       |
-| **Build**    | Vite              | 6.2       |
-| **Backend**  | Supabase          | 2.49      |
-| **AI**       | Google Gemini     | 2.5       |
-| **Styling**  | Tailwind CSS      | 3.x       |
-| **Icons**    | Lucide React      | 0.511     |
-| **Lint**     | ESLint + Prettier | 9.x / 3.x |
-
----
-
-## Использование Shared библиотеки
-
-### Компоненты
-
-```tsx
-import { FadeIn, Logo, Breathwork, Blog, Pricing } from '@ksebe/shared';
-
-// Анимация появления
-<FadeIn delay={200} direction="up">
-  <h1>Привет!</h1>
-</FadeIn>
-
-// Логотип
-<Logo variant="light" className="w-12 h-12" />
-
-// Дыхательная практика
-<Breathwork config={{ inhaleDuration: 4000, ... }} />
-
-// Pricing с unified callback
-<Pricing onBook={(plan, price) => handleBooking(plan)} />
-```
-
-### Хуки
-
-```tsx
-import { useScrollLock } from '@ksebe/shared';
-
-function Modal({ isOpen }) {
-  useScrollLock(isOpen);
-  return isOpen ? <div>Modal content</div> : null;
-}
-```
-
-### Утилиты
-
-```tsx
-import {
-  cn,
-  formatDate,
-  formatPrice,
-  pluralize,
-  debounce,
-  storage,
-} from '@ksebe/shared';
-
-// Классы (как clsx)
-<div className={cn('base', isActive && 'active')} />;
-
-// Форматирование
-formatDate(new Date()); // "13 декабря"
-formatPrice(5200); // "5 200 ₽"
-pluralize(8, ['занятие', 'занятия', 'занятий']); // "8 занятий"
-
-// Debounce
-const debouncedSearch = debounce(search, 300);
-
-// LocalStorage с типизацией
-storage.set('user', { name: 'Катя' });
-const user = storage.get<User>('user');
-```
-
-### Константы
-
-```tsx
-import { COLORS, BRAND, PRICING_PLANS, CONTACT } from '@ksebe/shared';
-
-console.log(COLORS.brandGreen); // "#57a773"
-console.log(BRAND.founder); // "Катя Габран"
-console.log(CONTACT.phone); // "+7 (999) 123-45-67"
-```
-
-### Типы
-
-```tsx
-import type {
-  UserProfile,
-  ClassSession,
-  BookingDetails,
-  ChatMode,
-  AsanaAnalysis,
-  BlogArticle,
-  PriceOption,
-  BreathPhase,
-  // Gamification 2026
-  Achievement,
-  StreakData,
-  WeeklyRecap,
-  // AI Personalization 2026
-  DailyRecommendation,
-  PersonalProgram,
-  OnboardingData,
-  // Notifications 2026
-  NotificationPreferences,
-  PushNotification,
-} from '@ksebe/shared';
-```
-
-### Gamification Components (2026)
-
-```tsx
-import {
-  WeeklyRecap,
-  StreakCalendar,
-  OnboardingQuiz,
-  NotificationPreferences,
-  AchievementsGrid,
-  DailyRecommendation,
-  ProgressSummary,
-} from '@ksebe/shared';
-
-// Weekly progress summary with AI insights
-<WeeklyRecap
-  recap={weeklyData}
-  onShare={() => shareToInstagram()}
-/>
-
-// Streak calendar visualization
-<StreakCalendar
-  practiceData={calendarData}
-  currentStreak={7}
-/>
-
-// Personalization quiz
-<OnboardingQuiz
-  onComplete={(data) => savePreferences(data)}
-  onSkip={() => navigate('/home')}
-/>
-
-// Push notification settings
-<NotificationPreferences
-  preferences={userPrefs}
-  onChange={updatePreferences}
-  isPushEnabled={true}
-/>
-
-// Achievements grid
-<AchievementsGrid
-  achievements={userAchievements}
-  showProgress={true}
-  onSelect={(achievement) => showDetails(achievement)}
-/>
-```
-
-### useAchievements Hook
-
-```tsx
-import { useAchievements } from '@ksebe/shared';
-
-function Profile() {
-  const {
-    achievements,
-    unlockedCount,
-    totalCount,
-    recentUnlock,
-    incrementProgress,
-    clearRecentUnlock,
-  } = useAchievements({
-    onUnlock: (achievement) => showCelebration(achievement),
-  });
-
-  // Track practice completion
-  const onPracticeComplete = () => {
-    incrementProgress('practices_10');
-    incrementProgress('streak_7');
-  };
-
-  return (
-    <div>
-      <p>
-        Achievements: {unlockedCount}/{totalCount}
-      </p>
-      {recentUnlock && (
-        <AchievementUnlockedModal
-          achievement={recentUnlock}
-          onClose={clearRecentUnlock}
-        />
-      )}
-    </div>
-  );
-}
-```
-
----
-
-## Tailwind Preset
-
-Используйте shared дизайн-токены:
-
-```js
-// tailwind.config.js
-module.exports = {
-  presets: [require('@ksebe/shared/styles/tailwind.preset.js')],
-  content: ['./src/**/*.{ts,tsx}'],
-};
-```
-
-### Доступные классы
-
-```html
-<!-- Цвета бренда -->
-<div class="bg-brand-green text-brand-text" />
-<div class="bg-brand-mint border-brand-yellow" />
-
-<!-- Анимации -->
-<div class="animate-fade-in animate-blob animate-float" />
-
-<!-- Утилиты -->
-<div class="scrollbar-hide safe-area-bottom" />
-```
-
----
-
-## Скрипты
-
-| Команда                | Описание                  |
-| ---------------------- | ------------------------- |
-| `npm run dev:web`      | Запуск веб-сайта          |
-| `npm run dev:app`      | Запуск приложения         |
-| `npm run build:all`    | Сборка всех проектов      |
-| `npm run lint`         | Проверка ESLint           |
-| `npm run lint:fix`     | Автоисправление ESLint    |
-| `npm run format`       | Форматирование Prettier   |
-| `npm run format:check` | Проверка форматирования   |
-| `npm run typecheck`    | Проверка типов TypeScript |
-| `npm run test`         | Запуск тестов             |
-| `npm run clean`        | Очистка node_modules      |
-
----
-
-## AI Функционал
-
-### Aria - AI Коуч
-
-| Режим        | Модель           | Описание                 |
-| ------------ | ---------------- | ------------------------ |
-| `chat`       | Gemini 2.5 Flash | Общение с AI-ассистентом |
-| `vision`     | Gemini Vision    | Анализ фото/видео асан   |
-| `meditation` | Gemini + TTS     | Генерация медитаций      |
-| `art`        | Imagen 3         | Арт-терапия              |
-| `program`    | Gemini Pro       | Персональные программы   |
-
-### Пример использования
-
-```tsx
-import { geminiService } from '@app/services/geminiService';
-
-// Чат
-const response = await geminiService.chat(messages, 'yoga');
-
-// Анализ асаны
-const analysis = await geminiService.analyzeAsana(imageBase64);
-
-// Text-to-Speech
-const audioUrl = await geminiService.textToSpeech(text, 'ru');
-```
-
----
-
-## Документация
-
-| Документ                                                           | Описание                               |
-| ------------------------------------------------------------------ | -------------------------------------- |
-| [docs/INDEX.md](./docs/INDEX.md)                                   | Единая точка входа в рабочие документы |
-| [docs/RESEARCH_INSIGHTS_2026.md](./docs/RESEARCH_INSIGHTS_2026.md) | **Исследование трендов 2026** (NEW)    |
-| [docs/DEEP_ANALYSIS_2026.md](./docs/DEEP_ANALYSIS_2026.md)         | Глубокий анализ проекта 2026           |
-| [STRATEGIC_ROADMAP_2026.md](./STRATEGIC_ROADMAP_2026.md)           | Стратегическая дорожная карта 2026     |
-| [ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md)                       | Краткий план действий                  |
-| [ECOSYSTEM_AUDIT.md](./ECOSYSTEM_AUDIT.md)                         | Всеобъемлющий 17-шаговый аудит         |
-| [ROADMAP.md](./ROADMAP.md)                                         | Дорожная карта развития                |
-| [ANALYSIS.md](./ANALYSIS.md)                                       | Технический аудит репозитория          |
-| [CLAUDE.md](./CLAUDE.md)                                           | Инструкции для AI агентов              |
-| [CONTRIBUTING.md](./CONTRIBUTING.md)                               | Руководство для контрибьюторов         |
-| [shared/README.md](./shared/README.md)                             | Документация shared библиотеки         |
-
----
-
-## Структура веток
-
-| Ветка       | Назначение             |
-| ----------- | ---------------------- |
-| `main`      | Продакшен код          |
-| `develop`   | Разработка             |
-| `feature/*` | Новые фичи             |
-| `fix/*`     | Исправления багов      |
-| `claude/*`  | AI-assisted разработка |
-
----
-
-## Деплой
-
-### GitHub Pages (WEB)
-
-Автоматический деплой при пуше в `main`:
-
-```yaml
-# .github/workflows/deploy-pages.yml
-on:
-  push:
-    branches: [main]
-```
-
-### Vercel / Netlify (APP)
+Run the test suite (Vitest):
 
 ```bash
-# Build command
-npm run build:app
-
-# Output directory
-k-sebe-yoga-studio-APPp/dist
+npm run test:coverage
 ```
 
-### Supabase (DB/RLS)
+## Architecture
 
-1. Применить миграции (включая RLS и политики для `profiles`/`bookings`):
-   ```bash
-   supabase db push
-   ```
-2. Проверить, что в базе активированы:
-   - RLS на таблицах `profiles`, `bookings`
-   - политики read/write `auth.uid() = user_id`
-3. Убедиться, что клиент работает через Supabase Auth и отправляет `user_id` в
-   запросах к `profiles`/`bookings` (см.
-   `supabase/migrations/20251227160000_profiles_bookings_user_id_rls.sql`).
+- **State Management**: React Context + Local Storage (Persistence).
+- **Styling**: Tailwind CSS + UnoCSS (in some parts).
+- **Icons**: Lucide React.
+- **Backend**: Supabase (Auth, Database, Edge Functions).
 
----
+## Payment Integration
 
-## Вклад в проект
+The project uses Supabase Edge Functions for payments.
+- `create-payment`: Generates payment links.
+- `payment-webhook`: Handles payment status updates.
 
-Мы приветствуем contributions! См. [CONTRIBUTING.md](./CONTRIBUTING.md).
-
-1. Fork репозитория
-2. Создайте feature branch (`git checkout -b feature/amazing`)
-3. Commit изменения (`git commit -m 'feat: add amazing feature'`)
-4. Push в branch (`git push origin feature/amazing`)
-5. Откройте Pull Request
-
----
-
-## Лицензия
-
-MIT License. См. [LICENSE](./LICENSE).
-
----
-
-## Контакты
-
-- **Студия**: К Себе | Йога Студия
-- **Основатель**: Катя Габран
-- **Адрес**: г. Дубна, Станционная ул., 5Б (этаж 2)
-- **Instagram**: [@kate_gabran](https://instagram.com/kate_gabran)
-- **Telegram**: [@k_sebe_dubna](https://t.me/k_sebe_dubna)
-- **Яндекс Карты**: [К Себе](https://yandex.ru/navi/org/k_sebe/7167334007)
-
----
-
-<p align="center">
-  <strong>С любовью для Кати</strong> ❤️
-</p>
+*Note: Currently, the payment logic relies on a mock URL builder. See `PRODUCTION_ROADMAP.md` for integration details.*
