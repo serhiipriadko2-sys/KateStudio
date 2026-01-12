@@ -19,6 +19,7 @@ export const Contact: React.FC = () => {
   });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [touched, setTouched] = useState<{ name?: boolean; phone?: boolean }>({});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const formatPhoneNumber = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -60,23 +61,24 @@ export const Contact: React.FC = () => {
     }
 
     setStatus('loading');
+    setErrorMessage(null);
 
     try {
-      if (supabase) {
-        const { error } = await supabase.from('contacts').insert([
-          {
-            name: formData.name,
-            phone: formData.phone,
-            message: formData.message,
-            created_at: new Date().toISOString(),
-          },
-        ]);
-
-        if (error) throw error;
-      } else {
-        console.warn('Supabase credentials not found. Simulating submission.');
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+      if (!supabase) {
+        setStatus('error');
+        setErrorMessage('Онлайн-форма недоступна: сервис не настроен.');
+        return;
       }
+      const { error } = await supabase.from('contacts').insert([
+        {
+          name: formData.name,
+          phone: formData.phone,
+          message: formData.message,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+
+      if (error) throw error;
 
       setStatus('success');
       setFormData({ name: '', phone: '', message: '' });
@@ -85,6 +87,7 @@ export const Contact: React.FC = () => {
       setTimeout(() => setStatus('idle'), 5000);
     } catch (error) {
       console.error('Error submitting form:', error);
+      setErrorMessage('Ошибка сервера. Попробуйте позже.');
       setStatus('error');
     }
   };
@@ -196,6 +199,11 @@ export const Contact: React.FC = () => {
                   )}
                   {status === 'idle' && 'Отправить'}
                 </button>
+                {status === 'error' && (
+                  <p className="mt-3 text-xs text-rose-300 text-center">
+                    {errorMessage || 'Ошибка сервера. Попробуйте позже.'}
+                  </p>
+                )}
                 <p className="text-[10px] text-white/20 text-center px-4 pt-4">
                   Нажимая кнопку, вы соглашаетесь с условиями обработки данных
                 </p>
