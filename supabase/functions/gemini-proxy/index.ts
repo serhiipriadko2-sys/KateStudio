@@ -39,7 +39,8 @@ const corsHeaders: HeadersInit = {
 };
 
 type RateBucket = { count: number; resetAt: number };
-const rateBuckets = new Map<string, RateBucket>();
+const kv = await Deno.openKv();
+const RATE_LIMIT_PREFIX = ['gemini-proxy', 'rate'];
 
 type AuthInfo = { kind: 'user'; userId: string } | { kind: 'anon'; key: string };
 type SubscriptionPlan = 'free' | 'premium' | 'vip';
@@ -136,27 +137,41 @@ function getOpCost(op: ProxyRequest['op']): 'cheap' | 'medium' | 'expensive' {
   }
 }
 
-function rateLimit(
+async function rateLimit(
   key: string,
   opts: { limit: number; windowMs: number }
-): { ok: true } | { ok: false; retryAfterSeconds: number } {
+): Promise<{ ok: true } | { ok: false; retryAfterSeconds: number }> {
   const now = Date.now();
+  const kvKey = [...RATE_LIMIT_PREFIX, key] as const;
 
-  const existing = rateBuckets.get(key);
-  if (!existing || now >= existing.resetAt) {
-    rateBuckets.set(key, { count: 1, resetAt: now + opts.windowMs });
-    return { ok: true };
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const existing = await kv.get<RateBucket>(kvKey);
+    const bucket = existing.value;
+
+    if (!bucket || now >= bucket.resetAt) {
+      const resetAt = now + opts.windowMs;
+      await kv.set(kvKey, { count: 1, resetAt }, { expireIn: opts.windowMs });
+      return { ok: true };
+    }
+
+    if (bucket.count >= opts.limit) {
+      return {
+        ok: false,
+        retryAfterSeconds: Math.max(1, Math.ceil((bucket.resetAt - now) / 1000)),
+      };
+    }
+
+    const nextBucket = { count: bucket.count + 1, resetAt: bucket.resetAt };
+    const commit = await kv
+      .atomic()
+      .check(existing)
+      .set(kvKey, nextBucket, { expireIn: bucket.resetAt - now })
+      .commit();
+
+    if (commit.ok) return { ok: true };
   }
 
-  if (existing.count >= opts.limit) {
-    return {
-      ok: false,
-      retryAfterSeconds: Math.max(1, Math.ceil((existing.resetAt - now) / 1000)),
-    };
-  }
-
-  existing.count += 1;
-  return { ok: true };
+  return { ok: false, retryAfterSeconds: 1 };
 }
 
 function json(data: unknown, init: ResponseInit = {}): Response {
@@ -238,8 +253,16 @@ Deno.serve(async (req) => {
 
   const rlKey =
     authInfo.kind === 'user' ? `user:${authInfo.userId}:${cost}` : `${authInfo.key}:${cost}`;
-  const rl = rateLimit(rlKey, { limit, windowMs });
+  const rl = await rateLimit(rlKey, { limit, windowMs });
   if (!rl.ok) {
+    console.warn('gemini-proxy rate limit exceeded', {
+      authKind: authInfo.kind,
+      userId: authInfo.kind === 'user' ? authInfo.userId : undefined,
+      cost,
+      plan: subscriptionPlan,
+      limit,
+      retryAfterSeconds: rl.retryAfterSeconds,
+    });
     return json(
       { error: 'Rate limit exceeded', retryAfterSeconds: rl.retryAfterSeconds },
       { status: 429, headers: { 'retry-after': String(rl.retryAfterSeconds) } }
