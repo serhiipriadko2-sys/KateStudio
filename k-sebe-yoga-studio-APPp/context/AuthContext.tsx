@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
 import { retentionService } from '../services/retentionService';
-import { supabase } from '../services/supabaseClient';
+import { isSupabaseConfigured, supabase } from '../services/supabaseClient';
 import { UserProfile } from '../types';
 
 interface AuthContextType {
@@ -16,7 +16,6 @@ interface AuthContextType {
   authError: string | null;
   authLoading: boolean;
   pendingPhone: string;
-  demoLogin: (name: string) => Promise<void>; // Demo mode without Supabase
   isSupabaseConfigured: boolean;
 }
 
@@ -30,12 +29,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [pendingPhone, setPendingPhone] = useState('');
   const [pendingName, setPendingName] = useState('');
 
-  // Check if Supabase is properly configured
-  const isSupabaseConfigured =
-    !!import.meta.env.VITE_SUPABASE_URL &&
-    !!import.meta.env.VITE_SUPABASE_ANON_KEY &&
-    !import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
-
   useEffect(() => {
     let isMounted = true;
     const loadUser = async () => {
@@ -45,6 +38,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
     loadUser();
+
+    if (!isSupabaseConfigured) {
+      setAuthStatus('anonymous');
+      return () => {
+        isMounted = false;
+      };
+    }
 
     // Keep auth status in sync with Supabase session.
     supabase.auth.getSession().then(({ data }) => {
@@ -88,6 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthError(null);
     setAuthLoading(true);
     try {
+      if (!isSupabaseConfigured) {
+        const message = 'Конфигурация не настроена.';
+        setAuthError(message);
+        setAuthStatus('anonymous');
+        throw new Error('CONFIG_MISSING');
+      }
       const normalizedPhone = phone.startsWith('+') ? phone : `+${phone}`;
       setPendingPhone(normalizedPhone);
       setPendingName(name.trim() || 'Пользователь');
@@ -105,7 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (e) {
       console.error('OTP request failed', e);
       if (!isSupabaseConfigured) {
-        setAuthError('SMS недоступна в демо-режиме. Используйте кнопку «Войти без SMS».');
+        setAuthError('Конфигурация не настроена.');
       } else {
         setAuthError('Не удалось отправить код. Проверьте номер и попробуйте снова.');
       }
@@ -120,6 +126,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthError(null);
     setAuthLoading(true);
     try {
+      if (!isSupabaseConfigured) {
+        const message = 'Конфигурация не настроена.';
+        setAuthError(message);
+        setAuthStatus('anonymous');
+        throw new Error('CONFIG_MISSING');
+      }
       if (!pendingPhone) {
         setAuthError('Сначала запросите код.');
         setAuthStatus('anonymous');
@@ -172,27 +184,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthStatus('anonymous');
   };
 
-  // Demo login without Supabase - creates local-only profile
-  const demoLogin = async (name: string) => {
-    setAuthError(null);
-    setAuthLoading(true);
-    try {
-      const demoId = `demo-${Date.now()}`;
-      const profile = await dataService.registerUser(
-        name.trim() || 'Гость',
-        '+7 000 000-00-00',
-        demoId
-      );
-      setUser(profile);
-      setAuthStatus('authenticated');
-    } catch (e) {
-      console.error('Demo login failed', e);
-      setAuthError('Не удалось создать профиль.');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -207,7 +198,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         authError,
         authLoading,
         pendingPhone,
-        demoLogin,
         isSupabaseConfigured,
       }}
     >

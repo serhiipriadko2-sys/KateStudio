@@ -51,7 +51,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     authError,
     authLoading,
     pendingPhone,
-    demoLogin,
     isSupabaseConfigured,
   } = useAuth();
   const { showToast } = useToast();
@@ -576,6 +575,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                     Подтверди номер — и откроются “дорогие” AI‑функции (анализ/генерации).
                   </p>
 
+                  {!isSupabaseConfigured && (
+                    <div className="mb-4 p-3 bg-amber-50 text-amber-700 rounded-xl text-sm">
+                      Конфигурация не настроена. Авторизация недоступна.
+                    </div>
+                  )}
+
                   {authError && (
                     <div className="mb-4 p-3 bg-rose-50 text-rose-600 rounded-xl text-sm">
                       {authError}
@@ -635,6 +640,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                         value={loginName}
                         onChange={(e) => setLoginName(e.target.value)}
                         placeholder="Имя"
+                        disabled={!isSupabaseConfigured}
                         className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400"
                       />
                       <input
@@ -642,6 +648,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                         onChange={(e) => setLoginPhone(e.target.value)}
                         inputMode="tel"
                         placeholder="Телефон (например: +79001234567)"
+                        disabled={!isSupabaseConfigured}
                         className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400"
                       />
                       <button
@@ -660,7 +667,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                             // error shown in UI
                           }
                         }}
-                        disabled={authLoading}
+                        disabled={authLoading || !isSupabaseConfigured}
                         className="w-full py-4 rounded-2xl bg-brand-green text-white font-medium hover:bg-brand-green/90 transition-colors shadow-lg shadow-brand-green/20 disabled:opacity-70"
                       >
                         {authLoading ? (
@@ -671,26 +678,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                           'Получить код'
                         )}
                       </button>
-
-                      {/* Demo login when Supabase not configured */}
-                      {!isSupabaseConfigured && (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const name = (loginName || 'Гость').trim();
-                            try {
-                              await demoLogin(name);
-                              showToast('Добро пожаловать!', 'success');
-                            } catch {
-                              // error shown in UI
-                            }
-                          }}
-                          disabled={authLoading}
-                          className="w-full py-3 rounded-2xl border-2 border-dashed border-stone-200 text-stone-500 font-medium hover:border-brand-green hover:text-brand-green transition-colors disabled:opacity-70"
-                        >
-                          Войти без SMS (демо)
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>
