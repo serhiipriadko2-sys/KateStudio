@@ -16,6 +16,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [errors, setErrors] = useState<{ name?: boolean; phone?: boolean; privacy?: boolean }>({});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -39,35 +40,42 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
     if (!validate()) return;
 
     setStatus('loading');
+    setErrorMessage(null);
 
     try {
-      if (supabase) {
-        const session = await supabase.auth.getSession();
-        const userId = session.data.session?.user?.id;
-        if (!userId) {
-          throw new Error('AUTH_REQUIRED');
-        }
-        const { error } = await supabase.from('bookings').insert([
-          {
-            user_id: userId,
-            name: name,
-            phone: phone,
-            class_type: details.type,
-            class_date: details.date || null,
-            class_time: details.time || null,
-            location: details.location || null,
-            is_purchase: !isSpecificClass,
-            price: details.price || null,
-            created_at: new Date().toISOString(),
-          },
-        ]);
-        if (error) throw error;
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+      if (!supabase) {
+        setStatus('error');
+        setErrorMessage('Онлайн-запись недоступна: сервис не настроен.');
+        return;
       }
+      const session = await supabase.auth.getSession();
+      const userId = session.data.session?.user?.id;
+      if (!userId) {
+        throw new Error('AUTH_REQUIRED');
+      }
+      const { error } = await supabase.from('bookings').insert([
+        {
+          user_id: userId,
+          name: name,
+          phone: phone,
+          class_type: details.type,
+          class_date: details.date || null,
+          class_time: details.time || null,
+          location: details.location || null,
+          is_purchase: !isSpecificClass,
+          price: details.price || null,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+      if (error) throw error;
       setStatus('success');
     } catch (error) {
       console.error('Booking failed:', error);
+      if (error instanceof Error && error.message === 'AUTH_REQUIRED') {
+        setErrorMessage('Для записи войдите в аккаунт.');
+      } else {
+        setErrorMessage('Ошибка сервера. Попробуйте позже.');
+      }
       setStatus('error');
     }
   };
@@ -84,6 +92,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
     setName('');
     setPhone('');
     setErrors({});
+    setErrorMessage(null);
     onClose();
   };
 
@@ -216,7 +225,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
               {status === 'error' && (
                 <div className="text-xs text-rose-500 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
-                  Ошибка сервера. Попробуйте позже.
+                  {errorMessage || 'Ошибка сервера. Попробуйте позже.'}
                 </div>
               )}
 
