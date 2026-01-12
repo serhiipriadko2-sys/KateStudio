@@ -1,9 +1,29 @@
 # Текущие задачи
 
-Краткая сводка ближайших приоритетов (по **ACTION_PLAN_2026.md** и структуре
-репозитория). Фокус на задачах, которые можно брать в работу прямо сейчас.
+Краткая сводка ближайших приоритетов (по **ACTION_PLAN_2026.md**, **PRODUCTION_READINESS_AUDIT.md** и **REMEDIATION_PLAN.md**). Фокус на задачах, которые можно брать в работу прямо сейчас.
 
-_Обновлено: 5 января 2026._
+_Обновлено: 12 января 2026 (после полного production audit)._
+
+---
+
+## 🚨 КРИТИЧЕСКИЕ БЛОКЕРЫ (P0) - Немедленное внимание!
+
+**Нельзя запускать в продакшн без исправления этих проблем!**
+
+| #   | Задача | Где менять | Время | Статус |
+| --- | ------ | ---------- | ----- | ------ |
+| **1** | **npm install - установить зависимости** | Root | 5 мин | 🔴 |
+| **2** | **Исправить webhook secret (обязательный)** | `supabase/functions/payment-webhook/index.ts:41-46` | 10 мин | 🔴 |
+| **3** | **Убрать subscriptions update RLS policy** | Новая миграция `20260112_fix_subscriptions_rls.sql` | 15 мин | 🔴 |
+| **4** | **Ограничить CORS конкретными доменами** | Все 3 Edge Functions | 15 мин | 🔴 |
+| **5** | **Убрать API key fallback для production** | `vite.config.ts` (WEB+APP) | 20 мин | 🔴 |
+| **6** | **Требовать Service Role Key** | `supabase/functions/create-payment/index.ts:32-34` | 10 мин | 🔴 |
+| **7** | **Создать .env файлы** | Root, WEB, APP | 15 мин | 🔴 |
+| **8** | **Установить GitHub Secrets** | GitHub Settings | 10 мин | 🔴 |
+| **9** | **Заменить 16 Unsplash изображений** | Reviews, Blog, Retreats, VideoLibrary | 2-4 часа | 🔴 |
+
+**Total P0:** ~1.5 часа + контент (2-4 часа)
+**Security Score:** 55 → 85+ после исправления
 
 ## Завершённые задачи
 
@@ -39,37 +59,102 @@ _Обновлено: 5 января 2026._
 | 18  | ✅ Добавить SUBSCRIPTION_PLANS          | `shared/constants/index.ts`         | ✅     |
 | 19  | ✅ Создать COMPREHENSIVE_UPDATE_2026.md | `docs/COMPREHENSIVE_UPDATE_2026.md` | ✅     |
 
-## Следующие задачи (Высокий приоритет)
+## 🟡 Высокий приоритет (P1) - Очень желательно перед запуском
 
-| #   | Задача                                 | Где менять            | Статус |
-| --- | -------------------------------------- | --------------------- | ------ |
-| 20  | Добавить DailyRecommendation компонент | `shared/components/`  | ⏳     |
-| 21  | Добавить AchievementUnlockedModal      | `shared/components/`  | ⏳     |
-| 22  | Добавить WeeklyRecapCard компонент     | `APP/components/`     | ⏳     |
-| 23  | Настроить YooKassa интеграцию          | `supabase/functions/` | ⏳     |
-| 24  | Добавить Sentry для мониторинга ошибок | WEB/APP               | ⏳     |
-| 25  | Увеличить тестовое покрытие до 50%     | `__tests__/`          | ⏳     |
-| 26  | Добавить AuthModal компонент           | `shared/components/`  | ⏳     |
-| 27  | Настроить Push notifications (FCM)     | APP                   | ⏳     |
+**Рекомендуется исправить для качественного запуска**
 
-## Средний приоритет (Q1 2026)
+| #   | Задача | Где менять | Время | Статус |
+| --- | ------ | ---------- | ----- | ------ |
+| 10  | **Input validation (Zod)** | `supabase/functions/gemini-proxy/index.ts` | 2-3 часа | ⏳ |
+| 11  | **Rate limiting в Redis/KV** | `supabase/functions/gemini-proxy/index.ts` | 3-4 часа | ⏳ |
+| 12  | **Webhook signature verification (HMAC)** | `supabase/functions/payment-webhook/index.ts` | 1-2 часа | ⏳ |
+| 13  | **YooKassa интеграция (полная)** | `supabase/functions/create-payment/index.ts` | 1-2 дня | ⏳ |
+| 14  | **Заменить 4 placeholder видео** | `APP/components/VideoLibrary.tsx` | 4-8 часов | ⏳ |
+| 15  | **Интегрировать расписание с Supabase** | `APP/services/dataService.ts` + новая таблица | 1-2 дня | ⏳ |
+| 16  | **Добавить database индексы** | Новая миграция | 30 мин | ⏳ |
+| 17  | **Повысить test coverage до 50%+** | Все `__tests__/` | Ongoing | ⏳ |
+| 18  | **Исправить nullable user_id** | Миграция cleanup | 30 мин | ⏳ |
+| 19  | **Разбить Image.tsx (495 строк)** | `shared/components/Image.tsx` | 2-3 часа | ⏳ |
 
-| #   | Задача                                    | Где менять           | Статус |
-| --- | ----------------------------------------- | -------------------- | ------ |
-| 28  | Enhanced Vision analysis                  | `APP/services/`      | ⏳     |
-| 29  | Voice coaching MVP                        | `APP/components/`    | ⏳     |
-| 30  | Performance optimization (Lighthouse 90+) | WEB/APP              | ⏳     |
-| 31  | Обновить Tailwind до v4                   | `tailwind.config.js` | ⏳     |
+**Total P1:** 1-2 недели
+**Testing Coverage:** 15% → 50%+
+**Payment Integration:** 30% → 90%
 
-> Обновляйте таблицу по мере выполнения: ✅ для сделанных, ⚠️ для в работе, ⏳
-> для запланированных.
+## 🟢 Средний приоритет (P2) - После запуска, но скоро
 
-## Ссылки на документацию
+| #   | Задача | Где менять | Время | Статус |
+| --- | ------ | ---------- | ----- | ------ |
+| 20  | Убрать default exports (8 файлов) | shared/ | 1-2 часа | ⏳ |
+| 21  | Вынести хардкод в константы | Blog, Pricing, Marquee, Breathwork | 2-3 часа | ⏳ |
+| 22  | Оптимизировать изображения (WebP) | Все public/images/ | 1 день | ⏳ |
+| 23  | Реализовать Achievements UI | `shared/components/` | 1-2 дня | ⏳ |
+| 24  | Добавить Veo/Image Edit в Edge proxy | `supabase/functions/gemini-proxy/` | 1 день | ⏳ |
+| 25  | Раскомментировать Subscription UI | `APP/components/Dashboard.tsx` | 2 часа | ⏳ |
+| 26  | Newsletter интеграция (Mailchimp) | `WEB/components/Footer.tsx` + Edge Function | 1 день | ⏳ |
+| 27  | "Все статьи" функционал или убрать | `WEB/components/Blog.tsx` | 3-4 часа | ⏳ |
+| 28  | Logging & Monitoring (Sentry) | WEB/APP | 1 день | ⏳ |
+| 29  | Error recovery & cron jobs | Supabase Edge Functions | 1-2 дня | ⏳ |
+| 30  | Database types generation | `shared/types/database.types.ts` | 1 час | ⏳ |
 
-- **Стратегическая дорожная карта**:
-  [STRATEGIC_ROADMAP_2026.md](./STRATEGIC_ROADMAP_2026.md)
+**Total P2:** 2-4 недели
+
+## 🔵 Низкий приоритет (P3) - Backlog
+
+| #   | Задача | Где менять | Статус |
+| --- | ------ | ---------- | ------ |
+| 31  | Push Notifications (Firebase) | APP | ⏳ |
+| 32  | DailyRecommendation компонент | `shared/components/` | ⏳ |
+| 33  | PersonalProgram 7-day programs | APP | ⏳ |
+| 34  | StreakCalendar visualization | `shared/components/` | ⏳ |
+| 35  | Активировать Retreats секцию | `WEB/App.tsx` | ⏳ |
+| 36  | Активировать AI Subscription | `WEB/App.tsx` | ⏳ |
+| 37  | i18n поддержка | WEB/APP | ⏳ |
+| 38  | Storybook для компонентов | Все компоненты | ⏳ |
+| 39  | Performance optimization (Lighthouse 90+) | WEB/APP | ⏳ |
+| 40  | Analytics integration (Mixpanel/GA) | WEB/APP | ⏳ |
+
+---
+
+## 📚 НОВАЯ ДОКУМЕНТАЦИЯ (январь 2026)
+
+После полного production audit созданы три ключевых документа:
+
+### 🎯 Для быстрого ознакомления:
+- **[AUDIT_EXECUTIVE_SUMMARY.md](./AUDIT_EXECUTIVE_SUMMARY.md)** - краткий обзор (3 минуты чтения)
+
+### 📊 Для детального изучения:
+- **[PRODUCTION_READINESS_AUDIT.md](./PRODUCTION_READINESS_AUDIT.md)** - полный аудит (84 KB, 20 минут чтения)
+- **[REMEDIATION_PLAN.md](./REMEDIATION_PLAN.md)** - план исправлений с кодом (45 KB, 15 минут чтения)
+
+### 📖 Предыдущая документация:
+- **Стратегическая дорожная карта**: [STRATEGIC_ROADMAP_2026.md](./STRATEGIC_ROADMAP_2026.md)
 - **План действий**: [ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md)
-- **Комплексное обновление 2026**:
-  [docs/COMPREHENSIVE_UPDATE_2026.md](./docs/COMPREHENSIVE_UPDATE_2026.md)
-- **Исполнительная дорожная карта**:
-  [docs/ROADMAP_EXECUTION_2026.md](./docs/ROADMAP_EXECUTION_2026.md)
+- **Комплексное обновление 2026**: [docs/COMPREHENSIVE_UPDATE_2026.md](./docs/COMPREHENSIVE_UPDATE_2026.md)
+- **Исполнительная дорожная карта**: [docs/ROADMAP_EXECUTION_2026.md](./docs/ROADMAP_EXECUTION_2026.md)
+
+---
+
+## 📈 PRODUCTION READINESS
+
+**Текущая оценка: 68/100**
+
+| Метрика | Текущее | После P0 | После P1 | Цель |
+|---------|---------|----------|----------|------|
+| Security | 55/100 🔴 | 85/100 🟢 | 90/100 🟢 | 95/100 |
+| Testing | 25/100 🔴 | 25/100 🔴 | 50/100 🟡 | 70/100 |
+| Content | 60/100 🟡 | 95/100 🟢 | 100/100 🟢 | 100/100 |
+| Payment | 30/100 🔴 | 30/100 🔴 | 90/100 🟢 | 100/100 |
+| **OVERALL** | **68/100** | **75/100** | **85/100** | **90/100** |
+
+---
+
+## ⏱️ TIMELINE
+
+- **Week 1 (P0):** Security + Content → 75/100
+- **Week 2-3 (P1):** Backend + Features → 85/100
+- **Week 4-6 (P2):** Polish + Optimization → 90/100
+- **Week 7+ (P3):** Advanced Features (ongoing)
+
+---
+
+> Обновляйте таблицу по мере выполнения: ✅ для сделанных, ⚠️ для в работе, ⏳ для запланированных, 🔴 для блокеров.
