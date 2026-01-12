@@ -1,68 +1,49 @@
-# Production Readiness Report
+# Отчет о готовности к продакшену (Production Readiness Report)
 
-## Status Overview
+## 1. Статус аудита (2026-01-12)
+**Общий статус:** 🟡 Требует доработки (Minor/Major issues)
+**Исправлено:**
+- 🟢 Критическая ошибка "Белый экран" на `ksebe-studio.ru` (исправлен `pathSegmentsToKeep` в `404.html`).
+- 🟢 Зависимости установлены и проверены.
+- 🟢 Тесты проходят (139/139).
 
-**Application:** K Sebe Yoga Studio Ecosystem **Domain:** `ksebe-studio.ru`
-(Verified) **Date:** 2026-01-11
+## 2. Оставшиеся задачи (Roadmap to Production)
 
-## 1. Environment Configuration
+### 🔴 Критические (Blockers)
+1. **Интеграция Оплаты (Payment Integration)**
+   - В данный момент backend (`create-payment`) полагается на переменную окружения `PAYMENT_CHECKOUT_URL`.
+   - **Необходимо:** Реализовать или подтвердить наличие внешнего сервиса чекаута (например, YooKassa), на который ссылается `PAYMENT_CHECKOUT_URL`. Если его нет, нужно реализовать интеграцию с API платежной системы напрямую в Edge Function.
+   - UI Web и App готовы к редиректу на платежный шлюз, но сам шлюз должен быть настроен.
 
-**Critical Action Required:** The following environment variables must be set in
-the production environment (e.g., Vercel, Supabase Edge Functions).
+### 🟡 Высокий приоритет (Content & Assets)
+Требуется замена всех изображений-заглушек (Unsplash) на реальные фото студии и преподавателей.
 
-### Frontend (.env / Vercel)
+#### Список файлов с заглушками:
+**Web (`k-sebe-yoga-studioWEB`):**
+- `components/Reviews.tsx`: 5 изображений (аватары отзывов).
+- `components/Retreats.tsx`: 2 изображения (фото ретритов).
 
-- `VITE_SUPABASE_URL`: (Required) URL of your Supabase project.
-- `VITE_SUPABASE_ANON_KEY`: (Required) Anonymous public key for Supabase.
+**App (`k-sebe-yoga-studio-APPp`):**
+- `components/Blog.tsx`: 3 изображения.
+- `components/Reviews.tsx`: 5 изображений.
+- `components/Dashboard.tsx`: 1 изображение (аватар пользователя/профиля).
+- `components/VideoLibrary.tsx`: 4 изображения (превью видео).
+- `components/Retreats.tsx`: 2 изображения.
+- `App.tsx`: 2 изображения (фоновые/hero).
 
-### Backend (Supabase Edge Functions)
+**Shared (`shared`):**
+- `components/Blog.tsx`: 3 изображения.
 
-- `PAYMENT_CHECKOUT_URL`: (Required) The URL endpoint of your payment provider
-  (e.g., YooKassa checkout generation).
-- `SUPABASE_URL`: (Auto-set in Supabase)
-- `SUPABASE_SERVICE_ROLE_KEY`: (Auto-set in Supabase)
+### 🟢 Низкий приоритет / Polish
+- **Lint Warnings:** В проекте 261 предупреждение линтера (в основном `import/order` и `no-console`). Рекомендуется почистить перед финальным релизом, но не блокирует работу.
+- **Type Safety:** Типизация строгая, ошибок компиляции нет.
 
-## 2. Asset Management
+## 3. Рекомендации по развертыванию
+1. **Переменные окружения:**
+   - Убедитесь, что `PAYMENT_CHECKOUT_URL` установлен в продакшн среде Supabase.
+   - Убедитесь, что `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY` корректны.
+2. **Домен:**
+   - Кастомный домен `ksebe-studio.ru` теперь должен корректно работать с SPA-роутингом.
 
-- **Images:** All critical images (Hero, About, Directions, Gallery) have been
-  migrated from raw assets to the project structure.
-- **Placeholders:** Unsplash placeholders have been replaced with local assets
-  where possible.
-- **Optimization:** Images are served from `public/images/`. Ensure your build
-  process includes these files (Vite does this by default).
-
-## 3. Payment Integration
-
-- **Flow:**
-  1. Client calls `subscriptionService.createPayment`.
-  2. Edge Function `create-payment` constructs a payment URL.
-  3. Client redirects user to this URL.
-- **Provider:** The current implementation is provider-agnostic but requires
-  `PAYMENT_CHECKOUT_URL`.
-- **Next Step:** Implement or configure the actual payment gateway (YooKassa)
-  and set the `PAYMENT_CHECKOUT_URL` to point to it (or to a middleware that
-  handles the YooKassa API request).
-
-## 4. Remaining Tasks for Production
-
-1.  **Set Environment Variables:** Configure the variables listed above in your
-    hosting platform.
-2.  **Payment Gateway:** Finalize the contract with YooKassa and update the
-    `create-payment` function if a direct API call is preferred over a redirect
-    URL construction.
-3.  **Content Review:** Review the blog articles and testimonials. Currently,
-    testimonials use generic images (Unsplash) as no specific photos were
-    provided in `raw_assets`.
-4.  **Analytics:** Ensure Google Analytics or Yandex Metrica ID is configured if
-    needed (currently not hardcoded).
-
-## 5. Deployment
-
-- **Web:** `npm run build:web` -> `dist/`
-- **App:** `npm run build:app` -> `dist/`
-- **Deploy Command:** `vercel deploy` (or similar)
-
-## 6. Verification
-
-- Run `npm run test:run` before every deploy.
-- Check `SUPABASE_URL` connectivity.
+---
+*Отчет составлен автоматически на основе аудита кодовой базы.*
