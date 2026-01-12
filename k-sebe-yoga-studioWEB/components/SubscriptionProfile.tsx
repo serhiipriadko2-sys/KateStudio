@@ -1,7 +1,7 @@
 import { Paywall } from '@ksebe/shared';
 import React, { useEffect, useState } from 'react';
 import { subscriptionService } from '../services/subscriptionService';
-import { supabase } from '../services/supabase';
+import { isSupabaseConfigured, supabase } from '../services/supabase';
 import type { Subscription, SubscriptionPlan, SubscriptionStatus } from '../types';
 
 interface SubscriptionProfileProps {
@@ -26,6 +26,13 @@ export const SubscriptionProfile: React.FC<SubscriptionProfileProps> = ({ onRequ
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
+      if (!supabase) {
+        if (isMounted) {
+          setIsAuthenticated(false);
+          setSubscription(null);
+        }
+        return;
+      }
       const session = await supabase.auth.getSession();
       if (!isMounted) return;
       const hasSession = !!session.data.session;
@@ -41,6 +48,7 @@ export const SubscriptionProfile: React.FC<SubscriptionProfileProps> = ({ onRequ
     };
     load();
 
+    if (!supabase) return () => undefined;
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
       load();
     });
@@ -52,6 +60,10 @@ export const SubscriptionProfile: React.FC<SubscriptionProfileProps> = ({ onRequ
   }, []);
 
   const handleSelectPlan = async (plan: SubscriptionPlan) => {
+    if (!isSupabaseConfigured) {
+      setMessage('Онлайн-подписка недоступна: сервис авторизации не настроен. Проверьте .env.');
+      return;
+    }
     if (!isAuthenticated) {
       onRequestPlan?.(plan);
       return;
@@ -69,7 +81,11 @@ export const SubscriptionProfile: React.FC<SubscriptionProfileProps> = ({ onRequ
       }
     } catch (e) {
       console.error('Payment init error', e);
-      setMessage('Не удалось создать оплату. Попробуйте позже.');
+      if (e instanceof Error && e.message.includes('Supabase not configured')) {
+        setMessage('Онлайн-платежи недоступны: сервис не настроен.');
+      } else {
+        setMessage('Не удалось создать оплату. Попробуйте позже.');
+      }
     } finally {
       setActionLoading(false);
     }
@@ -89,7 +105,12 @@ export const SubscriptionProfile: React.FC<SubscriptionProfileProps> = ({ onRequ
       </div>
 
       <div className="bg-white/90 border border-stone-100 rounded-[2.5rem] p-6 md:p-8 shadow-sm">
-        {isAuthenticated ? (
+        {!isSupabaseConfigured ? (
+          <div className="mb-6 text-sm text-rose-500">
+            Онлайн-сервис подписок не настроен. Добавьте VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY
+            в .env, чтобы включить авторизацию и оплату.
+          </div>
+        ) : isAuthenticated ? (
           <div className="mb-6 text-sm text-stone-500">
             {isLoading ? (
               <span>Загружаем статус подписки…</span>

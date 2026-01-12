@@ -9,6 +9,10 @@ const getSupabaseFunctionUrl = (path: string): string | null => {
 
 export const subscriptionService = {
   async getCurrentSubscription(): Promise<Subscription | null> {
+    if (!supabase) {
+      console.warn('Supabase not configured. Skipping subscription fetch.');
+      return null;
+    }
     const session = await supabase.auth.getSession();
     const userId = session.data.session?.user?.id;
     if (!userId) return null;
@@ -28,6 +32,9 @@ export const subscriptionService = {
   },
 
   async createPayment(plan: SubscriptionPlan, returnUrl?: string) {
+    if (!supabase) {
+      throw new Error('Supabase not configured');
+    }
     const url = getSupabaseFunctionUrl('create-payment');
     if (!url) throw new Error('Supabase not configured');
 
