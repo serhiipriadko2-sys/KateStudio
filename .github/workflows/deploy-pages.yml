@@ -42,8 +42,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          # Set base path for GitHub Pages (use repo name for project sites)
-          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          # Set base path for custom domain (/ for ksebe-studio.ru)
+          VITE_BASE_PATH: /
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
