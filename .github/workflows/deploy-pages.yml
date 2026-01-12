@@ -42,11 +42,14 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          # Set base path for custom domain (/ for ksebe-studio.ru
+          # Set base path for custom domain (/ for ksebe-studio.ru)
           VITE_BASE_PATH: /
 
       - name: Copy CNAME to dist
-        run: cp k-sebe-yoga-studioWEB/public/CNAME k-sebe-yoga-studioWEB/dist/CNAM 
+        run: cp k-sebe-yoga-studioWEB/public/CNAME k-sebe-yoga-studioWEB/dist/CNAME
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: k-sebe-yoga-studioWEB/dist
 

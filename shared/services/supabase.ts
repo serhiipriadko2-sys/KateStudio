@@ -19,10 +19,7 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 // Create singleton client
-export const supabase: SupabaseClient = createClient(
-  supabaseUrl || '',
-  supabaseKey || ''
-);
+export const supabase: SupabaseClient = createClient(supabaseUrl || '', supabaseKey || '');
 
 /**
  * Helper to upload a file to Supabase Storage

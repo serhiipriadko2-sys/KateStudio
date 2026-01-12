@@ -1,6 +1,7 @@
 # K Sebe Yoga Studio Ecosystem
 
-Welcome to the K Sebe Yoga Studio ecosystem monorepo. This repository contains the code for the web platform, mobile PWA, and shared libraries.
+Welcome to the K Sebe Yoga Studio ecosystem monorepo. This repository contains
+the code for the web platform, mobile PWA, and shared libraries.
 
 ## 🌟 Structure
 
@@ -12,33 +13,42 @@ Welcome to the K Sebe Yoga Studio ecosystem monorepo. This repository contains t
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js >= 18
 - npm
 
 ### Installation
+
 ```bash
 npm install
 ```
 
 ### Development
+
 Start the web development server:
+
 ```bash
 npm run dev:web
 ```
 
 Start the app development server:
+
 ```bash
 npm run dev:app
 ```
 
 ### Building
+
 Build all workspaces:
+
 ```bash
 npm run build:all
 ```
 
 ### Testing
+
 Run unit tests:
+
 ```bash
 npm run test:run
 ```
@@ -54,7 +64,9 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ## 📦 Production
 
-See [PRODUCTION_READINESS_REPORT.md](./PRODUCTION_READINESS_REPORT.md) for a detailed checklist before deploying to production.
+See [PRODUCTION_READINESS_REPORT.md](./PRODUCTION_READINESS_REPORT.md) for a
+detailed checklist before deploying to production.
 
 ## 📄 License
+
 MIT
