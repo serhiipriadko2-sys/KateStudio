@@ -16,6 +16,7 @@ vi.mock('../supabaseClient', () => ({
       }),
     },
   },
+  isSupabaseConfigured: true,
 }));
 
 describe('dataService', () => {
