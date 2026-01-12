@@ -3,24 +3,42 @@
  * Configuration is loaded from environment variables.
  * See .env.example for required variables.
  */
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Configuration from environment variables (Vite uses VITE_ prefix)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
+const devMode = import.meta.env.VITE_DEV_MODE === 'true';
+
+const missingConfigMessage =
+  'Supabase configuration missing. Please set VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, and VITE_DEV_MODE.';
+
+export const isSupabaseConfigured =
+  !!supabaseUrl &&
+  !!supabaseKey &&
+  devMode &&
+  /^https?:\/\//.test(supabaseUrl) &&
+  !supabaseUrl.includes('placeholder');
 
 // Validate configuration
-if (!supabaseUrl || !supabaseKey) {
-  console.error(
-    'Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
-  );
+if (!isSupabaseConfigured) {
+  console.error(missingConfigMessage);
 }
 
+const createDisabledClient = (): SupabaseClient =>
+  new Proxy(
+    {},
+    {
+      get() {
+        throw new Error(missingConfigMessage);
+      },
+    }
+  ) as SupabaseClient;
+
 // Create a single supabase client for interacting with your database
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseKey || 'placeholder-key'
-);
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseKey)
+  : createDisabledClient();
 
 /**
  * Helper to upload a file to Supabase Storage

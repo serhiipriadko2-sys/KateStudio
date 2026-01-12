@@ -18,11 +18,8 @@ if (!supabaseUrl || !supabaseKey) {
   );
 }
 
-// Create singleton client (with fallback for missing config to prevent crashes)
-export const supabase: SupabaseClient = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseKey || 'placeholder-key'
-);
+// Create singleton client
+export const supabase: SupabaseClient = createClient(supabaseUrl || '', supabaseKey || '');
 
 /**
  * Helper to upload a file to Supabase Storage

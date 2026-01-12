@@ -119,8 +119,7 @@ export const defaultContent: ContentData = {
       title: 'Как начать медитировать: 5 простых шагов',
       excerpt:
         'Медитация — это не отсутствие мыслей, а умение их наблюдать. Рассказываем, как сделать первые шаги к осознанности без стресса.',
-      image:
-        'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?q=80&w=800&auto=format&fit=crop',
+      image: `${import.meta.env.BASE_URL}images/gallery/gallery-image-1.jpg`, // Using local asset
       date: '12 Авг',
       content: `
       <p>Многие думают, что медитация — это сидеть в позе лотоса и ни о чем не думать. На самом деле, это тренировка ума возвращаться в настоящий момент.</p>
@@ -139,8 +138,7 @@ export const defaultContent: ContentData = {
       title: 'Питание и Йога: что есть до и после?',
       excerpt:
         'Легкость в теле — залог успешной практики. Разбираем идеальный рацион для утренних и вечерних занятий.',
-      image:
-        'https://images.unsplash.com/photo-1511690656952-34342d5c22b0?q=80&w=800&auto=format&fit=crop',
+      image: `${import.meta.env.BASE_URL}images/gallery/gallery-image-2.jpg`, // Using local asset
       date: '08 Авг',
       content: `
       <p>Йога на полный желудок — это испытание. Но и на голодный желудок заниматься сложно из-за слабости.</p>
@@ -157,8 +155,7 @@ export const defaultContent: ContentData = {
       title: 'Inside Flow: Танец твоего сердца',
       excerpt:
         'Почему эта практика покоряет мир? Сочетание современной музыки, ритма и традиционных асан в одном потоке.',
-      image:
-        'https://images.unsplash.com/photo-1508672019048-805c276e7e69?q=80&w=800&auto=format&fit=crop',
+      image: `${import.meta.env.BASE_URL}images/directions/direction-inside-flow.jpg`, // Using local asset
       date: '01 Авг',
       content: `
       <p>Inside Flow — это эволюция виньяса-йоги. Здесь мы движемся в такт современной музыке.</p>

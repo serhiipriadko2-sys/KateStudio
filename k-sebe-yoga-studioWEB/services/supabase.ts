@@ -4,23 +4,22 @@
  * See .env.example for required variables.
  */
 import { createClient } from '@supabase/supabase-js';
+import { getSupabaseConfigFromEnv } from './supabaseConfig';
 
-// Configuration from environment variables (Vite uses VITE_ prefix)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const supabaseConfig = getSupabaseConfigFromEnv(import.meta.env);
 
-// Validate configuration
-if (!supabaseUrl || !supabaseKey) {
+if (!supabaseConfig.isConfigured) {
   console.error(
     'Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
   );
 }
 
+export const isSupabaseConfigured = supabaseConfig.isConfigured;
+
 // Create a single supabase client for interacting with your database
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseKey || 'placeholder-key'
-);
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseConfig.supabaseUrl!, supabaseConfig.supabaseKey!)
+  : null;
 
 /**
  * Helper to upload a file to Supabase Storage
