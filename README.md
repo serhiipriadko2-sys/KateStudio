@@ -1,71 +1,60 @@
 # K Sebe Yoga Studio Ecosystem
 
-## Overview
+Welcome to the K Sebe Yoga Studio ecosystem monorepo. This repository contains the code for the web platform, mobile PWA, and shared libraries.
 
-This is a Monorepo containing the digital ecosystem for "K Sebe" Yoga Studio. It consists of a Web Application (Landing & Booking), a Mobile-first Web App (PWA), and a Shared Codebase.
+## 🌟 Structure
 
-### Structure
+- **`k-sebe-yoga-studioWEB`**: The main web application (React + Vite).
+- **`k-sebe-yoga-studio-APPp`**: The mobile Progressive Web App (PWA).
+- **`shared`**: Shared UI components, hooks, and services.
+- **`supabase`**: Backend logic (Edge Functions, Migrations).
 
-- **`k-sebe-yoga-studioWEB/`**: Main website (Landing Page, Schedule, Booking). Built with Vite + React.
-- **`k-sebe-yoga-studio-APPp/`**: Mobile/PWA Application (User Dashboard, AI Coach, Video Library). Built with Vite + React.
-- **`shared/`**: Shared UI components, hooks, services, and utilities used by both applications.
-- **`supabase/`**: Backend configuration, Edge Functions (Payment, Webhooks).
-- **`raw_assets/`**: Collection of raw design assets (images, screenshots) used for development.
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
-
-- Node.js >= 18.0.0
+- Node.js >= 18
 - npm
 
 ### Installation
-
 ```bash
 npm install
 ```
 
 ### Development
-
-You can run the applications independently:
-
+Start the web development server:
 ```bash
-# Run the Web Portal
 npm run dev:web
+```
 
-# Run the Mobile App
+Start the app development server:
+```bash
 npm run dev:app
 ```
 
 ### Building
-
-To build all applications for production:
-
+Build all workspaces:
 ```bash
 npm run build:all
 ```
 
-Artifacts will be generated in `k-sebe-yoga-studioWEB/dist` and `k-sebe-yoga-studio-APPp/dist`.
-
 ### Testing
-
-Run the test suite (Vitest):
-
+Run unit tests:
 ```bash
-npm run test:coverage
+npm run test:run
 ```
 
-## Architecture
+## 🛠 Configuration
 
-- **State Management**: React Context + Local Storage (Persistence).
-- **Styling**: Tailwind CSS + UnoCSS (in some parts).
-- **Icons**: Lucide React.
-- **Backend**: Supabase (Auth, Database, Edge Functions).
+Create a `.env` file in the root or specific workspace with the following:
 
-## Payment Integration
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-The project uses Supabase Edge Functions for payments.
-- `create-payment`: Generates payment links.
-- `payment-webhook`: Handles payment status updates.
+## 📦 Production
 
-*Note: Currently, the payment logic relies on a mock URL builder. See `PRODUCTION_ROADMAP.md` for integration details.*
+See [PRODUCTION_READINESS_REPORT.md](./PRODUCTION_READINESS_REPORT.md) for a detailed checklist before deploying to production.
+
+## 📄 License
+MIT
