@@ -1,3 +1,4 @@
+import { IMAGES } from '@ksebe/shared';
 import { ArrowRight, Calendar, MapPin, X, Mountain, Coffee, Sun, Moon, Camera } from 'lucide-react';
 import React, { useState } from 'react';
 import { useScrollLock } from '../hooks/useScrollLock';
@@ -83,7 +84,7 @@ export const Retreats: React.FC<RetreatsProps> = ({ onBook }) => {
             >
               {/* High quality Altai/Mountain image */}
               <Image
-                src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop"
+                src={IMAGES.RETREATS.WINTER}
                 alt="Yoga Retreat Altai"
                 storageKey="retreat-cover-main"
                 containerClassName="absolute inset-0 w-full h-full"
@@ -139,7 +140,7 @@ export const Retreats: React.FC<RetreatsProps> = ({ onBook }) => {
             {/* Left/Top Image Panel */}
             <div className="md:w-1/3 h-48 md:h-full relative">
               <Image
-                src="https://images.unsplash.com/photo-1518182170546-0766be6f5a56?q=80&w=800&auto=format&fit=crop"
+                src={IMAGES.RETREATS.BALI}
                 alt="Altai Nature Detail"
                 storageKey="retreat-modal-sidebar"
                 containerClassName="w-full h-full"

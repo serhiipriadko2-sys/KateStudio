@@ -14,31 +14,31 @@ const testimonials = [
   {
     id: 1,
     name: 'Екатерина',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop',
+    image: IMAGES.REVIEWS.USER_1,
     text: 'Самый чуткий, добрый, открытый тренер! Я не встречала ни одного человека, который так любит и горит своей работой! Полная отдача! 🥰',
   },
   {
     id: 2,
     name: 'Анна',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop',
+    image: IMAGES.REVIEWS.USER_2,
     text: 'Я с Катей уже больше года, и за это время я стала намного пластичнее и выносливее. Каждое занятие – это плюс 100 к уверенности.',
   },
   {
     id: 3,
     name: 'Дарья',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
+    image: IMAGES.REVIEWS.USER_3,
     text: 'Если вы, как и я, никогда не занимались йогой, то лучшего тренера не найти! Катя заражает интересом в Inside Flow с первых секунд.',
   },
   {
     id: 4,
     name: 'Марина',
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop',
+    image: IMAGES.REVIEWS.USER_4,
     text: 'Для меня это не просто спорт, это психотерапия. После занятий выходишь обновленной, спокойной и наполненной энергией.',
   },
   {
     id: 5,
     name: 'Ольга',
-    image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop',
+    image: IMAGES.REVIEWS.USER_5,
     text: 'Студия — мое место силы. Прихожу сюда, когда нужно выдохнуть городской ритм и вернуться в тело. Спасибо за эту атмосферу!',
   },
 ];
