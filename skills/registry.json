@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "last_updated": "2026-01-13T12:00:00Z",
+    "version": "1.0.0"
+  },
+  "skills": [
+    {
+      "id": "react_component_test_gen",
+      "path": "skills/test_gen_react.yaml",
+      "enabled": true,
+      "stats": {
+        "success_rate": 0.0,
+        "runs": 0
+      }
+    },
+    {
+      "id": "asset_audit_sentinel",
+      "path": "skills/audit_assets.yaml",
+      "enabled": true,
+      "stats": {
+        "success_rate": 0.0,
+        "runs": 0
+      }
+    }
+  ]
+}
