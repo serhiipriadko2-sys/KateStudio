@@ -8,18 +8,24 @@
 import { createClient, PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 
 // Configuration from environment variables (Vite uses VITE_ prefix)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const envUrl = import.meta.env.VITE_SUPABASE_URL;
+const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate configuration
-if (!supabaseUrl || !supabaseKey) {
-  console.error(
-    'Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
+// Safe initialization values to prevent crashes if env vars are missing
+// This allows the app to load (avoiding white screen) even if unconfigured,
+// though data fetching will fail gracefully.
+const supabaseUrl = envUrl || 'https://placeholder.supabase.co';
+const supabaseKey = envKey || 'placeholder-key';
+
+// Validate configuration (log warning only)
+if (!envUrl || !envKey) {
+  console.warn(
+    'Supabase configuration missing. Using placeholder values to prevent crash. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
   );
 }
 
 // Create singleton client
-export const supabase: SupabaseClient = createClient(supabaseUrl || '', supabaseKey || '');
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
 
 /**
  * Helper to upload a file to Supabase Storage
@@ -30,7 +36,7 @@ export const uploadFile = async (
   bucket: string,
   path: string
 ): Promise<string | null> => {
-  if (!supabase) return null;
+  if (!envUrl || !envKey) return null; // Fail early if not configured
 
   try {
     // 1. Try to upload directly
