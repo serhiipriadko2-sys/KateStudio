@@ -21,30 +21,24 @@ export const IMAGES = {
 
   // Retreats & Events
   RETREATS: {
-    WINTER:
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop', // Mountains
+    WINTER: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop', // Mountains
     BALI: 'https://images.unsplash.com/photo-1518182170546-0766be6f5a56?q=80&w=800&auto=format&fit=crop', // Tropical/Yoga
   },
 
   // Blog & Articles
   BLOG: {
-    MINDFULNESS:
-      'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?q=80&w=800&auto=format&fit=crop', // Meditation
-    INSIDE_FLOW:
-      'https://images.unsplash.com/photo-1511690656952-34342d5c22b0?q=80&w=800&auto=format&fit=crop', // Flow/Dance
-    BREATH:
-      'https://images.unsplash.com/photo-1508672019048-805c276e7e69?q=80&w=800&auto=format&fit=crop', // Nature/Breath
+    MINDFULNESS: 'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?q=80&w=800&auto=format&fit=crop', // Meditation
+    INSIDE_FLOW: 'https://images.unsplash.com/photo-1511690656952-34342d5c22b0?q=80&w=800&auto=format&fit=crop', // Flow/Dance
+    BREATH: 'https://images.unsplash.com/photo-1508672019048-805c276e7e69?q=80&w=800&auto=format&fit=crop', // Nature/Breath
   },
 
   // Instructors
   INSTRUCTORS: {
-    KATYA_MAIN:
-      'https://images.unsplash.com/photo-1544367563-12123d8965cd?q=80&w=800&auto=format&fit=crop', // Placeholder for Katya
+    KATYA_MAIN: 'https://images.unsplash.com/photo-1544367563-12123d8965cd?q=80&w=800&auto=format&fit=crop', // Placeholder for Katya
   },
 
   // UI Elements
   PLACEHOLDERS: {
-    VIDEO_THUMB:
-      'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800&auto=format&fit=crop', // Yoga Mat
-  },
+    VIDEO_THUMB: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800&auto=format&fit=crop', // Yoga Mat
+  }
 } as const;

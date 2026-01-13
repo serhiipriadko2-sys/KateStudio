@@ -1,23 +1,23 @@
-skill: 'asset_audit_sentinel'
-version: '1.0.0'
-description: 'Scans for production-readiness issues like placeholder images and lorem ipsum.'
+skill: "asset_audit_sentinel"
+version: "1.0.0"
+description: "Scans for production-readiness issues like placeholder images and lorem ipsum."
 trigger:
-  event: 'push'
-  branches: ['main', 'release/*']
+  event: "push"
+  branches: ["main", "release/*"]
 
 rules:
   forbidden_patterns:
-    - 'unsplash.com/photo-'
-    - 'lorem ipsum'
-    - 'TODO:'
-    - 'FIXME:'
-  severity: 'warning' # or "error" to block merge
+    - "unsplash.com/photo-"
+    - "lorem ipsum"
+    - "TODO:"
+    - "FIXME:"
+  severity: "warning" # or "error" to block merge
 
 actions:
-  - type: 'scan_files'
-    paths: ['src/', 'components/', 'shared/']
-  - type: 'report'
-    format: 'markdown'
-    output: 'AUDIT_REPORT.md'
-  - type: 'notify'
-    channel: 'github_comment'
+  - type: "scan_files"
+    paths: ["src/", "components/", "shared/"]
+  - type: "report"
+    format: "markdown"
+    output: "AUDIT_REPORT.md"
+  - type: "notify"
+    channel: "github_comment"

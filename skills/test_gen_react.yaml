@@ -1,17 +1,17 @@
-skill: 'react_component_test_gen'
-version: '1.0.0'
-description: 'Automatically generates Vitest unit tests for new React components.'
+skill: "react_component_test_gen"
+version: "1.0.0"
+description: "Automatically generates Vitest unit tests for new React components."
 trigger:
-  event: 'pull_request'
-  files: ['**/*.tsx']
-  ignore: ['**/*.test.tsx', '**/index.tsx', '**/types.ts']
+  event: "pull_request"
+  files: ["**/*.tsx"]
+  ignore: ["**/*.test.tsx", "**/index.tsx", "**/types.ts"]
 
 rules:
-  framework: 'vitest'
-  library: '@testing-library/react'
-  style: 'functional'
+  framework: "vitest"
+  library: "@testing-library/react"
+  style: "functional"
   coverage_threshold: 80
-  mocking_strategy: 'shallow'
+  mocking_strategy: "shallow"
 
 prompt_template: |
   You are an expert React QA engineer.
@@ -24,8 +24,8 @@ prompt_template: |
   - Error states if applicable
 
 actions:
-  - type: 'analyze_code'
-  - type: 'generate_file'
-    output_pattern: '{{dir}}/{{name}}.test.tsx'
-  - type: 'run_command'
-    command: 'npm run test:run {{output_file}}'
+  - type: "analyze_code"
+  - type: "generate_file"
+    output_pattern: "{{dir}}/{{name}}.test.tsx"
+  - type: "run_command"
+    command: "npm run test:run {{output_file}}"
