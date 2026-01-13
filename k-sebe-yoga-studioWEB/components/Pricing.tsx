@@ -21,34 +21,21 @@ const yogaSubscriptions: PriceOption[] = [
     title: 'Разовое',
     price: '700 ₽',
     description: 'Для знакомства со студией',
-    features: [
-      '1 посещение любой практики',
-      'Срок действия: 7 дней',
-    ],
+    features: ['1 посещение любой практики', 'Срок действия: 7 дней'],
     isPopular: false,
   },
   {
     title: '4 занятия',
     price: '2 500 ₽',
     description: 'Срок 1 месяц с первого посещения',
-    features: [
-      '625 ₽ за занятие',
-      '4 посещения',
-      'Экономия 300 ₽',
-      'Срок действия: 30 дней',
-    ],
+    features: ['625 ₽ за занятие', '4 посещения', 'Экономия 300 ₽', 'Срок действия: 30 дней'],
     isPopular: false,
   },
   {
     title: '9 занятий',
     price: '5 000 ₽',
     description: 'Срок 1 месяц с первого посещения',
-    features: [
-      '556 ₽ за занятие',
-      '9 посещений',
-      'Экономия 1 300 ₽',
-      'Срок действия: 30 дней',
-    ],
+    features: ['556 ₽ за занятие', '9 посещений', 'Экономия 1 300 ₽', 'Срок действия: 30 дней'],
     isPopular: true,
   },
 ];
@@ -79,11 +66,7 @@ const soundHealing: PriceOption[] = [
     title: 'Групповая сессия',
     price: '1 500 ₽',
     description: 'Саундхилинг в группе',
-    features: [
-      'Глубокая релаксация',
-      'Снятие стресса и тревожности',
-      'Гармонизация энергии',
-    ],
+    features: ['Глубокая релаксация', 'Снятие стресса и тревожности', 'Гармонизация энергии'],
     isPopular: false,
   },
   {
@@ -102,12 +85,7 @@ const soundHealing: PriceOption[] = [
     title: 'Парная',
     price: 'от 3 500 ₽',
     description: 'Сессия для двоих',
-    features: [
-      'Чаши — 3 500 ₽',
-      'Гонг + чаши — 4 000 ₽',
-      '2 человека',
-      'Совместное погружение',
-    ],
+    features: ['Чаши — 3 500 ₽', 'Гонг + чаши — 4 000 ₽', '2 человека', 'Совместное погружение'],
     isPopular: false,
   },
 ];
@@ -150,16 +128,16 @@ interface PricingCardProps {
 const PricingCard: React.FC<PricingCardProps> = ({ option, onBook, delay }) => (
   <FadeIn delay={delay} direction="up" className="h-full">
     <div
-      className={`h-full relative flex flex-col p-8 rounded-[2.5rem] transition-all duration-500 group ${option.isPopular ? 'border-2 border-brand-green shadow-2xl bg-white lg:-mt-4 lg:mb-4 lg:py-10 z-10 hover:shadow-brand-green/20' : ''} ${option.isDark ? 'bg-[#1a1a1a] text-white shadow-xl hover:shadow-2xl hover:shadow-black/20' : !option.isPopular ? 'bg-white border border-stone-100 hover:border-brand-green/30 hover:shadow-xl' : ''}`}
+      className={`h-full relative flex flex-col p-5 md:p-6 rounded-[2rem] transition-all duration-500 group ${option.isPopular ? 'border-2 border-brand-green shadow-2xl bg-white lg:-mt-4 lg:mb-3 lg:py-8 z-10 hover:shadow-brand-green/20' : ''} ${option.isDark ? 'bg-[#1a1a1a] text-white shadow-xl hover:shadow-2xl hover:shadow-black/20' : !option.isPopular ? 'bg-white border border-stone-100 hover:border-brand-green/30 hover:shadow-xl' : ''}`}
     >
       {option.isPopular && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-green text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg flex items-center gap-1">
           <Star className="w-3 h-3 fill-current" /> Рекомендуем
         </div>
       )}
-      <div className="mb-6">
+      <div className="mb-4">
         <h3
-          className={`text-xl font-serif mb-2 group-hover:translate-x-1 transition-transform ${option.isDark ? 'text-white' : 'text-brand-text'}`}
+          className={`text-base md:text-lg font-serif mb-2 group-hover:translate-x-1 transition-transform ${option.isDark ? 'text-white' : 'text-brand-text'}`}
         >
           {option.title}
         </h3>
@@ -167,9 +145,9 @@ const PricingCard: React.FC<PricingCardProps> = ({ option, onBook, delay }) => (
           {option.description}
         </p>
       </div>
-      <div className="mb-8 relative">
+      <div className="mb-5 relative">
         <span
-          className={`text-4xl font-serif tracking-tight ${option.isDark ? 'text-brand-green' : 'text-brand-text'}`}
+          className={`text-2xl md:text-3xl font-serif tracking-tight ${option.isDark ? 'text-brand-green' : 'text-brand-text'}`}
         >
           {option.price}
         </span>
@@ -180,9 +158,9 @@ const PricingCard: React.FC<PricingCardProps> = ({ option, onBook, delay }) => (
           </span>
         )}
       </div>
-      <ul className="space-y-4 mb-10 flex-1">
+      <ul className="space-y-2 mb-6 flex-1">
         {option.features.map((feature, fIdx) => (
-          <li key={fIdx} className="flex items-start gap-3 text-sm group/item">
+          <li key={fIdx} className="flex items-start gap-3 text-xs md:text-sm group/item">
             <div
               className={`mt-0.5 min-w-[16px] transition-transform group-hover/item:scale-110 text-brand-green`}
             >
@@ -198,7 +176,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ option, onBook, delay }) => (
       </ul>
       <button
         onClick={() => onBook(option.title, option.price)}
-        className={`w-full py-4 rounded-xl font-medium transition-all duration-300 text-sm tracking-wide uppercase flex items-center justify-center gap-2 group/btn relative overflow-hidden ${option.isDark ? 'bg-brand-green text-white hover:bg-brand-green/90' : option.isPopular ? 'bg-brand-green text-white hover:bg-brand-green/90 shadow-lg shadow-brand-green/30' : 'bg-stone-50 text-brand-text hover:bg-stone-100 hover:text-brand-green'}`}
+        className={`w-full py-2.5 rounded-xl font-medium transition-all duration-300 text-xs md:text-sm tracking-wide uppercase flex items-center justify-center gap-2 group/btn relative overflow-hidden ${option.isDark ? 'bg-brand-green text-white hover:bg-brand-green/90' : option.isPopular ? 'bg-brand-green text-white hover:bg-brand-green/90 shadow-lg shadow-brand-green/30' : 'bg-stone-50 text-brand-text hover:bg-stone-100 hover:text-brand-green'}`}
       >
         <span className="relative z-10 flex items-center gap-2">
           <span>Записаться</span>
@@ -228,22 +206,22 @@ const PricingSection: React.FC<PricingSectionProps> = ({
   columns = 3,
 }) => {
   const gridCols = {
-    2: 'md:grid-cols-2',
-    3: 'md:grid-cols-2 lg:grid-cols-3',
-    4: 'md:grid-cols-2 lg:grid-cols-4',
+    2: 'sm:grid-cols-2',
+    3: 'sm:grid-cols-2 lg:grid-cols-3',
+    4: 'sm:grid-cols-2 lg:grid-cols-4',
   };
 
   return (
-    <div className="mb-20 last:mb-0">
+    <div className="mb-10 md:mb-12 last:mb-0">
       <FadeIn>
-        <h3 className="text-2xl md:text-3xl font-serif text-brand-text/90 mb-2 text-center">
+        <h3 className="text-xl md:text-2xl font-serif text-brand-text/90 mb-2 text-center">
           {title}
         </h3>
-        {subtitle && (
-          <p className="text-stone-400 text-sm text-center mb-8">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-stone-400 text-sm text-center mb-4 md:mb-6">{subtitle}</p>}
       </FadeIn>
-      <div className={`grid grid-cols-1 ${gridCols[columns]} gap-6 items-stretch mt-8`}>
+      <div
+        className={`grid grid-cols-1 ${gridCols[columns]} gap-3 md:gap-4 items-stretch mt-5 md:mt-6`}
+      >
         {options.map((option, idx) => (
           <PricingCard key={idx} option={option} onBook={onBook} delay={idx * 150} />
         ))}
@@ -254,8 +232,8 @@ const PricingSection: React.FC<PricingSectionProps> = ({
 
 export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
   return (
-    <section id="pricing" className="py-24 px-4 md:px-12 max-w-7xl mx-auto scroll-mt-20">
-      <div className="text-center mb-16">
+    <section id="pricing" className="py-12 md:py-16 px-4 md:px-12 max-w-7xl mx-auto scroll-mt-20">
+      <div className="text-center mb-8 md:mb-10">
         <FadeIn>
           <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">
             Услуги и абонементы

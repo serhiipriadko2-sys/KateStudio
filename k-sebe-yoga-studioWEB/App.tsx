@@ -3,7 +3,6 @@ import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { About } from './components/About';
 import { AdminPanel } from './components/AdminPanel';
-import { Benefits } from './components/Benefits';
 import { BookingModal } from './components/BookingModal';
 import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
@@ -341,7 +340,8 @@ function App() {
         <main id="main-content" tabIndex={-1} className="flex-1">
           <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
           <Marquee />
-          <Benefits />
+          {/* Временно скрыто: блок преимуществ */}
+          {/* <Benefits /> */}
           <About />
           <Philosophy />
           <Directions onBook={(type) => openBooking({ type })} />
