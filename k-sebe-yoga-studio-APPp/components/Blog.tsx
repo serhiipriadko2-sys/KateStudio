@@ -2,8 +2,8 @@
  * Blog Component for APP
  * Mobile-optimized with article reader modal
  */
-import DOMPurify from 'dompurify';
 import { IMAGES } from '@ksebe/shared';
+import DOMPurify from 'dompurify';
 import {
   ArrowRight,
   BookOpen,

@@ -3,7 +3,6 @@
  * Shared across WEB and APP
  */
 import DOMPurify from 'dompurify';
-import { IMAGES } from '@ksebe/shared';
 import {
   ArrowRight,
   BookOpen,
@@ -15,6 +14,7 @@ import {
   Check,
 } from 'lucide-react';
 import React, { useState } from 'react';
+import { IMAGES } from '@ksebe/shared';
 import { BlogArticle } from '../types';
 import { FadeIn } from './FadeIn';
 

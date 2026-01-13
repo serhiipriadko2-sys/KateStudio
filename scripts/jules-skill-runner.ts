@@ -1,7 +1,7 @@
+import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
 
 // Type definitions
 interface SkillConfig {
@@ -52,16 +52,16 @@ function parseSkill(relativePath: string): SkillConfig | null {
   const content = fs.readFileSync(fullPath, 'utf-8');
 
   // Extract key fields using Regex
-  const skillName = content.match(/skill:\s*"(.+)"/)?.[1];
+  const skillName = content.match(/skill:\s*['"](.+)['"]/)?.[1];
   if (!skillName) return null;
 
   // Parse forbidden patterns manually for the audit skill
   const forbiddenPatterns: string[] = [];
-  const patternsMatch = content.match(/forbidden_patterns:\n((?:\s+-\s+".+"\n?)+)/);
+  const patternsMatch = content.match(/forbidden_patterns:\n((?:\s+-\s+['"].+['"]\n?)+)/);
   if (patternsMatch) {
     const lines = patternsMatch[1].split('\n');
-    lines.forEach(line => {
-      const match = line.match(/"(.+)"/);
+    lines.forEach((line) => {
+      const match = line.match(/['"](.+)['"]/);
       if (match) forbiddenPatterns.push(match[1]);
     });
   }
@@ -70,7 +70,7 @@ function parseSkill(relativePath: string): SkillConfig | null {
     skill: skillName,
     trigger: { event: 'prototype_run' },
     rules: { forbidden_patterns: forbiddenPatterns },
-    actions: [{ type: 'scan_files' }]
+    actions: [{ type: 'scan_files' }],
   };
 }
 
@@ -89,20 +89,28 @@ function executeScan(skill: SkillConfig) {
   // Using grep to find patterns recursively
   // Excluding node_modules, dist, .git, and binary files
   // Note: splitting exclude-dir to be safe across different grep versions/shells
-  const excludeDir = "--exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git --exclude-dir=coverage --exclude-dir=skills";
-  const excludeFiles = "--exclude=README.md --exclude=PRODUCTION_READINESS_AUDIT_2026.md --exclude=*.json --exclude=*.lock --exclude=*.yaml";
+  const excludeDir =
+    '--exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git --exclude-dir=coverage --exclude-dir=skills';
+  const excludeFiles =
+    '--exclude=README.md --exclude=PRODUCTION_READINESS_AUDIT_2026.md --exclude=*.json --exclude=*.lock --exclude=*.yaml';
 
-  patterns.forEach(pattern => {
+  patterns.forEach((pattern) => {
     try {
       console.log(`   Scanning for "${pattern}"...`);
       const cmd = `grep -r "${pattern}" . ${excludeDir} ${excludeFiles} --line-number`;
-      const output = execSync(cmd, { cwd: ROOT_DIR, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
+      const output = execSync(cmd, {
+        cwd: ROOT_DIR,
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
 
       if (output.trim()) {
         const lines = output.trim().split('\n');
         console.log(`   ⚠️  Found ${lines.length} occurrences:`);
         // Show first 3 only
-        lines.slice(0, 3).forEach(line => console.log(`      ${line.trim().substring(0, 80)}...`));
+        lines
+          .slice(0, 3)
+          .forEach((line) => console.log(`      ${line.trim().substring(0, 80)}...`));
         if (lines.length > 3) console.log(`      (...and ${lines.length - 3} more)`);
         foundIssues += lines.length;
       }
@@ -126,7 +134,7 @@ function run() {
 
   const registry = loadRegistry();
 
-  registry.skills.forEach(entry => {
+  registry.skills.forEach((entry) => {
     if (!entry.enabled) return;
 
     if (entry.id === 'asset_audit_sentinel') {
