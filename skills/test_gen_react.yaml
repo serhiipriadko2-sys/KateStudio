@@ -1,0 +1,31 @@
+skill: "react_component_test_gen"
+version: "1.0.0"
+description: "Automatically generates Vitest unit tests for new React components."
+trigger:
+  event: "pull_request"
+  files: ["**/*.tsx"]
+  ignore: ["**/*.test.tsx", "**/index.tsx", "**/types.ts"]
+
+rules:
+  framework: "vitest"
+  library: "@testing-library/react"
+  style: "functional"
+  coverage_threshold: 80
+  mocking_strategy: "shallow"
+
+prompt_template: |
+  You are an expert React QA engineer.
+  Analyze the component in {{file_path}}.
+  Generate a unit test file using Vitest and React Testing Library.
+  Ensure the following test cases are covered:
+  - Renders correctly (snapshot or basic element check)
+  - Handles props correctly
+  - User interactions (clicks, inputs) if applicable
+  - Error states if applicable
+
+actions:
+  - type: "analyze_code"
+  - type: "generate_file"
+    output_pattern: "{{dir}}/{{name}}.test.tsx"
+  - type: "run_command"
+    command: "npm run test:run {{output_file}}"
