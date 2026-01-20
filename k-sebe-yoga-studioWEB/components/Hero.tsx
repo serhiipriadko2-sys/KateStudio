@@ -1,3 +1,4 @@
+import { IMAGES } from '@ksebe/shared';
 import { ArrowDown } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
 import { FadeIn } from './FadeIn';
@@ -38,7 +39,7 @@ export const Hero: React.FC<HeroProps> = ({ onBook }) => {
     <section className="relative h-screen min-h-[600px] flex flex-col justify-end pb-24 px-6 md:px-12 overflow-hidden bg-brand-dark rounded-b-6xl shadow-soft">
       <div ref={parallaxRef} className="absolute inset-0 z-0 will-change-transform rounded-b-6xl">
         <Image
-          src={`${import.meta.env.BASE_URL}images/hero/hero-bg.jpg`}
+          src={IMAGES.hero.mainBg}
           alt="Yoga Pose"
           storageKey="hero-main-bg"
           containerClassName="w-full h-[110%] -top-[5%]"

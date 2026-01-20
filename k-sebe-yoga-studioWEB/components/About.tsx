@@ -1,3 +1,4 @@
+import { IMAGES } from '@ksebe/shared';
 import React from 'react';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
@@ -11,7 +12,7 @@ export const About: React.FC = () => {
             <div className="absolute inset-0 bg-brand-mint rounded-[3rem] rotate-3 group-hover:rotate-6 transition-transform duration-500"></div>
             <div className="relative w-full aspect-[3/4] rounded-[3rem] overflow-hidden shadow-xl">
               <Image
-                src={`${import.meta.env.BASE_URL}images/about/katya-portrait.jpg`}
+                src={IMAGES.about.katyaPortrait}
                 alt="Катя Габран"
                 storageKey="about-katya-portrait"
                 containerClassName="w-full h-full"

@@ -757,3 +757,5 @@ export const ARIA_CONFIG = {
     video: 'veo-2.0-generate-001',
   },
 } as const;
+
+export * from './images';
