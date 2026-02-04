@@ -35,9 +35,6 @@ export const InstagramFeed: React.FC = () => {
     <section id="instagram" className="py-24 px-6 md:px-12 max-w-7xl mx-auto scroll-mt-20">
       <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
         <FadeIn>
-          <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">
-            Instagram
-          </h4>
           <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Следите за нами</h2>
         </FadeIn>
 
@@ -60,10 +57,7 @@ export const InstagramFeed: React.FC = () => {
         <div ref={widgetRef} className="flex justify-center">
           {ELFSIGHT_WIDGET_ID ? (
             // Elfsight widget embed
-            <div 
-              className={`elfsight-app-${ELFSIGHT_WIDGET_ID} w-full`}
-              data-elfsight-app-lazy
-            />
+            <div className={`elfsight-app-${ELFSIGHT_WIDGET_ID} w-full`} data-elfsight-app-lazy />
           ) : (
             // Fallback: Beautiful CTA card when widget not configured
             <a

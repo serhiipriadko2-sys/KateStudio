@@ -1,14 +1,5 @@
 import DOMPurify from 'dompurify';
-import {
-  ArrowRight,
-  BookOpen,
-  X,
-  Clock,
-  Calendar as CalendarIcon,
-  User,
-  Share2,
-  Check,
-} from 'lucide-react';
+import { BookOpen, X, Clock, Calendar as CalendarIcon, User, Share2, Check } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { useContentData } from '../hooks/useContentData';
 import { useFocusTrap } from '../hooks/useFocusTrap';
@@ -65,13 +56,6 @@ export const Blog: React.FC = () => {
             Блог
           </h4>
           <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Полезное</h2>
-        </FadeIn>
-
-        <FadeIn delay={200} direction="left">
-          <button className="flex items-center gap-2 text-brand-text hover:text-brand-green transition-colors group">
-            <span className="text-sm font-medium uppercase tracking-wider">Все статьи</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
         </FadeIn>
       </div>
 
