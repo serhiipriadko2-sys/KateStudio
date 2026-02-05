@@ -23,4 +23,17 @@ describe('Pricing', () => {
 
     expect(onBook).toHaveBeenCalledWith('9 занятий', '5 000 ₽');
   });
+
+  it('switches pricing tabs', async () => {
+    const onBook = vi.fn();
+    const user = userEvent.setup();
+
+    render(<Pricing onBook={onBook} />);
+
+    const personalTab = screen.getByRole('button', { name: 'Персональные' });
+    await user.click(personalTab);
+
+    expect(screen.getByText('Персональные тренировки')).toBeInTheDocument();
+    expect(screen.queryByText('Йога-абонементы')).not.toBeInTheDocument();
+  });
 });

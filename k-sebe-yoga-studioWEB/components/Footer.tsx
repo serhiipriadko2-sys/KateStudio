@@ -1,5 +1,5 @@
-import { Instagram, Send, MapPin, Terminal, ArrowRight, Check } from 'lucide-react';
-import React, { useState } from 'react';
+import { Instagram, Send, MapPin, Terminal } from 'lucide-react';
+import React from 'react';
 import { Logo } from './Logo';
 
 interface FooterProps {
@@ -8,25 +8,13 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setSubscribed(true);
-      setEmail('');
-      setTimeout(() => setSubscribed(false), 3000); // Reset after 3s
-    }
-  };
-
   return (
     <footer
       id="footer"
       className="bg-brand-dark text-white pt-20 pb-10 px-6 rounded-t-[3rem] -mt-10 relative z-10"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16 border-b border-white/10 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16 border-b border-white/10 pb-12">
           {/* Brand */}
           <div className="flex flex-col items-start">
             <Logo className="w-20 h-20 mb-6" color="#fff" />
@@ -134,37 +122,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
                 </a>
               </li>
             </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div>
-            <h4 className="text-lg font-serif mb-6 text-brand-green">Новости</h4>
-            <p className="text-sm text-white/50 mb-4 leading-relaxed">
-              Узнавайте первыми о новых ретритах, мастер-классах и изменениях в расписании.
-            </p>
-            <form onSubmit={handleSubscribe} className="relative">
-              <input
-                type="email"
-                placeholder="Ваш email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-12 text-sm text-white focus:outline-none focus:border-brand-green focus:bg-white/10 transition-all placeholder:text-white/20"
-              />
-              <button
-                type="submit"
-                disabled={subscribed}
-                className="absolute right-2 top-2 p-1.5 bg-brand-green rounded-lg text-white hover:bg-white hover:text-brand-green transition-colors disabled:bg-emerald-500 disabled:text-white"
-                aria-label="Subscribe"
-              >
-                {subscribed ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-              </button>
-            </form>
-            {subscribed && (
-              <p className="text-xs text-emerald-400 mt-2 animate-in fade-in">
-                Вы успешно подписались!
-              </p>
-            )}
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 import { Check, Star, ArrowRight } from 'lucide-react';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { FadeIn } from './FadeIn';
 
 interface PricingProps {
@@ -231,6 +231,46 @@ const PricingSection: React.FC<PricingSectionProps> = ({
 };
 
 export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
+  const tabs = useMemo(
+    () => [
+      {
+        id: 'yoga',
+        label: 'Йога-абонементы',
+        title: 'Йога-абонементы',
+        subtitle: 'Групповые занятия',
+        options: yogaSubscriptions,
+        columns: 3,
+      },
+      {
+        id: 'personal',
+        label: 'Персональные',
+        title: 'Персональные тренировки',
+        subtitle: 'Индивидуальный подход',
+        options: personalTraining,
+        columns: 2,
+      },
+      {
+        id: 'sound',
+        label: 'Саундхилинг',
+        title: 'Саундхилинг',
+        subtitle: 'Звукотерапия тибетскими чашами и гонгом',
+        options: soundHealing,
+        columns: 3,
+      },
+      {
+        id: 'massage',
+        label: 'Массаж',
+        title: 'Массаж тибетскими чашами',
+        subtitle: 'Глубокое расслабление через вибрации и звук',
+        options: tibetanMassage,
+        columns: 2,
+      },
+    ],
+    []
+  );
+  const [activeTab, setActiveTab] = useState(tabs[0].id);
+  const activeSection = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
+
   return (
     <section id="pricing" className="py-16 md:py-20 px-4 md:px-12 max-w-7xl mx-auto scroll-mt-20">
       <div className="text-center mb-10 md:mb-14">
@@ -242,40 +282,32 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
         </FadeIn>
       </div>
 
-      {/* Yoga Subscriptions */}
-      <PricingSection
-        title="Йога-абонементы"
-        subtitle="Групповые занятия"
-        options={yogaSubscriptions}
-        onBook={onBook}
-        columns={3}
-      />
+      <FadeIn delay={100}>
+        <div className="flex flex-wrap justify-center gap-3 mb-10">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+                activeTab === tab.id
+                  ? 'bg-brand-green text-white border-brand-green shadow-sm'
+                  : 'bg-white text-brand-text border-stone-200 hover:border-brand-green/40 hover:text-brand-green'
+              }`}
+              aria-pressed={activeTab === tab.id}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </FadeIn>
 
-      {/* Personal Training */}
       <PricingSection
-        title="Персональные тренировки"
-        subtitle="Индивидуальный подход"
-        options={personalTraining}
+        title={activeSection.title}
+        subtitle={activeSection.subtitle}
+        options={activeSection.options}
         onBook={onBook}
-        columns={2}
-      />
-
-      {/* Sound Healing */}
-      <PricingSection
-        title="Саундхилинг"
-        subtitle="Звукотерапия тибетскими чашами и гонгом"
-        options={soundHealing}
-        onBook={onBook}
-        columns={3}
-      />
-
-      {/* Tibetan Bowl Massage */}
-      <PricingSection
-        title="Массаж тибетскими чашами"
-        subtitle="Глубокое расслабление через вибрации и звук"
-        options={tibetanMassage}
-        onBook={onBook}
-        columns={2}
+        columns={activeSection.columns}
       />
     </section>
   );
