@@ -1,7 +1,6 @@
 import { ChevronRight, ChevronLeft, MapPin, Users, Info, Flame } from 'lucide-react';
-import React, { useState } from 'react';
-import { ScheduleTemplate } from '../data/content';
-import { useContentData } from '../hooks/useContentData';
+import React, { useEffect, useMemo, useState } from 'react';
+import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { BookingDetails } from '../types';
 import { FadeIn } from './FadeIn';
 
@@ -9,10 +8,11 @@ interface ScheduleProps {
   onBook: (details: BookingDetails) => void;
 }
 
-// Mock types/data
 type LoadLevel = 'low' | 'medium' | 'high' | 'full' | 'none';
+
 interface ClassSession {
   id: string;
+  dateStr: string;
   time: string;
   name: string;
   instructor: string;
@@ -21,48 +21,143 @@ interface ClassSession {
   spotsBooked: number;
   location: string;
   intensity: 1 | 2 | 3;
+  isOnline: boolean;
 }
-const seededRandom = (seed: number) => {
-  const x = Math.sin(seed++) * 10000;
-  return x - Math.floor(x);
+
+interface ClassRow {
+  id: string;
+  date: string;
+  time: string;
+  name: string;
+  instructor: string | null;
+  duration: string | null;
+  spots_total: number | null;
+  spots_booked: number | null;
+  location: string | null;
+  intensity: number | null;
+  is_online: boolean | null;
+}
+
+const formatDateKey = (date: Date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
-  const { schedule } = useContentData();
   const [activeTab, setActiveTab] = useState<'offline' | 'online'>('offline');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
+  const [classes, setClasses] = useState<ClassSession[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
-  const getLoadLevel = (day: number, tab: 'offline' | 'online'): LoadLevel => {
-    const seed =
-      currentMonth.getFullYear() * 10000 +
-      currentMonth.getMonth() * 100 +
-      day +
-      (tab === 'online' ? 500 : 0);
-    const rand = seededRandom(seed);
-    if (tab === 'online') {
-      if (day % 7 === 0) return 'none';
-      return 'low';
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      setClasses([]);
+      return;
     }
-    if (day % 7 === 0) return 'none';
-    if (rand > 0.85) return 'full';
-    if (rand > 0.6) return 'high';
-    if (rand > 0.3) return 'medium';
-    return 'low';
-  };
 
-  const getClassList = (day: number, tab: 'offline' | 'online'): ClassSession[] => {
-    const baseClasses: ScheduleTemplate[] = tab === 'offline' ? schedule.offline : schedule.online;
-    const baseSeed =
-      currentMonth.getFullYear() * 10000 +
-      currentMonth.getMonth() * 100 +
-      day +
-      (tab === 'online' ? 999 : 0);
-    return baseClasses.map((cls, idx) => {
-      const seed = baseSeed + idx * 13;
-      const spotsBooked = Math.floor(seededRandom(seed) * (cls.spotsTotal + 1));
-      return { ...cls, id: `${day}-${idx}`, instructor: 'Катя Габран', spotsBooked: spotsBooked };
+    let isActive = true;
+    const fetchClasses = async () => {
+      setIsLoading(true);
+      setHasError(false);
+
+      const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+
+      try {
+        const { data, error } = await supabase
+          .from('classes')
+          .select(
+            'id,date,time,name,instructor,duration,spots_total,spots_booked,location,intensity,is_online'
+          )
+          .gte('date', formatDateKey(startDate))
+          .lte('date', formatDateKey(endDate))
+          .eq('is_online', activeTab === 'online')
+          .order('date', { ascending: true })
+          .order('time', { ascending: true });
+
+        if (error) throw error;
+
+        const mapped = (data as ClassRow[] | null)?.map((row) => {
+          const intensityValue = row.intensity ?? 1;
+          const intensity: 1 | 2 | 3 = [1, 2, 3].includes(intensityValue)
+            ? (intensityValue as 1 | 2 | 3)
+            : 1;
+
+          return {
+            id: row.id,
+            dateStr: row.date,
+            time: row.time,
+            name: row.name,
+            instructor: row.instructor ?? 'Катя Габран',
+            duration: row.duration ?? '60 мин',
+            spotsTotal: row.spots_total ?? 0,
+            spotsBooked: row.spots_booked ?? 0,
+            location: row.location ?? (activeTab === 'online' ? 'Online' : 'Станционная ул., 5Б'),
+            intensity,
+            isOnline: row.is_online ?? activeTab === 'online',
+          };
+        });
+
+        if (isActive) {
+          setClasses(mapped ?? []);
+        }
+      } catch (error) {
+        if (isActive) {
+          setHasError(true);
+          setClasses([]);
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchClasses();
+
+    return () => {
+      isActive = false;
+    };
+  }, [currentMonth, activeTab]);
+
+  const classesByDay = useMemo(() => {
+    const map = new Map<number, ClassSession[]>();
+    classes.forEach((cls) => {
+      const day = Number(cls.dateStr.split('-')[2]);
+      if (!map.has(day)) {
+        map.set(day, []);
+      }
+      map.get(day)?.push(cls);
     });
+    return map;
+  }, [classes]);
+
+  const selectedDateKey = useMemo(() => {
+    const date = new Date(currentMonth);
+    date.setDate(selectedDate);
+    return formatDateKey(date);
+  }, [currentMonth, selectedDate]);
+
+  const selectedClasses = useMemo(
+    () => classes.filter((cls) => cls.dateStr === selectedDateKey),
+    [classes, selectedDateKey]
+  );
+
+  const getLoadLevel = (day: number): LoadLevel => {
+    const dayClasses = classesByDay.get(day);
+    if (!dayClasses || dayClasses.length === 0) return 'none';
+    const totalSpots = dayClasses.reduce((sum, cls) => sum + cls.spotsTotal, 0);
+    const bookedSpots = dayClasses.reduce((sum, cls) => sum + cls.spotsBooked, 0);
+    if (totalSpots === 0) return 'none';
+    const ratio = bookedSpots / totalSpots;
+    if (ratio >= 1) return 'full';
+    if (ratio > 0.85) return 'high';
+    if (ratio > 0.6) return 'medium';
+    return 'low';
   };
 
   const changeMonth = (offset: number) => {
@@ -119,7 +214,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
     for (let i = 0; i < startOffset; i++)
       days.push(<div key={`empty-${i}`} className="aspect-square w-full"></div>);
     for (let i = 1; i <= totalDays; i++) {
-      const load = getLoadLevel(i, activeTab);
+      const load = getLoadLevel(i);
       const isSelected = selectedDate === i;
       const isDisabled = load === 'none';
       days.push(
@@ -228,65 +323,112 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
               <span className="text-stone-400 pb-1.5 text-sm md:text-base">Расписание</span>
             </div>
             <div className="space-y-4">
-              {getClassList(selectedDate, activeTab).map((cls, idx) => {
-                const percentage = (cls.spotsBooked / cls.spotsTotal) * 100;
-                const isFull = cls.spotsBooked >= cls.spotsTotal;
-                return (
-                  <FadeIn key={cls.id} delay={300 + idx * 50} direction="up">
-                    <div className="group relative bg-white p-6 rounded-[2rem] border border-stone-100 shadow-sm hover:shadow-lg hover:border-brand-green/30 transition-all duration-300">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="flex items-start gap-6">
-                          <div className="flex flex-col items-center min-w-[60px]">
-                            <span className="text-2xl font-serif text-brand-text">{cls.time}</span>
-                            <span className="text-xs text-stone-400 bg-stone-50 px-2 py-1 rounded-md mt-1 whitespace-nowrap">
-                              {cls.duration}
-                            </span>
-                          </div>
-                          <div className="w-[1px] h-12 bg-stone-100 hidden md:block"></div>
-                          <div>
-                            <h4 className="text-lg font-medium text-brand-text group-hover:text-brand-green transition-colors">
-                              {cls.name}
-                            </h4>
-                            <div className="flex flex-col gap-1 mt-1 text-sm text-stone-500">
-                              <span className="flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5" /> {cls.location}
+              {!isSupabaseConfigured && (
+                <FadeIn delay={300}>
+                  <div className="p-12 text-center bg-stone-50 rounded-[2rem] border-2 border-dashed border-stone-200">
+                    <Info className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+                    <p className="text-stone-500">
+                      Расписание недоступно: проверьте настройки Supabase.
+                    </p>
+                  </div>
+                </FadeIn>
+              )}
+              {isSupabaseConfigured && isLoading && (
+                <FadeIn delay={300}>
+                  <div className="p-12 text-center bg-stone-50 rounded-[2rem] border-2 border-dashed border-stone-200">
+                    <Info className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+                    <p className="text-stone-500">Загружаем расписание...</p>
+                  </div>
+                </FadeIn>
+              )}
+              {isSupabaseConfigured && hasError && !isLoading && (
+                <FadeIn delay={300}>
+                  <div className="p-12 text-center bg-stone-50 rounded-[2rem] border-2 border-dashed border-stone-200">
+                    <Info className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+                    <p className="text-stone-500">
+                      Не удалось загрузить расписание. Попробуйте позже.
+                    </p>
+                  </div>
+                </FadeIn>
+              )}
+              {isSupabaseConfigured &&
+                !isLoading &&
+                !hasError &&
+                selectedClasses.map((cls, idx) => {
+                  const capacity = cls.spotsTotal;
+                  const percentage = capacity > 0 ? (cls.spotsBooked / capacity) * 100 : 0;
+                  const isFull = capacity > 0 && cls.spotsBooked >= capacity;
+                  const isUnavailable = capacity === 0;
+                  return (
+                    <FadeIn key={cls.id} delay={300 + idx * 50} direction="up">
+                      <div className="group relative bg-white p-6 rounded-[2rem] border border-stone-100 shadow-sm hover:shadow-lg hover:border-brand-green/30 transition-all duration-300">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                          <div className="flex items-start gap-6">
+                            <div className="flex flex-col items-center min-w-[60px]">
+                              <span className="text-2xl font-serif text-brand-text">
+                                {cls.time}
                               </span>
-                              <span className="flex items-center gap-1.5">
-                                <Users className="w-3.5 h-3.5" /> {cls.instructor}
+                              <span className="text-xs text-stone-400 bg-stone-50 px-2 py-1 rounded-md mt-1 whitespace-nowrap">
+                                {cls.duration}
                               </span>
                             </div>
-                            {renderIntensity(cls.intensity)}
+                            <div className="w-[1px] h-12 bg-stone-100 hidden md:block"></div>
+                            <div>
+                              <h4 className="text-lg font-medium text-brand-text group-hover:text-brand-green transition-colors">
+                                {cls.name}
+                              </h4>
+                              <div className="flex flex-col gap-1 mt-1 text-sm text-stone-500">
+                                <span className="flex items-center gap-1.5">
+                                  <MapPin className="w-3.5 h-3.5" /> {cls.location}
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                  <Users className="w-3.5 h-3.5" /> {cls.instructor}
+                                </span>
+                              </div>
+                              {renderIntensity(cls.intensity)}
+                            </div>
                           </div>
+                          <div className="flex flex-col min-w-[140px] mt-4 md:mt-0">
+                            <div className="flex justify-between text-xs mb-1.5 font-medium">
+                              <span
+                                className={
+                                  isFull
+                                    ? 'text-rose-500'
+                                    : isUnavailable
+                                      ? 'text-stone-400'
+                                      : 'text-stone-500'
+                                }
+                              >
+                                {isUnavailable
+                                  ? 'Уточнить'
+                                  : isFull
+                                    ? 'Мест нет'
+                                    : `${cls.spotsTotal - cls.spotsBooked} мест`}
+                              </span>
+                              <span className="text-stone-300">
+                                {isUnavailable ? '—' : `${cls.spotsBooked}/${cls.spotsTotal}`}
+                              </span>
+                            </div>
+                            <div className="h-2 w-full bg-stone-100 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${isFull ? 'bg-stone-300' : percentage > 85 ? 'bg-rose-400' : percentage > 50 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                                style={{ width: `${percentage}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => !isFull && !isUnavailable && handleBookingClick(cls)}
+                            disabled={isFull || isUnavailable}
+                            className={`w-full md:w-auto px-6 py-3 rounded-xl font-medium transition-all text-sm whitespace-nowrap mt-4 md:mt-0 ${isFull || isUnavailable ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-mint/50 text-brand-green hover:bg-brand-green hover:text-white'}`}
+                          >
+                            {isUnavailable ? 'Уточнить' : isFull ? 'Лист ожидания' : 'Записаться'}
+                          </button>
                         </div>
-                        <div className="flex flex-col min-w-[140px] mt-4 md:mt-0">
-                          <div className="flex justify-between text-xs mb-1.5 font-medium">
-                            <span className={isFull ? 'text-rose-500' : 'text-stone-500'}>
-                              {isFull ? 'Мест нет' : `${cls.spotsTotal - cls.spotsBooked} мест`}
-                            </span>
-                            <span className="text-stone-300">
-                              {cls.spotsBooked}/{cls.spotsTotal}
-                            </span>
-                          </div>
-                          <div className="h-2 w-full bg-stone-100 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${isFull ? 'bg-stone-300' : percentage > 85 ? 'bg-rose-400' : percentage > 50 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-                              style={{ width: `${percentage}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => !isFull && handleBookingClick(cls)}
-                          disabled={isFull}
-                          className={`w-full md:w-auto px-6 py-3 rounded-xl font-medium transition-all text-sm whitespace-nowrap mt-4 md:mt-0 ${isFull ? 'bg-stone-100 text-stone-400 cursor-not-allowed' : 'bg-brand-mint/50 text-brand-green hover:bg-brand-green hover:text-white'}`}
-                        >
-                          {isFull ? 'Лист ожидания' : 'Записаться'}
-                        </button>
                       </div>
-                    </div>
-                  </FadeIn>
-                );
-              })}
-              {getClassList(selectedDate, activeTab).length === 0 && (
+                    </FadeIn>
+                  );
+                })}
+              {isSupabaseConfigured && !isLoading && !hasError && selectedClasses.length === 0 && (
                 <FadeIn delay={300}>
                   <div className="p-12 text-center bg-stone-50 rounded-[2rem] border-2 border-dashed border-stone-200">
                     <Info className="w-10 h-10 text-stone-300 mx-auto mb-3" />
