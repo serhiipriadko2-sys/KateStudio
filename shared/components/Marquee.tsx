@@ -12,6 +12,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { usePrefersReducedMotion } from '../hooks';
 
 export interface MarqueeConfig {
   inhaleWords?: string[];
@@ -57,6 +58,8 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   const [phase, setPhase] = useState<Phase>('inhale');
   const [inhaleLayerWords, setInhaleLayerWords] = useState<string[]>([]);
   const [exhaleLayerWords, setExhaleLayerWords] = useState<string[]>([]);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const isMinimal = variant === 'minimal';
 
   // Init layer content
   useEffect(() => {
@@ -66,6 +69,10 @@ export const Marquee: React.FC<MarqueeConfig> = ({
 
   // Cycle: refresh words for the *incoming* phase before it fades in
   useEffect(() => {
+    if (prefersReducedMotion) {
+      setPhase('inhale');
+      return () => undefined;
+    }
     const id = window.setInterval(() => {
       setPhase((prev) => {
         const next: Phase = prev === 'inhale' ? 'exhale' : 'inhale';
@@ -83,8 +90,8 @@ export const Marquee: React.FC<MarqueeConfig> = ({
 
   // Animation shorter than full cycle for overlap
   const easing = 'cubic-bezier(0.33,0,0.67,1)';
-  const animMs = Math.max(1400, Math.round(cycleDuration * 0.78));
-  const layerInDelayMs = Math.round(cycleDuration * 0.06);
+  const animMs = prefersReducedMotion ? 0 : Math.max(1400, Math.round(cycleDuration * 0.78));
+  const layerInDelayMs = prefersReducedMotion ? 0 : Math.round(cycleDuration * 0.06);
 
   const fogMask = useMemo(() => {
     // Opaque until ~72%, then soft fade out beyond 100% ("fog edge")
@@ -219,24 +226,59 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   const transitionDuration = `${animMs}ms`;
 
   return (
-    <section className="relative h-40 md:h-48 overflow-hidden flex flex-col justify-center items-center bg-brand-light border-y border-brand-green/5">
-      {/* Gradient Masks */}
-      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-brand-light to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-brand-light to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 left-0 w-12 md:w-32 bg-gradient-to-r from-brand-light via-brand-light/90 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-12 md:w-32 bg-gradient-to-l from-brand-light via-brand-light/90 to-transparent z-10 pointer-events-none" />
+    <section
+      aria-label="Дыхательный поток: вдох и выдох"
+      className="relative h-40 md:h-48 overflow-hidden flex flex-col justify-center items-center bg-brand-light border-y border-brand-green/5"
+    >
+      <p className="sr-only">
+        Анимация дыхания с вдохом и выдохом, где ключевые слова сменяются ритмом практики.
+      </p>
+      {!isMinimal && (
+        <>
+          {/* Gradient Masks */}
+          <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-brand-light to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-brand-light to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 left-0 w-12 md:w-32 bg-gradient-to-r from-brand-light via-brand-light/90 to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-12 md:w-32 bg-gradient-to-l from-brand-light via-brand-light/90 to-transparent z-10 pointer-events-none" />
+        </>
+      )}
 
       {/* Organic Breathing Background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-5xl h-44 bg-brand-mint/25 blur-[110px] rounded-full"
-          style={{
-            transition: `transform ${transitionDuration} ${easing}, opacity ${transitionDuration} ${easing}`,
-            transform: `translate(-50%, -50%) scale(${isInhale ? 1.12 : 0.86})`,
-            opacity: isInhale ? 0.45 : 0.16,
-          }}
-        />
-      </div>
+      {!isMinimal && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-5xl h-44 bg-brand-mint/25 blur-[110px] rounded-full"
+            style={{
+              transition: `transform ${transitionDuration} ${easing}, opacity ${transitionDuration} ${easing}`,
+              transform: `translate(-50%, -50%) scale(${isInhale ? 1.12 : 0.86})`,
+              opacity: isInhale ? 0.45 : 0.16,
+            }}
+          />
+          <div
+            className="absolute top-1/2 left-[18%] -translate-y-1/2 w-48 h-24 bg-brand-green/15 blur-[60px] rounded-full"
+            style={{
+              transition: `transform ${transitionDuration} ${easing}, opacity ${transitionDuration} ${easing}`,
+              transform: `translateY(-50%) scale(${isInhale ? 1.2 : 0.82})`,
+              opacity: isInhale ? 0.3 : 0.12,
+            }}
+          />
+          <div
+            className="absolute top-1/2 right-[16%] -translate-y-1/2 w-56 h-28 bg-brand-yellow/20 blur-[70px] rounded-full"
+            style={{
+              transition: `transform ${transitionDuration} ${easing}, opacity ${transitionDuration} ${easing}`,
+              transform: `translateY(-50%) scale(${isInhale ? 1.18 : 0.8})`,
+              opacity: isInhale ? 0.28 : 0.1,
+            }}
+          />
+          <div
+            className="absolute inset-x-[8%] top-1/2 -translate-y-1/2 h-24 bg-gradient-to-r from-transparent via-brand-green/10 to-transparent blur-[40px]"
+            style={{
+              transition: `opacity ${transitionDuration} ${easing}`,
+              opacity: isInhale ? 0.5 : 0.18,
+            }}
+          />
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="relative w-full h-full flex items-center justify-center select-none overflow-hidden max-w-[1920px] mx-auto">
