@@ -3,11 +3,7 @@ import preset from '../shared/styles/tailwind.preset.js';
 
 export default {
   presets: [preset],
-  content: [
-    './index.html',
-    './**/*.{js,ts,jsx,tsx}',
-    '../shared/**/*.{js,ts,jsx,tsx}',
-  ],
+  content: ['./index.html', './**/*.{js,ts,jsx,tsx}', '../shared/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       // APP-specific overrides (merge with preset)

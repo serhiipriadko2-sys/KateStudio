@@ -22,7 +22,7 @@ describe('Landing Page Components', () => {
     // Since images might be lazy loaded or inside custom components, we look for img tags
     // The avatars are in TestimonialCard
     const images = screen.getAllByRole('img');
-    const avatar = images.find(img => img.getAttribute('src') === IMAGES.reviews.avatars[0]);
+    const avatar = images.find((img) => img.getAttribute('src') === IMAGES.reviews.avatars[0]);
     // Note: If Image component transforms the src, this might fail.
     // But passing local path '/images/...' usually stays as is unless storage logic intervenes.
 
@@ -48,7 +48,7 @@ describe('Landing Page Components', () => {
 
     // Check for images
     const images = screen.getAllByRole('img');
-    const articleImage = images.find(img => img.getAttribute('src') === IMAGES.blog.articles[0]);
+    const articleImage = images.find((img) => img.getAttribute('src') === IMAGES.blog.articles[0]);
     expect(articleImage).toBeInTheDocument();
   });
 });

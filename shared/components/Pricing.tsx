@@ -66,7 +66,12 @@ const soundHealing: PriceOption[] = [
     title: 'Индивидуальная',
     price: 'от 3 000 ₽',
     description: 'Персональная сессия',
-    features: ['Чаши — 3 000 ₽', 'Гонг + чаши — 3 500 ₽', 'Индивидуальный подход', 'Глубокое исцеление'],
+    features: [
+      'Чаши — 3 000 ₽',
+      'Гонг + чаши — 3 500 ₽',
+      'Индивидуальный подход',
+      'Глубокое исцеление',
+    ],
     isPopular: true,
   },
   {
@@ -84,14 +89,24 @@ const tibetanMassage: PriceOption[] = [
     title: 'Индивидуальный',
     price: '3 500 ₽',
     description: 'Массаж тибетскими чашами',
-    features: ['Глубокое расслабление', 'Снятие мышечных зажимов', 'Улучшение сна', 'Энергетический баланс'],
+    features: [
+      'Глубокое расслабление',
+      'Снятие мышечных зажимов',
+      'Улучшение сна',
+      'Энергетический баланс',
+    ],
     isPopular: false,
   },
   {
     title: 'Для двоих',
     price: '6 000 ₽',
     description: 'Массаж для пары',
-    features: ['Совместное расслабление', 'Гармонизация энергии', 'Улучшение кровообращения', 'Медитативное погружение'],
+    features: [
+      'Совместное расслабление',
+      'Гармонизация энергии',
+      'Улучшение кровообращения',
+      'Медитативное погружение',
+    ],
     isPopular: false,
     isDark: true,
   },
@@ -211,9 +226,7 @@ const PricingSectionInner: React.FC<PricingSectionProps> = ({
         <h3 className="text-2xl md:text-3xl font-serif text-brand-text/90 mb-2 text-center">
           {title}
         </h3>
-        {subtitle && (
-          <p className="text-stone-400 text-sm text-center mb-8">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-stone-400 text-sm text-center mb-8">{subtitle}</p>}
       </FadeIn>
       <div className={`grid grid-cols-1 ${gridCols} gap-6 items-stretch mt-8`}>
         {options.map((option, idx) => (

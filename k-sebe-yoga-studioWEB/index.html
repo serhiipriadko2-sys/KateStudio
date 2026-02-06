@@ -62,8 +62,8 @@
         },
         "geo": {
           "@type": "GeoCoordinates",
-          "latitude": 56.742200,
-          "longitude": 37.121500
+          "latitude": 56.7422,
+          "longitude": 37.1215
         },
         "priceRange": "₽₽",
         "openingHoursSpecification": [
@@ -80,26 +80,25 @@
             "closes": "18:00"
           }
         ],
-        "sameAs": [
-          "https://instagram.com/kate_gabran",
-          "https://t.me/k_sebe_dubna"
-        ]
+        "sameAs": ["https://instagram.com/kate_gabran", "https://t.me/k_sebe_dubna"]
       }
     </script>
 
     <!-- SPA Redirect Handler for GitHub Pages -->
     <script type="text/javascript">
       // Handle redirect from 404.html for SPA routing
-      (function(l) {
+      (function (l) {
         if (l.search[1] === '/') {
-          var decoded = l.search.slice(1).split('&').map(function(s) {
-            return s.replace(/~and~/g, '&');
-          }).join('?');
-          window.history.replaceState(null, null,
-            l.pathname.slice(0, -1) + decoded + l.hash
-          );
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) {
+              return s.replace(/~and~/g, '&');
+            })
+            .join('?');
+          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
         }
-      }(window.location));
+      })(window.location);
     </script>
   </head>
   <body class="bg-brand-light text-brand-text antialiased">
