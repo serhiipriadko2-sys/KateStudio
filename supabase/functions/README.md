@@ -5,6 +5,7 @@
 - `gemini-proxy` — серверный прокси для Gemini (ключ хранится в secrets)
 - `create-payment` — создание платежа/подписки
 - `payment-webhook` — webhook обновления статусов подписки
+- `contact-submit` — прием заявок с reCAPTCHA + rate limit (Edge KV)
 
 ## Настройка секретов (обязательно)
 
@@ -15,6 +16,9 @@ supabase secrets set GEMINI_API_KEY="your-gemini-api-key"
 supabase secrets set PAYMENT_CHECKOUT_URL="https://pay.example.com/checkout"
 supabase secrets set PAYMENT_WEBHOOK_SECRET="super-secret"
 supabase secrets set SUPABASE_SERVICE_ROLE_KEY="service-role-key"
+supabase secrets set RECAPTCHA_SECRET_KEY="recaptcha-secret"
+supabase secrets set RECAPTCHA_MIN_SCORE="0.5"
+supabase secrets set ALLOWED_ORIGINS="https://ksebe-studio.ru"
 ```
 
 ## Переменные окружения
@@ -32,6 +36,7 @@ supabase secrets set SUPABASE_SERVICE_ROLE_KEY="service-role-key"
 supabase functions deploy gemini-proxy
 supabase functions deploy create-payment
 supabase functions deploy payment-webhook
+supabase functions deploy contact-submit
 ```
 
 ## Миграции (Sprint 1: user_id + RLS)

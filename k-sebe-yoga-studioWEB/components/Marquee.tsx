@@ -67,24 +67,39 @@ export const Marquee: React.FC = () => {
 
   const renderStrip = (words: string[], label: string, isActive: boolean) => {
     const rotatedWords = getRotatedWords(words);
+    const wordOffsets = [-6, 4, -3, 5];
+    const labelOffsets = [-4, 3, -5, 2];
     return (
       <div
         className={`
-          absolute inset-0 flex items-center justify-center w-full
+          absolute inset-0 flex items-center justify-center w-full relative
           gap-6 sm:gap-12 md:gap-24 px-4
           transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-          ${isActive ? 'opacity-100 blur-0 scale-100 z-10' : 'opacity-0 blur-sm scale-95 z-0'}
+          ${isActive ? 'opacity-100 blur-0 scale-100 z-10' : 'opacity-0 blur-xl scale-105 z-0'}
         `}
         style={{ transitionDuration }}
       >
+        <div
+          className={`
+            absolute inset-0 pointer-events-none transition-all ease-[cubic-bezier(0.33,0,0.67,1)]
+            ${isActive ? 'opacity-70' : 'opacity-0'}
+          `}
+          style={{ transitionDuration }}
+        >
+          <div className="absolute -left-20 top-1/2 h-24 w-1/2 -translate-y-1/2 rounded-full bg-brand-light/70 blur-[40px]" />
+          <div className="absolute right-4 top-1/3 h-16 w-1/3 rounded-full bg-brand-mint/40 blur-[50px]" />
+        </div>
         {/* First Label */}
         <span
           className={`
             text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] text-brand-green/60 shrink-0
             transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-            ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
+            ${isActive ? 'opacity-100' : 'opacity-0'}
           `}
-          style={{ transitionDuration }}
+          style={{
+            transitionDuration,
+            transform: `translateY(${isActive ? labelOffsets[0] : labelOffsets[0] + 6}px)`,
+          }}
         >
           {label}
         </span>
@@ -96,11 +111,12 @@ export const Marquee: React.FC = () => {
               className={`
                 text-xl sm:text-2xl md:text-4xl font-serif text-brand-text/90 whitespace-nowrap shrink-0
                 transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-                ${isActive ? 'tracking-normal opacity-100' : 'tracking-wide opacity-0'}
+                ${isActive ? 'tracking-normal opacity-100 blur-0' : 'tracking-[0.35em] opacity-0 blur-[8px]'}
               `}
               style={{
                 transitionDuration,
-                transitionDelay: isActive ? `${i * 100}ms` : '0ms',
+                transitionDelay: isActive ? `${i * 120}ms` : '0ms',
+                transform: `translateY(${isActive ? wordOffsets[i] : wordOffsets[i] + 8}px)`,
               }}
             >
               {word}
@@ -111,9 +127,16 @@ export const Marquee: React.FC = () => {
               className={`
                 text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] text-brand-green/60 shrink-0
                 transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-                ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
+                ${isActive ? 'opacity-100' : 'opacity-0'}
               `}
-              style={{ transitionDuration }}
+              style={{
+                transitionDuration,
+                transform: `translateY(${
+                  isActive
+                    ? labelOffsets[(i + 1) % labelOffsets.length]
+                    : labelOffsets[(i + 1) % labelOffsets.length] + 6
+                }px)`,
+              }}
             >
               {label}
             </span>

@@ -8,8 +8,58 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { supabase } from '../services/supabase';
+import { submitContactRequest } from '../services/contactService';
 import { FadeIn } from './FadeIn';
+
+declare global {
+  interface Window {
+    grecaptcha?: {
+      ready: (cb: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
+  }
+}
+
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY as string | undefined;
+const RECAPTCHA_SCRIPT_ID = 'recaptcha-v3';
+let recaptchaScriptPromise: Promise<void> | null = null;
+
+const loadRecaptchaScript = (siteKey: string): Promise<void> => {
+  if (recaptchaScriptPromise) return recaptchaScriptPromise;
+  recaptchaScriptPromise = new Promise((resolve, reject) => {
+    if (document.getElementById(RECAPTCHA_SCRIPT_ID)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.id = RECAPTCHA_SCRIPT_ID;
+    script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Не удалось загрузить reCAPTCHA'));
+    document.head.appendChild(script);
+  });
+  return recaptchaScriptPromise;
+};
+
+const getRecaptchaToken = async (action: string): Promise<string> => {
+  if (!RECAPTCHA_SITE_KEY) {
+    throw new Error('Защита от спама не настроена.');
+  }
+  await loadRecaptchaScript(RECAPTCHA_SITE_KEY);
+  if (!window.grecaptcha) {
+    throw new Error('reCAPTCHA недоступна.');
+  }
+  return new Promise((resolve, reject) => {
+    window.grecaptcha?.ready(() => {
+      window.grecaptcha
+        ?.execute(RECAPTCHA_SITE_KEY, { action })
+        .then(resolve)
+        .catch(() => reject(new Error('Не удалось получить токен reCAPTCHA.')));
+    });
+  });
+};
 
 export const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -64,21 +114,13 @@ export const Contact: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      if (!supabase) {
-        setStatus('error');
-        setErrorMessage('Онлайн-форма недоступна: сервис не настроен.');
-        return;
-      }
-      const { error } = await supabase.from('contacts').insert([
-        {
-          name: formData.name,
-          phone: formData.phone,
-          message: formData.message,
-          created_at: new Date().toISOString(),
-        },
-      ]);
-
-      if (error) throw error;
+      const token = await getRecaptchaToken('contact_submit');
+      await submitContactRequest({
+        name: formData.name,
+        phone: formData.phone,
+        message: formData.message,
+        recaptchaToken: token,
+      });
 
       setStatus('success');
       setFormData({ name: '', phone: '', message: '' });
@@ -87,7 +129,7 @@ export const Contact: React.FC = () => {
       setTimeout(() => setStatus('idle'), 5000);
     } catch (error) {
       console.error('Error submitting form:', error);
-      setErrorMessage('Ошибка сервера. Попробуйте позже.');
+      setErrorMessage(error instanceof Error ? error.message : 'Ошибка сервера. Попробуйте позже.');
       setStatus('error');
     }
   };
