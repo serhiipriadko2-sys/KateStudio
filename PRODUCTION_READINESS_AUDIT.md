@@ -1,10 +1,9 @@
 # PRODUCTION READINESS AUDIT - K SEBE YOGA STUDIO
+
 ## Полный аудит готовности к продакшн
 
-**Дата аудита:** 2026-01-12
-**Версия:** 1.0.0
-**Аудитор:** Claude AI (Deep Analysis)
-**Охват:** 100% репозитория
+**Дата аудита:** 2026-01-12 **Версия:** 1.0.0 **Аудитор:** Claude AI (Deep
+Analysis) **Охват:** 100% репозитория
 
 ---
 
@@ -12,16 +11,16 @@
 
 ### Общая оценка готовности: **68/100**
 
-| Категория | Оценка | Статус |
-|-----------|--------|--------|
-| **Security** | 55/100 | 🔴 КРИТИЧНО |
-| **Architecture** | 85/100 | 🟢 ОТЛИЧНО |
-| **Code Quality** | 70/100 | 🟡 ХОРОШО |
-| **Testing** | 25/100 | 🔴 НЕДОСТАТОЧНО |
-| **Documentation** | 75/100 | 🟢 ХОРОШО |
-| **Performance** | 70/100 | 🟡 ХОРОШО |
-| **CI/CD** | 80/100 | 🟢 ОТЛИЧНО |
-| **Content** | 60/100 | 🟡 ТРЕБУЕТ ДОРАБОТКИ |
+| Категория         | Оценка | Статус               |
+| ----------------- | ------ | -------------------- |
+| **Security**      | 55/100 | 🔴 КРИТИЧНО          |
+| **Architecture**  | 85/100 | 🟢 ОТЛИЧНО           |
+| **Code Quality**  | 70/100 | 🟡 ХОРОШО            |
+| **Testing**       | 25/100 | 🔴 НЕДОСТАТОЧНО      |
+| **Documentation** | 75/100 | 🟢 ХОРОШО            |
+| **Performance**   | 70/100 | 🟡 ХОРОШО            |
+| **CI/CD**         | 80/100 | 🟢 ОТЛИЧНО           |
+| **Content**       | 60/100 | 🟡 ТРЕБУЕТ ДОРАБОТКИ |
 
 ### Блокеры запуска в продакшн
 
@@ -67,6 +66,7 @@ KateStudio/ (Monorepo)
 ### Tech Stack
 
 ✅ **Современный и актуальный (2026):**
+
 - React 19.0.0 (latest)
 - TypeScript 5.7.2 (latest)
 - Vite 6.0.5 (latest)
@@ -78,6 +78,7 @@ KateStudio/ (Monorepo)
 ### Оценка архитектуры: **85/100** 🟢
 
 **Сильные стороны:**
+
 - ✅ Правильная monorepo структура с npm workspaces
 - ✅ Разделение на WEB и APP
 - ✅ Shared library для переиспользования
@@ -86,6 +87,7 @@ KateStudio/ (Monorepo)
 - ✅ Path aliases настроены
 
 **Недостатки:**
+
 - ⚠️ Image.tsx - 495 строк (превышает лимит 300)
 - ⚠️ types/index.ts - 466 строк (нужна модуляризация)
 - ⚠️ constants/index.ts - 760 строк (нужна модуляризация)
@@ -99,11 +101,13 @@ KateStudio/ (Monorepo)
 ### 🔴 P0 - КРИТИЧНЫЕ УЯЗВИМОСТИ (исправить немедленно)
 
 #### 1. Webhook Secret - Опциональный!
+
 **Файл:** `/supabase/functions/payment-webhook/index.ts:41-46`
 
 ```typescript
 const secret = Deno.env.get('PAYMENT_WEBHOOK_SECRET');
-if (secret) {  // ⚠️ Если секрет не задан - проверка пропускается!
+if (secret) {
+  // ⚠️ Если секрет не задан - проверка пропускается!
   const signature = req.headers.get('x-webhook-signature');
   if (!signature || signature !== secret) {
     return json({ error: 'Invalid signature' }, { status: 401 });
@@ -111,9 +115,11 @@ if (secret) {  // ⚠️ Если секрет не задан - проверк�
 }
 ```
 
-**Риск:** Любой может отправить webhook и активировать premium подписку без оплаты
+**Риск:** Любой может отправить webhook и активировать premium подписку без
+оплаты
 
 **Решение:**
+
 ```typescript
 const secret = Deno.env.get('PAYMENT_WEBHOOK_SECRET');
 if (!secret) {
@@ -122,6 +128,7 @@ if (!secret) {
 ```
 
 #### 2. Subscription RLS - Пользователь может менять свой план
+
 **Файл:** `/supabase/migrations/20251228120000_subscriptions.sql:18-37`
 
 ```sql
@@ -133,30 +140,36 @@ create policy "subscriptions_update_own"
 ```
 
 **Риск:** Пользователь может через DevTools изменить:
+
 - `plan` с 'free' на 'vip'
 - `status` на 'active'
 - `current_period_end` в будущее
 
-**Решение:** Убрать update policy для клиентов, только Edge Functions могут обновлять
+**Решение:** Убрать update policy для клиентов, только Edge Functions могут
+обновлять
 
 #### 3. CORS Headers - Открыты для всех
+
 **Файл:** Все 3 Edge Functions
 
 ```typescript
 const corsHeaders: HeadersInit = {
-  'access-control-allow-origin': '*',  // ⚠️ ЛЮБОЙ домен!
+  'access-control-allow-origin': '*', // ⚠️ ЛЮБОЙ домен!
 };
 ```
 
 **Риск:** CSRF атаки, любой сайт может вызывать ваши функции
 
 **Решение:** Ограничить домены
+
 ```typescript
 'access-control-allow-origin': 'https://ksebe.yoga',
 ```
 
 #### 4. API Key в клиентском bundle
+
 **Файлы:**
+
 - `/k-sebe-yoga-studioWEB/vite.config.ts:19-22`
 - `/k-sebe-yoga-studio-APPp/vite.config.ts:19-20`
 
@@ -170,16 +183,18 @@ define: {
 **Риск:** GEMINI_API_KEY виден в production bundle
 
 **Текущая защита:**
+
 - ✅ Есть Edge Function proxy
 - ❌ Но есть fallback на клиентский ключ
 
 **Решение:** Убрать fallback для production, оставить только для DEV
 
 #### 5. Service Role Key - Опциональный fallback
+
 **Файл:** `/supabase/functions/create-payment/index.ts:32-34`
 
 ```typescript
-const key = serviceRoleKey || anonKey;  // ⚠️ Fallback на anon
+const key = serviceRoleKey || anonKey; // ⚠️ Fallback на anon
 ```
 
 **Риск:** Без Service Role Key функция не сможет обновлять subscriptions
@@ -189,6 +204,7 @@ const key = serviceRoleKey || anonKey;  // ⚠️ Fallback на anon
 ### 🟡 P1 - Высокий приоритет
 
 #### 6. Rate Limiting в памяти (нестабильно)
+
 **Файл:** `/supabase/functions/gemini-proxy/index.ts:42`
 
 ```typescript
@@ -196,6 +212,7 @@ const rateBuckets = new Map<string, RateBucket>();
 ```
 
 **Проблема:**
+
 - При рестарте Edge Function все лимиты сбрасываются
 - Нет синхронизации между инстансами
 - Можно обойти, перезагрузив функцию
@@ -203,9 +220,11 @@ const rateBuckets = new Map<string, RateBucket>();
 **Решение:** Использовать Upstash Redis или Supabase KV
 
 #### 7. Input Validation отсутствует
+
 **Файл:** `/supabase/functions/gemini-proxy/index.ts` - все операции
 
 **Проблемы:**
+
 - Нет проверки длины message
 - Нет санитизации HTML/JS
 - Нет защиты от prompt injection
@@ -214,9 +233,11 @@ const rateBuckets = new Map<string, RateBucket>();
 **Решение:** Добавить валидацию с Zod
 
 #### 8. Provider Signature не проверяется
+
 **Файл:** `/supabase/functions/payment-webhook/index.ts`
 
-**Проблема:** Используется простой shared secret вместо криптографической подписи
+**Проблема:** Используется простой shared secret вместо криптографической
+подписи
 
 **Решение:** YooKassa отправляет HMAC-SHA256, нужно проверять
 
@@ -241,6 +262,7 @@ const rateBuckets = new Map<string, RateBucket>();
 **Статус:** 23 тестовых файла найдено
 
 **Покрытие:**
+
 - Цель: 70% (согласно CLAUDE.md)
 - Текущее: ~15-20%
 - Thresholds в vitest.config: 30% (занижен)
@@ -248,6 +270,7 @@ const rateBuckets = new Map<string, RateBucket>();
 ### Shared Library
 
 **Компоненты без тестов (19 из 19):**
+
 1. ❌ FadeIn.tsx
 2. ❌ Logo.tsx
 3. ❌ Marquee.tsx
@@ -270,12 +293,14 @@ const rateBuckets = new Map<string, RateBucket>();
 20. ❌ NotificationPreferences.tsx
 
 **Есть тесты:**
+
 - ✅ Image.tsx
 - ✅ Paywall.tsx
 - ✅ Skeleton.tsx
 - ✅ New components
 
 **Хуки без тестов (6 из 7):**
+
 1. ❌ useScrollLock.ts
 2. ❌ useLocalStorage.ts
 3. ❌ useMediaQuery.ts
@@ -285,12 +310,14 @@ const rateBuckets = new Map<string, RateBucket>();
 7. ✅ useAchievements.ts (есть тест)
 
 **Утилиты:**
+
 - ❌ utils/index.ts (main utilities)
 - ✅ utils/logger.ts
 - ✅ utils/async.ts
 - ✅ utils/webVitals.ts
 
 **Сервисы:**
+
 - ❌ services/supabase.ts
 - ✅ services/imageStorage.ts
 
@@ -305,6 +332,7 @@ const rateBuckets = new Map<string, RateBucket>();
 ### CI Pipeline
 
 ✅ **Хорошо:** CI workflow настроен
+
 - Lint
 - TypeCheck
 - Test (но тестов мало)
@@ -331,6 +359,7 @@ npm error missing: (еще 24 пакета)
 ### Анализ версий
 
 ✅ **Все зависимости современные (2026):**
+
 - React: 19.0.0 ✅
 - TypeScript: 5.7.2 ✅
 - Vite: 6.0.5 ✅
@@ -345,6 +374,7 @@ npm error missing: (еще 24 пакета)
 ✅ **Конфликтов не обнаружено**
 
 Все package.json используют согласованные версии:
+
 - React 19 везде
 - TypeScript ~5.7.2 везде
 - Tailwind 4.1.18 везде
@@ -354,6 +384,7 @@ npm error missing: (еще 24 пакета)
 ✅ **Дубликатов минимум** (благодаря npm workspaces)
 
 Shared dependencies в root:
+
 - @supabase/supabase-js
 - lucide-react
 - dompurify
@@ -361,6 +392,7 @@ Shared dependencies в root:
 ### Missing dependencies
 
 ❌ **Отсутствуют в package.json WEB/APP:**
+
 - lint скрипты
 - test скрипты
 - typecheck скрипты
@@ -378,6 +410,7 @@ Shared dependencies в root:
 #### 1. Компоненты > 300 строк
 
 ❌ **Image.tsx** - 495 строк (shared/components/)
+
 - Рекомендация: Разбить на подкомпоненты
 
 #### 2. Default exports (нарушение конвенции)
@@ -385,6 +418,7 @@ Shared dependencies в root:
 Согласно CLAUDE.md: "Prefer named exports over default exports"
 
 ❌ Найдено 8 файлов с default exports:
+
 1. `/shared/components/FadeIn.tsx:76`
 2. `/shared/components/Logo.tsx:63`
 3. `/shared/components/Breathwork.tsx:229`
@@ -397,35 +431,44 @@ Shared dependencies в root:
 #### 3. Хардкод значений (требуют вынесения в константы)
 
 **Blog.tsx (строки 21-84):**
+
 ```typescript
 const defaultArticles: BlogArticle[] = [
   // 3 статьи хардкожены
-]
+];
 ```
+
 ❌ Должно быть в constants/index.ts
 
 **Pricing.tsx (строки 12-98):**
+
 ```typescript
 const yogaSubscriptions: PriceOption[] = [...] // Дубликат PRICING_PLANS
 ```
+
 ❌ Уже есть в constants, но дублируется
 
 **Marquee.tsx (строки 20-83):**
+
 ```typescript
 const DEFAULT_INHALE = ['Свет', 'Любовь', ...] // 30 слов
 ```
+
 ❌ Вынести как BREATHWORK_WORDS
 
 **Breathwork.tsx (строки 46-65):**
+
 ```typescript
 setText('Вдох');
 setSubText('Наполняйтесь энергией');
 ```
+
 ❌ Вынести как BREATHWORK_PHASE_TEXTS
 
 #### 4. Неиспользуемый prop
 
 **Logo.tsx (строка 18):**
+
 ```typescript
 showText?: boolean; // Объявлен, но НИГДЕ не используется
 ```
@@ -433,20 +476,24 @@ showText?: boolean; // Объявлен, но НИГДЕ не используе
 #### 5. Потенциальные баги
 
 **supabase.ts (строки 22-24):**
+
 ```typescript
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',  // ⚠️ Fallback
+  supabaseUrl || 'https://placeholder.supabase.co', // ⚠️ Fallback
   supabaseKey || 'placeholder-key'
 );
 ```
+
 ❌ Создает клиент с невалидными данными вместо ошибки
 
 **useLocalStorage.ts:**
+
 - Использует console.warn вместо logger
 
 ### TypeScript конфигурация
 
 ✅ **Отлично настроен:**
+
 - Strict mode: true
 - noUnusedLocals: true (WEB/APP)
 - noUnusedParameters: true (WEB/APP)
@@ -456,6 +503,7 @@ export const supabase = createClient(
 ### ESLint конфигурация
 
 ✅ **Современный Flat Config (ESLint 9+)**
+
 - React hooks rules
 - Accessibility (jsx-a11y)
 - Import order
@@ -464,15 +512,15 @@ export const supabase = createClient(
 
 ### Метрики качества
 
-| Метрика | Текущее | Цель | Статус |
-|---------|---------|------|--------|
-| Test Coverage | ~15-20% | 70%+ | ❌ |
-| TODOs/FIXMEs | 0 | 0 | ✅ |
-| Components > 300 lines | 1 | 0 | ❌ |
-| Default exports | 8 | 0 | ❌ |
-| Hardcoded values | Много | Минимум | ❌ |
-| TypeScript strict | ✅ | ✅ | ✅ |
-| ESLint warnings | ? | 0 | ⚠️ |
+| Метрика                | Текущее | Цель    | Статус |
+| ---------------------- | ------- | ------- | ------ |
+| Test Coverage          | ~15-20% | 70%+    | ❌     |
+| TODOs/FIXMEs           | 0       | 0       | ✅     |
+| Components > 300 lines | 1       | 0       | ❌     |
+| Default exports        | 8       | 0       | ❌     |
+| Hardcoded values       | Много   | Минимум | ❌     |
+| TypeScript strict      | ✅      | ✅      | ✅     |
+| ESLint warnings        | ?       | 0       | ⚠️     |
 
 ---
 
@@ -485,6 +533,7 @@ export const supabase = createClient(
 #### 1. Unsplash изображения
 
 **Reviews.tsx** (5 аватаров):
+
 ```
 https://images.unsplash.com/photo-1438761681033-6461ffad8d80
 https://images.unsplash.com/photo-1544005313-94ddf0286df2
@@ -494,6 +543,7 @@ https://images.unsplash.com/photo-1580489944761-15a19d654956
 ```
 
 **Blog (data/content.ts)** (3 обложки):
+
 ```
 https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0
 https://images.unsplash.com/photo-1511690656952-34342d5c22b0
@@ -501,14 +551,16 @@ https://images.unsplash.com/photo-1508672019048-805c276e7e69
 ```
 
 **Retreats.tsx** (2 изображения):
+
 ```
 https://images.unsplash.com/photo-1464822759023-fed622ff2c3b
 https://images.unsplash.com/photo-1518182170546-0766be6f5a56
 ```
 
 **VideoLibrary.tsx** (6 превью):
+
 ```typescript
-image: 'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?...'
+image: 'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?...';
 ```
 
 **ИТОГО:** 16 изображений с Unsplash требуют замены
@@ -516,6 +568,7 @@ image: 'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?...'
 #### 2. Placeholder видео
 
 **VideoLibrary.tsx** (4 видео):
+
 ```typescript
 videoUrl: 'https://www.youtube.com/embed/sTANio_2E0Q?autoplay=1', // Placeholder
 videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1', // Placeholder
@@ -527,6 +580,7 @@ videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1', // Placeholder
 #### 3. Mock данные
 
 **Schedule Component:**
+
 - Использует `seededRandom()` для генерации загруженности
 - Количество мест генерируется псевдослучайно
 - ❌ Нужна интеграция с реальным расписанием из Supabase
@@ -544,6 +598,7 @@ videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1', // Placeholder
 ### 🔍 SEO статус
 
 ✅ **Хорошо настроен:**
+
 - Мета-теги (og:tags)
 - Schema.org структурированные данные (YogaStudio)
 - Корректные координаты: 56.742200, 37.121500
@@ -554,6 +609,7 @@ videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1', // Placeholder
 - apple-touch-icon.png ✅
 
 ⚠️ **Проверить:**
+
 - og-image.jpg - реальное изображение или placeholder?
 
 ### Скрытые фичи (готовы к активации)
@@ -621,11 +677,13 @@ videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1', // Placeholder
 ### Deployment конфигурация
 
 **GitHub Pages (WEB):**
+
 - ✅ SPA routing настроен (404.html)
 - ✅ .nojekyll файл
 - ✅ Service Worker для offline
 
 **Firebase (APP):**
+
 - ✅ firebase.json настроен
 - ✅ SPA rewrites
 - ✅ Cache headers для статики
@@ -636,6 +694,7 @@ videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1', // Placeholder
 **vite.config.ts (оба приложения):**
 
 ✅ **Хорошо настроено:**
+
 - React plugin
 - Path aliases
 - Chunk splitting (react-vendor, lucide-icons, ai-sdk, supabase-sdk)
@@ -644,18 +703,21 @@ videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1', // Placeholder
 - chunkSizeWarningLimit: 1000
 
 ⚠️ **Проблемы:**
+
 - API key embedded в bundle (строки 19-22)
 - Нет service worker generation
 
 ### Секреты GitHub
 
 **Требуются:**
+
 - ✅ VITE_SUPABASE_URL (уже в workflows)
 - ✅ VITE_SUPABASE_ANON_KEY (уже в workflows)
 - ⚠️ VITE_GEMINI_API_KEY (только в APP build)
 - ✅ FIREBASE_SERVICE_ACCOUNT (для Firebase)
 
 **Отсутствуют в workflows, но нужны:**
+
 - ❌ PAYMENT_WEBHOOK_SECRET (для Supabase Edge Functions)
 - ❌ YOOKASSA_SHOP_ID (для платежей)
 - ❌ YOOKASSA_SECRET_KEY (для платежей)
@@ -666,6 +728,7 @@ videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1', // Placeholder
 ⚠️ **Деплой отсутствует в CI/CD**
 
 Нужно добавить:
+
 ```bash
 supabase functions deploy gemini-proxy
 supabase functions deploy create-payment
@@ -673,6 +736,7 @@ supabase functions deploy payment-webhook
 ```
 
 И установить секреты:
+
 ```bash
 supabase secrets set GEMINI_API_KEY=...
 supabase secrets set PAYMENT_WEBHOOK_SECRET=...
@@ -689,10 +753,12 @@ supabase secrets set YOOKASSA_SECRET_KEY=...
 ### Текущий статус
 
 **Supabase Edge Functions:**
+
 - ✅ create-payment/index.ts (114 строк)
 - ✅ payment-webhook/index.ts (109 строк)
 
 **Что реализовано:**
+
 - ✅ Таблица subscriptions в БД
 - ✅ Миграция с RLS policies
 - ✅ Edge Functions структура
@@ -704,15 +770,21 @@ supabase secrets set YOOKASSA_SECRET_KEY=...
 ❌ **YooKassa интеграция отсутствует**
 
 Текущий код:
+
 ```typescript
-function buildPaymentUrl(plan: PlanId, subscriptionId: string, returnUrl?: string): string | null {
+function buildPaymentUrl(
+  plan: PlanId,
+  subscriptionId: string,
+  returnUrl?: string
+): string | null {
   const checkoutBase = Deno.env.get('PAYMENT_CHECKOUT_URL');
-  if (!checkoutBase) return returnUrl ?? null;  // Просто возвращает URL
+  if (!checkoutBase) return returnUrl ?? null; // Просто возвращает URL
   // ...
 }
 ```
 
 **Отсутствует:**
+
 - YooKassa SDK
 - Создание payment object
 - Payment intent
@@ -725,12 +797,14 @@ function buildPaymentUrl(plan: PlanId, subscriptionId: string, returnUrl?: strin
 ❌ **Простой shared secret вместо HMAC**
 
 YooKassa отправляет:
+
 - X-Yookassa-Signature с HMAC-SHA256
 - Нужно проверять криптографическую подпись
 
 #### 3. Subscription service закомментирован
 
 **Dashboard.tsx (APP):**
+
 ```typescript
 // import { Paywall } from '@ksebe/shared'; // Временно скрыто
 // import { subscriptionService } from '../services/subscriptionService'; // Временно скрыто
@@ -742,8 +816,7 @@ YooKassa отправляет:
 
 #### 4. Отсутствие idempotency
 
-❌ Нет защиты от двойного клика
-❌ Нет idempotency key
+❌ Нет защиты от двойного клика ❌ Нет idempotency key
 
 ### Рекомендуемые цены (из CLAUDE.md)
 
@@ -772,49 +845,57 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 ### Что реализовано
 
 ✅ **Streak tracking:**
+
 - useStreak.ts (хук)
 - StreakCard.tsx (UI)
 - retentionService.ts (синхронизация с Supabase)
 - Милестоны: 3/7/14/30/60/100 дней
 
 ✅ **Weekly Recap:**
+
 - WeeklyRecapCard.tsx
 - Статистика практики
 
 ✅ **Onboarding:**
+
 - OnboardingQuizModal.tsx
 - user_preferences таблица в БД
 
 ✅ **Practice tracking:**
+
 - usePracticeCompletions.ts
 - practice_events таблица
 
 ### Что отсутствует (упоминается в CLAUDE.md)
 
 ❌ **Achievements system:**
+
 - AchievementUnlockedModal.tsx - НЕ НАЙДЕН
 - AchievementsGrid.tsx - НЕ НАЙДЕН
 - useAchievements.ts - НЕ НАЙДЕН
 - 20+ определений достижений упоминаются
 
 ❌ **Streak visualization:**
+
 - StreakCalendar.tsx - упоминается, но НЕ НАЙДЕН
 
 ❌ **AI Personalization:**
+
 - DailyRecommendation.tsx - НЕ НАЙДЕН
 - PersonalProgram types - НЕ НАЙДЕН
 - 7-day персонализированные программы
 
 ❌ **Push Notifications:**
+
 - NotificationPreferences.tsx - НЕ НАЙДЕН
 - Firebase Cloud Messaging - не подключен
 - Service Worker notification API - не используется
 
 ### Приоритеты согласно CLAUDE.md
 
-**Priority 1: Streaks** (+30-40% DAU) ✅ РЕАЛИЗОВАНО
-**Priority 2: Achievements** (+20-25% engagement) ❌ ЧАСТИЧНО
-**Priority 3: Push Notifications** (Essential for retention) ❌ НЕ НАЧАТО
+**Priority 1: Streaks** (+30-40% DAU) ✅ РЕАЛИЗОВАНО **Priority 2:
+Achievements** (+20-25% engagement) ❌ ЧАСТИЧНО **Priority 3: Push
+Notifications** (Essential for retention) ❌ НЕ НАЧАТО
 
 ---
 
@@ -827,6 +908,7 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 #### 1. Внешние зависимости (Unsplash)
 
 ❌ **16 изображений с Unsplash**
+
 - Зависимость от внешнего сервиса
 - Нет контроля над доступностью
 - Не оптимизировано
@@ -846,22 +928,22 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 /public/logo@2x.png - 450 KB
 ```
 
-❌ Нет WebP/AVIF версий
-❌ Нет responsive images
-❌ Большие размеры файлов
+❌ Нет WebP/AVIF версий ❌ Нет responsive images ❌ Большие размеры файлов
 
 **Решение:**
+
 ```html
 <picture>
-  <source srcset="image.avif" type="image/avif">
-  <source srcset="image.webp" type="image/webp">
-  <img src="image.jpg" alt="...">
+  <source srcset="image.avif" type="image/avif" />
+  <source srcset="image.webp" type="image/webp" />
+  <img src="image.jpg" alt="..." />
 </picture>
 ```
 
 #### 3. Дубликаты
 
 ⚠️ Возможные дубликаты:
+
 - `/logo.png` и `/images/logo.png`
 - `/hero.jpg` и `/images/hero/hero-bg.jpg`
 - `/inside-flow-hero.jpg` - не используется?
@@ -869,6 +951,7 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 ### PWA Icons
 
 ✅ **Все иконки присутствуют:**
+
 - 72x72, 96x96, 128x128, 144x144
 - 152x152, 192x192, 384x384, 512x512
 
@@ -881,6 +964,7 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 ### ✅ Что реализовано отлично
 
 **manifest.json:**
+
 - ✅ Корректные метаданные
 - ✅ Все иконки
 - ✅ Shortcuts (Расписание, AI Коуч)
@@ -889,6 +973,7 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 - ✅ Theme colors
 
 **Service Worker (sw.js):**
+
 - ✅ Cache-first для изображений
 - ✅ Network-first для HTML
 - ✅ Offline fallback
@@ -896,12 +981,14 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 - ✅ Очистка старых кэшей
 
 **Offline support:**
+
 - ✅ IndexedDB (localCache.ts)
 - ✅ localStorage fallback
 - ✅ Pending sync для бронирований
 - ✅ useOnlineStatus hook
 
 **PWA Updates:**
+
 - ✅ usePWAUpdate.ts
 - ✅ UpdateBanner компонент
 - ✅ Auto-update mechanism
@@ -968,12 +1055,14 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 ### 📖 Качество существующей документации
 
 ✅ **Сильные стороны:**
+
 - Comprehensive coverage
 - Up-to-date (2026)
 - Well-structured
 - Russian language (для команды)
 
 ⚠️ **Недостатки:**
+
 - Много дублирования между файлами
 - Некоторая информация устарела
 - Нет автогенерации из кода
@@ -987,6 +1076,7 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 ### Build optimization
 
 ✅ **Хорошо настроено:**
+
 - Chunk splitting (react, icons, ai, supabase)
 - Minification (esbuild)
 - Drop console в production
@@ -996,17 +1086,18 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 ### Bundle size
 
 ⚠️ **Оценки (без npm install не измерить точно):**
+
 - Target: <200KB gzipped
 - Current estimate: ~300KB
 - chunkSizeWarningLimit: 1000KB
 
 ### Производительность по CLAUDE.md
 
-| Метрика | Цель Q4 2026 | Статус |
-|---------|--------------|--------|
-| Lighthouse Score | 90+ | 75 (current) |
-| LCP | <2.5s | ~3s |
-| Bundle Size (gzip) | <200KB | ~300KB |
+| Метрика            | Цель Q4 2026 | Статус       |
+| ------------------ | ------------ | ------------ |
+| Lighthouse Score   | 90+          | 75 (current) |
+| LCP                | <2.5s        | ~3s          |
+| Bundle Size (gzip) | <200KB       | ~300KB       |
 
 ### Рекомендации
 
@@ -1025,6 +1116,7 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 ### ✅ Что реализовано
 
 1. **Skip links** (App.tsx строки 166-177)
+
    ```html
    <a href="#main-content">Перейти к содержимому</a>
    ```
@@ -1059,8 +1151,7 @@ VIP:      2,990₽  - Premium + консультации с Катей (2/month)
 
 ### WCAG 2.1 AA compliance
 
-Цель: WCAG 2.1 AA (из CLAUDE.md)
-Статус: ~75% соответствие
+Цель: WCAG 2.1 AA (из CLAUDE.md) Статус: ~75% соответствие
 
 ---
 
@@ -1121,6 +1212,7 @@ create index bookings_date_idx
 ❌ **Отсутствуют автогенерированные типы**
 
 Рекомендация:
+
 ```bash
 supabase gen types typescript --local > shared/types/database.types.ts
 ```
@@ -1238,9 +1330,8 @@ supabase gen types typescript --local > shared/types/database.types.ts
 
 ## 📈 ОЦЕНКА ВРЕМЕНИ ДО ПРОДАКШН
 
-**Минимальная готовность (только блокеры):** 1-2 недели
-**Рекомендуемая готовность (с P1):** 3-4 недели
-**Полная готовность (с P2):** 6-8 недель
+**Минимальная готовность (только блокеры):** 1-2 недели **Рекомендуемая
+готовность (с P1):** 3-4 недели **Полная готовность (с P2):** 6-8 недель
 
 ---
 
@@ -1268,18 +1359,19 @@ supabase gen types typescript --local > shared/types/database.types.ts
 
 ### Рекомендация
 
-**Проект на 68% готов к продакшн**, но имеет критические security проблемы и неполный контент.
+**Проект на 68% готов к продакшн**, но имеет критические security проблемы и
+неполный контент.
 
 **Рекомендую:**
+
 1. Исправить все P0 security issues (1-2 дня)
 2. Заменить placeholder контент (3-5 дней)
 3. Завершить YooKassa интеграцию (5-7 дней)
 4. Повысить test coverage (ongoing)
 
-**После этого можно запускать в продакшн** с последующими итерациями для улучшения качества кода и добавления фич.
+**После этого можно запускать в продакшн** с последующими итерациями для
+улучшения качества кода и добавления фич.
 
 ---
 
-**Конец отчета**
-Сгенерировано: 2026-01-12
-Версия: 1.0.0
+**Конец отчета** Сгенерировано: 2026-01-12 Версия: 1.0.0

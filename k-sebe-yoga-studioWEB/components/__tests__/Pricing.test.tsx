@@ -12,7 +12,8 @@ describe('Pricing', () => {
     render(<Pricing onBook={onBook} />);
 
     expect(screen.getByText('Услуги и абонементы')).toBeInTheDocument();
-    expect(screen.getByText('Йога-абонементы')).toBeInTheDocument();
+    // Use getByRole to target the heading specifically, avoiding ambiguity with the tab button
+    expect(screen.getByRole('heading', { name: 'Йога-абонементы', level: 3 })).toBeInTheDocument();
 
     const planTitle = screen.getByText('9 занятий');
     const planCard = planTitle.closest('div.group');
@@ -34,6 +35,9 @@ describe('Pricing', () => {
     await user.click(personalTab);
 
     expect(screen.getByText('Персональные тренировки')).toBeInTheDocument();
-    expect(screen.queryByText('Йога-абонементы')).not.toBeInTheDocument();
+    // Check that the heading is gone (the button will still be there)
+    expect(
+      screen.queryByRole('heading', { name: 'Йога-абонементы', level: 3 })
+    ).not.toBeInTheDocument();
   });
 });

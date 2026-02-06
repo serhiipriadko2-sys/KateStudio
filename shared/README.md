@@ -1,6 +1,7 @@
 # @ksebe/shared
 
-Общая библиотека компонентов, хуков, сервисов и утилит для экосистемы K Sebe Yoga Studio.
+Общая библиотека компонентов, хуков, сервисов и утилит для экосистемы K Sebe
+Yoga Studio.
 
 ## Установка
 
@@ -150,11 +151,11 @@ import {
 } from '@ksebe/shared';
 
 // Классы (как clsx/tailwind-merge)
-<div className={cn('base', isActive && 'active', className)} />
+<div className={cn('base', isActive && 'active', className)} />;
 
 // Форматирование
-formatDate(new Date());           // "24 декабря"
-formatPrice(5200);                // "5 200 ₽"
+formatDate(new Date()); // "24 декабря"
+formatPrice(5200); // "5 200 ₽"
 pluralize(8, ['занятие', 'занятия', 'занятий']); // "8 занятий"
 
 // Debounce функция
@@ -171,10 +172,10 @@ storage.remove('user');
 ```tsx
 import { COLORS, BRAND, PRICING_PLANS, CONTACT } from '@ksebe/shared';
 
-console.log(COLORS.brandGreen);   // "#57a773"
-console.log(BRAND.founder);       // "Катя Габран"
-console.log(CONTACT.phone);       // "+7 (999) 123-45-67"
-console.log(PRICING_PLANS[0]);    // { name: "Разовое", price: 1500, ... }
+console.log(COLORS.brandGreen); // "#57a773"
+console.log(BRAND.founder); // "Катя Габран"
+console.log(CONTACT.phone); // "+7 (999) 123-45-67"
+console.log(PRICING_PLANS[0]); // { name: "Разовое", price: 1500, ... }
 ```
 
 ### Типы
@@ -258,4 +259,4 @@ npm run typecheck
 
 ---
 
-*K Sebe Yoga Studio | @ksebe/shared*
+_K Sebe Yoga Studio | @ksebe/shared_

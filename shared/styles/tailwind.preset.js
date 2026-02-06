@@ -193,17 +193,17 @@ module.exports = {
         },
         // Focus visible styles for keyboard navigation
         '.focus-ring': {
-          'outline': 'none',
+          outline: 'none',
           '&:focus-visible': {
-            'outline': '2px solid #57a773',
+            outline: '2px solid #57a773',
             'outline-offset': '2px',
           },
         },
         // Reduced motion for accessibility
         '.motion-reduce': {
           '@media (prefers-reduced-motion: reduce)': {
-            'animation': 'none',
-            'transition': 'none',
+            animation: 'none',
+            transition: 'none',
           },
         },
       });

@@ -12,17 +12,29 @@ type WebhookPayload = {
   provider_subscription_id?: string;
 };
 
-const corsHeaders: HeadersInit = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type',
-  'access-control-allow-methods': 'POST, OPTIONS',
-};
+const allowedOrigins = [
+  'https://ksebe-studio.ru',
+  'https://app.ksebe-studio.ru',
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
 
-function json(data: unknown, init: ResponseInit = {}): Response {
-  const headers = new Headers(init.headers);
-  headers.set('content-type', 'application/json; charset=utf-8');
-  Object.entries(corsHeaders).forEach(([k, v]) => headers.set(k, String(v)));
-  return new Response(JSON.stringify(data), { ...init, headers });
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') || '';
+  const allowOrigin = allowedOrigins.includes(origin) ? origin : 'https://ksebe-studio.ru';
+
+  return {
+    'access-control-allow-origin': allowOrigin,
+    'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type, x-webhook-signature',
+    'access-control-allow-methods': 'POST, OPTIONS',
+  };
+}
+
+function json(data: unknown, init: ResponseInit = {}, headers: HeadersInit = {}): Response {
+  const responseHeaders = new Headers(init.headers);
+  responseHeaders.set('content-type', 'application/json; charset=utf-8');
+  Object.entries(headers).forEach(([k, v]) => responseHeaders.set(k, String(v)));
+  return new Response(JSON.stringify(data), { ...init, headers: responseHeaders });
 }
 
 function getSupabaseClient() {
@@ -35,26 +47,30 @@ function getSupabaseClient() {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, { status: 405 });
+  const cors = getCorsHeaders(req);
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, { status: 405 }, cors);
 
   const secret = Deno.env.get('PAYMENT_WEBHOOK_SECRET');
-  if (secret) {
-    const signature = req.headers.get('x-webhook-signature');
-    if (!signature || signature !== secret) {
-      return json({ error: 'Invalid signature' }, { status: 401 });
-    }
+  if (!secret) {
+    console.error('Configuration error: PAYMENT_WEBHOOK_SECRET is missing');
+    return json({ error: 'Server configuration error' }, { status: 500 }, cors);
+  }
+
+  const signature = req.headers.get('x-webhook-signature');
+  if (!signature || signature !== secret) {
+    return json({ error: 'Invalid signature' }, { status: 401 }, cors);
   }
 
   let payload: WebhookPayload;
   try {
     payload = (await req.json()) as WebhookPayload;
   } catch {
-    return json({ error: 'Invalid JSON' }, { status: 400 });
+    return json({ error: 'Invalid JSON' }, { status: 400 }, cors);
   }
 
   if (!payload.subscription_id && !payload.user_id) {
-    return json({ error: 'Missing subscription_id or user_id' }, { status: 400 });
+    return json({ error: 'Missing subscription_id or user_id' }, { status: 400 }, cors);
   }
 
   try {
@@ -97,12 +113,12 @@ Deno.serve(async (req) => {
 
     if (response.error) {
       console.error('payment-webhook update error', response.error);
-      return json({ error: 'Failed to update subscription' }, { status: 500 });
+      return json({ error: 'Failed to update subscription' }, { status: 500 }, cors);
     }
 
-    return json({ success: true, subscription: response.data });
+    return json({ success: true, subscription: response.data }, {}, cors);
   } catch (e) {
     console.error('payment-webhook error', e);
-    return json({ error: 'Internal error' }, { status: 500 });
+    return json({ error: 'Internal error' }, { status: 500 }, cors);
   }
 });

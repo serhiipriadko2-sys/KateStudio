@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { BookingDetails } from '../types';
 import { FadeIn } from './FadeIn';
+import { defaultContent } from '../data/content';
 
 interface ScheduleProps {
   onBook: (details: BookingDetails) => void;
@@ -45,6 +46,39 @@ const formatDateKey = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
+const generateFallbackClasses = (date: Date, tab: 'offline' | 'online'): ClassSession[] => {
+  const templates = tab === 'offline' ? defaultContent.schedule.offline : defaultContent.schedule.online;
+  const classes: ClassSession[] = [];
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const currentDate = new Date(year, month, day);
+    // Skip Sundays to look realistic
+    if (currentDate.getDay() === 0) continue;
+
+    const dateStr = formatDateKey(currentDate);
+
+    templates.forEach((tmpl, idx) => {
+        classes.push({
+            id: `fallback-${dateStr}-${idx}`,
+            dateStr,
+            time: tmpl.time,
+            name: tmpl.name,
+            instructor: 'Катя Габран',
+            duration: tmpl.duration,
+            spotsTotal: tmpl.spotsTotal,
+            spotsBooked: Math.floor(Math.random() * tmpl.spotsTotal * 0.4), // 40% occupancy for demo
+            location: tmpl.location,
+            intensity: tmpl.intensity,
+            isOnline: tab === 'online'
+        });
+    });
+  }
+  return classes;
+};
+
 export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
   const [activeTab, setActiveTab] = useState<'offline' | 'online'>('offline');
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -52,10 +86,12 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
   const [classes, setClasses] = useState<ClassSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
-      setClasses([]);
+      setIsDemo(true);
+      setClasses(generateFallbackClasses(currentMonth, activeTab));
       return;
     }
 
@@ -63,6 +99,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
     const fetchClasses = async () => {
       setIsLoading(true);
       setHasError(false);
+      setIsDemo(false);
 
       const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
       const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
@@ -81,34 +118,42 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
 
         if (error) throw error;
 
-        const mapped = (data as ClassRow[] | null)?.map((row) => {
-          const intensityValue = row.intensity ?? 1;
-          const intensity: 1 | 2 | 3 = [1, 2, 3].includes(intensityValue)
-            ? (intensityValue as 1 | 2 | 3)
-            : 1;
-
-          return {
-            id: row.id,
-            dateStr: row.date,
-            time: row.time,
-            name: row.name,
-            instructor: row.instructor ?? 'Катя Габран',
-            duration: row.duration ?? '60 мин',
-            spotsTotal: row.spots_total ?? 0,
-            spotsBooked: row.spots_booked ?? 0,
-            location: row.location ?? (activeTab === 'online' ? 'Online' : 'Станционная ул., 5Б'),
-            intensity,
-            isOnline: row.is_online ?? activeTab === 'online',
-          };
-        });
-
         if (isActive) {
-          setClasses(mapped ?? []);
+          if (!data || data.length === 0) {
+             // Fallback if configured but empty
+             setIsDemo(true);
+             setClasses(generateFallbackClasses(currentMonth, activeTab));
+          } else {
+            const mapped = (data as ClassRow[]).map((row) => {
+              const intensityValue = row.intensity ?? 1;
+              const intensity: 1 | 2 | 3 = [1, 2, 3].includes(intensityValue)
+                ? (intensityValue as 1 | 2 | 3)
+                : 1;
+
+              return {
+                id: row.id,
+                dateStr: row.date,
+                time: row.time,
+                name: row.name,
+                instructor: row.instructor ?? 'Катя Габран',
+                duration: row.duration ?? '60 мин',
+                spotsTotal: row.spots_total ?? 0,
+                spotsBooked: row.spots_booked ?? 0,
+                location: row.location ?? (activeTab === 'online' ? 'Online' : 'Станционная ул., 5Б'),
+                intensity,
+                isOnline: row.is_online ?? activeTab === 'online',
+              };
+            });
+            setClasses(mapped);
+          }
         }
       } catch (error) {
         if (isActive) {
+          console.warn('Schedule fetch error, using fallback', error);
           setHasError(true);
-          setClasses([]);
+          // Fallback on error too
+          setIsDemo(true);
+          setClasses(generateFallbackClasses(currentMonth, activeTab));
         }
       } finally {
         if (isActive) {
@@ -320,20 +365,15 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
               <h3 className="text-4xl md:text-5xl font-serif text-brand-text capitalize">
                 {selectedDate} {currentMonth.toLocaleString('ru', { month: 'long' })}
               </h3>
-              <span className="text-stone-400 pb-1.5 text-sm md:text-base">Расписание</span>
+              <div className="flex flex-col">
+                <span className="text-stone-400 pb-1.5 text-sm md:text-base">Расписание</span>
+                {isDemo && (
+                  <span className="text-amber-500 text-xs font-medium">Демонстрационный режим</span>
+                )}
+              </div>
             </div>
             <div className="space-y-4">
-              {!isSupabaseConfigured && (
-                <FadeIn delay={300}>
-                  <div className="p-12 text-center bg-stone-50 rounded-[2rem] border-2 border-dashed border-stone-200">
-                    <Info className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-                    <p className="text-stone-500">
-                      Расписание недоступно: проверьте настройки Supabase.
-                    </p>
-                  </div>
-                </FadeIn>
-              )}
-              {isSupabaseConfigured && isLoading && (
+              {isLoading && (
                 <FadeIn delay={300}>
                   <div className="p-12 text-center bg-stone-50 rounded-[2rem] border-2 border-dashed border-stone-200">
                     <Info className="w-10 h-10 text-stone-300 mx-auto mb-3" />
@@ -341,20 +381,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
                   </div>
                 </FadeIn>
               )}
-              {isSupabaseConfigured && hasError && !isLoading && (
-                <FadeIn delay={300}>
-                  <div className="p-12 text-center bg-stone-50 rounded-[2rem] border-2 border-dashed border-stone-200">
-                    <Info className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-                    <p className="text-stone-500">
-                      Не удалось загрузить расписание. Попробуйте позже.
-                    </p>
-                  </div>
-                </FadeIn>
-              )}
-              {isSupabaseConfigured &&
-                !isLoading &&
-                !hasError &&
-                selectedClasses.map((cls, idx) => {
+              {!isLoading && selectedClasses.length > 0 && selectedClasses.map((cls, idx) => {
                   const capacity = cls.spotsTotal;
                   const percentage = capacity > 0 ? (cls.spotsBooked / capacity) * 100 : 0;
                   const isFull = capacity > 0 && cls.spotsBooked >= capacity;
@@ -428,7 +455,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
                     </FadeIn>
                   );
                 })}
-              {isSupabaseConfigured && !isLoading && !hasError && selectedClasses.length === 0 && (
+              {!isLoading && selectedClasses.length === 0 && (
                 <FadeIn delay={300}>
                   <div className="p-12 text-center bg-stone-50 rounded-[2rem] border-2 border-dashed border-stone-200">
                     <Info className="w-10 h-10 text-stone-300 mx-auto mb-3" />

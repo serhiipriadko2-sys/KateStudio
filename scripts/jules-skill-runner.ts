@@ -50,7 +50,7 @@ function parseSkill(relativePath: string): SkillConfig | null {
   return {
     skill: nameMatch[1],
     trigger: { event: 'unknown' }, // Mock
-    actions: []
+    actions: [],
   };
 }
 
@@ -61,7 +61,7 @@ function run() {
   const registry = loadRegistry();
   console.log(`Loaded ${registry.skills.length} skills from registry.`);
 
-  registry.skills.forEach(entry => {
+  registry.skills.forEach((entry) => {
     if (!entry.enabled) {
       console.log(`[SKIP] ${entry.id} is disabled.`);
       return;
