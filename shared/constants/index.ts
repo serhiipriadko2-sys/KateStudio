@@ -759,3 +759,4 @@ export const ARIA_CONFIG = {
 } as const;
 
 export * from './images';
+export * from './kb';
