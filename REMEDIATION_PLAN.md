@@ -1,51 +1,53 @@
 # REMEDIATION PLAN - K SEBE YOGA STUDIO
+
 ## Детальный план исправлений с приоритетами
 
-**Дата:** 2026-01-12
-**Базируется на:** PRODUCTION_READINESS_AUDIT.md
+**Дата:** 2026-01-12 **Базируется на:** PRODUCTION_READINESS_AUDIT.md
 
 ---
 
 ## 📋 ПРИОРИТИЗАЦИЯ
 
 ### P0 - БЛОКЕРЫ (критично, без этого нельзя в продакшн)
-**Время:** 1-2 дня
-**Ответственный:** Backend/Security Lead
+
+**Время:** 1-2 дня **Ответственный:** Backend/Security Lead
 
 ### P1 - ВЫСОКИЙ ПРИОРИТЕТ (очень желательно перед запуском)
-**Время:** 1-2 недели
-**Ответственный:** Full Team
+
+**Время:** 1-2 недели **Ответственный:** Full Team
 
 ### P2 - СРЕДНИЙ ПРИОРИТЕТ (можно после запуска, но скоро)
-**Время:** 2-4 недели
-**Ответственный:** Full Team
+
+**Время:** 2-4 недели **Ответственный:** Full Team
 
 ### P3 - НИЗКИЙ ПРИОРИТЕТ (backlog, постепенно)
-**Время:** ongoing
-**Ответственный:** Product Owner + Team
+
+**Время:** ongoing **Ответственный:** Product Owner + Team
 
 ---
 
 ## 🔴 P0 - КРИТИЧЕСКИЕ БЛОКЕРЫ
 
 ### 1. Установить зависимости
-**Приоритет:** P0
-**Время:** 5 минут
-**Файл:** N/A
+
+**Приоритет:** P0 **Время:** 5 минут **Файл:** N/A
 
 **Проблема:**
+
 ```
 npm error missing: @eslint/js@^9.39.2
 npm error missing: (еще 24 пакета)
 ```
 
 **Решение:**
+
 ```bash
 cd /home/user/KateStudio
 npm install
 ```
 
 **Проверка:**
+
 ```bash
 npm ls --depth=0
 # Должно показать все пакеты без UNMET DEPENDENCY
@@ -54,14 +56,16 @@ npm ls --depth=0
 ---
 
 ### 2. Исправить webhook secret validation
-**Приоритет:** P0
-**Время:** 10 минут
-**Файл:** `/supabase/functions/payment-webhook/index.ts`
+
+**Приоритет:** P0 **Время:** 10 минут **Файл:**
+`/supabase/functions/payment-webhook/index.ts`
 
 **Проблема (строки 41-46):**
+
 ```typescript
 const secret = Deno.env.get('PAYMENT_WEBHOOK_SECRET');
-if (secret) {  // ⚠️ Опциональная проверка!
+if (secret) {
+  // ⚠️ Опциональная проверка!
   const signature = req.headers.get('x-webhook-signature');
   if (!signature || signature !== secret) {
     return json({ error: 'Invalid signature' }, { status: 401 });
@@ -70,6 +74,7 @@ if (secret) {  // ⚠️ Опциональная проверка!
 ```
 
 **Решение:**
+
 ```typescript
 const secret = Deno.env.get('PAYMENT_WEBHOOK_SECRET');
 if (!secret) {
@@ -79,11 +84,16 @@ if (!secret) {
 
 const signature = req.headers.get('x-webhook-signature');
 if (!signature || signature !== secret) {
-  return json({ error: 'Invalid signature' }, { status: 401 }, { headers: corsHeaders });
+  return json(
+    { error: 'Invalid signature' },
+    { status: 401 },
+    { headers: corsHeaders }
+  );
 }
 ```
 
 **После исправления установить секрет:**
+
 ```bash
 # Генерируем случайный секрет
 openssl rand -hex 32
@@ -95,20 +105,20 @@ supabase secrets set PAYMENT_WEBHOOK_SECRET=<generated-secret>
 ---
 
 ### 3. Убрать update policy с subscriptions table
-**Приоритет:** P0
-**Время:** 15 минут
-**Файл:** Новая миграция
 
-**Проблема:**
-Пользователь может через DevTools изменить свой `plan` и `status`
+**Приоритет:** P0 **Время:** 15 минут **Файл:** Новая миграция
+
+**Проблема:** Пользователь может через DevTools изменить свой `plan` и `status`
 
 **Решение - создать миграцию:**
+
 ```bash
 cd supabase/migrations
 touch 20260112_fix_subscriptions_rls.sql
 ```
 
 **Содержимое миграции:**
+
 ```sql
 -- Remove update policy that allows users to change their own subscriptions
 drop policy if exists "subscriptions_update_own" on public.subscriptions;
@@ -134,6 +144,7 @@ create policy "subscriptions_request_cancel"
 ```
 
 **Применить:**
+
 ```bash
 supabase db reset --local  # для локального тестирования
 supabase db push           # для production
@@ -142,18 +153,19 @@ supabase db push           # для production
 ---
 
 ### 4. Ограничить CORS конкретными доменами
-**Приоритет:** P0
-**Время:** 15 минут
-**Файлы:** Все 3 Edge Functions
+
+**Приоритет:** P0 **Время:** 15 минут **Файлы:** Все 3 Edge Functions
 
 **Проблема:**
+
 ```typescript
 const corsHeaders: HeadersInit = {
-  'access-control-allow-origin': '*',  // ⚠️ Открыто для всех
+  'access-control-allow-origin': '*', // ⚠️ Открыто для всех
 };
 ```
 
 **Решение для `/supabase/functions/gemini-proxy/index.ts` (строки 29-33):**
+
 ```typescript
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
@@ -164,12 +176,14 @@ const ALLOWED_ORIGINS = [
 ];
 
 function getCorsHeaders(origin: string | null): HeadersInit {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const allowedOrigin =
+    origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
 
   return {
     'access-control-allow-origin': allowedOrigin,
     'access-control-allow-credentials': 'true',
-    'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type',
+    'access-control-allow-headers':
+      'authorization, x-client-info, apikey, content-type',
     'access-control-allow-methods': 'POST, OPTIONS',
   };
 }
@@ -185,6 +199,7 @@ if (req.method === 'OPTIONS') {
 ```
 
 **Применить ко всем 3 функциям:**
+
 - gemini-proxy/index.ts
 - create-payment/index.ts
 - payment-webhook/index.ts
@@ -192,13 +207,14 @@ if (req.method === 'OPTIONS') {
 ---
 
 ### 5. Убрать API key fallback для production
-**Приоритет:** P0
-**Время:** 20 минут
-**Файлы:**
+
+**Приоритет:** P0 **Время:** 20 минут **Файлы:**
+
 - `/k-sebe-yoga-studioWEB/vite.config.ts`
 - `/k-sebe-yoga-studio-APPp/vite.config.ts`
 
 **Проблема (строки 19-22):**
+
 ```typescript
 define: {
   'process.env.API_KEY': JSON.stringify(geminiApiKey),
@@ -207,6 +223,7 @@ define: {
 ```
 
 **Решение - условная компиляция:**
+
 ```typescript
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
@@ -216,7 +233,9 @@ export default defineConfig(({ mode }) => {
   const embedApiKey = mode === 'development' ? geminiApiKey : undefined;
 
   if (mode === 'production' && geminiApiKey) {
-    console.warn('⚠️ GEMINI_API_KEY found but will NOT be embedded in production bundle');
+    console.warn(
+      '⚠️ GEMINI_API_KEY found but will NOT be embedded in production bundle'
+    );
     console.warn('✅ Using Edge Function proxy for AI requests');
   }
 
@@ -234,13 +253,16 @@ export default defineConfig(({ mode }) => {
 **Обновить geminiService чтобы требовал proxy в production:**
 
 В `geminiService.ts` добавить (после строки 11):
+
 ```typescript
 // Production safety: require Edge Function proxy
 const IS_PRODUCTION = import.meta.env.PROD;
 const HAS_CLIENT_KEY = !!process.env.GEMINI_API_KEY;
 
 if (IS_PRODUCTION && HAS_CLIENT_KEY) {
-  console.error('Security: Client-side AI key should not be available in production');
+  console.error(
+    'Security: Client-side AI key should not be available in production'
+  );
 }
 
 const allowClientFallback = !IS_PRODUCTION || !PROXY_ENDPOINT;
@@ -249,23 +271,27 @@ const allowClientFallback = !IS_PRODUCTION || !PROXY_ENDPOINT;
 ---
 
 ### 6. Требовать Service Role Key
-**Приоритет:** P0
-**Время:** 10 минут
-**Файл:** `/supabase/functions/create-payment/index.ts`
+
+**Приоритет:** P0 **Время:** 10 минут **Файл:**
+`/supabase/functions/create-payment/index.ts`
 
 **Проблема (строки 32-34):**
+
 ```typescript
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
-const key = serviceRoleKey || anonKey;  // ⚠️ Fallback
+const key = serviceRoleKey || anonKey; // ⚠️ Fallback
 ```
 
 **Решение:**
+
 ```typescript
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 if (!serviceRoleKey) {
   console.error('SUPABASE_SERVICE_ROLE_KEY is not set');
-  throw new Error('Server misconfiguration: SUPABASE_SERVICE_ROLE_KEY required');
+  throw new Error(
+    'Server misconfiguration: SUPABASE_SERVICE_ROLE_KEY required'
+  );
 }
 
 const supabase = createClient(
@@ -281,6 +307,7 @@ const supabase = createClient(
 ```
 
 **Установить секрет:**
+
 ```bash
 # Получить из Supabase Dashboard > Settings > API > service_role key
 supabase secrets set SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
@@ -289,11 +316,11 @@ supabase secrets set SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
 ---
 
 ### 7. Создать .env файлы
-**Приоритет:** P0
-**Время:** 15 минут
-**Файлы:** `.env` (root, WEB, APP)
+
+**Приоритет:** P0 **Время:** 15 минут **Файлы:** `.env` (root, WEB, APP)
 
 **Действия:**
+
 ```bash
 # Root
 cp .env.example .env
@@ -308,6 +335,7 @@ cp ../.env.example .env
 ```
 
 **Заполнить значения:**
+
 ```bash
 # Получить из Supabase Dashboard
 VITE_SUPABASE_URL=https://your-project.supabase.co
@@ -327,9 +355,9 @@ VITE_DEV_MODE=true
 ---
 
 ### 8. Установить GitHub Secrets
-**Приоритет:** P0
-**Время:** 10 минут
-**Где:** GitHub Repository > Settings > Secrets and variables > Actions
+
+**Приоритет:** P0 **Время:** 10 минут **Где:** GitHub Repository > Settings >
+Secrets and variables > Actions
 
 **Необходимые секреты:**
 
@@ -360,9 +388,9 @@ SENTRY_DSN=your-sentry-dsn
 ---
 
 ### 9. Заменить Unsplash изображения
-**Приоритет:** P0
-**Время:** 2-4 часа
-**Файлы:**
+
+**Приоритет:** P0 **Время:** 2-4 часа **Файлы:**
+
 - `/k-sebe-yoga-studioWEB/components/Reviews.tsx`
 - `/k-sebe-yoga-studioWEB/data/content.ts`
 - `/k-sebe-yoga-studioWEB/components/Retreats.tsx`
@@ -370,12 +398,12 @@ SENTRY_DSN=your-sentry-dsn
 
 **Список изображений для замены:**
 
-| Файл | Строки | Тип | Количество |
-|------|--------|-----|------------|
-| Reviews.tsx | 17,23,29,35,41 | Аватары | 5 |
-| data/content.ts | 123,143,161 | Обложки блога | 3 |
-| Retreats.tsx | 86,142 | Ретрит | 2 |
-| VideoLibrary.tsx | 13,18,23,28,33,38 | Превью видео | 6 |
+| Файл             | Строки            | Тип           | Количество |
+| ---------------- | ----------------- | ------------- | ---------- |
+| Reviews.tsx      | 17,23,29,35,41    | Аватары       | 5          |
+| data/content.ts  | 123,143,161       | Обложки блога | 3          |
+| Retreats.tsx     | 86,142            | Ретрит        | 2          |
+| VideoLibrary.tsx | 13,18,23,28,33,38 | Превью видео  | 6          |
 
 **План действий:**
 
@@ -386,6 +414,7 @@ SENTRY_DSN=your-sentry-dsn
    - Превью видео (6 шт) - скриншоты из реальных видео Кати
 
 2. **Оптимизировать:**
+
    ```bash
    # Установить imagemagick
    apt-get install imagemagick
@@ -395,6 +424,7 @@ SENTRY_DSN=your-sentry-dsn
    ```
 
 3. **Загрузить в Supabase Storage:**
+
    ```bash
    # Через Supabase Dashboard или CLI
    supabase storage create-bucket avatars --public
@@ -403,12 +433,13 @@ SENTRY_DSN=your-sentry-dsn
    ```
 
 4. **Обновить URLs в коде:**
+
    ```typescript
    // Было:
-   avatar: 'https://images.unsplash.com/photo-...'
+   avatar: 'https://images.unsplash.com/photo-...';
 
    // Стало:
-   avatar: 'https://your-project.supabase.co/storage/v1/object/public/avatars/avatar-1.webp'
+   avatar: 'https://your-project.supabase.co/storage/v1/object/public/avatars/avatar-1.webp';
    ```
 
 ---
@@ -416,27 +447,31 @@ SENTRY_DSN=your-sentry-dsn
 ## 🟡 P1 - ВЫСОКИЙ ПРИОРИТЕТ
 
 ### 10. Input validation в Edge Functions
-**Приоритет:** P1
-**Время:** 2-3 часа
-**Файл:** `/supabase/functions/gemini-proxy/index.ts`
+
+**Приоритет:** P1 **Время:** 2-3 часа **Файл:**
+`/supabase/functions/gemini-proxy/index.ts`
 
 **Установить Zod:**
+
 ```typescript
 // В начале файла gemini-proxy/index.ts
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 ```
 
 **Создать схемы:**
+
 ```typescript
 // Request schemas
 const ChatRequestSchema = z.object({
   op: z.literal('chat'),
   message: z.string().min(1).max(10000),
   mode: z.enum(['casual', 'coach', 'deep_think']).optional(),
-  location: z.object({
-    lat: z.number().min(-90).max(90),
-    lng: z.number().min(-180).max(180),
-  }).optional(),
+  location: z
+    .object({
+      lat: z.number().min(-90).max(90),
+      lng: z.number().min(-180).max(180),
+    })
+    .optional(),
 });
 
 const AnalyzeMediaSchema = z.object({
@@ -468,6 +503,7 @@ const ProxyRequestSchema = z.discriminatedUnion('op', [
 ```
 
 **Валидировать запрос:**
+
 ```typescript
 // После парсинга JSON (строка ~95)
 let body: z.infer<typeof ProxyRequestSchema>;
@@ -482,11 +518,16 @@ try {
       { headers: corsHeaders }
     );
   }
-  return json({ error: 'Invalid JSON' }, { status: 400 }, { headers: corsHeaders });
+  return json(
+    { error: 'Invalid JSON' },
+    { status: 400 },
+    { headers: corsHeaders }
+  );
 }
 ```
 
 **Санитизация текста:**
+
 ```typescript
 function sanitizeText(text: string): string {
   return text
@@ -501,15 +542,16 @@ const sanitizedMessage = sanitizeText(body.message);
 ```
 
 **Применить к:**
+
 - create-payment/index.ts
 - payment-webhook/index.ts
 
 ---
 
 ### 11. Rate limiting в Redis/KV
-**Приоритет:** P1
-**Время:** 3-4 часа
-**Файл:** `/supabase/functions/gemini-proxy/index.ts`
+
+**Приоритет:** P1 **Время:** 3-4 часа **Файл:**
+`/supabase/functions/gemini-proxy/index.ts`
 
 **Вариант 1: Upstash Redis**
 
@@ -527,7 +569,11 @@ interface RateLimitResult {
   resetAt: number;
 }
 
-async function checkRateLimit(userId: string, tier: SubscriptionPlan, opCost: OpCost): Promise<RateLimitResult> {
+async function checkRateLimit(
+  userId: string,
+  tier: SubscriptionPlan,
+  opCost: OpCost
+): Promise<RateLimitResult> {
   if (!REDIS_URL || !REDIS_TOKEN) {
     // Fallback to in-memory (current behavior)
     return checkRateLimitMemory(userId, tier, opCost);
@@ -543,7 +589,7 @@ async function checkRateLimit(userId: string, tier: SubscriptionPlan, opCost: Op
   const response = await fetch(`${REDIS_URL}/eval`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${REDIS_TOKEN}`,
+      Authorization: `Bearer ${REDIS_TOKEN}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -582,6 +628,7 @@ async function checkRateLimit(userId: string, tier: SubscriptionPlan, opCost: Op
 ```
 
 3. Установить секреты:
+
 ```bash
 supabase secrets set UPSTASH_REDIS_REST_URL=<url>
 supabase secrets set UPSTASH_REDIS_REST_TOKEN=<token>
@@ -590,6 +637,7 @@ supabase secrets set UPSTASH_REDIS_REST_TOKEN=<token>
 **Вариант 2: Supabase (через таблицу)**
 
 Создать таблицу rate_limits:
+
 ```sql
 create table rate_limits (
   user_id uuid references auth.users(id) on delete cascade,
@@ -610,9 +658,9 @@ $$ language sql;
 ---
 
 ### 12. Webhook signature verification
-**Приоритет:** P1
-**Время:** 1-2 часа
-**Файл:** `/supabase/functions/payment-webhook/index.ts`
+
+**Приоритет:** P1 **Время:** 1-2 часа **Файл:**
+`/supabase/functions/payment-webhook/index.ts`
 
 **YooKassa HMAC verification:**
 
@@ -637,13 +685,21 @@ const rawBody = await req.text();
 const signature = req.headers.get('x-yookassa-signature');
 
 if (!signature) {
-  return json({ error: 'Missing signature' }, { status: 401 }, { headers: corsHeaders });
+  return json(
+    { error: 'Missing signature' },
+    { status: 401 },
+    { headers: corsHeaders }
+  );
 }
 
 const isValid = await verifyYooKassaSignature(rawBody, signature, secret);
 if (!isValid) {
   console.error('Invalid YooKassa signature');
-  return json({ error: 'Invalid signature' }, { status: 401 }, { headers: corsHeaders });
+  return json(
+    { error: 'Invalid signature' },
+    { status: 401 },
+    { headers: corsHeaders }
+  );
 }
 
 // Теперь безопасно парсить body
@@ -653,9 +709,9 @@ const event = JSON.parse(rawBody);
 ---
 
 ### 13. YooKassa интеграция
-**Приоритет:** P1
-**Время:** 1-2 дня
-**Файл:** `/supabase/functions/create-payment/index.ts`
+
+**Приоритет:** P1 **Время:** 1-2 дня **Файл:**
+`/supabase/functions/create-payment/index.ts`
 
 **Установить YooKassa SDK для Deno:**
 
@@ -695,7 +751,8 @@ async function createYooKassaPayment(
     headers: {
       'Content-Type': 'application/json',
       'Idempotence-Key': idempotenceKey,
-      'Authorization': 'Basic ' + btoa(`${YOOKASSA_SHOP_ID}:${YOOKASSA_SECRET_KEY}`),
+      Authorization:
+        'Basic ' + btoa(`${YOOKASSA_SHOP_ID}:${YOOKASSA_SECRET_KEY}`),
     },
     body: JSON.stringify({
       amount: {
@@ -793,7 +850,9 @@ if (event.event === 'payment.succeeded' && event.object.paid) {
     .from('subscriptions')
     .update({
       status: 'active',
-      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      current_period_end: new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000
+      ).toISOString(),
       updated_at: new Date().toISOString(),
     })
     .eq('id', subscription_id);
@@ -812,11 +871,12 @@ return json({ received: true });
 ---
 
 ### 14. Заменить placeholder видео
-**Приоритет:** P1
-**Время:** 4-8 часов (зависит от создания контента)
-**Файл:** `/k-sebe-yoga-studio-APPp/components/VideoLibrary.tsx`
+
+**Приоритет:** P1 **Время:** 4-8 часов (зависит от создания контента) **Файл:**
+`/k-sebe-yoga-studio-APPp/components/VideoLibrary.tsx`
 
 **Текущие placeholder URLs (строки 10-46):**
+
 ```typescript
 videoUrl: 'https://www.youtube.com/embed/sTANio_2E0Q?autoplay=1',
 videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1',
@@ -824,6 +884,7 @@ videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1',
 ```
 
 **План:**
+
 1. Записать реальные видео с Катей Габран
 2. Загрузить на YouTube канал студии
 3. Получить embed URLs
@@ -840,8 +901,10 @@ const videos = [
     duration: '30 минут',
     level: 'Начинающий',
     instructor: 'Катя Габран',
-    thumbnail: supabaseUrl + '/storage/v1/object/public/videos/thumbnails/video-1.jpg',
-    videoUrl: supabaseUrl + '/storage/v1/object/public/videos/inside-flow-beginner.mp4',
+    thumbnail:
+      supabaseUrl + '/storage/v1/object/public/videos/thumbnails/video-1.jpg',
+    videoUrl:
+      supabaseUrl + '/storage/v1/object/public/videos/inside-flow-beginner.mp4',
     isPremium: false,
   },
   // ...
@@ -849,6 +912,7 @@ const videos = [
 ```
 
 **Добавить проверку подписки:**
+
 ```typescript
 const { data: subscription } = await supabase
   .from('subscriptions')
@@ -857,17 +921,18 @@ const { data: subscription } = await supabase
   .eq('status', 'active')
   .single();
 
-const canAccessPremium = subscription && ['premium', 'vip'].includes(subscription.plan);
+const canAccessPremium =
+  subscription && ['premium', 'vip'].includes(subscription.plan);
 
-const filteredVideos = videos.filter(v => !v.isPremium || canAccessPremium);
+const filteredVideos = videos.filter((v) => !v.isPremium || canAccessPremium);
 ```
 
 ---
 
 ### 15. Интегрировать расписание с Supabase
-**Приоритет:** P1
-**Время:** 1-2 дня
-**Файлы:**
+
+**Приоритет:** P1 **Время:** 1-2 дня **Файлы:**
+
 - `/k-sebe-yoga-studio-APPp/services/dataService.ts`
 - Новая таблица в Supabase
 
@@ -948,7 +1013,10 @@ export async function getWeekSchedule(startDate: Date): Promise<Class[]> {
   return data || [];
 }
 
-export function getLoadLevel(currentBookings: number, maxCapacity: number): 'low' | 'medium' | 'high' | 'full' {
+export function getLoadLevel(
+  currentBookings: number,
+  maxCapacity: number
+): 'low' | 'medium' | 'high' | 'full' {
   const ratio = currentBookings / maxCapacity;
   if (ratio >= 1) return 'full';
   if (ratio >= 0.8) return 'high';
@@ -963,11 +1031,16 @@ export function getLoadLevel(currentBookings: number, maxCapacity: number): 'low
 
 ```typescript
 // В Dashboard.tsx добавить раздел для admin
-async function createClass(classData: Omit<Class, 'id' | 'created_at' | 'updated_at'>) {
+async function createClass(
+  classData: Omit<Class, 'id' | 'created_at' | 'updated_at'>
+) {
   // Использовать service_role через Edge Function
-  const { data, error } = await supabase.functions.invoke('admin-create-class', {
-    body: classData,
-  });
+  const { data, error } = await supabase.functions.invoke(
+    'admin-create-class',
+    {
+      body: classData,
+    }
+  );
 
   if (error) {
     throw new Error('Failed to create class');
@@ -982,11 +1055,11 @@ async function createClass(classData: Omit<Class, 'id' | 'created_at' | 'updated
 ## 🟢 P2 - СРЕДНИЙ ПРИОРИТЕТ
 
 ### 16. Убрать default exports
-**Приоритет:** P2
-**Время:** 1-2 часа
-**Файлы:** 8 файлов
+
+**Приоритет:** P2 **Время:** 1-2 часа **Файлы:** 8 файлов
 
 **Список файлов:**
+
 1. `/shared/components/FadeIn.tsx:76`
 2. `/shared/components/Logo.tsx:63`
 3. `/shared/components/Breathwork.tsx:229`
@@ -999,16 +1072,19 @@ async function createClass(classData: Omit<Class, 'id' | 'created_at' | 'updated
 **Пример (FadeIn.tsx):**
 
 Было:
+
 ```typescript
 export default FadeIn;
 ```
 
 Стало:
+
 ```typescript
 export { FadeIn };
 ```
 
 **Обновить импорты:**
+
 ```typescript
 // Было:
 import FadeIn from '@ksebe/shared/components/FadeIn';
@@ -1020,6 +1096,7 @@ import { FadeIn } from '@ksebe/shared';
 ```
 
 **Автоматизация:**
+
 ```bash
 # Найти все default exports
 grep -r "export default" shared/ --include="*.ts" --include="*.tsx"
@@ -1030,13 +1107,14 @@ grep -r "export default" shared/ --include="*.ts" --include="*.tsx"
 ---
 
 ### 17. Вынести хардкод в константы
-**Приоритет:** P2
-**Время:** 2-3 часа
-**Файлы:** Blog.tsx, Pricing.tsx, Marquee.tsx, Breathwork.tsx
+
+**Приоритет:** P2 **Время:** 2-3 часа **Файлы:** Blog.tsx, Pricing.tsx,
+Marquee.tsx, Breathwork.tsx
 
 **1. Blog defaultArticles (Blog.tsx строки 21-84)**
 
 Создать в `/shared/constants/content.ts`:
+
 ```typescript
 export const DEFAULT_BLOG_ARTICLES: BlogArticle[] = [
   {
@@ -1046,7 +1124,7 @@ export const DEFAULT_BLOG_ARTICLES: BlogArticle[] = [
     date: '15 ноября 2024',
     readTime: '5 мин',
     category: 'Медитация',
-    image: 'https://...',  // Заменить на реальное
+    image: 'https://...', // Заменить на реальное
     content: '...',
   },
   // ...
@@ -1054,6 +1132,7 @@ export const DEFAULT_BLOG_ARTICLES: BlogArticle[] = [
 ```
 
 Обновить Blog.tsx:
+
 ```typescript
 import { DEFAULT_BLOG_ARTICLES } from '@ksebe/shared/constants/content';
 
@@ -1064,15 +1143,28 @@ const articles = articlesData || DEFAULT_BLOG_ARTICLES;
 **2. Breathwork слова (Marquee.tsx строки 20-83)**
 
 Создать в `/shared/constants/breathwork.ts`:
+
 ```typescript
 export const BREATHWORK_WORDS = {
   inhale: [
-    'Свет', 'Любовь', 'Радость', 'Гармония', 'Энергия',
-    'Сила', 'Мир', 'Благодарность', 'Спокойствие', 'Вдохновение',
+    'Свет',
+    'Любовь',
+    'Радость',
+    'Гармония',
+    'Энергия',
+    'Сила',
+    'Мир',
+    'Благодарность',
+    'Спокойствие',
+    'Вдохновение',
     // ... остальные 30 слов
   ],
   exhale: [
-    'Тишина', 'Покой', 'Отпускание', 'Расслабление', 'Умиротворение',
+    'Тишина',
+    'Покой',
+    'Отпускание',
+    'Расслабление',
+    'Умиротворение',
     // ... остальные 30 слов
   ],
 };
@@ -1081,6 +1173,7 @@ export const BREATHWORK_WORDS = {
 **3. Breathwork тексты фаз (Breathwork.tsx строки 46-65)**
 
 В `/shared/constants/breathwork.ts`:
+
 ```typescript
 export const BREATHWORK_PHASE_TEXTS = {
   inhale: {
@@ -1105,6 +1198,7 @@ export const BREATHWORK_PHASE_TEXTS = {
 **4. Pricing дубликаты (Pricing.tsx строки 12-98)**
 
 Удалить дублирующие определения и использовать:
+
 ```typescript
 import { PRICING_PLANS } from '@ksebe/shared/constants';
 
@@ -1115,18 +1209,19 @@ import { PRICING_PLANS } from '@ksebe/shared/constants';
 ---
 
 ### 18. Оптимизировать изображения
-**Приоритет:** P2
-**Время:** 1 день
-**Файлы:** Все public/images/
+
+**Приоритет:** P2 **Время:** 1 день **Файлы:** Все public/images/
 
 **План действий:**
 
 1. **Установить инструменты:**
+
 ```bash
 npm install -D sharp
 ```
 
 2. **Создать скрипт оптимизации:**
+
 ```javascript
 // scripts/optimize-images.js
 const sharp = require('sharp');
@@ -1179,11 +1274,13 @@ processDirectory('./k-sebe-yoga-studio-APPp/public/images');
 ```
 
 3. **Запустить:**
+
 ```bash
 node scripts/optimize-images.js
 ```
 
 4. **Обновить Image компонент для использования:**
+
 ```tsx
 <picture>
   <source srcSet="/images/studio-1.avif" type="image/avif" />
@@ -1193,6 +1290,7 @@ node scripts/optimize-images.js
 ```
 
 5. **Responsive images:**
+
 ```tsx
 <img
   srcSet="/images/studio-1-400w.webp 400w,
@@ -1208,36 +1306,43 @@ node scripts/optimize-images.js
 
 ### 19-25. Остальные P2 задачи
 
-*(Сокращаю для экономии места, полные инструкции доступны по запросу)*
+_(Сокращаю для экономии места, полные инструкции доступны по запросу)_
 
 **19. Реализовать Achievements UI**
+
 - Создать AchievementUnlockedModal.tsx
 - Создать AchievementsGrid.tsx
 - Интегрировать с useAchievements
 
 **20. Добавить Veo/Image Edit в Edge proxy**
+
 - Расширить gemini-proxy для поддержки Veo
 - Добавить rate limiting для дорогих операций
 
 **21. Раскомментировать Subscription UI**
+
 - Dashboard.tsx строки 1, 25, 64-780
 - Проверить работу после реализации платежей
 
 **22. Newsletter интеграция**
+
 - Выбрать сервис (Mailchimp, SendGrid)
 - Создать Edge Function для подписки
 - Обновить Footer.tsx
 
 **23. "Все статьи" функционал**
+
 - Создать отдельную страницу /blog
 - Или убрать кнопку
 
 **24. Logging & Monitoring (Sentry)**
+
 - Создать аккаунт на sentry.io
 - Установить @sentry/deno
 - Настроить error tracking
 
 **25. Error recovery & cron jobs**
+
 - Создать Edge Function для синхронизации статусов
 - Настроить Supabase cron
 
@@ -1245,38 +1350,37 @@ node scripts/optimize-images.js
 
 ## 🔵 P3 - НИЗКИЙ ПРИОРИТЕТ
 
-*(Краткий список, детали по запросу)*
+_(Краткий список, детали по запросу)_
 
-**26. Push Notifications (Firebase)**
-**27. DailyRecommendation компонент**
-**28. PersonalProgram 7-day programs**
-**29. StreakCalendar visualization**
-**30. Активировать Retreats секцию**
-**31. Активировать AI Subscription секцию**
-**32. i18n поддержка**
-**33. Storybook для компонентов**
-**34. Performance optimization (Lighthouse 90+)**
-**35. Analytics integration (Mixpanel/GA)**
+**26. Push Notifications (Firebase)** **27. DailyRecommendation компонент**
+**28. PersonalProgram 7-day programs** **29. StreakCalendar visualization**
+**30. Активировать Retreats секцию** **31. Активировать AI Subscription секцию**
+**32. i18n поддержка** **33. Storybook для компонентов** **34. Performance
+optimization (Lighthouse 90+)** **35. Analytics integration (Mixpanel/GA)**
 
 ---
 
 ## 📅 TIMELINE
 
 ### Week 1: P0 (Блокеры)
+
 - День 1-2: Security fixes (#1-6)
 - День 3-4: Content replacement (#9)
 - День 5: Testing & .env setup (#7-8)
 
 ### Week 2-3: P1 (Высокий приоритет)
+
 - День 1-3: Backend (#10-13)
 - День 4-7: Content & Integration (#14-15)
 - День 8-10: Testing
 
 ### Week 4-6: P2 (Средний приоритет)
+
 - Weeks 4-5: Code quality & optimization (#16-20)
 - Week 6: Features & Polish (#21-25)
 
 ### Week 7+: P3 (Ongoing)
+
 - Continuous improvements
 - New features
 - Performance optimization
@@ -1288,6 +1392,7 @@ node scripts/optimize-images.js
 Для каждой задачи выполнить:
 
 1. [ ] Создать feature branch
+
    ```bash
    git checkout -b fix/task-name
    ```
@@ -1295,6 +1400,7 @@ node scripts/optimize-images.js
 2. [ ] Внести изменения согласно инструкциям
 
 3. [ ] Запустить локальные тесты
+
    ```bash
    npm run test
    npm run lint
@@ -1302,6 +1408,7 @@ node scripts/optimize-images.js
    ```
 
 4. [ ] Закоммитить с описательным сообщением
+
    ```bash
    git commit -m "fix(security): make webhook secret required"
    ```
@@ -1332,5 +1439,4 @@ node scripts/optimize-images.js
 
 ---
 
-**Конец плана исправлений**
-Обновлено: 2026-01-12
+**Конец плана исправлений** Обновлено: 2026-01-12

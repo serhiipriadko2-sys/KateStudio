@@ -16,11 +16,7 @@ const CORE_ASSETS = ['/', '/index.html'];
 // Install event - precache core assets
 // NOTE: We do NOT call skipWaiting() here - only on user request
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches
-      .open(STATIC_CACHE)
-      .then((cache) => cache.addAll(CORE_ASSETS))
-  );
+  event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(CORE_ASSETS)));
 });
 
 self.addEventListener('activate', (event) => {
@@ -83,13 +79,15 @@ self.addEventListener('fetch', (event) => {
       // Images and other assets - Stale While Revalidate
       event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
-          const fetchPromise = fetch(event.request).then((response) => {
-            if (response.ok) {
-              const responseClone = response.clone();
-              caches.open(RUNTIME_CACHE).then((cache) => cache.put(event.request, responseClone));
-            }
-            return response;
-          }).catch(() => cachedResponse);
+          const fetchPromise = fetch(event.request)
+            .then((response) => {
+              if (response.ok) {
+                const responseClone = response.clone();
+                caches.open(RUNTIME_CACHE).then((cache) => cache.put(event.request, responseClone));
+              }
+              return response;
+            })
+            .catch(() => cachedResponse);
 
           return cachedResponse || fetchPromise;
         })
