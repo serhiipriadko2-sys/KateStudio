@@ -12,10 +12,6 @@ vi.mock('../../../shared/services', () => ({
   },
 }));
 
-vi.mock('../../services/geminiService', () => ({
-  analyzeImageContent: vi.fn().mockResolvedValue('ok'),
-}));
-
 describe('Image', () => {
   it('renders an image and controls when storageKey is provided', async () => {
     render(
@@ -25,7 +21,6 @@ describe('Image', () => {
     const image = await screen.findByAltText('Тестовое изображение');
     expect(image).toHaveAttribute('src', 'https://example.com/default.jpg');
 
-    expect(screen.getByTitle('Анатомический разбор')).toBeInTheDocument();
     expect(screen.getByTitle('Загрузить файл')).toBeInTheDocument();
     expect(screen.getByTitle('Вставить ссылку')).toBeInTheDocument();
   });
