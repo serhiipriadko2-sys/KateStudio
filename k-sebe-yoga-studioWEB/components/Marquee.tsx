@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const INHALE_WORDS = [
   'Свет',
@@ -29,19 +29,36 @@ const EXHALE_WORDS = [
   'Умиротворение',
 ];
 
-// Number of words displayed simultaneously in the animation
-const WORDS_DISPLAYED = 4;
+/**
+ * Number of concept words displayed in the strip.
+ * Total slots = LABEL / WORD / LABEL / WORD / ... / LABEL
+ */
+const WORDS_DISPLAYED = 3;
+const SLOT_COUNT = WORDS_DISPLAYED * 2 + 1;
+
+/**
+ * Subtle, static asymmetry per column (adds organic feel).
+ */
+const COLUMN_JITTER: Array<{ y: number; r: number }> = [
+  { y: -2, r: -0.14 },
+  { y: 1, r: 0.12 },
+  { y: -1, r: -0.08 },
+  { y: 2, r: 0.16 },
+  { y: 0, r: -0.06 },
+  { y: -1, r: 0.1 },
+  { y: 1, r: -0.12 },
+];
 
 export const Marquee: React.FC = () => {
   const [isInhale, setIsInhale] = useState(true);
   const [wordOffset, setWordOffset] = useState(0);
-  const cycleDuration = 4000;
+
+  const cycleDurationMs = 5000;
+  const transitionDurationMs = 4800;
 
   useEffect(() => {
-    // 4 seconds per phase - coherent breathing rhythm
     const interval = setInterval(() => {
       setIsInhale((prev) => {
-        // Rotate words when transitioning from exhale to inhale
         if (!prev) {
           setWordOffset(
             (offset) => (offset + 1) % Math.max(INHALE_WORDS.length - WORDS_DISPLAYED + 1, 1)
@@ -49,114 +66,104 @@ export const Marquee: React.FC = () => {
         }
         return !prev;
       });
-    }, cycleDuration);
+    }, cycleDurationMs);
 
     return () => clearInterval(interval);
   }, []);
 
-  const transitionDuration = `${cycleDuration}ms`;
+  const transitionDuration = `${transitionDurationMs}ms`;
 
-  // Get rotated words (WORDS_DISPLAYED words starting from offset)
   const getRotatedWords = (words: string[]) => {
-    const result = [];
+    const result: string[] = [];
     for (let i = 0; i < WORDS_DISPLAYED; i++) {
       result.push(words[(wordOffset + i) % words.length]);
     }
     return result;
   };
 
-  const renderStrip = (words: string[], label: string, isActive: boolean) => {
+  const renderStrip = (phase: 'inhale' | 'exhale', isActive: boolean) => {
+    const label = phase === 'inhale' ? 'Вдох' : 'Выдох';
+    const words = phase === 'inhale' ? INHALE_WORDS : EXHALE_WORDS;
     const rotatedWords = getRotatedWords(words);
-    const wordOffsets = [-6, 4, -3, 5];
-    const labelOffsets = [-4, 3, -5, 2];
+
     return (
       <div
-        className={`
-          absolute inset-0 flex items-center justify-center w-full relative
-          gap-6 sm:gap-12 md:gap-24 px-4
-          transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-          ${isActive ? 'opacity-100 blur-0 scale-100 z-10' : 'opacity-0 blur-xl scale-105 z-0'}
-        `}
-        style={{ transitionDuration }}
-      >
-        <div
-          className={`
-            absolute inset-0 pointer-events-none transition-all ease-[cubic-bezier(0.33,0,0.67,1)]
-            ${isActive ? 'opacity-70' : 'opacity-0'}
-          `}
-          style={{ transitionDuration }}
-        >
-          <div className="absolute -left-20 top-1/2 h-24 w-1/2 -translate-y-1/2 rounded-full bg-brand-light/70 blur-[40px]" />
-          <div className="absolute right-4 top-1/3 h-16 w-1/3 rounded-full bg-brand-mint/40 blur-[50px]" />
-        </div>
-        {/* First Label */}
-        <span
-          className={`
-            text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] text-brand-green/60 shrink-0
-            transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-            ${isActive ? 'opacity-100' : 'opacity-0'}
-          `}
-          style={{
+        className={[
+          'fog-layer',
+          'absolute inset-0 w-full flex justify-between items-center',
+          'px-4 md:px-12 max-w-[1400px] mx-auto',
+          'transition-[opacity,transform,filter]',
+          'ease-[cubic-bezier(0.33,0,0.67,1)]',
+          isActive ? 'opacity-100 blur-0 scale-100 z-10' : 'opacity-0 blur-md scale-[0.985] z-0',
+        ].join(' ')}
+        style={
+          {
             transitionDuration,
-            transform: `translateY(${isActive ? labelOffsets[0] : labelOffsets[0] + 6}px)`,
-          }}
-        >
-          {label}
-        </span>
+            ['--fog-dur' as never]: transitionDuration,
+          } as React.CSSProperties
+        }
+      >
+        {Array.from({ length: SLOT_COUNT }).map((_, slotIndex) => {
+          const isLabelSlot = slotIndex % 2 === 0;
+          const wordIndex = Math.floor(slotIndex / 2);
+          const text = isLabelSlot ? label : rotatedWords[wordIndex];
 
-        {rotatedWords.map((word, i) => (
-          <React.Fragment key={`${wordOffset}-${i}`}>
-            {/* Word */}
-            <span
-              className={`
-                text-xl sm:text-2xl md:text-4xl font-serif text-brand-text/90 whitespace-nowrap shrink-0
-                transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-                ${isActive ? 'tracking-normal opacity-100 blur-0' : 'tracking-[0.35em] opacity-0 blur-[8px]'}
-              `}
-              style={{
-                transitionDuration,
-                transitionDelay: isActive ? `${i * 120}ms` : '0ms',
-                transform: `translateY(${isActive ? wordOffsets[i] : wordOffsets[i] + 8}px)`,
-              }}
-            >
-              {word}
-            </span>
+          const jitter = COLUMN_JITTER[slotIndex] ?? { y: 0, r: 0 };
+          const delayMs = slotIndex * 120;
 
-            {/* Label */}
-            <span
-              className={`
-                text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] text-brand-green/60 shrink-0
-                transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-                ${isActive ? 'opacity-100' : 'opacity-0'}
-              `}
-              style={{
-                transitionDuration,
-                transform: `translateY(${
-                  isActive
-                    ? labelOffsets[(i + 1) % labelOffsets.length]
-                    : labelOffsets[(i + 1) % labelOffsets.length] + 6
-                }px)`,
-              }}
+          return (
+            <div
+              key={`${phase}-${slotIndex}`}
+              className="flex-1 flex justify-center text-center"
+              style={{ transform: `translateY(${jitter.y}px) rotate(${jitter.r}deg)` }}
             >
-              {label}
-            </span>
-          </React.Fragment>
-        ))}
+              {isLabelSlot ? (
+                <span
+                  data-text={label}
+                  style={{ ['--fog-delay' as never]: `${delayMs}ms` } as React.CSSProperties}
+                  className={[
+                    'fog-word',
+                    isActive ? 'fog-in' : 'fog-out',
+                    'text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] shrink-0',
+                    phase === 'inhale'
+                      ? 'text-brand-green/75 drop-shadow-[0_0_10px_rgba(87,167,115,0.22)]'
+                      : 'text-brand-green/55 drop-shadow-[0_0_8px_rgba(87,167,115,0.12)]',
+                    isActive ? 'opacity-100' : 'opacity-0',
+                  ].join(' ')}
+                >
+                  {label}
+                </span>
+              ) : (
+                <span
+                  data-text={text}
+                  style={{ ['--fog-delay' as never]: `${delayMs}ms` } as React.CSSProperties}
+                  className={[
+                    'fog-word',
+                    isActive ? 'fog-in' : 'fog-out',
+                    'text-base sm:text-xl md:text-3xl font-serif italic whitespace-nowrap',
+                    phase === 'inhale'
+                      ? 'text-brand-text/90 font-normal'
+                      : 'text-brand-text/70 font-light',
+                  ].join(' ')}
+                >
+                  {text}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   };
 
   return (
     <section className="relative h-32 md:h-48 overflow-hidden flex flex-col justify-center items-center bg-brand-light border-y border-brand-green/5">
-      {/* --- Gradient Masks for "Weaving" Effect --- */}
       <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-brand-light to-transparent z-10 pointer-events-none"></div>
       <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-brand-light to-transparent z-10 pointer-events-none"></div>
       <div className="absolute inset-y-0 left-0 w-12 md:w-32 bg-gradient-to-r from-brand-light via-brand-light/90 to-transparent z-10 pointer-events-none"></div>
       <div className="absolute inset-y-0 right-0 w-12 md:w-32 bg-gradient-to-l from-brand-light via-brand-light/90 to-transparent z-10 pointer-events-none"></div>
 
-      {/* --- Organic Breathing Background - Multiple layers for depth --- */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Primary breath wave */}
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-5xl h-40 bg-brand-mint/25 blur-[100px] rounded-full transition-all ease-[cubic-bezier(0.33,0,0.67,1)]"
           style={{
@@ -165,30 +172,27 @@ export const Marquee: React.FC = () => {
             opacity: isInhale ? 0.4 : 0.15,
           }}
         ></div>
-        {/* Secondary wave - offset timing for organic feel */}
         <div
           className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-64 h-24 bg-brand-green/10 blur-[60px] rounded-full transition-all ease-[cubic-bezier(0.25,0.1,0.25,1)]"
           style={{
-            transitionDuration: `${cycleDuration * 1.1}ms`,
+            transitionDuration: `${cycleDurationMs * 1.1}ms`,
             transform: `translate(-50%, -50%) scale(${isInhale ? 1.2 : 0.9})`,
             opacity: isInhale ? 0.3 : 0.1,
           }}
         ></div>
-        {/* Tertiary wave - right side */}
         <div
           className="absolute top-1/2 right-1/4 -translate-y-1/2 w-48 h-20 bg-brand-yellow/15 blur-[50px] rounded-full transition-all ease-[cubic-bezier(0.4,0,0.2,1)]"
           style={{
-            transitionDuration: `${cycleDuration * 0.9}ms`,
+            transitionDuration: `${cycleDurationMs * 0.9}ms`,
             transform: `translateY(-50%) scale(${isInhale ? 1.15 : 0.8})`,
             opacity: isInhale ? 0.25 : 0.08,
           }}
         ></div>
       </div>
 
-      {/* --- Main Content Strip --- */}
       <div className="relative w-full h-full flex items-center justify-center select-none overflow-hidden max-w-[1920px] mx-auto">
-        {renderStrip(INHALE_WORDS, 'Вдох', isInhale)}
-        {renderStrip(EXHALE_WORDS, 'Выдох', !isInhale)}
+        {renderStrip('inhale', isInhale)}
+        {renderStrip('exhale', !isInhale)}
       </div>
     </section>
   );

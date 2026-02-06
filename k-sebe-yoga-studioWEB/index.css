@@ -103,3 +103,196 @@ html {
   background-color: var(--color-brand-green);
   color: white;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Marquee Fog Effect                                                         */
+/* -------------------------------------------------------------------------- */
+
+.fog-layer {
+  isolation: isolate;
+  -webkit-mask-image:
+    radial-gradient(circle at 18% 50%, #000 58%, transparent 78%),
+    radial-gradient(circle at 52% 40%, #000 54%, transparent 80%),
+    radial-gradient(circle at 86% 58%, #000 60%, transparent 82%);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 140% 130%;
+  -webkit-mask-position:
+    0% 50%,
+    50% 40%,
+    100% 60%;
+  mask-image:
+    radial-gradient(circle at 18% 50%, #000 58%, transparent 78%),
+    radial-gradient(circle at 52% 40%, #000 54%, transparent 80%),
+    radial-gradient(circle at 86% 58%, #000 60%, transparent 82%);
+  mask-repeat: no-repeat;
+  mask-size: 140% 130%;
+  mask-position:
+    0% 50%,
+    50% 40%,
+    100% 60%;
+  animation: fog-mask-drift 9s ease-in-out infinite alternate;
+}
+
+@keyframes fog-mask-drift {
+  0% {
+    -webkit-mask-position:
+      0% 45%,
+      55% 35%,
+      100% 55%;
+    mask-position:
+      0% 45%,
+      55% 35%,
+      100% 55%;
+  }
+  100% {
+    -webkit-mask-position:
+      12% 55%,
+      45% 55%,
+      88% 45%;
+    mask-position:
+      12% 55%,
+      45% 55%,
+      88% 45%;
+  }
+}
+
+.fog-word {
+  position: relative;
+  display: inline-block;
+  will-change: opacity, transform, filter;
+}
+
+.fog-word::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  opacity: 0;
+  filter: blur(18px);
+  transform: translate3d(0, 0, 0) scale(1.03);
+  mix-blend-mode: screen;
+}
+
+.fog-in {
+  animation: fog-in-base var(--fog-dur, 4800ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--fog-delay, 0ms);
+}
+
+.fog-in::after {
+  animation:
+    fog-in-ghost var(--fog-dur, 4800ms) cubic-bezier(0.22, 1, 0.36, 1) both,
+    fog-ghost-drift 7s ease-in-out infinite;
+  animation-delay: var(--fog-delay, 0ms), 0ms;
+}
+
+.fog-out {
+  animation: fog-out-base var(--fog-dur, 4800ms) cubic-bezier(0.22, 0, 0.36, 1) both;
+  animation-delay: var(--fog-delay, 0ms);
+}
+
+.fog-out::after {
+  animation:
+    fog-out-ghost var(--fog-dur, 4800ms) cubic-bezier(0.22, 0, 0.36, 1) both,
+    fog-ghost-drift 7s ease-in-out infinite;
+  animation-delay: var(--fog-delay, 0ms), 0ms;
+}
+
+@keyframes fog-in-base {
+  0% {
+    opacity: 0;
+    filter: blur(16px) saturate(0.9);
+    transform: translateY(8px) scale(0.99);
+  }
+  38% {
+    opacity: 1;
+    filter: blur(3px) saturate(1);
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fog-in-ghost {
+  0% {
+    opacity: 0.28;
+    filter: blur(34px);
+    transform: translateY(10px) scale(1.06);
+  }
+  42% {
+    opacity: 0.12;
+    filter: blur(18px);
+    transform: translateY(4px) scale(1.03);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(0) scale(1.02);
+  }
+}
+
+@keyframes fog-out-base {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+  18% {
+    opacity: 0.95;
+    filter: blur(2px);
+    transform: translateY(-1px) scale(1.005);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(20px) saturate(0.9);
+    transform: translateY(-10px) scale(1.03);
+  }
+}
+
+@keyframes fog-out-ghost {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(0) scale(1.02);
+  }
+  55% {
+    opacity: 0.14;
+    filter: blur(18px);
+    transform: translateY(-4px) scale(1.04);
+  }
+  100% {
+    opacity: 0.26;
+    filter: blur(36px);
+    transform: translateY(-12px) scale(1.08);
+  }
+}
+
+@keyframes fog-ghost-drift {
+  0% {
+    transform: translate3d(-1px, 0px, 0) scale(1.03);
+  }
+  50% {
+    transform: translate3d(2px, -1px, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(-2px, 1px, 0) scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fog-layer {
+    animation: none;
+  }
+  .fog-in,
+  .fog-out,
+  .fog-in::after,
+  .fog-out::after {
+    animation: none;
+  }
+}
