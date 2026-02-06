@@ -5,26 +5,24 @@
 
 ## P0 — Безопасность и доступы
 
-- [ ] Edge Functions: обязательные секреты и CORS whitelist.
+- [ ] Edge Functions: обязательные секреты и CORS whitelist (ALLOWED_ORIGINS,
+      RECAPTCHA_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY).
 - [ ] Удалены все клиентские fallback‑ключи.
-- [ ] RLS для критичных таблиц (subscriptions/bookings/contacts).
-- [ ] Контактная форма защищена reCAPTCHA v3 и rate‑limit (Edge KV).
+- [ ] RLS для критичных таблиц (subscriptions/bookings/contacts) + политика для
+      insert в contacts.
+- [x] Контактная форма защищена reCAPTCHA v3 и rate‑limit (Edge KV).
 
 ## P0 — Схема Supabase (разрыв «код → база»)
 
-В коде используются таблицы, которых нет в миграциях. Нужно создать миграции и
-RLS‑политики.
+В коде всё ещё используется таблица без миграции — нужна схема + RLS‑политики.
 
-| Таблица    | Где используется                                                                                       | Примечание                 |
-| ---------- | ------------------------------------------------------------------------------------------------------ | -------------------------- |
-| `contacts` | `k-sebe-yoga-studioWEB/components/Contact.tsx`                                                         | Публичная форма контактов. |
-| `classes`  | `k-sebe-yoga-studioWEB/components/Schedule.tsx`                                                        | Расписание на веб‑сайте.   |
-| `bookings` | `k-sebe-yoga-studioWEB/components/BookingModal.tsx`, `k-sebe-yoga-studio-APPp/services/dataService.ts` | Записи на занятия.         |
-| `profiles` | `k-sebe-yoga-studio-APPp/services/dataService.ts`                                                      | Профили пользователей PWA. |
+| Таблица   | Где используется                                | Примечание               |
+| --------- | ----------------------------------------------- | ------------------------ |
+| `classes` | `k-sebe-yoga-studioWEB/components/Schedule.tsx` | Расписание на веб‑сайте. |
 
 ## P1 — Продукт без AI
 
-- [ ] Ассистент на web: только rule‑based KB, без внешних AI вызовов.
+- [x] Ассистент на web: только rule‑based KB, без внешних AI вызовов.
 - [ ] Расписание: fallback на локальные данные, если Supabase не настроен.
 - [ ] Запись: гостевой поток (без обязательного Auth).
 - [ ] Sentry подключён (web + app) и настроены алерты в GitHub Actions.
