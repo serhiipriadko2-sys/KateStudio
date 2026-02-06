@@ -1,237 +1,247 @@
 /**
  * K Sebe Yoga Studio - Unified Marquee Component
  * ===============================================
- * Breathing visualization with customizable words and timing
+ * Breathing visualization with customizable words and timing.
+ *
+ * Animation approach:
+ * - Two simultaneous layers (inhale/exhale) with crossfade
+ * - filter: blur(...) animated for fog dissolve
+ * - mask-image with radial gradient for soft fog edges
+ * - Per-slot stagger delays + micro translate/rotate for organic asymmetry
+ * - will-change used sparingly (2 layers + slots)
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export interface MarqueeConfig {
   inhaleWords?: string[];
   exhaleWords?: string[];
-  /** Breath cycle duration in ms (default: 4000) */
+  /** Breath cycle duration in ms (default: 5000) */
   cycleDuration?: number;
+  /** How many concepts to show in one line (default: 3) */
+  wordsDisplayed?: number;
   /** Visual style variant */
   variant?: 'default' | 'minimal';
   /** Show animated indicator dot */
   showIndicator?: boolean;
 }
 
-const DEFAULT_INHALE = [
-  'Свет',
-  'Любовь',
-  'Энергия',
-  'Поток',
-  'Вдохновение',
-  'Сила',
-  'Благодарность',
-  'Радость',
-  'Надежда',
-  'Присутствие',
-  'Открытость',
-  'Жизнь',
-  'Свобода',
-  'Красота',
-  'Мечта',
-  'Смелость',
-  'Щедрость',
-  'Вера',
-  'Нежность',
-  'Чистота',
-  'Целостность',
-  'Связь',
-  'Сияние',
-  'Творчество',
-  'Осознанность',
-  'Возрождение',
-  'Восторг',
-  'Пробуждение',
-  'Рост',
-  'Подъём',
-];
-const DEFAULT_EXHALE = [
-  'Тишина',
-  'Покой',
-  'Баланс',
-  'Мягкость',
-  'Отпускание',
-  'Принятие',
-  'Спокойствие',
-  'Лёгкость',
-  'Расслабление',
-  'Доверие',
-  'Тепло',
-  'Умиротворение',
-  'Безмятежность',
-  'Гармония',
-  'Созерцание',
-  'Мир',
-  'Благость',
-  'Простота',
-  'Комфорт',
-  'Нирвана',
-  'Затишье',
-  'Плавность',
-  'Неторопливость',
-  'Пустота',
-  'Ясность',
-  'Освобождение',
-  'Растворение',
-  'Завершение',
-  'Заземление',
-  'Центрирование',
-];
+const DEFAULT_INHALE = ['Свет', 'Любовь', 'Радость', 'Энергия', 'Сила', 'Смелость', 'Жизнь'];
 
-// Number of words displayed simultaneously in the animation
-const WORDS_DISPLAYED = 3;
+const DEFAULT_EXHALE = ['Покой', 'Тишина', 'Мир', 'Баланс', 'Лёгкость', 'Принятие', 'Освобождение'];
+
+const WORDS_DISPLAYED_DEFAULT = 3;
+type Phase = 'inhale' | 'exhale';
+
+type SlotMotion = {
+  delayInMs: number;
+  delayOutMs: number;
+  inhale: { x: number; y: number; r: number };
+  exhale: { x: number; y: number; r: number };
+};
+
+const getRandomWords = (words: string[], count: number): string[] => {
+  if (words.length <= count) return words;
+  const shuffled = [...words].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
 
 export const Marquee: React.FC<MarqueeConfig> = ({
   inhaleWords = DEFAULT_INHALE,
   exhaleWords = DEFAULT_EXHALE,
-  cycleDuration = 4000,
+  cycleDuration = 5000,
+  wordsDisplayed = WORDS_DISPLAYED_DEFAULT,
   variant = 'default',
   showIndicator = false,
 }) => {
-  const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale');
-  const [currentWords, setCurrentWords] = useState<string[]>([]);
+  const [phase, setPhase] = useState<Phase>('inhale');
+  const [inhaleLayerWords, setInhaleLayerWords] = useState<string[]>([]);
+  const [exhaleLayerWords, setExhaleLayerWords] = useState<string[]>([]);
 
-  // Generate random words from the word list using partial Fisher-Yates shuffle
-  // Only shuffles the first 'count' elements for better performance
-  const getRandomWords = (words: string[], count: number): string[] => {
-    const shuffled = [...words];
-    const n = Math.min(count, shuffled.length);
-    for (let i = 0; i < n; i++) {
-      const j = i + Math.floor(Math.random() * (shuffled.length - i));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled.slice(0, count);
-  };
-
-  // Initialize with random words from the current phase
+  // Init layer content
   useEffect(() => {
-    const words = phase === 'inhale' ? inhaleWords : exhaleWords;
-    setCurrentWords(getRandomWords(words, WORDS_DISPLAYED));
-  }, [inhaleWords, exhaleWords, phase]);
+    setInhaleLayerWords(getRandomWords(inhaleWords, wordsDisplayed));
+    setExhaleLayerWords(getRandomWords(exhaleWords, wordsDisplayed));
+  }, [inhaleWords, exhaleWords, wordsDisplayed]);
 
+  // Cycle: refresh words for the *incoming* phase before it fades in
   useEffect(() => {
-    const interval = setInterval(() => {
+    const id = window.setInterval(() => {
       setPhase((prev) => {
-        const nextPhase = prev === 'inhale' ? 'exhale' : 'inhale';
-        // Select random words for the next phase
-        const wordsToUse = nextPhase === 'inhale' ? inhaleWords : exhaleWords;
-        setCurrentWords(getRandomWords(wordsToUse, WORDS_DISPLAYED));
-        return nextPhase;
+        const next: Phase = prev === 'inhale' ? 'exhale' : 'inhale';
+        if (next === 'inhale') setInhaleLayerWords(getRandomWords(inhaleWords, wordsDisplayed));
+        else setExhaleLayerWords(getRandomWords(exhaleWords, wordsDisplayed));
+        return next;
       });
     }, cycleDuration);
-    return () => clearInterval(interval);
-  }, [cycleDuration, inhaleWords, exhaleWords]);
+
+    return () => window.clearInterval(id);
+  }, [cycleDuration, inhaleWords, exhaleWords, wordsDisplayed]);
 
   const isInhale = phase === 'inhale';
-  const transitionDuration = `${cycleDuration}ms`;
+  const slots = wordsDisplayed * 2 + 1;
 
-  const renderStrip = (words: string[], label: string, isActive: boolean) => {
+  // Animation shorter than full cycle for overlap
+  const easing = 'cubic-bezier(0.33,0,0.67,1)';
+  const animMs = Math.max(1400, Math.round(cycleDuration * 0.78));
+  const layerInDelayMs = Math.round(cycleDuration * 0.06);
+
+  const fogMask = useMemo(() => {
+    // Opaque until ~72%, then soft fade out beyond 100% ("fog edge")
+    return 'radial-gradient(130% 180% at 50% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 72%, rgba(0,0,0,0) 118%)';
+  }, []);
+
+  const slotMotion = useMemo<SlotMotion[]>(() => {
+    const mid = Math.floor(slots / 2);
+    const rand = (min: number, max: number) => min + Math.random() * (max - min);
+
+    return Array.from({ length: slots }, (_, i) => {
+      const dist = Math.abs(i - mid);
+      return {
+        delayInMs: Math.round(dist * 90 + rand(0, 70)),
+        delayOutMs: Math.round(dist * 60 + rand(0, 60)),
+        inhale: { x: rand(-10, 10), y: rand(-6, 6), r: rand(-1.2, 1.2) },
+        exhale: { x: rand(-10, 10), y: rand(-6, 6), r: rand(-1.2, 1.2) },
+      };
+    });
+  }, [slots]);
+
+  const getLayerWords = (type: Phase) => (type === 'inhale' ? inhaleLayerWords : exhaleLayerWords);
+
+  const getMaskPosition = (type: Phase, active: boolean): string => {
+    if (type === 'inhale') return active ? '48% 46%' : '43% 60%';
+    return active ? '52% 54%' : '57% 40%';
+  };
+
+  const getMaskSize = (active: boolean): string => (active ? '190% 260%' : '85% 115%');
+
+  const layerStyle = (type: Phase, isCurrent: boolean): React.CSSProperties => {
+    const active = isCurrent;
+
+    return {
+      zIndex: active ? 2 : 1,
+      opacity: active ? 1 : 0,
+      filter: `blur(${active ? 0 : 18}px)`,
+      transform: `translate3d(0, ${active ? 0 : 10}px, 0) scale(${active ? 1 : 0.985})`,
+      transitionProperty:
+        'opacity, transform, filter, -webkit-mask-position, -webkit-mask-size, mask-position, mask-size',
+      transitionDuration: `${animMs}ms`,
+      transitionTimingFunction: easing,
+      transitionDelay: `${active ? layerInDelayMs : 0}ms`,
+      WebkitMaskImage: fogMask,
+      maskImage: fogMask,
+      WebkitMaskRepeat: 'no-repeat',
+      maskRepeat: 'no-repeat',
+      WebkitMaskPosition: getMaskPosition(type, active),
+      maskPosition: getMaskPosition(type, active),
+      WebkitMaskSize: getMaskSize(active),
+      maskSize: getMaskSize(active),
+      willChange: 'opacity, transform, filter',
+    };
+  };
+
+  const slotStyle = (type: Phase, slotIndex: number, isCurrent: boolean): React.CSSProperties => {
+    const m = slotMotion[slotIndex];
+    const base = type === 'inhale' ? m.inhale : m.exhale;
+
+    const active = isCurrent;
+
+    const x = active ? base.x : base.x * 1.6;
+    const y = active ? base.y : base.y * 1.6 + 12;
+    const r = active ? base.r : base.r * 1.4;
+
+    return {
+      opacity: active ? 1 : 0,
+      filter: `blur(${active ? 0 : 10}px)`,
+      transform: `translate3d(${x}px, ${y}px, 0) rotate(${r}deg)`,
+      transitionProperty: 'opacity, transform, filter',
+      transitionDuration: `${animMs}ms`,
+      transitionTimingFunction: easing,
+      transitionDelay: `${active ? m.delayInMs : m.delayOutMs}ms`,
+      willChange: 'opacity, transform, filter',
+    };
+  };
+
+  const renderLayer = (type: Phase) => {
+    const isCurrent = phase === type;
+    const actionWord = type === 'inhale' ? 'Вдох' : 'Выдох';
+    const concepts = getLayerWords(type);
+
     return (
       <div
-        className={`
-          absolute inset-0 flex items-center justify-center w-full
-          gap-6 sm:gap-12 md:gap-24 px-4
-          transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-          ${isActive ? 'opacity-100 blur-0 scale-100 z-10' : 'opacity-0 blur-sm scale-95 z-0'}
-        `}
-        style={{ transitionDuration }}
+        aria-hidden="true"
+        className="absolute inset-0 w-full flex justify-between items-center px-4 md:px-12 max-w-[1400px] mx-auto pointer-events-none select-none"
+        style={layerStyle(type, isCurrent)}
       >
-        {words.map((word, i) => (
-          <React.Fragment key={`${word}-${i}`}>
-            {/* Word */}
-            <span
-              className={`
-                text-xl sm:text-2xl md:text-4xl font-serif text-brand-text/90 whitespace-nowrap shrink-0
-                transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-                ${variant === 'minimal' ? 'italic' : ''}
-                ${isActive ? 'tracking-normal opacity-100' : 'tracking-wide opacity-0'}
-              `}
-              style={{
-                transitionDuration,
-                transitionDelay: isActive ? `${i * 100}ms` : '0ms',
-              }}
-            >
-              {word}
-            </span>
-          </React.Fragment>
-        ))}
+        {Array.from({ length: slots }).map((_, slotIndex) => {
+          const isAction = slotIndex % 2 === 0;
+          const conceptIndex = Math.floor(slotIndex / 2);
+          const concept = concepts[conceptIndex % Math.max(1, concepts.length)];
 
-        {/* Phase Label at the end */}
-        <span
-          className={`
-            text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] text-brand-green/60 shrink-0
-            transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-            ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
-          `}
-          style={{ transitionDuration }}
-        >
-          {label}
-          {showIndicator && isActive && isInhale && (
-            <span className="inline-block w-1.5 h-1.5 bg-brand-green rounded-full ml-2 animate-ping" />
-          )}
-        </span>
+          return (
+            <div key={`${type}-${slotIndex}`} className="flex-1 flex justify-center text-center">
+              <div style={slotStyle(type, slotIndex, isCurrent)}>
+                {isAction ? (
+                  <span
+                    className={
+                      `font-sans font-bold uppercase text-[10px] sm:text-xs md:text-sm ` +
+                      (type === 'inhale'
+                        ? 'text-brand-green/80 drop-shadow-[0_0_8px_rgba(87,167,115,0.35)] tracking-[0.48em]'
+                        : 'text-stone-300 tracking-[0.18em]')
+                    }
+                  >
+                    {actionWord}
+                    {showIndicator && isCurrent && type === 'inhale' && slotIndex === slots - 1 && (
+                      <span className="inline-block w-1 h-1 bg-brand-green rounded-full ml-2 animate-ping" />
+                    )}
+                  </span>
+                ) : (
+                  <span
+                    className={
+                      `font-serif italic whitespace-nowrap ` +
+                      'text-base sm:text-xl md:text-3xl ' +
+                      (type === 'inhale'
+                        ? 'text-brand-text/90 font-normal drop-shadow-[0_0_14px_rgba(255,255,255,0.35)]'
+                        : 'text-stone-300 font-light')
+                    }
+                  >
+                    {concept}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   };
 
+  const transitionDuration = `${animMs}ms`;
+
   return (
-    <section className="relative h-32 md:h-48 overflow-hidden flex flex-col justify-center items-center bg-brand-light border-y border-brand-green/5">
+    <section className="relative h-40 md:h-48 overflow-hidden flex flex-col justify-center items-center bg-brand-light border-y border-brand-green/5">
       {/* Gradient Masks */}
       <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-brand-light to-transparent z-10 pointer-events-none" />
       <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-brand-light to-transparent z-10 pointer-events-none" />
       <div className="absolute inset-y-0 left-0 w-12 md:w-32 bg-gradient-to-r from-brand-light via-brand-light/90 to-transparent z-10 pointer-events-none" />
       <div className="absolute inset-y-0 right-0 w-12 md:w-32 bg-gradient-to-l from-brand-light via-brand-light/90 to-transparent z-10 pointer-events-none" />
 
-      {/* Organic Breathing Background - Multiple layers for depth */}
+      {/* Organic Breathing Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Primary breath wave */}
         <div
-          className={`
-            absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-            w-[120%] max-w-5xl h-40 bg-brand-mint/25 blur-[100px] rounded-full
-            transition-all ease-[cubic-bezier(0.33,0,0.67,1)]
-          `}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-5xl h-44 bg-brand-mint/25 blur-[110px] rounded-full"
           style={{
-            transitionDuration,
-            transform: `translate(-50%, -50%) scale(${isInhale ? 1.1 : 0.85})`,
-            opacity: isInhale ? 0.4 : 0.15,
-          }}
-        />
-        {/* Secondary wave - offset timing for organic feel */}
-        <div
-          className={`
-            absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2
-            w-64 h-24 bg-brand-green/10 blur-[60px] rounded-full
-            transition-all ease-[cubic-bezier(0.25,0.1,0.25,1)]
-          `}
-          style={{
-            transitionDuration: `${cycleDuration * 1.1}ms`,
-            transform: `translate(-50%, -50%) scale(${isInhale ? 1.2 : 0.9})`,
-            opacity: isInhale ? 0.3 : 0.1,
-          }}
-        />
-        {/* Tertiary wave - right side */}
-        <div
-          className={`
-            absolute top-1/2 right-1/4 -translate-y-1/2
-            w-48 h-20 bg-brand-yellow/15 blur-[50px] rounded-full
-            transition-all ease-[cubic-bezier(0.4,0,0.2,1)]
-          `}
-          style={{
-            transitionDuration: `${cycleDuration * 0.9}ms`,
-            transform: `translateY(-50%) scale(${isInhale ? 1.15 : 0.8})`,
-            opacity: isInhale ? 0.25 : 0.08,
+            transition: `transform ${transitionDuration} ${easing}, opacity ${transitionDuration} ${easing}`,
+            transform: `translate(-50%, -50%) scale(${isInhale ? 1.12 : 0.86})`,
+            opacity: isInhale ? 0.45 : 0.16,
           }}
         />
       </div>
 
       {/* Main Content */}
       <div className="relative w-full h-full flex items-center justify-center select-none overflow-hidden max-w-[1920px] mx-auto">
-        {renderStrip(currentWords, isInhale ? 'Вдох' : 'Выдох', true)}
+        {renderLayer('inhale')}
+        {renderLayer('exhale')}
       </div>
     </section>
   );
