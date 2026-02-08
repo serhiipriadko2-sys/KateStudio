@@ -18,6 +18,9 @@ export { OfflineBanner } from './OfflineBanner';
 export { Skeleton, SkeletonVideoCard, SkeletonAvatar, SkeletonText } from './Skeleton';
 
 // Feature Components
+export { About } from './About';
+export { Hero } from './Hero';
+export { Philosophy } from './Philosophy';
 export { Breathwork } from './Breathwork';
 export { Blog } from './Blog';
 export { Pricing } from './Pricing';
