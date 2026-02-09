@@ -32,11 +32,23 @@ type ProxyRequest =
   | { op: 'analyzeMedia'; fileBase64: string; mimeType: string; userPrompt: string }
   | { op: 'analyzeImageContent'; base64Image: string };
 
-const corsHeaders: HeadersInit = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type',
-  'access-control-allow-methods': 'POST, OPTIONS',
-};
+const allowedOrigins = [
+  'https://ksebe-studio.ru',
+  'https://app.ksebe-studio.ru',
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') || '';
+  const allowOrigin = allowedOrigins.includes(origin) ? origin : 'https://ksebe-studio.ru';
+
+  return {
+    'access-control-allow-origin': allowOrigin,
+    'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type',
+    'access-control-allow-methods': 'POST, OPTIONS',
+  };
+}
 
 type RateBucket = { count: number; resetAt: number };
 const kv = await Deno.openKv();
@@ -174,10 +186,10 @@ async function rateLimit(
   return { ok: false, retryAfterSeconds: 1 };
 }
 
-function json(data: unknown, init: ResponseInit = {}): Response {
+function json(data: unknown, init: ResponseInit = {}, corsH: HeadersInit = {}): Response {
   const headers = new Headers(init.headers);
   headers.set('content-type', 'application/json; charset=utf-8');
-  Object.entries(corsHeaders).forEach(([k, v]) => headers.set(k, String(v)));
+  Object.entries(corsH).forEach(([k, v]) => headers.set(k, String(v)));
   return new Response(JSON.stringify(data), { ...init, headers });
 }
 
@@ -193,24 +205,26 @@ Safety:
 `.trim();
 
 Deno.serve(async (req) => {
+  const cors = getCorsHeaders(req);
+  
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: cors });
   }
 
   if (req.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, { status: 405 });
+    return json({ error: 'Method not allowed' }, { status: 405 }, cors);
   }
 
   const apiKey = Deno.env.get('GEMINI_API_KEY');
   if (!apiKey) {
-    return json({ error: 'Server is missing GEMINI_API_KEY' }, { status: 500 });
+    return json({ error: 'Server is missing GEMINI_API_KEY' }, { status: 500 }, cors);
   }
 
   let body: ProxyRequest;
   try {
     body = (await req.json()) as ProxyRequest;
   } catch {
-    return json({ error: 'Invalid JSON' }, { status: 400 });
+    return json({ error: 'Invalid JSON' }, { status: 400 }, cors);
   }
 
   const authInfo = await getAuthInfo(req);
@@ -227,7 +241,8 @@ Deno.serve(async (req) => {
         message:
           'Эта AI-функция доступна только авторизованным пользователям. Пожалуйста, войдите в аккаунт.',
       },
-      { status: 401 }
+      { status: 401 },
+      cors
     );
   }
 
@@ -265,7 +280,8 @@ Deno.serve(async (req) => {
     });
     return json(
       { error: 'Rate limit exceeded', retryAfterSeconds: rl.retryAfterSeconds },
-      { status: 429, headers: { 'retry-after': String(rl.retryAfterSeconds) } }
+      { status: 429, headers: { 'retry-after': String(rl.retryAfterSeconds) } },
+      cors
     );
   }
 
@@ -308,7 +324,7 @@ Deno.serve(async (req) => {
           }
         );
 
-        return json({ text: response.text || '...', sources });
+        return json({ text: response.text || '...', sources }, {}, cors);
       }
 
       case 'thinking': {
@@ -322,7 +338,7 @@ Deno.serve(async (req) => {
             thinkingConfig: { thinkingBudget: 1024 },
           },
         });
-        return json({ text: response.text || '...' });
+        return json({ text: response.text || '...' }, {}, cors);
       }
 
       case 'generateSpeech': {
@@ -336,7 +352,7 @@ Deno.serve(async (req) => {
           },
         });
         const audioBase64 = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || null;
-        return json({ audioBase64 });
+        return json({ audioBase64 }, {}, cors);
       }
 
       case 'generateMeditationScript': {
@@ -347,7 +363,7 @@ Deno.serve(async (req) => {
             duration === 'medium' ? 'Средней длины.' : 'Коротко.'
           } Атмосферно, мягко, с фокусом на дыхании.`,
         });
-        return json({ text: response.text || 'Дышите...' });
+        return json({ text: response.text || 'Дышите...' }, {}, cors);
       }
 
       case 'createMeditation': {
@@ -375,12 +391,12 @@ Deno.serve(async (req) => {
         });
         if (response.text) {
           try {
-            return json({ result: JSON.parse(response.text) });
+            return json({ result: JSON.parse(response.text) }, {}, cors);
           } catch {
-            return json({ result: null });
+            return json({ result: null }, {}, cors);
           }
         }
-        return json({ result: null });
+        return json({ result: null }, {}, cors);
       }
 
       case 'generateYogaImage': {
@@ -403,9 +419,9 @@ Deno.serve(async (req) => {
 
         for (const part of response.candidates?.[0]?.content?.parts || []) {
           if (part.inlineData?.data)
-            return json({ dataUrl: `data:image/png;base64,${part.inlineData.data}` });
+            return json({ dataUrl: `data:image/png;base64,${part.inlineData.data}` }, {}, cors);
         }
-        return json({ dataUrl: null });
+        return json({ dataUrl: null }, {}, cors);
       }
 
       case 'generatePersonalProgram': {
@@ -418,7 +434,7 @@ Deno.serve(async (req) => {
             thinkingConfig: { thinkingBudget: 2048 },
           },
         });
-        return json({ text: response.text || 'Не удалось составить программу.' });
+        return json({ text: response.text || 'Не удалось составить программу.' }, {}, cors);
       }
 
       case 'transcribeDiaryEntry': {
@@ -440,9 +456,9 @@ Deno.serve(async (req) => {
             transcription?: string;
             summary?: string;
           };
-          return json({ text: parsed.transcription || '', summary: parsed.summary || '' });
+          return json({ text: parsed.transcription || '', summary: parsed.summary || '' }, {}, cors);
         } catch {
-          return json({ text: '', summary: '' });
+          return json({ text: '', summary: '' }, {}, cors);
         }
       }
 
@@ -461,7 +477,7 @@ Deno.serve(async (req) => {
             ],
           },
         });
-        return json({ text: response.text || 'Не удалось проанализировать видео.' });
+        return json({ text: response.text || 'Не удалось проанализировать видео.' }, {}, cors);
       }
 
       case 'analyzeMedia': {
@@ -509,12 +525,12 @@ Deno.serve(async (req) => {
 
         if (response.text) {
           try {
-            return json({ result: JSON.parse(response.text) });
+            return json({ result: JSON.parse(response.text) }, {}, cors);
           } catch {
-            return json({ result: response.text });
+            return json({ result: response.text }, {}, cors);
           }
         }
-        return json({ result: 'Не удалось проанализировать медиа.' });
+        return json({ result: 'Не удалось проанализировать медиа.' }, {}, cors);
       }
 
       case 'analyzeImageContent': {
@@ -547,20 +563,20 @@ Deno.serve(async (req) => {
 
         if (response.text) {
           try {
-            return json({ result: JSON.parse(response.text) });
+            return json({ result: JSON.parse(response.text) }, {}, cors);
           } catch {
-            return json({ result: response.text });
+            return json({ result: response.text }, {}, cors);
           }
         }
-        return json({ result: 'Не удалось распознать образ.' });
+        return json({ result: 'Не удалось распознать образ.' }, {}, cors);
       }
 
       default: {
-        return json({ error: 'Unsupported op' }, { status: 400 });
+        return json({ error: 'Unsupported op' }, { status: 400 }, cors);
       }
     }
   } catch (e) {
     console.error('gemini-proxy error', e);
-    return json({ error: 'Internal error' }, { status: 500 });
+    return json({ error: 'Internal error' }, { status: 500 }, cors);
   }
 });
