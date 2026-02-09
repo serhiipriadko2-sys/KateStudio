@@ -1,6 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
 
-function hexToUint8Array(hex: string): Uint8Array {
+function hexToUint8Array(hex: string): Uint8Array | null {
+  // Validate hex string: must have even length and contain only hex characters
+  if (hex.length % 2 !== 0 || !/^[0-9a-fA-F]*$/.test(hex)) {
+    return null;
+  }
   const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < hex.length; i += 2) {
     bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
@@ -90,6 +94,9 @@ Deno.serve(async (req) => {
   );
 
   const signatureBytes = hexToUint8Array(signature);
+  if (!signatureBytes) {
+    return json({ error: 'Invalid signature format: must be a hex-encoded string' }, { status: 401 }, cors);
+  }
   const dataBytes = encoder.encode(text);
 
   const isValid = await crypto.subtle.verify('HMAC', key, signatureBytes, dataBytes);
