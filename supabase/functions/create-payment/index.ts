@@ -1,4 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
+import { z } from 'zod';
+
+const CreatePaymentRequestSchema = z.object({
+  plan: z.enum(['free', 'premium', 'vip']),
+  returnUrl: z.string().url().optional(),
+});
 
 type PlanId = 'free' | 'premium' | 'vip';
 
@@ -67,15 +73,15 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, { status: 405 }, cors);
 
-  let payload: CreatePaymentRequest;
+  let payload: z.infer<typeof CreatePaymentRequestSchema>;
   try {
-    payload = (await req.json()) as CreatePaymentRequest;
-  } catch {
-    return json({ error: 'Invalid JSON' }, { status: 400 }, cors);
-  }
-
-  if (!payload.plan || !['free', 'premium', 'vip'].includes(payload.plan)) {
-    return json({ error: 'Unsupported plan' }, { status: 400 }, cors);
+    const raw = await req.json();
+    payload = CreatePaymentRequestSchema.parse(raw);
+  } catch (error) {
+    const message = error instanceof z.ZodError
+      ? `Validation error: ${error.errors.map(e => e.message).join(', ')}`
+      : 'Invalid JSON';
+    return json({ error: message }, { status: 400 }, cors);
   }
 
   const token = getBearerToken(req);

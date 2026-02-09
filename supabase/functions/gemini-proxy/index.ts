@@ -16,6 +16,82 @@ import {
   Type,
 } from 'npm:@google/genai@1.33.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
+import { z } from 'zod';
+
+const ChatRequestSchema = z.object({
+  op: z.literal('chat'),
+  message: z.string().min(1).max(5000),
+  location: z.object({ lat: z.number(), lng: z.number() }).optional(),
+});
+
+const ThinkingRequestSchema = z.object({
+  op: z.literal('thinking'),
+  message: z.string().min(1).max(5000),
+});
+
+const GenerateSpeechRequestSchema = z.object({
+  op: z.literal('generateSpeech'),
+  text: z.string().min(1).max(10000),
+});
+
+const GenerateMeditationScriptRequestSchema = z.object({
+  op: z.literal('generateMeditationScript'),
+  topic: z.string().min(1).max(500),
+  duration: z.enum(['short', 'medium']).optional(),
+});
+
+const CreateMeditationRequestSchema = z.object({
+  op: z.literal('createMeditation'),
+  topic: z.string().min(1).max(500),
+  duration: z.string().min(1).max(100),
+});
+
+const GenerateYogaImageRequestSchema = z.object({
+  op: z.literal('generateYogaImage'),
+  prompt: z.string().min(1).max(1000),
+  aspectRatio: z.string().optional(),
+});
+
+const GeneratePersonalProgramRequestSchema = z.object({
+  op: z.literal('generatePersonalProgram'),
+  request: z.string().min(1).max(2000),
+});
+
+const TranscribeDiaryEntryRequestSchema = z.object({
+  op: z.literal('transcribeDiaryEntry'),
+  audioBase64: z.string().min(1),
+});
+
+const AnalyzeYogaVideoRequestSchema = z.object({
+  op: z.literal('analyzeYogaVideo'),
+  base64Video: z.string().min(1),
+});
+
+const AnalyzeMediaRequestSchema = z.object({
+  op: z.literal('analyzeMedia'),
+  fileBase64: z.string().min(1),
+  mimeType: z.string().min(1),
+  userPrompt: z.string().min(1).max(1000),
+});
+
+const AnalyzeImageContentRequestSchema = z.object({
+  op: z.literal('analyzeImageContent'),
+  base64Image: z.string().min(1),
+});
+
+const ProxyRequestSchema = z.discriminatedUnion('op', [
+  ChatRequestSchema,
+  ThinkingRequestSchema,
+  GenerateSpeechRequestSchema,
+  GenerateMeditationScriptRequestSchema,
+  CreateMeditationRequestSchema,
+  GenerateYogaImageRequestSchema,
+  GeneratePersonalProgramRequestSchema,
+  TranscribeDiaryEntryRequestSchema,
+  AnalyzeYogaVideoRequestSchema,
+  AnalyzeMediaRequestSchema,
+  AnalyzeImageContentRequestSchema,
+]);
 
 type Source = { title: string; uri: string };
 
@@ -206,11 +282,15 @@ Deno.serve(async (req) => {
     return json({ error: 'Server is missing GEMINI_API_KEY' }, { status: 500 });
   }
 
-  let body: ProxyRequest;
+  let body: z.infer<typeof ProxyRequestSchema>;
   try {
-    body = (await req.json()) as ProxyRequest;
-  } catch {
-    return json({ error: 'Invalid JSON' }, { status: 400 });
+    const raw = await req.json();
+    body = ProxyRequestSchema.parse(raw);
+  } catch (error) {
+    const message = error instanceof z.ZodError 
+      ? `Validation error: ${error.errors.map(e => e.message).join(', ')}`
+      : 'Invalid JSON';
+    return json({ error: message }, { status: 400 });
   }
 
   const authInfo = await getAuthInfo(req);

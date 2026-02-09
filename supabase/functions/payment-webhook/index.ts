@@ -1,4 +1,17 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
+import { z } from 'zod';
+
+const WebhookPayloadSchema = z.object({
+  subscription_id: z.string().uuid().optional(),
+  user_id: z.string().uuid().optional(),
+  plan: z.enum(['free', 'premium', 'vip']).optional(),
+  status: z.enum(['active', 'pending', 'canceled', 'past_due', 'trialing']).optional(),
+  current_period_end: z.string().datetime().nullable().optional(),
+  provider: z.string().optional(),
+  provider_subscription_id: z.string().optional(),
+}).refine(data => data.subscription_id || data.user_id, {
+  message: 'Either subscription_id or user_id must be provided',
+});
 
 type PlanId = 'free' | 'premium' | 'vip';
 
@@ -62,15 +75,15 @@ Deno.serve(async (req) => {
     return json({ error: 'Invalid signature' }, { status: 401 }, cors);
   }
 
-  let payload: WebhookPayload;
+  let payload: z.infer<typeof WebhookPayloadSchema>;
   try {
-    payload = (await req.json()) as WebhookPayload;
-  } catch {
-    return json({ error: 'Invalid JSON' }, { status: 400 }, cors);
-  }
-
-  if (!payload.subscription_id && !payload.user_id) {
-    return json({ error: 'Missing subscription_id or user_id' }, { status: 400 }, cors);
+    const raw = await req.json();
+    payload = WebhookPayloadSchema.parse(raw);
+  } catch (error) {
+    const message = error instanceof z.ZodError
+      ? `Validation error: ${error.errors.map(e => e.message).join(', ')}`
+      : 'Invalid JSON';
+    return json({ error: message }, { status: 400 }, cors);
   }
 
   try {
