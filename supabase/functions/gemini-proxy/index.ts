@@ -16,21 +16,64 @@ import {
   Type,
 } from 'npm:@google/genai@1.33.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
+import { z } from 'npm:zod@3.24.1';
 
 type Source = { title: string; uri: string };
 
-type ProxyRequest =
-  | { op: 'chat'; message: string; location?: { lat: number; lng: number } }
-  | { op: 'thinking'; message: string }
-  | { op: 'generateSpeech'; text: string }
-  | { op: 'generateMeditationScript'; topic: string; duration?: 'short' | 'medium' }
-  | { op: 'createMeditation'; topic: string; duration: string }
-  | { op: 'generateYogaImage'; prompt: string; aspectRatio?: string }
-  | { op: 'generatePersonalProgram'; request: string }
-  | { op: 'transcribeDiaryEntry'; audioBase64: string }
-  | { op: 'analyzeYogaVideo'; base64Video: string }
-  | { op: 'analyzeMedia'; fileBase64: string; mimeType: string; userPrompt: string }
-  | { op: 'analyzeImageContent'; base64Image: string };
+const ProxyRequestSchema = z.discriminatedUnion('op', [
+  z.object({
+    op: z.literal('chat'),
+    message: z.string().min(1).max(5000),
+    location: z.object({ lat: z.number(), lng: z.number() }).optional(),
+  }),
+  z.object({
+    op: z.literal('thinking'),
+    message: z.string().min(1).max(5000),
+  }),
+  z.object({
+    op: z.literal('generateSpeech'),
+    text: z.string().min(1).max(3000),
+  }),
+  z.object({
+    op: z.literal('generateMeditationScript'),
+    topic: z.string().min(1).max(500),
+    duration: z.enum(['short', 'medium']).optional(),
+  }),
+  z.object({
+    op: z.literal('createMeditation'),
+    topic: z.string().min(1).max(500),
+    duration: z.string().min(1).max(50),
+  }),
+  z.object({
+    op: z.literal('generateYogaImage'),
+    prompt: z.string().min(1).max(1000),
+    aspectRatio: z.string().optional(),
+  }),
+  z.object({
+    op: z.literal('generatePersonalProgram'),
+    request: z.string().min(1).max(3000),
+  }),
+  z.object({
+    op: z.literal('transcribeDiaryEntry'),
+    audioBase64: z.string().min(1),
+  }),
+  z.object({
+    op: z.literal('analyzeYogaVideo'),
+    base64Video: z.string().min(1),
+  }),
+  z.object({
+    op: z.literal('analyzeMedia'),
+    fileBase64: z.string().min(1),
+    mimeType: z.string().regex(/^(image|video)\//),
+    userPrompt: z.string().min(1).max(1000),
+  }),
+  z.object({
+    op: z.literal('analyzeImageContent'),
+    base64Image: z.string().min(1),
+  }),
+]);
+
+type ProxyRequest = z.infer<typeof ProxyRequestSchema>;
 
 const corsHeaders: HeadersInit = {
   'access-control-allow-origin': '*',
@@ -208,8 +251,12 @@ Deno.serve(async (req) => {
 
   let body: ProxyRequest;
   try {
-    body = (await req.json()) as ProxyRequest;
-  } catch {
+    const rawBody = await req.json();
+    body = ProxyRequestSchema.parse(rawBody);
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      return json({ error: 'Validation error', details: e.errors }, { status: 400 });
+    }
     return json({ error: 'Invalid JSON' }, { status: 400 });
   }
 

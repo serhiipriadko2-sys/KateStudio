@@ -1,16 +1,19 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
+import { z } from 'npm:zod@3.24.1';
 
 type PlanId = 'free' | 'premium' | 'vip';
 
-type WebhookPayload = {
-  subscription_id?: string;
-  user_id?: string;
-  plan?: PlanId;
-  status?: 'active' | 'pending' | 'canceled' | 'past_due' | 'trialing';
-  current_period_end?: string | null;
-  provider?: string;
-  provider_subscription_id?: string;
-};
+const WebhookPayloadSchema = z.object({
+  subscription_id: z.string().uuid().optional(),
+  user_id: z.string().uuid().optional(),
+  plan: z.enum(['free', 'premium', 'vip']).optional(),
+  status: z.enum(['active', 'pending', 'canceled', 'past_due', 'trialing']).optional(),
+  current_period_end: z.string().datetime().nullable().optional(),
+  provider: z.string().optional(),
+  provider_subscription_id: z.string().optional(),
+});
+
+type WebhookPayload = z.infer<typeof WebhookPayloadSchema>;
 
 const allowedOrigins = [
   'https://ksebe-studio.ru',
@@ -64,8 +67,12 @@ Deno.serve(async (req) => {
 
   let payload: WebhookPayload;
   try {
-    payload = (await req.json()) as WebhookPayload;
-  } catch {
+    const rawPayload = await req.json();
+    payload = WebhookPayloadSchema.parse(rawPayload);
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      return json({ error: 'Validation error', details: e.errors }, { status: 400 }, cors);
+    }
     return json({ error: 'Invalid JSON' }, { status: 400 }, cors);
   }
 
