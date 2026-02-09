@@ -186,11 +186,11 @@ async function rateLimit(
   return { ok: false, retryAfterSeconds: 1 };
 }
 
-function json(data: unknown, init: ResponseInit = {}, corsH: HeadersInit = {}): Response {
-  const headers = new Headers(init.headers);
-  headers.set('content-type', 'application/json; charset=utf-8');
-  Object.entries(corsH).forEach(([k, v]) => headers.set(k, String(v)));
-  return new Response(JSON.stringify(data), { ...init, headers });
+function json(data: unknown, init: ResponseInit = {}, headers: HeadersInit = {}): Response {
+  const responseHeaders = new Headers(init.headers);
+  responseHeaders.set('content-type', 'application/json; charset=utf-8');
+  Object.entries(headers).forEach(([k, v]) => responseHeaders.set(k, String(v)));
+  return new Response(JSON.stringify(data), { ...init, headers: responseHeaders });
 }
 
 const SYSTEM_INSTRUCTION = `
