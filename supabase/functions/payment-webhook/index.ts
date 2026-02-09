@@ -74,17 +74,7 @@ Deno.serve(async (req) => {
 
   // Compute HMAC-SHA256 of the request body
   const text = await req.text();
-  let payload: WebhookPayload;
-  try {
-    const rawPayload = JSON.parse(text);
-    payload = WebhookPayloadSchema.parse(rawPayload);
-  } catch (e) {
-    if (e instanceof z.ZodError) {
-      return json({ error: 'Validation error', details: e.errors }, { status: 400 }, cors);
-    }
-    return json({ error: 'Invalid JSON' }, { status: 400 }, cors);
-  }
-
+  
   const signature = req.headers.get('x-webhook-signature');
   if (!signature) {
     return json({ error: 'Missing signature' }, { status: 401 }, cors);
@@ -110,6 +100,18 @@ Deno.serve(async (req) => {
 
   if (!isValid) {
     return json({ error: 'Invalid signature' }, { status: 401 }, cors);
+  }
+
+  // Parse and validate payload after HMAC verification
+  let payload: WebhookPayload;
+  try {
+    const rawPayload = JSON.parse(text);
+    payload = WebhookPayloadSchema.parse(rawPayload);
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      return json({ error: 'Validation error', details: e.errors }, { status: 400 }, cors);
+    }
+    return json({ error: 'Invalid JSON' }, { status: 400 }, cors);
   }
 
   if (!payload.subscription_id && !payload.user_id) {
