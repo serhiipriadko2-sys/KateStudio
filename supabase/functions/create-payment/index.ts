@@ -1,11 +1,14 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
+import { z } from 'npm:zod@3.24.1';
 
 type PlanId = 'free' | 'premium' | 'vip';
 
-type CreatePaymentRequest = {
-  plan: PlanId;
-  returnUrl?: string;
-};
+const CreatePaymentRequestSchema = z.object({
+  plan: z.enum(['free', 'premium', 'vip']),
+  returnUrl: z.string().url().optional(),
+});
+
+type CreatePaymentRequest = z.infer<typeof CreatePaymentRequestSchema>;
 
 const allowedOrigins = [
   'https://ksebe-studio.ru',
@@ -69,13 +72,13 @@ Deno.serve(async (req) => {
 
   let payload: CreatePaymentRequest;
   try {
-    payload = (await req.json()) as CreatePaymentRequest;
-  } catch {
+    const rawPayload = await req.json();
+    payload = CreatePaymentRequestSchema.parse(rawPayload);
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      return json({ error: 'Validation error', details: e.errors }, { status: 400 }, cors);
+    }
     return json({ error: 'Invalid JSON' }, { status: 400 }, cors);
-  }
-
-  if (!payload.plan || !['free', 'premium', 'vip'].includes(payload.plan)) {
-    return json({ error: 'Unsupported plan' }, { status: 400 }, cors);
   }
 
   const token = getBearerToken(req);
