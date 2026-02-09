@@ -1,1 +1,63 @@
-{\n  "name": "ksebe-ecosystem",\n  "version": "1.0.0",\n  "private": true,\n  "type": "module",\n  "description": "K Sebe Yoga Studio - InsideFlow Ecosystem (WEB + APP + Shared)",\n  "workspaces": [\n    "shared",\n    "k-sebe-yoga-studioWEB",\n    "k-sebe-yoga-studio-APPp"\n  ],\n  "scripts": {\n    "dev:web": "npm run dev --workspace=k-sebe-yoga-studioWEB",\n    "dev:app": "npm run dev --workspace=k-sebe-yoga-studio-APPp",\n    "build:web": "npm run build --workspace=k-sebe-yoga-studioWEB",\n    "build:app": "npm run build --workspace=k-sebe-yoga-studio-APPp",\n    "build:all": "npm run build:web && npm run build:app",\n    "lint": "eslint .",\n    "lint:fix": "eslint . --fix",\n    "format": "prettier --write .",\n    "format:check": "prettier --check .",\n    "typecheck": "tsc --noEmit",\n    "clean": "rm -rf node_modules shared/node_modules k-sebe-yoga-studioWEB/node_modules k-sebe-yoga-studio-APPp/node_modules",\n    "prepare": "husky",\n    "test": "vitest",\n    "test:run": "vitest run",\n    "test:coverage": "vitest run --coverage",\n    "test:ui": "vitest --ui",\n    "test:web": "npm run test --workspace=k-sebe-yoga-studioWEB --if-present",\n    "test:app": "npm run test --workspace=k-sebe-yoga-studio-APPp --if-present"\n  },\n  "devDependencies": {\n    "@eslint/js": "^9.39.2",\n    "@testing-library/jest-dom": "^6.6.3",\n    "@testing-library/react": "^16.1.0",\n    "@testing-library/user-event": "^14.5.2",\n    "@types/node": "^22.10.2",\n    "@typescript-eslint/eslint-plugin": "^8.18.0",\n    "@typescript-eslint/parser": "^8.18.0",\n    "@vitejs/plugin-react": "^4.3.4",\n    "@vitest/coverage-v8": "^2.1.8",\n    "@vitest/ui": "^2.1.8",\n    "eslint": "^9.16.0",\n    "eslint-config-prettier": "^9.1.0",\n    "eslint-import-resolver-typescript": "^4.4.4",\n    "eslint-plugin-import": "^2.31.0",\n    "eslint-plugin-jsx-a11y": "^6.10.2",\n    "eslint-plugin-react": "^7.37.2",\n    "eslint-plugin-react-hooks": "^5.1.0",\n    "husky": "^9.1.7",\n    "jsdom": "^25.0.1",\n    "lint-staged": "^15.2.11",\n    "prettier": "^3.4.2",\n    "typescript": "5.8.0",\n    "vitest": "^2.1.8"\n  },\n  "lint-staged": {\n    "*.{ts,tsx}": [\n      "eslint --fix",\n      "prettier --write"\n    ]\n  }\n}
+{
+  "name": "ksebe-ecosystem",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "K Sebe Yoga Studio - InsideFlow Ecosystem (WEB + APP + Shared)",
+  "workspaces": [
+    "shared",
+    "k-sebe-yoga-studioWEB",
+    "k-sebe-yoga-studio-APPp"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=k-sebe-yoga-studioWEB",
+    "dev:app": "npm run dev --workspace=k-sebe-yoga-studio-APPp",
+    "build:web": "npm run build --workspace=k-sebe-yoga-studioWEB",
+    "build:app": "npm run build --workspace=k-sebe-yoga-studio-APPp",
+    "build:all": "npm run build:web && npm run build:app",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules shared/node_modules k-sebe-yoga-studioWEB/node_modules k-sebe-yoga-studio-APPp/node_modules",
+    "prepare": "husky",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:web": "npm run test --workspace=k-sebe-yoga-studioWEB --if-present",
+    "test:app": "npm run test --workspace=k-sebe-yoga-studio-APPp --if-present"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/ui": "^2.1.8",
+    "eslint": "^9.16.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "husky": "^9.1.7",
+    "jsdom": "^25.0.1",
+    "lint-staged": "^15.2.11",
+    "prettier": "^3.4.2",
+    "typescript": "5.8.0",
+    "vitest": "^2.1.8"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
+}
