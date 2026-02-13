@@ -47,7 +47,8 @@ const formatDateKey = (date: Date) => {
 };
 
 const generateFallbackClasses = (date: Date, tab: 'offline' | 'online'): ClassSession[] => {
-  const templates = tab === 'offline' ? defaultContent.schedule.offline : defaultContent.schedule.online;
+  const templates =
+    tab === 'offline' ? defaultContent.schedule.offline : defaultContent.schedule.online;
   const classes: ClassSession[] = [];
   const year = date.getFullYear();
   const month = date.getMonth();
@@ -61,19 +62,19 @@ const generateFallbackClasses = (date: Date, tab: 'offline' | 'online'): ClassSe
     const dateStr = formatDateKey(currentDate);
 
     templates.forEach((tmpl, idx) => {
-        classes.push({
-            id: `fallback-${dateStr}-${idx}`,
-            dateStr,
-            time: tmpl.time,
-            name: tmpl.name,
-            instructor: 'Катя Габран',
-            duration: tmpl.duration,
-            spotsTotal: tmpl.spotsTotal,
-            spotsBooked: Math.floor(Math.random() * tmpl.spotsTotal * 0.4), // 40% occupancy for demo
-            location: tmpl.location,
-            intensity: tmpl.intensity,
-            isOnline: tab === 'online'
-        });
+      classes.push({
+        id: `fallback-${dateStr}-${idx}`,
+        dateStr,
+        time: tmpl.time,
+        name: tmpl.name,
+        instructor: 'Катя Габран',
+        duration: tmpl.duration,
+        spotsTotal: tmpl.spotsTotal,
+        spotsBooked: Math.floor(Math.random() * tmpl.spotsTotal * 0.4), // 40% occupancy for demo
+        location: tmpl.location,
+        intensity: tmpl.intensity,
+        isOnline: tab === 'online',
+      });
     });
   }
   return classes;
@@ -120,9 +121,9 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
 
         if (isActive) {
           if (!data || data.length === 0) {
-             // Fallback if configured but empty
-             setIsDemo(true);
-             setClasses(generateFallbackClasses(currentMonth, activeTab));
+            // Fallback if configured but empty
+            setIsDemo(true);
+            setClasses(generateFallbackClasses(currentMonth, activeTab));
           } else {
             const mapped = (data as ClassRow[]).map((row) => {
               const intensityValue = row.intensity ?? 1;
@@ -139,7 +140,8 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
                 duration: row.duration ?? '60 мин',
                 spotsTotal: row.spots_total ?? 0,
                 spotsBooked: row.spots_booked ?? 0,
-                location: row.location ?? (activeTab === 'online' ? 'Online' : 'Станционная ул., 5Б'),
+                location:
+                  row.location ?? (activeTab === 'online' ? 'Online' : 'Станционная ул., 5Б'),
                 intensity,
                 isOnline: row.is_online ?? activeTab === 'online',
               };
@@ -381,7 +383,9 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
                   </div>
                 </FadeIn>
               )}
-              {!isLoading && selectedClasses.length > 0 && selectedClasses.map((cls, idx) => {
+              {!isLoading &&
+                selectedClasses.length > 0 &&
+                selectedClasses.map((cls, idx) => {
                   const capacity = cls.spotsTotal;
                   const percentage = capacity > 0 ? (cls.spotsBooked / capacity) * 100 : 0;
                   const isFull = capacity > 0 && cls.spotsBooked >= capacity;
