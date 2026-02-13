@@ -21,16 +21,37 @@ import { z } from 'npm:zod@3.24.1';
 type Source = { title: string; uri: string };
 
 const ProxyRequestSchema = z.discriminatedUnion('op', [
-  z.object({ op: z.literal('chat'), message: z.string().min(1).max(5000), location: z.object({ lat: z.number(), lng: z.number() }).optional() }),
+  z.object({
+    op: z.literal('chat'),
+    message: z.string().min(1).max(5000),
+    location: z.object({ lat: z.number(), lng: z.number() }).optional(),
+  }),
   z.object({ op: z.literal('thinking'), message: z.string().min(1).max(5000) }),
   z.object({ op: z.literal('generateSpeech'), text: z.string().min(1).max(10000) }),
-  z.object({ op: z.literal('generateMeditationScript'), topic: z.string().min(1).max(500), duration: z.enum(['short', 'medium']).optional() }),
-  z.object({ op: z.literal('createMeditation'), topic: z.string().min(1).max(500), duration: z.string().min(1).max(100) }),
-  z.object({ op: z.literal('generateYogaImage'), prompt: z.string().min(1).max(1000), aspectRatio: z.string().optional() }),
+  z.object({
+    op: z.literal('generateMeditationScript'),
+    topic: z.string().min(1).max(500),
+    duration: z.enum(['short', 'medium']).optional(),
+  }),
+  z.object({
+    op: z.literal('createMeditation'),
+    topic: z.string().min(1).max(500),
+    duration: z.string().min(1).max(100),
+  }),
+  z.object({
+    op: z.literal('generateYogaImage'),
+    prompt: z.string().min(1).max(1000),
+    aspectRatio: z.string().optional(),
+  }),
   z.object({ op: z.literal('generatePersonalProgram'), request: z.string().min(1).max(3000) }),
   z.object({ op: z.literal('transcribeDiaryEntry'), audioBase64: z.string().min(1) }),
   z.object({ op: z.literal('analyzeYogaVideo'), base64Video: z.string().min(1) }),
-  z.object({ op: z.literal('analyzeMedia'), fileBase64: z.string().min(1), mimeType: z.string().regex(/^(image|video)\//), userPrompt: z.string().min(1).max(1000) }),
+  z.object({
+    op: z.literal('analyzeMedia'),
+    fileBase64: z.string().min(1),
+    mimeType: z.string().regex(/^(image|video)\//),
+    userPrompt: z.string().min(1).max(1000),
+  }),
   z.object({ op: z.literal('analyzeImageContent'), base64Image: z.string().min(1) }),
 ]);
 
@@ -210,7 +231,7 @@ Safety:
 
 Deno.serve(async (req) => {
   const cors = getCorsHeaders(req);
-  
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: cors });
   }
@@ -464,7 +485,11 @@ Deno.serve(async (req) => {
             transcription?: string;
             summary?: string;
           };
-          return json({ text: parsed.transcription || '', summary: parsed.summary || '' }, {}, cors);
+          return json(
+            { text: parsed.transcription || '', summary: parsed.summary || '' },
+            {},
+            cors
+          );
         } catch {
           return json({ text: '', summary: '' }, {}, cors);
         }

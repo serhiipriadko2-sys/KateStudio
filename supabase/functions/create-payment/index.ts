@@ -47,7 +47,8 @@ function getSupabaseClient(token?: string) {
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
   // Strict check: Service Role is required. No fallback to Anon Key.
-  if (!url || !serviceRoleKey) throw new Error('Supabase configuration error: Service Role missing');
+  if (!url || !serviceRoleKey)
+    throw new Error('Supabase configuration error: Service Role missing');
 
   return createClient(url, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
@@ -121,12 +122,16 @@ Deno.serve(async (req) => {
 
     const paymentUrl = buildPaymentUrl(payload.plan, subscription.id, payload.returnUrl);
 
-    return json({
-      status: subscription.status,
-      subscription,
-      paymentUrl,
-      message: paymentUrl ? undefined : 'Провайдер оплаты не настроен',
-    }, {}, cors);
+    return json(
+      {
+        status: subscription.status,
+        subscription,
+        paymentUrl,
+        message: paymentUrl ? undefined : 'Провайдер оплаты не настроен',
+      },
+      {},
+      cors
+    );
   } catch (e) {
     console.error('create-payment error', e);
     return json({ error: 'Internal error' }, { status: 500 }, cors);
