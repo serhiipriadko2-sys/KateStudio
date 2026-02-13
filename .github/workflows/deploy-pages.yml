@@ -53,6 +53,9 @@ jobs:
           # Set base path for custom domain (/ for ksebe-studio.ru)
           VITE_BASE_PATH: /
 
+      - name: Copy CNAME to dist
+        run: cp k-sebe-yoga-studioWEB/public/CNAME k-sebe-yoga-studioWEB/dist/CNAME
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
