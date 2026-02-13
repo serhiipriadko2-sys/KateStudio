@@ -53,7 +53,7 @@ export const Hero: React.FC<HeroProps> = ({ onBook, showScrollIndicator = true }
           </FadeIn>
         </div>
       </div>
-      
+
       {showScrollIndicator && (
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 animate-bounce text-white/50">
           <div className="w-px h-12 bg-gradient-to-b from-white to-transparent mx-auto"></div>
