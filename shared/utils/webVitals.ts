@@ -305,7 +305,7 @@ export function logWebVitals(): () => void {
   return observeWebVitals((metric) => {
     const emoji =
       metric.rating === 'good' ? '✅' : metric.rating === 'needs-improvement' ? '⚠️' : '❌';
-    console.log(
+    console.warn(
       `${emoji} [Web Vitals] ${metric.name}: ${metric.value.toFixed(2)} (${metric.rating})`
     );
   });

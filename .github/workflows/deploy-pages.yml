@@ -22,86 +22,53 @@ jobs:
     name: Build for Pages
     runs-on: ubuntu-latest
     steps:
-       - name: Checkout
-         uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-       - name: Setup Node.js
-         uses: actions/setup-node@v4
-         with:
-           node-version: ${{ env.NODE_VERSION }}
-           cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-       - name: Setup Pages
-         uses: actions/configure-pages@v5
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
-       - name: Debug env
-         run: echo "SUPABASE_URL set: ${{ secrets.VITE_SUPABASE_URL != '' }}" && echo "SUPABASE_KEY set: ${{ secrets.VITE_SUPABASE_ANON_KEY != '' }}"
+      - name: Debug env
+        run: |
+          echo "SUPABASE_URL set: ${{ secrets.VITE_SUPABASE_URL != '' }}"
+          echo "SUPABASE_KEY set: ${{ secrets.VITE_SUPABASE_ANON_KEY != '' }}"
 
-       - name: Install dependencies
-         run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-       - name: Type check
-         run: npm run typecheck
+      - name: Type check
+        run: npm run typecheck
 
-       - name: Build WEB for production
-         run: npm run build:web
-         env:
-           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-           # Set base path for custom domain (/ for ksebe-studio.ru)
-           VITE_BASE_PATH: /
+      - name: Build WEB for production
+        run: npm run build:web
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Set base path for custom domain (/ for ksebe-studio.ru)
+          VITE_BASE_PATH: /
 
-       - name: Copy CNAME to dist
-         run: cp k-sebe-yoga-studioWEB/public/CNAME k-sebe-yoga-studioWEB/dist/CNAME
+      - name: Copy CNAME to dist
+        run: cp k-sebe-yoga-studioWEB/public/CNAME k-sebe-yoga-studioWEB/dist/CNAME
 
-       - name: Upload artifact
-         uses: actions/upload-pages-artifact@v3
-         with:
-           path: k-sebe-yoga-studioWEB/dist
-
-  deploy:
-     name: Deploy
-     environment:
-       name: github-pages
-       url: ${{ steps.deployment.outputs.page_url }}
-     runs-on: ubuntu-latest
-     needs: build
-     steps:
-       - name: Deploy to GitHub Pages
-         id: deployment
-         uses: actions/deploy-pages@v4       - name: Debug env
-         run: echo "SUPABASE_URL set: ${{ secrets.VITE_SUPABASE_URL != '' }}" && echo "SUPABASE_KEY set: ${{ secrets.VITE_SUPABASE_ANON_KEY != '' }}"
-
-       - name: Type check
-         run: npm run typecheck
-
-       - name: Install dependencies
-         run: npm ci
-
-       - name: Build WEB for production
-         run: npm run build:web
-         env:
-           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-           # Set base path for custom domain (/ for ksebe-studio.ru)
-           VITE_BASE_PATH: /
-
-       - name: Copy CNAME to dist
-         run: cp k-sebe-yoga-studioWEB/public/CNAME k-sebe-yoga-studioWEB/dist/CNAME
-
-       - name: Upload artifact
-         uses: actions/upload-pages-artifact@v3
-         with:
-           path: k-sebe-yoga-studioWEB/dist
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: k-sebe-yoga-studioWEB/dist
 
   deploy:
-     name: Deploy
-     environment:
-       name: github-pages
-       url: ${{ steps.deployment.outputs.page_url }}
-     runs-on: ubuntu-latest
-     needs: build
-     steps:
-       - name: Deploy to GitHub Pages
-         id: deployment
-         uses: actions/deploy-pages@v4
+    name: Deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

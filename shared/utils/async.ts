@@ -188,13 +188,13 @@ export async function batchAsync<T>(
  * debouncedSearch('hello world'); // This one will execute
  * ```
  */
-export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
+export function debounceAsync<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   delayMs: number
 ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let resolvePromise: ((value: ReturnType<T>) => void) | null = null;
-  let rejectPromise: ((reason: any) => void) | null = null;
+  let rejectPromise: ((reason: unknown) => void) | null = null;
 
   return (...args: Parameters<T>): Promise<ReturnType<T>> => {
     return new Promise((resolve, reject) => {
@@ -236,7 +236,7 @@ export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
  * throttledSave(data2); // Waits 1s
  * ```
  */
-export function throttleAsync<T extends (...args: any[]) => Promise<any>>(
+export function throttleAsync<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   delayMs: number
 ): (...args: Parameters<T>) => Promise<ReturnType<T>> {

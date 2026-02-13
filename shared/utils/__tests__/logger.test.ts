@@ -1,11 +1,12 @@
 /**
  * Tests for Logger utility
  */
+/* eslint-disable no-console */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { logger } from '../logger';
 
 describe('Logger', () => {
-  const originalEnv = import.meta.env;
+  const _originalEnv = import.meta.env;
 
   beforeEach(() => {
     // Spy on console methods

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -9,7 +10,7 @@ interface SkillConfig {
     event: string;
     files?: string[];
   };
-  actions: Array<{ type: string; [key: string]: any }>;
+  actions: Array<{ type: string; [key: string]: unknown }>;
 }
 
 interface Registry {

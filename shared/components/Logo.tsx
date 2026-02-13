@@ -15,7 +15,7 @@ export const Logo: React.FC<LogoProps> = ({
   className = 'w-20 h-24',
   color,
   variant = 'default',
-  showText = true,
+  showText: _showText = true,
 }) => {
   // Determine filter based on variant or color
   const getFilter = () => {

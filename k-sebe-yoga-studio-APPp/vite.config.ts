@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+        '@ksebe/shared': path.resolve(__dirname, '../shared'),
       },
     },
     build: {

@@ -12,7 +12,7 @@ const parseStoredData = (value: string | null): ContentData | null => {
   if (!value) return null;
   try {
     return JSON.parse(value) as ContentData;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 };

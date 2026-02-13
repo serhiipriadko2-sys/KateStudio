@@ -9,7 +9,10 @@ export const About: React.FC = () => {
       <div className="flex flex-col md:flex-row items-center gap-16">
         <div className="md:w-5/12 relative group w-full">
           <FadeIn delay={0} direction="right">
-            <div className="absolute inset-0 bg-brand-mint rounded-[3rem] rotate-3 group-hover:rotate-6 transition-transform duration-500" style={{ backgroundColor: COLORS.brandMint }}></div>
+            <div
+              className="absolute inset-0 bg-brand-mint rounded-[3rem] rotate-3 group-hover:rotate-6 transition-transform duration-500"
+              style={{ backgroundColor: COLORS.brandMint }}
+            ></div>
             <div className="relative w-full aspect-[3/4] rounded-[3rem] overflow-hidden shadow-xl">
               <Image
                 src="/images/about/katya-portrait.jpg"
@@ -22,7 +25,10 @@ export const About: React.FC = () => {
 
         <div className="md:w-7/12 md:pl-10 text-center md:text-left">
           <FadeIn delay={200}>
-            <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4" style={{ color: COLORS.brandGreen }}>
+            <h4
+              className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4"
+              style={{ color: COLORS.brandGreen }}
+            >
               Обо мне
             </h4>
           </FadeIn>
@@ -37,11 +43,19 @@ export const About: React.FC = () => {
             <div className="space-y-6 text-brand-text/80 text-lg md:text-xl font-light leading-relaxed">
               <p>
                 Преподаватель, всем сердцем влюбленный в{' '}
-                <span className="font-serif italic text-2xl text-brand-green mx-1" style={{ color: COLORS.brandGreen }}>
+                <span
+                  className="font-serif italic text-2xl text-brand-green mx-1"
+                  style={{ color: COLORS.brandGreen }}
+                >
                   Inside Flow
                 </span>{' '}
                 и{' '}
-                <span className="font-serif italic text-2xl text-brand-green mx-1" style={{ color: COLORS.brandGreen }}>Хатха-йогу</span>
+                <span
+                  className="font-serif italic text-2xl text-brand-green mx-1"
+                  style={{ color: COLORS.brandGreen }}
+                >
+                  Хатха-йогу
+                </span>
                 .
               </p>
               <p>
@@ -54,20 +68,41 @@ export const About: React.FC = () => {
               </p>
             </div>
           </FadeIn>
-          
+
           <FadeIn delay={500}>
             <div className="grid grid-cols-3 gap-4 md:gap-8 mt-12 pt-8 border-t border-brand-green/10">
               <div>
-                <div className="text-3xl md:text-4xl font-serif text-brand-green mb-1" style={{ color: COLORS.brandGreen }}>3+</div>
-                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">Года практики</div>
+                <div
+                  className="text-3xl md:text-4xl font-serif text-brand-green mb-1"
+                  style={{ color: COLORS.brandGreen }}
+                >
+                  3+
+                </div>
+                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">
+                  Года практики
+                </div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-serif text-brand-green mb-1" style={{ color: COLORS.brandGreen }}>100+</div>
-                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">Учеников</div>
+                <div
+                  className="text-3xl md:text-4xl font-serif text-brand-green mb-1"
+                  style={{ color: COLORS.brandGreen }}
+                >
+                  100+
+                </div>
+                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">
+                  Учеников
+                </div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-serif text-brand-green mb-1" style={{ color: COLORS.brandGreen }}>7</div>
-                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">Ретритов</div>
+                <div
+                  className="text-3xl md:text-4xl font-serif text-brand-green mb-1"
+                  style={{ color: COLORS.brandGreen }}
+                >
+                  7
+                </div>
+                <div className="text-xs uppercase tracking-wider text-stone-400 font-bold">
+                  Ретритов
+                </div>
               </div>
             </div>
           </FadeIn>

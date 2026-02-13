@@ -91,7 +91,7 @@ export const uploadFile = async (
     } = supabase.storage.from(bucket).getPublicUrl(data.path);
 
     return publicUrl;
-  } catch (err) {
+  } catch (_err) {
     console.warn('Unexpected upload error. Using local storage.');
     return null;
   }

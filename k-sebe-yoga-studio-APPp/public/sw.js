@@ -27,7 +27,7 @@ const PRECACHE_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Precaching essential assets');
+      console.warn('[SW] Precaching essential assets');
       return cache.addAll(PRECACHE_ASSETS);
     })
   );
@@ -41,7 +41,7 @@ self.addEventListener('activate', (event) => {
         cacheNames
           .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
           .map((name) => {
-            console.log('[SW] Deleting old cache:', name);
+            console.warn('[SW] Deleting old cache:', name);
             return caches.delete(name);
           })
       );
