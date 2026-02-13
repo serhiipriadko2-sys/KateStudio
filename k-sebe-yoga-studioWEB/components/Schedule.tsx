@@ -1,9 +1,9 @@
 import { ChevronRight, ChevronLeft, MapPin, Users, Info, Flame } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import { defaultContent } from '../data/content';
 import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { BookingDetails } from '../types';
 import { FadeIn } from './FadeIn';
-import { defaultContent } from '../data/content';
 
 interface ScheduleProps {
   onBook: (details: BookingDetails) => void;
@@ -86,7 +86,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
   const [classes, setClasses] = useState<ClassSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const [_hasError, setHasError] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {

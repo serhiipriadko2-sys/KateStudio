@@ -37,7 +37,7 @@ export const loadTheme = (): ThemeColors => {
       const parsed = JSON.parse(saved);
       // Merge with default to ensure all keys exist
       return { ...DEFAULT_THEME, ...parsed };
-    } catch (e) {
+    } catch (_e) {
       return DEFAULT_THEME;
     }
   }

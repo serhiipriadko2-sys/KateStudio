@@ -42,16 +42,19 @@ export const Marquee: React.FC<MarqueeConfig> = ({
 
   // Cycle phases
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPhase((prev) => {
-        if (prev === 'inhale') {
-          return 'exhale';
-        } else {
-          setWordIndex((prevIndex) => (prevIndex + 1) % words.length);
-          return 'inhale';
-        }
-      });
-    }, (duration * 1000) / 2);
+    const interval = setInterval(
+      () => {
+        setPhase((prev) => {
+          if (prev === 'inhale') {
+            return 'exhale';
+          } else {
+            setWordIndex((prevIndex) => (prevIndex + 1) % words.length);
+            return 'inhale';
+          }
+        });
+      },
+      (duration * 1000) / 2
+    );
 
     return () => clearInterval(interval);
   }, [duration, words.length]);

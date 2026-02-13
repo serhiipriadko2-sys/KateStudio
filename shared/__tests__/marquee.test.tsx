@@ -1,7 +1,7 @@
 import { render, screen, act } from '@testing-library/react';
+import React from 'react';
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { Marquee } from '../components/Marquee';
-import React from 'react';
 
 describe('Marquee Component', () => {
   beforeEach(() => {

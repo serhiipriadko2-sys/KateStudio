@@ -144,7 +144,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       try {
         localStorage.setItem(`ksebe-img-${key}`, base64Fallback);
         showToast('Сохранено локально (Режим разработки)', 'success');
-      } catch (storageError) {
+      } catch (_storageError) {
         showToast('Ошибка: Файл слишком большой для браузера', 'error');
       }
     } finally {
@@ -194,7 +194,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
       showToast('Конфигурация выгружена');
-    } catch (e) {
+    } catch (_e) {
       showToast('Ошибка экспорта', 'error');
     }
   };
@@ -226,7 +226,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
         // Trigger updates
         window.dispatchEvent(new Event('storage'));
         showToast('Конфигурация успешно импортирована');
-      } catch (err) {
+      } catch (_err) {
         showToast('Неверный формат файла', 'error');
       }
     };
@@ -245,7 +245,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       saveContentData(parsed, contentMode);
       setContentError(null);
       showToast('Контент обновлен');
-    } catch (error) {
+    } catch (_error) {
       setContentError('JSON содержит ошибку. Проверьте формат.');
     }
   };
@@ -273,7 +273,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
       showToast('Контент выгружен');
-    } catch (e) {
+    } catch (_e) {
       showToast('Ошибка экспорта контента', 'error');
     }
   };
@@ -289,7 +289,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
         setContentDraft(JSON.stringify(getContentData(contentMode), null, 2));
         setContentError(null);
         showToast('Контент импортирован');
-      } catch (err) {
+      } catch (_err) {
         setContentError('Неверный формат JSON');
         showToast('Ошибка импорта контента', 'error');
       }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BRAND, COLORS } from '../constants';
+import { BRAND } from '../constants';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
 import { Logo } from './Logo';
