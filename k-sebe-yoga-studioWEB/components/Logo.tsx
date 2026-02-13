@@ -11,7 +11,7 @@ interface LogoProps {
 export const Logo: React.FC<LogoProps> = ({
   className = 'w-24 h-28',
   color,
-  showText = true,
+  showText: _showText = true,
   loading = 'lazy',
   fetchpriority = 'auto',
 }) => {

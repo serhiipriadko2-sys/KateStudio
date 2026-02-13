@@ -210,7 +210,7 @@ export const dataService = {
           bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
         });
       }
-    } catch (e) {
+    } catch (_e) {
       // Silent fail for offline mode
     }
 
