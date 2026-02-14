@@ -1,8 +1,7 @@
 import { Zap, Moon, Heart, Activity } from 'lucide-react';
 import React from 'react';
-import { FadeIn } from './FadeIn';
 
-const benefitsData = [
+const _benefitsData = [
   {
     icon: <Zap className="w-8 h-8 text-brand-green" />,
     title: 'Энергия',

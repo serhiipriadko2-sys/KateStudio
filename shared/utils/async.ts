@@ -188,15 +188,15 @@ export async function batchAsync<T>(
  * debouncedSearch('hello world'); // This one will execute
  * ```
  */
-export function debounceAsync<T extends (...args: unknown[]) => Promise<unknown>>(
+export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   delayMs: number
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  let resolvePromise: ((value: ReturnType<T>) => void) | null = null;
+  let resolvePromise: ((value: Awaited<ReturnType<T>>) => void) | null = null;
   let rejectPromise: ((reason: unknown) => void) | null = null;
 
-  return (...args: Parameters<T>): Promise<ReturnType<T>> => {
+  return (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
     return new Promise((resolve, reject) => {
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -208,7 +208,7 @@ export function debounceAsync<T extends (...args: unknown[]) => Promise<unknown>
       timeoutId = setTimeout(async () => {
         try {
           const result = await fn(...args);
-          resolvePromise?.(result as any);
+          resolvePromise?.(result);
         } catch (error) {
           rejectPromise?.(error);
         }
@@ -236,19 +236,19 @@ export function debounceAsync<T extends (...args: unknown[]) => Promise<unknown>
  * throttledSave(data2); // Waits 1s
  * ```
  */
-export function throttleAsync<T extends (...args: unknown[]) => Promise<unknown>>(
+export function throttleAsync<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   delayMs: number
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>> {
   let lastCall = 0;
-  let pendingPromise: Promise<ReturnType<T>> | null = null;
+  let pendingPromise: Promise<Awaited<ReturnType<T>>> | null = null;
 
-  return async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+  return async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
     const now = Date.now();
 
     if (now - lastCall >= delayMs) {
       lastCall = now;
-      return await fn(...args);
+      return (await fn(...args)) as Awaited<ReturnType<T>>;
     }
 
     if (!pendingPromise) {
@@ -258,7 +258,7 @@ export function throttleAsync<T extends (...args: unknown[]) => Promise<unknown>
             lastCall = Date.now();
             const result = await fn(...args);
             pendingPromise = null;
-            resolve(result as any);
+            resolve(result as Awaited<ReturnType<T>>);
           },
           delayMs - (now - lastCall)
         );

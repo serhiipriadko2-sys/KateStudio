@@ -1,5 +1,5 @@
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
-import { MessageCircle, Phone, Shield, Sparkles, Trash2, X } from 'lucide-react';
+import { MessageCircle, Mic, Phone, Shield, Sparkles, Trash2, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useToast } from '../../context/ToastContext';
 import { getGeminiChatResponse, generateSpeech } from '../../services/geminiService';
@@ -453,7 +453,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
                       <Shield className="w-4 h-4 opacity-80" />
                     </button>
                     <button
-                      onClick={handleStartLiveSession}
+                      onClick={() => void handleStartLiveSession()}
                       className="p-2 hover:bg-white/10 rounded-full transition-colors group relative"
                       title="Голосовой режим"
                     >

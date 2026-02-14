@@ -1,11 +1,8 @@
-export interface Source {
-  title: string;
-  uri: string;
-}
+import { AppSource } from '../types';
 
 export type AssistantResponse = {
   text: string;
-  sources?: Source[];
+  sources?: AppSource[];
 };
 
 export type KnowledgeEntry = {
@@ -13,10 +10,10 @@ export type KnowledgeEntry = {
   response: AssistantResponse;
 };
 
-export const CONTACT_SOURCES: Source[] = [
-  { title: 'Telegram', uri: 'https://t.me/k_sebe_dubna' },
-  { title: 'Instagram', uri: 'https://instagram.com/kate_gabran' },
-  { title: 'Адрес', uri: 'https://yandex.ru/navi/org/k_sebe/7167334007' },
+export const CONTACT_SOURCES: AppSource[] = [
+  { title: 'Telegram', url: 'https://t.me/k_sebe_dubna' },
+  { title: 'Instagram', url: 'https://instagram.com/kate_gabran' },
+  { title: 'Адрес', url: 'https://yandex.ru/navi/org/k_sebe/7167334007' },
 ];
 
 export const KNOWLEDGE_BASE: KnowledgeEntry[] = [

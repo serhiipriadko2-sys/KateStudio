@@ -6,7 +6,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseConfigFromEnv } from './supabaseConfig';
 
-export const supabaseConfig = getSupabaseConfigFromEnv(import.meta.env);
+export const supabaseConfig = getSupabaseConfigFromEnv(import.meta.env as any);
 
 if (!supabaseConfig.isConfigured) {
   console.error(

@@ -1,6 +1,6 @@
 import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { About } from './components/About';
 import { AdminPanel } from './components/AdminPanel';
 import { BookingModal } from './components/BookingModal';
@@ -18,10 +18,8 @@ import { Logo } from './components/Logo';
 import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
 import { Pricing } from './components/Pricing';
-// Retreats component available from './components/Retreats' when needed
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
-import { SubscriptionProfile } from './components/SubscriptionProfile';
 import { registerServiceWorker } from './services/serviceWorker';
 import { loadTheme, applyTheme } from './services/theme';
 import { BookingDetails } from './types';
@@ -39,7 +37,6 @@ function App() {
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [waitingForRefresh, setWaitingForRefresh] = useState(false);
 
-  // Global Booking State
   const [bookingModalData, setBookingModalData] = useState<{
     isOpen: boolean;
     details: BookingDetails;
@@ -60,13 +57,11 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Initialize Theme
   useEffect(() => {
     const theme = loadTheme();
     applyTheme(theme);
   }, []);
 
-  // Service Worker registration for offline/update support
   useEffect(() => {
     registerServiceWorker({
       onUpdate: (registration) => {
@@ -87,7 +82,6 @@ function App() {
     };
   }, [waitingForRefresh]);
 
-  // Online/offline listener
   useEffect(() => {
     const handleNetworkChange = () => {
       setIsOffline(!navigator.onLine);
@@ -101,7 +95,6 @@ function App() {
     };
   }, []);
 
-  // Scroll Listener for Smart Header
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -110,7 +103,6 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Keyboard shortcut to toggle Admin Panel (Ctrl + Shift + Y)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -130,7 +122,6 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMenuOpen, bookingModalData.isOpen]);
 
-  // Lock body scroll when menu is open or loading
   useEffect(() => {
     if (isMenuOpen || loading) {
       document.body.style.overflow = 'hidden';
@@ -161,7 +152,6 @@ function App() {
       <div
         className={`min-h-screen bg-brand-light font-sans selection:bg-brand-green selection:text-white relative flex flex-col transition-opacity duration-700 ${loading ? 'opacity-0' : 'opacity-100'}`}
       >
-        {/* Skip Links for Accessibility */}
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-brand-green focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none"
@@ -175,7 +165,6 @@ function App() {
           Перейти к подвалу
         </a>
 
-        {/* Texture Overlay */}
         <div
           className="fixed inset-0 z-[5] pointer-events-none opacity-[0.05] mix-blend-multiply"
           style={{ backgroundImage: noiseBg }}
@@ -183,7 +172,6 @@ function App() {
 
         <ScrollProgress />
 
-        {/* --- Smart Glass Navigation Bar --- */}
         <nav
           className={`fixed top-0 left-0 right-0 z-50 flex justify-between items-center transition-all duration-500 ease-in-out pointer-events-none
             ${isScrolled ? 'py-3 px-6 bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20' : 'py-6 px-6 bg-transparent'}
@@ -269,7 +257,6 @@ function App() {
           </div>
         )}
 
-        {/* --- Full Screen Menu Overlay --- */}
         {isMenuOpen && (
           <div
             id="mobile-menu"
@@ -336,26 +323,15 @@ function App() {
           </div>
         )}
 
-        {/* Main Content Flow */}
         <main id="main-content" tabIndex={-1} className="flex-1">
           <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
           <Marquee />
-          {/* Временно скрыто: блок преимуществ */}
-          {/* <Benefits /> */}
           <About />
           <Philosophy />
           <Directions onBook={(type) => openBooking({ type })} />
           <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
           <Gallery />
           <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-          {/* Временно скрыто: AI-подписка */}
-          {/* <SubscriptionProfile
-            onRequestPlan={(plan) =>
-              openBooking({ type: `AI Подписка: ${plan.toUpperCase()}`, price: 'от 990 ₽/мес' })
-            }
-          /> */}
-          {/* Retreats temporarily hidden - no upcoming retreat info */}
-          {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
           <Schedule onBook={(details) => openBooking(details)} />
           <InstagramFeed />
           <Reviews />
@@ -371,14 +347,12 @@ function App() {
         <ChatWidget />
         <CookieBanner />
 
-        {/* Global Booking Modal */}
         <BookingModal
           isOpen={bookingModalData.isOpen}
           onClose={closeBooking}
           details={bookingModalData.details}
         />
 
-        {/* Other Modals */}
         <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
         <LegalModals type={legalModalType} onClose={() => setLegalModalType(null)} />
       </div>

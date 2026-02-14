@@ -8,7 +8,7 @@ function messageKey(msg: ChatMessage): string {
     msg.text,
     msg.audioBase64 ?? '',
     msg.diarySummary ?? '',
-    msg.sources?.map((s) => `${s.uri}:${s.title}`).join('|') ?? '',
+    msg.sources?.map((s) => `${s.url}:${s.title}`).join('|') ?? '',
   ].join('::');
 }
 
@@ -16,7 +16,7 @@ export const ChatMessages: React.FC<{
   messages: ChatMessage[];
   isLoading: boolean;
   onPlayTts: (index: number, text: string) => void;
-  messagesEndRef: React.RefObject<HTMLDivElement>;
+  messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }> = ({ messages, isLoading, onPlayTts, messagesEndRef }) => {
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F9F9F9] scrollbar-thin scrollbar-thumb-stone-200">
@@ -62,8 +62,8 @@ export const ChatMessages: React.FC<{
             <div className="flex flex-wrap gap-2 mt-2 ml-9 max-w-[85%]">
               {msg.sources.map((src) => (
                 <a
-                  key={src.uri}
-                  href={src.uri}
+                  key={src.url}
+                  href={src.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-[9px] bg-white border border-stone-200 px-2 py-1 rounded-full text-stone-500 hover:text-brand-green hover:border-brand-green/30 transition-colors"

@@ -8,7 +8,7 @@ export interface PriceItem {
 
 export interface Source {
   title: string;
-  uri: string;
+  url: string;
 }
 
 export interface ChatMessage {
@@ -18,6 +18,12 @@ export interface ChatMessage {
   sources?: Source[];
   audioBase64?: string;
   isAudioLoading?: boolean;
+
+  // New fields
+  diarySummary?: string;
+  generatedVideoUrl?: string;
+  generatedImageUrl?: string;
+  isThinking?: boolean;
 }
 
 export interface GalleryImage {

@@ -8,7 +8,7 @@ export interface PriceItem {
 
 export interface Source {
   title: string;
-  uri: string;
+  url: string;
 }
 
 export type ChatMode = 'chat' | 'meditation' | 'art' | 'video_gen' | 'coach' | 'program' | 'diary';

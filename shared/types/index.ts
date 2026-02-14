@@ -66,13 +66,29 @@ export type ChatMode =
   | 'vision'
   | 'create';
 
+export interface AppSource {
+  title: string;
+  url: string;
+  snippet?: string;
+}
+
 export interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: number;
+  id?: string;
+  role: 'user' | 'assistant' | 'system' | 'model';
+  content?: string;
+  text?: string;
+  timestamp?: number;
   mode?: ChatMode;
   attachments?: ChatAttachment[];
+
+  // Extended fields
+  diarySummary?: string;
+  generatedVideoUrl?: string;
+  generatedImageUrl?: string;
+  isThinking?: boolean;
+  audioBase64?: string;
+  isAudioLoading?: boolean;
+  sources?: AppSource[];
 }
 
 export interface ChatAttachment {

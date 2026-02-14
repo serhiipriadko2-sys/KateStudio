@@ -106,7 +106,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
       const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabase!
           .from('classes')
           .select(
             'id,date,time,name,instructor,duration,spots_total,spots_booked,location,intensity,is_online'
