@@ -12,18 +12,13 @@ import { createClient, PostgrestError, SupabaseClient } from '@supabase/supabase
 const envUrl = import.meta.env.VITE_SUPABASE_URL;
 const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// In production, fail loudly if Supabase credentials are missing.
-// In development, use placeholders to allow the UI to load without Supabase.
-const isProduction = import.meta.env.PROD;
+// Log loudly but never throw at module level — a missing env var must not white-screen the site.
+export const isSupabaseConfigured = !!(envUrl && envKey);
 
-if (!envUrl || !envKey) {
-  if (isProduction) {
-    throw new Error(
-      'Supabase configuration missing in production. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
-    );
-  }
-  console.warn(
-    'Supabase configuration missing. Using placeholder values to prevent crash. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
+if (!isSupabaseConfigured) {
+  console.error(
+    '[supabase] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY not set. ' +
+      'Data features will be unavailable; the UI will show demo/fallback content.'
   );
 }
 

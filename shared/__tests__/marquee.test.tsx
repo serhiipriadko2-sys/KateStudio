@@ -1,71 +1,56 @@
-import { render, screen, act } from '@testing-library/react';
-import React from 'react';
-import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import { Marquee } from '../components/Marquee';
 
-describe('Marquee Component', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
+describe('Marquee (Breathing Strip)', () => {
+  it('renders inhale cycle words and separator by default', () => {
+    render(<Marquee />);
+    // Default inhale words should be present
+    expect(screen.getAllByText('смелость').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('энергия').length).toBeGreaterThanOrEqual(1);
+    // "вдох" separator should be present
+    expect(screen.getAllByText('вдох').length).toBeGreaterThanOrEqual(1);
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
+  it('renders custom inhale and exhale word lists', () => {
+    render(<Marquee inhaleWords={['Сила']} words={['Покой']} />);
+    expect(screen.getAllByText('Сила').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('вдох').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('should render initial state (Inhale)', () => {
-    render(<Marquee duration={4} />);
-    expect(screen.getByText('вдох')).toBeInTheDocument();
+  it('switches to exhale cycle on animationiteration', () => {
+    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
+
+    // Initially shows inhale words
+    expect(screen.getAllByText('Огонь').length).toBeGreaterThanOrEqual(1);
+
+    // Simulate animation iteration on the track element
+    const track = document.querySelector('.marquee-track');
+    expect(track).toBeTruthy();
+    fireEvent.animationIteration(track!);
+
+    // After one iteration, should switch to exhale words
+    expect(screen.getAllByText('Тишина').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('выдох').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('should cycle to Exhale word after half duration', () => {
-    render(<Marquee duration={4} words={['Тест']} />);
+  it('cycles back to inhale after two iterations', () => {
+    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
 
-    // Initial state
-    expect(screen.getByText('вдох')).toBeInTheDocument();
+    const track = document.querySelector('.marquee-track')!;
+    // First iteration → exhale
+    fireEvent.animationIteration(track);
+    expect(screen.getAllByText('Тишина').length).toBeGreaterThanOrEqual(1);
 
-    // Advance 2 seconds (half of 4s)
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-
-    // Should show exhale word
-    expect(screen.getByText('Тест')).toBeInTheDocument();
-    expect(screen.queryByText('вдох')).not.toBeInTheDocument();
+    // Second iteration → back to inhale
+    fireEvent.animationIteration(track);
+    expect(screen.getAllByText('Огонь').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('вдох').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('should cycle back to Inhale word after full duration', () => {
-    render(<Marquee duration={4} words={['Тест']} />);
-
-    // Advance 4 seconds (full cycle)
-    act(() => {
-      vi.advanceTimersByTime(4000);
-    });
-
-    expect(screen.getByText('вдох')).toBeInTheDocument();
-  });
-
-  it('should cycle through exhale words', () => {
-    render(<Marquee duration={4} words={['Один', 'Два']} />);
-
-    // 0s: Inhale
-    expect(screen.getByText('вдох')).toBeInTheDocument();
-
-    // 2s: Exhale "Один"
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(screen.getByText('Один')).toBeInTheDocument();
-
-    // 4s: Inhale
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(screen.getByText('вдох')).toBeInTheDocument();
-
-    // 6s: Exhale "Два"
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(screen.getByText('Два')).toBeInTheDocument();
+  it('duplicates track for seamless loop (two halves)', () => {
+    render(<Marquee inhaleWords={['A']} words={['B']} />);
+    // Word "A" should appear at least twice (once per half)
+    expect(screen.getAllByText('A').length).toBe(2);
   });
 });
