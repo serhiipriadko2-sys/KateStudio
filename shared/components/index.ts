@@ -35,7 +35,7 @@ export { OnboardingQuiz } from './OnboardingQuiz';
 export { NotificationPreferences } from './NotificationPreferences';
 
 // Types
-export type { AsanaAnalysis, ImageServices } from './Image';
+export type { ImageServices } from './Image';
 export type { MarqueeConfig } from './Marquee';
 export type { PaywallPlanId, PaywallStatus } from './Paywall';
 export type { DailyRecommendationProps } from './DailyRecommendation';
@@ -63,9 +63,9 @@ export type {
   AchievementRarity,
   StreakData,
   StreakMilestone,
-  WeeklyRecap as WeeklyRecapType,
+  WeeklyRecapData as WeeklyRecapType,
   // AI Personalization types (2026)
-  DailyRecommendation as DailyRecommendationType,
+  DailyRecommendationData as DailyRecommendationType,
   PersonalProgram,
   ProgramDay,
   EnhancedAsanaAnalysis,
@@ -81,6 +81,6 @@ export type {
   OnboardingData,
   // Notification types (2026)
   NotificationType,
-  NotificationPreferences as NotificationPreferencesType,
+  NotificationPreferencesData as NotificationPreferencesType,
   PushNotification,
 } from '../types';

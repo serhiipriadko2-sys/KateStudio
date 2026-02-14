@@ -1,6 +1,6 @@
 import { Bell, BellOff, Clock, Sparkles, Calendar, Award } from 'lucide-react';
 import React from 'react';
-import type { NotificationPreferences as NotificationPreferencesType } from '../types';
+import type { NotificationPreferencesData as NotificationPreferencesType } from '../types';
 import { cn } from '../utils';
 
 export interface NotificationPreferencesProps {

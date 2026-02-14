@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 /**
  * K Sebe Yoga Studio - Logger Utility
  *

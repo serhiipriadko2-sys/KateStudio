@@ -138,7 +138,7 @@ export function observeINP(callback: ReportCallback): () => void {
       type: 'event',
       buffered: true,
       durationThreshold: INP_DURATION_THRESHOLD_MS,
-    });
+    } as any);
 
     return () => observer.disconnect();
   } catch {

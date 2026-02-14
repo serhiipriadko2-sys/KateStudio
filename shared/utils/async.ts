@@ -208,7 +208,7 @@ export function debounceAsync<T extends (...args: unknown[]) => Promise<unknown>
       timeoutId = setTimeout(async () => {
         try {
           const result = await fn(...args);
-          resolvePromise?.(result);
+          resolvePromise?.(result as any);
         } catch (error) {
           rejectPromise?.(error);
         }
@@ -258,7 +258,7 @@ export function throttleAsync<T extends (...args: unknown[]) => Promise<unknown>
             lastCall = Date.now();
             const result = await fn(...args);
             pendingPromise = null;
-            resolve(result);
+            resolve(result as any);
           },
           delayMs - (now - lastCall)
         );

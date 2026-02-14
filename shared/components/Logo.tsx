@@ -2,6 +2,7 @@
  * K Sebe Logo Component
  * Uses the new image logo with support for different variants
  */
+/// <reference types="vite/client" />
 import React from 'react';
 
 interface LogoProps {

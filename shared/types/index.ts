@@ -271,7 +271,7 @@ export interface StreakCalendarDay {
   type: string;
 }
 
-export interface WeeklyRecap {
+export interface WeeklyRecapData {
   weekNumber: number;
   year: number;
   dateRange: { start: string; end: string };
@@ -321,7 +321,7 @@ export type PracticeType = 'inside-flow' | 'hatha' | 'meditation' | 'breathwork'
 export type PracticeGoal = 'flexibility' | 'strength' | 'relaxation' | 'energy' | 'balance';
 export type PracticeLevel = 'beginner' | 'intermediate' | 'advanced';
 
-export interface DailyRecommendation {
+export interface DailyRecommendationData {
   practiceId: string;
   title: string;
   duration: number;
@@ -446,7 +446,7 @@ export type NotificationType =
   | 'weekly_summary'
   | 'ai_recommendation';
 
-export interface NotificationPreferences {
+export interface NotificationPreferencesData {
   streakReminder: boolean;
   newContent: boolean;
   weeklySummary: boolean;
