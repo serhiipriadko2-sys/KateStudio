@@ -15,7 +15,7 @@ export const Logo: React.FC<LogoProps> = ({
   progress = 100,
   isSparking: _isSparking = false,
   isIgnited = false,
-  variant = 'full',
+  variant: _variant = 'full',
 }) => {
   // Calculate opacity based on progress
   const p = Math.min(Math.max(progress, 0), 100) / 100;

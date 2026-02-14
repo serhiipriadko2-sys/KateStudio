@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, appendDay, computeStreak, type DateKey } from '../streak';
+import { addDays, appendDay, computeStreak } from '../streak';
 
 describe('streak utils', () => {
   it('returns zeros for empty history', () => {

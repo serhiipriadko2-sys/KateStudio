@@ -169,7 +169,7 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
         (key.startsWith('gallery-') || key.startsWith('review-')) &&
         !backupData.assets[key]
       ) {
-        backupData.assets[key] = localStorage.getItem(key);
+        backupData.assets[key] = localStorage.getItem(key) ?? '';
       }
     }
 
@@ -197,6 +197,7 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
             theme?: string | object;
             user?: string;
             assets?: Record<string, string>;
+            images?: Record<string, string>;
           }
           const json = JSON.parse(event.target?.result as string) as BackupFile;
 

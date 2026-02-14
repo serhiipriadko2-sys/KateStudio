@@ -2,7 +2,7 @@ import { Send } from 'lucide-react';
 import React from 'react';
 
 export const ChatInput: React.FC<{
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   value: string;
   onChange: (value: string) => void;
   onSend: () => void;

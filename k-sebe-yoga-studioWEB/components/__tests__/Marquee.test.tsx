@@ -1,5 +1,4 @@
 import { render, screen, act } from '@testing-library/react';
-import React from 'react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { Marquee } from '../Marquee';
 

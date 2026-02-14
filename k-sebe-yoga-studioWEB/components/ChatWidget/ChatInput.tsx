@@ -8,7 +8,7 @@ export const ChatInput: React.FC<{
   onInputChange: (value: string) => void;
   onSend: () => void;
   isLoading: boolean;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isRecording: boolean;
   onToggleRecording: () => void;

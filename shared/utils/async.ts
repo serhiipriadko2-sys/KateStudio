@@ -248,7 +248,7 @@ export function throttleAsync<T extends (...args: unknown[]) => Promise<unknown>
 
     if (now - lastCall >= delayMs) {
       lastCall = now;
-      return await fn(...args);
+      return (await fn(...args)) as ReturnType<T>;
     }
 
     if (!pendingPromise) {

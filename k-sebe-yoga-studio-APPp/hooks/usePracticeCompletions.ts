@@ -19,7 +19,12 @@ export type PracticeCompletionModel = {
 export function usePracticeCompletions(now: Date = new Date()): PracticeCompletionModel {
   const [days, setDays] = useState<DateKey[]>(() => readPracticeCompletions());
 
-  useEffect(() => subscribePracticeCompletions(setDays), []);
+  useEffect(() => {
+    const unsubscribe = subscribePracticeCompletions(setDays);
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const today = useMemo(() => toDateKey(now), [now]);
 
