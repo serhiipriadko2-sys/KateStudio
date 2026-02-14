@@ -26,7 +26,16 @@ export default defineConfig({
         branches: 20,
         statements: 30,
       },
-      exclude: ['node_modules/', 'dist/', '**/*.d.ts', '**/*.config.*', '**/index.ts'],
+      include: ['shared/**/*.{ts,tsx}'],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/index.ts',
+        '**/__tests__/**',
+        'shared/styles/**',
+      ],
     },
     css: {
       modules: {
