@@ -1,9 +1,9 @@
+import { IMAGES } from '@ksebe/shared';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { Reviews } from '../components/Reviews';
-import { Retreats } from '../components/Retreats';
 import { Blog } from '../../shared/components/Blog';
-import { IMAGES } from '@ksebe/shared';
+import { Retreats } from '../components/Retreats';
+import { Reviews } from '../components/Reviews';
 
 // Mock IntersectionObserver if not already mocked in setup (it is, but just in case of environment issues)
 window.IntersectionObserver = vi.fn().mockImplementation(() => ({
@@ -22,7 +22,6 @@ describe('Landing Page Components', () => {
     // Since images might be lazy loaded or inside custom components, we look for img tags
     // The avatars are in TestimonialCard
     const images = screen.getAllByRole('img');
-    const avatar = images.find((img) => img.getAttribute('src') === IMAGES.reviews.avatars[0]);
     // Note: If Image component transforms the src, this might fail.
     // But passing local path '/images/...' usually stays as is unless storage logic intervenes.
 

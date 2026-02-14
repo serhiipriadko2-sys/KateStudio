@@ -169,7 +169,7 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
         (key.startsWith('gallery-') || key.startsWith('review-')) &&
         !backupData.assets[key]
       ) {
-        backupData.assets[key] = localStorage.getItem(key);
+        backupData.assets[key] = localStorage.getItem(key)!;
       }
     }
 
@@ -341,7 +341,7 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
                       <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-white/20 shadow-inner">
                         <input
                           type="color"
-                          value={colors[v.name] || '#000000'}
+                          value={(colors[v.name] || '#000000') as string}
                           onChange={(e) => handleColorChange(v.name, e.target.value)}
                           className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] cursor-pointer p-0 border-0"
                         />
