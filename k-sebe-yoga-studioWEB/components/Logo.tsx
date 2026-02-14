@@ -39,7 +39,7 @@ export const Logo: React.FC<LogoProps> = ({
         className="w-full h-full object-contain"
         style={filter ? { filter } : undefined}
         loading={loading}
-        fetchpriority={fetchpriority}
+        fetchPriority={fetchpriority}
         width="600"
         height="668"
       />

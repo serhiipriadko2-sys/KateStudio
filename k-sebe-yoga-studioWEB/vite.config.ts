@@ -1,6 +1,6 @@
 import path from 'path';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, type PluginOption } from 'vite';
 
 export default defineConfig(({ mode }) => {
   return {
@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
-    plugins: [react()],
+    plugins: [react() as unknown as PluginOption],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

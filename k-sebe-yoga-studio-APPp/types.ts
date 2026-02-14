@@ -18,6 +18,7 @@ export interface ChatMessage {
   sources?: Source[];
   audioBase64?: string;
   isAudioLoading?: boolean;
+  diarySummary?: string;
 }
 
 export interface GalleryImage {

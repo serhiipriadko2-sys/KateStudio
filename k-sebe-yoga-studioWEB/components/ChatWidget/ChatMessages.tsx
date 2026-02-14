@@ -8,7 +8,7 @@ export const ChatMessages: React.FC<{
   loadingText: string;
   playingMessageId: number | null;
   onToggleAudio: (index: number) => void;
-  messagesEndRef: React.RefObject<HTMLDivElement>;
+  messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }> = ({ messages, isLoading, loadingText, playingMessageId, onToggleAudio, messagesEndRef }) => {
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-stone-50 scroll-smooth">

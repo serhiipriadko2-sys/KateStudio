@@ -6,7 +6,7 @@
     "module": "ESNext",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-    "types": ["node", "vitest/globals"],
+    "types": ["node", "vitest/globals", "@testing-library/jest-dom/vitest"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -32,7 +32,7 @@
       "@ksebe/shared/*": ["../shared/*"]
     }
   },
-  "include": ["src", "components", "**/*.ts", "**/*.tsx"],
+  "include": ["src", "components", "**/*.ts", "**/*.tsx", "../vite-env.d.ts"],
   "exclude": ["node_modules", "dist"],
   "references": [{ "path": "../shared" }]
 }

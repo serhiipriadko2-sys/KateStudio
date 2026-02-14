@@ -16,7 +16,7 @@ export const ChatMessages: React.FC<{
   messages: ChatMessage[];
   isLoading: boolean;
   onPlayTts: (index: number, text: string) => void;
-  messagesEndRef: React.RefObject<HTMLDivElement>;
+  messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }> = ({ messages, isLoading, onPlayTts, messagesEndRef }) => {
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F9F9F9] scrollbar-thin scrollbar-thumb-stone-200">

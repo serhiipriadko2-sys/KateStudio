@@ -1,6 +1,6 @@
 import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { About } from './components/About';
 import { AdminPanel } from './components/AdminPanel';
 import { BookingModal } from './components/BookingModal';
@@ -21,7 +21,6 @@ import { Pricing } from './components/Pricing';
 // Retreats component available from './components/Retreats' when needed
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
-import { SubscriptionProfile } from './components/SubscriptionProfile';
 import { registerServiceWorker } from './services/serviceWorker';
 import { loadTheme, applyTheme } from './services/theme';
 import { BookingDetails } from './types';
