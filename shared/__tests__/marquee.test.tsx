@@ -1,71 +1,65 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Marquee } from '../components/Marquee';
 
+// Mock usePrefersReducedMotion
+vi.mock('../hooks', () => ({
+  usePrefersReducedMotion: vi.fn(() => false),
+}));
+
 describe('Marquee Component', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
+  it('should render initial state (Inhale cycle)', () => {
+    render(<Marquee />);
+    // Check for Inhale words (using getAllByText because words are repeated)
+    expect(screen.getAllByText('смелость')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('энергия')[0]).toBeInTheDocument();
+    // Check for separator
+    expect(screen.getAllByText('вдох')[0]).toBeInTheDocument();
+    // Ensure Exhale words are NOT present
+    expect(screen.queryByText('гармония')).not.toBeInTheDocument();
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
+  it('should switch to Exhale cycle on animation iteration', () => {
+    const { container } = render(<Marquee />);
+    const marqueeInner = container.querySelector('.animate-marquee');
+    expect(marqueeInner).toBeInTheDocument();
+
+    // Trigger animation iteration
+    fireEvent.animationIteration(marqueeInner!);
+
+    // Check for Exhale words
+    expect(screen.getAllByText('гармония')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('покой')[0]).toBeInTheDocument();
+    // Check for separator
+    expect(screen.getAllByText('Выдох')[0]).toBeInTheDocument();
+    // Ensure Inhale words are gone
+    expect(screen.queryByText('смелость')).not.toBeInTheDocument();
   });
 
-  it('should render initial state (Inhale)', () => {
-    render(<Marquee duration={4} />);
-    expect(screen.getByText('вдох')).toBeInTheDocument();
+  it('should switch back to Inhale cycle on next iteration', () => {
+    const { container } = render(<Marquee />);
+    const marqueeInner = container.querySelector('.animate-marquee');
+
+    // First iteration -> Exhale
+    fireEvent.animationIteration(marqueeInner!);
+    expect(screen.getAllByText('гармония')[0]).toBeInTheDocument();
+
+    // Second iteration -> Inhale
+    fireEvent.animationIteration(marqueeInner!);
+    expect(screen.getAllByText('смелость')[0]).toBeInTheDocument();
   });
 
-  it('should cycle to Exhale word after half duration', () => {
-    render(<Marquee duration={4} words={['Тест']} />);
+  it('should have correct accessibility attributes', () => {
+    render(<Marquee />);
+    const section = screen.getByRole('marquee');
+    expect(section).toBeInTheDocument();
+    expect(section).toHaveAttribute('aria-label', 'Дыхательная практика: Вдох');
 
-    // Initial state
-    expect(screen.getByText('вдох')).toBeInTheDocument();
+    // Trigger iteration
+    const marqueeInner = section.querySelector('.animate-marquee');
+    fireEvent.animationIteration(marqueeInner!);
 
-    // Advance 2 seconds (half of 4s)
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-
-    // Should show exhale word
-    expect(screen.getByText('Тест')).toBeInTheDocument();
-    expect(screen.queryByText('вдох')).not.toBeInTheDocument();
-  });
-
-  it('should cycle back to Inhale word after full duration', () => {
-    render(<Marquee duration={4} words={['Тест']} />);
-
-    // Advance 4 seconds (full cycle)
-    act(() => {
-      vi.advanceTimersByTime(4000);
-    });
-
-    expect(screen.getByText('вдох')).toBeInTheDocument();
-  });
-
-  it('should cycle through exhale words', () => {
-    render(<Marquee duration={4} words={['Один', 'Два']} />);
-
-    // 0s: Inhale
-    expect(screen.getByText('вдох')).toBeInTheDocument();
-
-    // 2s: Exhale "Один"
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(screen.getByText('Один')).toBeInTheDocument();
-
-    // 4s: Inhale
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(screen.getByText('вдох')).toBeInTheDocument();
-
-    // 6s: Exhale "Два"
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
-    expect(screen.getByText('Два')).toBeInTheDocument();
+    expect(section).toHaveAttribute('aria-label', 'Дыхательная практика: Выдох');
   });
 });

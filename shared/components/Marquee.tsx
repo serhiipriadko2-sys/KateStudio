@@ -1,97 +1,115 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { cn } from '../utils';
+import { usePrefersReducedMotion } from '../hooks';
 
 /* ─── Types ─────────────────────────────────────────────── */
 
 export interface MarqueeConfig {
-  /** Words to display during the "Exhale" phase */
+  /**
+   * Words to display during the "Exhale" phase.
+   * @deprecated The component now manages its own words for Inhale/Exhale cycles.
+   */
   words?: string[];
-  /** Duration of one full breath cycle (inhale + exhale) in seconds */
+  /**
+   * Duration of one full breath cycle (inhale + exhale) in seconds.
+   * @deprecated The animation duration is now handled via CSS.
+   */
   duration?: number;
   /** Extra CSS class */
   className?: string;
-  // Compatibility props (kept to prevent breaking changes, though functionality changes)
+  /**
+   * @deprecated No longer used.
+   */
   pauseOnHover?: boolean;
+  /**
+   * @deprecated No longer used.
+   */
   direction?: 'left' | 'right';
+  /**
+   * @deprecated No longer used.
+   */
   variant?: 'default' | 'minimal' | 'immersive';
+  /**
+   * @deprecated No longer used.
+   */
   inhaleWords?: string[];
 }
 
 /* ─── Constants ─────────────────────────────────────────── */
 
-const DEFAULT_EXHALE_WORDS = [
-  'смелость',
-  'энергия',
-  'сила',
-  'любовь',
-  'радость',
-  'гармония',
-  'покой',
-  'свет',
-];
+const INHALE_WORDS = ['смелость', 'энергия', 'сила', 'уверенность'];
+const EXHALE_WORDS = ['гармония', 'покой', 'свет', 'любовь'];
 
 /* ─── Main Marquee ──────────────────────────────────────── */
 
-export const Marquee: React.FC<MarqueeConfig> = ({
-  words = DEFAULT_EXHALE_WORDS,
-  duration = 8, // 4s inhale, 4s exhale
-  className,
-}) => {
-  const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale');
-  const [wordIndex, setWordIndex] = useState(0);
+export const Marquee: React.FC<MarqueeConfig> = ({ className }) => {
+  const [cycle, setCycle] = useState<'inhale' | 'exhale'>('inhale');
+  const prefersReducedMotion = usePrefersReducedMotion();
 
-  // Cycle phases
-  useEffect(() => {
-    const interval = setInterval(
-      () => {
-        setPhase((prev) => {
-          if (prev === 'inhale') {
-            return 'exhale';
-          } else {
-            setWordIndex((prevIndex) => (prevIndex + 1) % words.length);
-            return 'inhale';
-          }
-        });
-      },
-      (duration * 1000) / 2
-    );
+  // Determine current content based on cycle
+  const currentWords = cycle === 'inhale' ? INHALE_WORDS : EXHALE_WORDS;
+  const separator = cycle === 'inhale' ? 'вдох' : 'Выдох';
+  const isInhale = cycle === 'inhale';
 
-    return () => clearInterval(interval);
-  }, [duration, words.length]);
+  const handleAnimationIteration = () => {
+    setCycle((prev) => (prev === 'inhale' ? 'exhale' : 'inhale'));
+  };
 
-  const currentWord = phase === 'inhale' ? 'вдох' : words[wordIndex];
-  const isInhale = phase === 'inhale';
+  const renderContentBlock = (keyPrefix: string) => (
+    <div key={keyPrefix} className="flex items-center shrink-0 gap-8 md:gap-16 px-4 md:px-8">
+      {currentWords.map((word, index) => (
+        <React.Fragment key={`${keyPrefix}-${index}`}>
+          <span className="font-serif italic text-4xl md:text-6xl lg:text-7xl whitespace-nowrap">
+            {word}
+          </span>
+          <span className="font-sans text-sm md:text-base tracking-widest opacity-60 whitespace-nowrap">
+            {separator}
+          </span>
+        </React.Fragment>
+      ))}
+    </div>
+  );
 
   return (
     <section
       className={cn(
-        'relative w-full flex justify-center items-center py-24 md:py-32 overflow-hidden bg-brand-light select-none',
+        'relative w-full overflow-hidden bg-brand-light py-12 md:py-16 select-none',
         className
       )}
-      aria-label="Дыхательная практика: вдох и качество"
+      aria-label={`Дыхательная практика: ${isInhale ? 'Вдох' : 'Выдох'}`}
+      role="marquee"
     >
       {/* Background decoration */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none bg-gradient-to-b from-transparent via-brand-mint/20 to-transparent" />
-
-      {/* Main Text Container */}
       <div
         className={cn(
-          'relative z-10 flex flex-col items-center justify-center transition-all ease-in-out'
+          'absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-brand-mint/20 to-transparent transition-opacity duration-1000',
+          isInhale ? 'opacity-30' : 'opacity-10'
         )}
-        style={{
-          transitionDuration: `${(duration * 1000) / 2}ms`,
-          transform: isInhale ? 'scale(1.15)' : 'scale(1.0)',
-          opacity: isInhale ? 1 : 0.85,
-        }}
+      />
+
+      {/* Scrolling Container */}
+      <div
+        className={cn(
+          'flex w-max animate-marquee items-center',
+          prefersReducedMotion && 'animate-none'
+        )}
+        onAnimationIteration={handleAnimationIteration}
       >
-        <h2
+        {/*
+          Content Wrapper with Breathing Animation
+          We wrap the scrolling content in a div that handles the breathing scale/opacity
+        */}
+        <div
           className={cn(
-            'font-serif italic text-4xl md:text-6xl lg:text-7xl transition-colors duration-1000',
-            isInhale ? 'text-brand-green' : 'text-brand-text'
+            'flex items-center transition-all duration-1000 ease-in-out will-change-transform',
+            isInhale
+              ? 'scale-105 opacity-100 tracking-wider text-brand-green'
+              : 'scale-100 opacity-90 tracking-normal text-brand-text'
           )}
         >
-          {currentWord}
-        </h2>
+          {/* Repeat content enough times to fill screen + buffer */}
+          {[0, 1, 2, 3].map((i) => renderContentBlock(`block-${i}`))}
+        </div>
       </div>
     </section>
   );
