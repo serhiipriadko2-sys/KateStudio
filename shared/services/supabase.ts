@@ -12,18 +12,23 @@ import { createClient, PostgrestError, SupabaseClient } from '@supabase/supabase
 const envUrl = import.meta.env.VITE_SUPABASE_URL;
 const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Safe initialization values to prevent crashes if env vars are missing
-// This allows the app to load (avoiding white screen) even if unconfigured,
-// though data fetching will fail gracefully.
-const supabaseUrl = envUrl || 'https://placeholder.supabase.co';
-const supabaseKey = envKey || 'placeholder-key';
+// In production, fail loudly if Supabase credentials are missing.
+// In development, use placeholders to allow the UI to load without Supabase.
+const isProduction = import.meta.env.PROD;
 
-// Validate configuration (log warning only)
 if (!envUrl || !envKey) {
+  if (isProduction) {
+    throw new Error(
+      'Supabase configuration missing in production. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
+    );
+  }
   console.warn(
     'Supabase configuration missing. Using placeholder values to prevent crash. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
   );
 }
+
+const supabaseUrl = envUrl || 'https://placeholder.supabase.co';
+const supabaseKey = envKey || 'placeholder-key';
 
 // Create singleton client
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
