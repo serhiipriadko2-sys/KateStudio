@@ -72,7 +72,7 @@ export const getGeminiChatResponse = async (
   const res = getKnowledgeBaseResponse(userMessage);
   return {
     ...res,
-    sources: res.sources || []
+    sources: res.sources || [],
   };
 };
 
