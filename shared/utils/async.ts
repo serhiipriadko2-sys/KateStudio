@@ -11,29 +11,6 @@ import { logger } from './logger';
  */
 export type AsyncResult<T, E = Error> = { success: true; data: T } | { success: false; error: E };
 
-/**
- * Safely execute an async function with error handling
- *
- * @param fn - Async function to execute
- * @param context - Optional context for logging
- * @returns Result object with success/error status
- *
- * @example
- * ```typescript
- * import { logger } from '@ksebe/shared';
- *
- * const result = await safeAsync(
- *   () => fetchUserData(userId),
- *   { userId, operation: 'fetchUser' }
- * );
- *
- * if (result.success) {
- *   logger.info('User data fetched', { data: result.data });
- * } else {
- *   logger.error('Failed to fetch user data', result.error);
- * }
- * ```
- */
 export async function safeAsync<T>(
   fn: () => Promise<T>,
   context?: Record<string, unknown>
@@ -50,21 +27,6 @@ export async function safeAsync<T>(
   }
 }
 
-/**
- * Retry an async function with exponential backoff
- *
- * @param fn - Async function to retry
- * @param options - Retry options
- * @returns Promise that resolves to the function result
- *
- * @example
- * ```typescript
- * const data = await retryAsync(
- *   () => fetchData(),
- *   { maxRetries: 3, delayMs: 1000 }
- * );
- * ```
- */
 export async function retryAsync<T>(
   fn: () => Promise<T>,
   options: {
@@ -105,31 +67,6 @@ export async function retryAsync<T>(
   throw lastError;
 }
 
-/**
- * Execute multiple async operations in parallel with error handling
- *
- * @param operations - Array of async operations
- * @returns Array of results (success or error for each operation)
- *
- * @example
- * ```typescript
- * import { logger } from '@ksebe/shared';
- *
- * const results = await parallelAsync([
- *   () => fetchUser(1),
- *   () => fetchUser(2),
- *   () => fetchUser(3),
- * ]);
- *
- * results.forEach((result, i) => {
- *   if (result.success) {
- *     logger.info(`User ${i} fetched`, { data: result.data });
- *   } else {
- *     logger.error(`User ${i} failed`, result.error);
- *   }
- * });
- * ```
- */
 export async function parallelAsync<T>(
   operations: Array<() => Promise<T>>
 ): Promise<Array<AsyncResult<T>>> {
@@ -137,19 +74,6 @@ export async function parallelAsync<T>(
   return await Promise.all(promises);
 }
 
-/**
- * Execute async operations in batches to avoid overwhelming the system
- *
- * @param operations - Array of async operations
- * @param batchSize - Number of operations to run in parallel
- * @returns Array of results
- *
- * @example
- * ```typescript
- * const operations = users.map(user => () => processUser(user));
- * const results = await batchAsync(operations, 5); // Process 5 at a time
- * ```
- */
 export async function batchAsync<T>(
   operations: Array<() => Promise<T>>,
   batchSize: number
@@ -169,34 +93,15 @@ export async function batchAsync<T>(
   return results;
 }
 
-/**
- * Create a debounced async function
- *
- * @param fn - Async function to debounce
- * @param delayMs - Debounce delay in milliseconds
- * @returns Debounced function
- *
- * @example
- * ```typescript
- * const debouncedSearch = debounceAsync(
- *   (query: string) => searchAPI(query),
- *   300
- * );
- *
- * // Only the last call within 300ms will execute
- * debouncedSearch('hello');
- * debouncedSearch('hello world'); // This one will execute
- * ```
- */
 export function debounceAsync<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   delayMs: number
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+): (...args: Parameters<T>) => ReturnType<T> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  let resolvePromise: ((value: ReturnType<T>) => void) | null = null;
+  let resolvePromise: ((value: unknown) => void) | null = null;
   let rejectPromise: ((reason: unknown) => void) | null = null;
 
-  return (...args: Parameters<T>): Promise<ReturnType<T>> => {
+  return (...args: Parameters<T>): ReturnType<T> => {
     return new Promise((resolve, reject) => {
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -208,42 +113,23 @@ export function debounceAsync<T extends (...args: unknown[]) => Promise<unknown>
       timeoutId = setTimeout(async () => {
         try {
           const result = await fn(...args);
-          resolvePromise?.(result as any);
+          resolvePromise?.(result);
         } catch (error) {
           rejectPromise?.(error);
         }
       }, delayMs);
-    });
+    }) as ReturnType<T>;
   };
 }
 
-/**
- * Create a throttled async function
- *
- * @param fn - Async function to throttle
- * @param delayMs - Throttle delay in milliseconds
- * @returns Throttled function
- *
- * @example
- * ```typescript
- * const throttledSave = throttleAsync(
- *   (data: FormData) => saveToAPI(data),
- *   1000
- * );
- *
- * // First call executes immediately, subsequent calls wait 1s
- * throttledSave(data1);
- * throttledSave(data2); // Waits 1s
- * ```
- */
 export function throttleAsync<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   delayMs: number
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+): (...args: Parameters<T>) => ReturnType<T> {
   let lastCall = 0;
-  let pendingPromise: Promise<ReturnType<T>> | null = null;
+  let pendingPromise: ReturnType<T> | null = null;
 
-  return async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+  return (async (...args: Parameters<T>): Promise<unknown> => {
     const now = Date.now();
 
     if (now - lastCall >= delayMs) {
@@ -258,13 +144,13 @@ export function throttleAsync<T extends (...args: unknown[]) => Promise<unknown>
             lastCall = Date.now();
             const result = await fn(...args);
             pendingPromise = null;
-            resolve(result as any);
+            resolve(result);
           },
           delayMs - (now - lastCall)
         );
-      });
+      }) as ReturnType<T>;
     }
 
     return await pendingPromise;
-  };
+  }) as unknown as (...args: Parameters<T>) => ReturnType<T>;
 }

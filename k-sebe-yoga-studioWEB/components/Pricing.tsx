@@ -239,7 +239,7 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
         title: 'Йога-абонементы',
         subtitle: 'Групповые занятия',
         options: yogaSubscriptions,
-        columns: 3,
+        columns: 3 as 3,
       },
       {
         id: 'personal',
@@ -247,7 +247,7 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
         title: 'Персональные тренировки',
         subtitle: 'Индивидуальный подход',
         options: personalTraining,
-        columns: 2,
+        columns: 2 as 2,
       },
       {
         id: 'sound',
@@ -255,7 +255,7 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
         title: 'Саундхилинг',
         subtitle: 'Звукотерапия тибетскими чашами и гонгом',
         options: soundHealing,
-        columns: 3,
+        columns: 3 as 3,
       },
       {
         id: 'massage',
@@ -263,7 +263,7 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
         title: 'Массаж тибетскими чашами',
         subtitle: 'Глубокое расслабление через вибрации и звук',
         options: tibetanMassage,
-        columns: 2,
+        columns: 2 as 2,
       },
     ],
     []

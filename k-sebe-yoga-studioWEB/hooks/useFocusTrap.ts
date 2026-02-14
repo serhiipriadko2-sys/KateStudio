@@ -4,9 +4,9 @@ const focusableSelector =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export const useFocusTrap = (
-  containerRef: RefObject<HTMLElement>,
+  containerRef: RefObject<HTMLElement | null>,
   isActive: boolean,
-  initialFocusRef?: RefObject<HTMLElement>
+  initialFocusRef?: RefObject<HTMLElement | null>
 ) => {
   useEffect(() => {
     if (!isActive) return;

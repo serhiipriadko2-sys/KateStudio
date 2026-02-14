@@ -53,7 +53,7 @@ export const Hero: React.FC<HeroProps> = ({ onBook }) => {
 
       <div className="relative z-20 w-full max-w-7xl mx-auto">
         <FadeIn delay={100} direction="down">
-          <Logo className="w-28 h-28 mb-8" color="#fff" loading="eager" fetchpriority="high" />
+          <Logo className="w-28 h-28 mb-8" color="#fff" loading="eager" />
         </FadeIn>
         <FadeIn delay={300} direction="up">
           <h1 className="text-6xl md:text-[8rem] font-serif italic text-white leading-[0.85] mb-8 drop-shadow-lg mix-blend-overlay opacity-90">

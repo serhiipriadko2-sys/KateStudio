@@ -226,10 +226,10 @@ export const ChatWidgetShell: React.FC<ChatWidgetProps> = ({ hidden = false }) =
                   messages={messages}
                   isLoading={isLoading}
                   onPlayTts={handlePlayTts}
-                  messagesEndRef={messagesEndRef}
+                  messagesEndRef={messagesEndRef as any}
                 />
                 <ChatInput
-                  inputRef={inputRef}
+                  inputRef={inputRef as any}
                   value={inputValue}
                   onChange={setInputValue}
                   onSend={() => void handleSend()}

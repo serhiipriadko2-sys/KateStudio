@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
-    plugins: [react()],
+    plugins: [react() as any],
     // define: isDev
     //   ? {
     //       // NOTE: This still embeds the key into the client bundle.

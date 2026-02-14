@@ -79,7 +79,7 @@ export const ChatWidgetShell: React.FC = () => {
               loadingText={loadingText}
               playingMessageId={playingMessageId}
               onToggleAudio={toggleAudio}
-              messagesEndRef={messagesEndRef}
+              messagesEndRef={messagesEndRef as any}
             />
 
             <ChatInput
@@ -88,7 +88,7 @@ export const ChatWidgetShell: React.FC = () => {
               onInputChange={setInputValue}
               onSend={() => void handleSend()}
               isLoading={isLoading}
-              fileInputRef={fileInputRef}
+              fileInputRef={fileInputRef as any}
               onFileUpload={handleFileUpload}
               isRecording={isRecording}
               onToggleRecording={() => {

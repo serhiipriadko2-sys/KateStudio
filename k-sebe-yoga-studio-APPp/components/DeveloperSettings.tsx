@@ -169,7 +169,7 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
         (key.startsWith('gallery-') || key.startsWith('review-')) &&
         !backupData.assets[key]
       ) {
-        backupData.assets[key] = localStorage.getItem(key);
+        backupData.assets[key] = localStorage.getItem(key) || "";
       }
     }
 
@@ -219,8 +219,8 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
               if (typeof val === 'string') entries.push([key, val]);
             });
           }
-          if (json.images && typeof json.images === 'object') {
-            Object.entries(json.images as Record<string, unknown>).forEach(([key, val]) => {
+          if ((json as any).images && typeof (json as any).images === 'object') {
+            Object.entries((json as any).images as Record<string, unknown>).forEach(([key, val]) => {
               if (typeof val === 'string') entries.push([key, val]);
             });
           }
