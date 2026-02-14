@@ -1,6 +1,6 @@
 import { Play, Clock, Sparkles, ChevronRight } from 'lucide-react';
 import React from 'react';
-import type { DailyRecommendation as DailyRecommendationType, PracticeType } from '../types';
+import type { DailyRecommendationData as DailyRecommendationType, PracticeType } from '../types';
 
 export interface DailyRecommendationProps {
   recommendation: DailyRecommendationType | null;

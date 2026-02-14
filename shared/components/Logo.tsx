@@ -2,6 +2,7 @@
  * K Sebe Logo Component
  * Uses the new image logo with support for different variants
  */
+/// <reference types="vite/client" />
 import React from 'react';
 
 interface LogoProps {
@@ -15,7 +16,7 @@ export const Logo: React.FC<LogoProps> = ({
   className = 'w-20 h-24',
   color,
   variant = 'default',
-  showText = true,
+  showText: _showText = true,
 }) => {
   // Determine filter based on variant or color
   const getFilter = () => {

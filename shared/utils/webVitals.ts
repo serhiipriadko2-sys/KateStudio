@@ -138,7 +138,7 @@ export function observeINP(callback: ReportCallback): () => void {
       type: 'event',
       buffered: true,
       durationThreshold: INP_DURATION_THRESHOLD_MS,
-    });
+    } as any);
 
     return () => observer.disconnect();
   } catch {
@@ -305,7 +305,7 @@ export function logWebVitals(): () => void {
   return observeWebVitals((metric) => {
     const emoji =
       metric.rating === 'good' ? '✅' : metric.rating === 'needs-improvement' ? '⚠️' : '❌';
-    console.log(
+    console.warn(
       `${emoji} [Web Vitals] ${metric.name}: ${metric.value.toFixed(2)} (${metric.rating})`
     );
   });

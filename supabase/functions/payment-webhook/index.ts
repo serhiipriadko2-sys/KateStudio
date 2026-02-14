@@ -40,7 +40,8 @@ function getCorsHeaders(req: Request) {
 
   return {
     'access-control-allow-origin': allowOrigin,
-    'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type, x-webhook-signature',
+    'access-control-allow-headers':
+      'authorization, x-client-info, apikey, content-type, x-webhook-signature',
     'access-control-allow-methods': 'POST, OPTIONS',
   };
 }
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
 
   // Compute HMAC-SHA256 of the request body
   const text = await req.text();
-  
+
   const signature = req.headers.get('x-webhook-signature');
   if (!signature) {
     return json({ error: 'Missing signature' }, { status: 401 }, cors);
@@ -92,7 +93,11 @@ Deno.serve(async (req) => {
 
   const signatureBytes = hexToUint8Array(signature);
   if (!signatureBytes) {
-    return json({ error: 'Invalid signature format: must be a hex-encoded string' }, { status: 401 }, cors);
+    return json(
+      { error: 'Invalid signature format: must be a hex-encoded string' },
+      { status: 401 },
+      cors
+    );
   }
   const dataBytes = encoder.encode(text);
 

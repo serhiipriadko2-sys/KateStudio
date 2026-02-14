@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 /**
  * K Sebe Yoga Studio - Logger Utility
  *
@@ -34,6 +35,7 @@ class Logger {
    */
   debug(message: string, context?: LogContext): void {
     if (this.isDevelopment) {
+      // eslint-disable-next-line no-console
       console.debug(this.formatMessage('debug', message, context));
     }
   }
@@ -42,6 +44,7 @@ class Logger {
    * Log informational messages
    */
   info(message: string, context?: LogContext): void {
+    // eslint-disable-next-line no-console
     console.info(this.formatMessage('info', message, context));
   }
 
@@ -72,8 +75,10 @@ class Logger {
    */
   group(label: string, callback: () => void): void {
     if (this.isDevelopment) {
+      // eslint-disable-next-line no-console
       console.group(label);
       callback();
+      // eslint-disable-next-line no-console
       console.groupEnd();
     }
   }

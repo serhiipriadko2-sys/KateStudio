@@ -36,8 +36,8 @@ export const Breathwork: React.FC<BreathworkProps> = ({
     config.holdEmptyDuration;
 
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    let timer: ReturnType<typeof setTimeout>;
+    let interval: ReturnType<typeof setInterval> | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
     if (isActive) {
       const runCycle = () => {

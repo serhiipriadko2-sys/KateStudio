@@ -5,6 +5,7 @@
  * Configuration is loaded from environment variables.
  * See .env.example for required variables.
  */
+/// <reference types="vite/client" />
 import { createClient, PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 
 // Configuration from environment variables (Vite uses VITE_ prefix)

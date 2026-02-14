@@ -4,27 +4,28 @@ import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ mode }) => {
   const isDev = mode === 'development';
-  const env = loadEnv(mode, '.', '');
+  // const env = loadEnv(mode, '.', '');
   // Vite best practice: client-exposed vars use VITE_ prefix.
   // Back-compat: support GEMINI_API_KEY if present, but prefer VITE_GEMINI_API_KEY.
-  const geminiApiKey = isDev ? env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY : '';
+  // const geminiApiKey = isDev ? env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY : '';
   return {
     server: {
       port: 3000,
       host: '0.0.0.0',
     },
     plugins: [react()],
-    define: isDev
-      ? {
-          // NOTE: This still embeds the key into the client bundle.
-          // For real security, move Gemini calls behind a server/edge proxy.
-          'process.env.API_KEY': JSON.stringify(geminiApiKey),
-          'process.env.GEMINI_API_KEY': JSON.stringify(geminiApiKey),
-        }
-      : {},
+    // define: isDev
+    //   ? {
+    //       // NOTE: This still embeds the key into the client bundle.
+    //       // For real security, move Gemini calls behind a server/edge proxy.
+    //       'process.env.API_KEY': JSON.stringify(geminiApiKey),
+    //       'process.env.GEMINI_API_KEY': JSON.stringify(geminiApiKey),
+    //     }
+    //   : {},
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+        '@ksebe/shared': path.resolve(__dirname, '../shared'),
       },
     },
     build: {

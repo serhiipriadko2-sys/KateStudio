@@ -2,8 +2,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import type {
-  WeeklyRecap as WeeklyRecapType,
-  NotificationPreferences as NotificationPreferencesType,
+  WeeklyRecapData as WeeklyRecapType,
+  NotificationPreferencesData as NotificationPreferencesType,
 } from '../../types';
 import { NotificationPreferences } from '../NotificationPreferences';
 import { OnboardingQuiz } from '../OnboardingQuiz';
