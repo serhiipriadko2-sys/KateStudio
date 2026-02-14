@@ -55,6 +55,84 @@ function buildTrack(words: string[], separator: string): string[] {
   return items;
 }
 
+/* ─── Track sub-component (one scrolling row) ──────────── */
+
+interface TrackRowProps {
+  items: string[];
+  separator: string;
+  isInhale: boolean;
+  duration: number;
+  pauseOnHover: boolean;
+  visible: boolean;
+  onIteration?: () => void;
+}
+
+const TrackRow: React.FC<TrackRowProps> = ({
+  items,
+  separator,
+  isInhale,
+  duration,
+  pauseOnHover,
+  visible,
+  onIteration,
+}) => (
+  <div
+    className={cn(
+      'marquee-track flex whitespace-nowrap will-change-transform',
+      'absolute inset-0',
+      'transition-opacity duration-[1500ms] ease-in-out',
+      pauseOnHover && 'hover:[animation-play-state:paused]',
+      'motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:gap-4',
+      'motion-reduce:relative'
+    )}
+    style={{
+      animationDuration: `${duration}s`,
+      opacity: visible ? 1 : 0,
+      pointerEvents: visible ? 'auto' : 'none',
+    }}
+    onAnimationIteration={onIteration}
+    aria-hidden={!visible}
+  >
+    {/* Two identical halves → seamless loop */}
+    {[0, 1].map((half) => (
+      <span key={half} className="flex items-center shrink-0" aria-hidden={half === 1}>
+        {items.map((word, i) => {
+          const isSep = word === separator;
+          return (
+            <span key={`${half}-${i}`} className="flex items-center">
+              <span
+                className={cn(
+                  'inline-block px-3 md:px-5 font-serif text-lg md:text-2xl lg:text-3xl',
+                  'transition-all duration-[2000ms] ease-in-out',
+                  isSep
+                    ? 'italic text-brand-green/60 text-base md:text-xl lg:text-2xl font-light'
+                    : isInhale
+                      ? 'text-brand-dark tracking-wide'
+                      : 'text-brand-text/80 tracking-normal'
+                )}
+                style={{
+                  transform: isInhale ? 'scale(1.03)' : 'scale(1)',
+                }}
+              >
+                {word}
+              </span>
+              {/* Dot separator between items */}
+              <span
+                className={cn(
+                  'inline-block w-1.5 h-1.5 rounded-full mx-2 md:mx-3 shrink-0',
+                  'transition-colors duration-[2000ms]',
+                  isInhale ? 'bg-brand-green/30' : 'bg-stone-300/40'
+                )}
+                aria-hidden="true"
+              />
+            </span>
+          );
+        })}
+      </span>
+    ))}
+  </div>
+);
+
 /* ─── Main Marquee ──────────────────────────────────────── */
 
 export const Marquee: React.FC<MarqueeConfig> = ({
@@ -65,15 +143,13 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   pauseOnHover = false,
 }) => {
   const [cycle, setCycle] = useState<'inhale' | 'exhale'>('inhale');
-  const trackRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const inhaleTrack = buildTrack(inhaleWords, SEPARATOR_INHALE);
   const exhaleTrack = buildTrack(words, SEPARATOR_EXHALE);
-  const track = cycle === 'inhale' ? inhaleTrack : exhaleTrack;
-  const separator = cycle === 'inhale' ? SEPARATOR_INHALE : SEPARATOR_EXHALE;
   const isInhale = cycle === 'inhale';
 
-  /** Switch cycle when one full CSS animation iteration completes */
+  /** Switch cycle when the VISIBLE track completes one CSS scroll loop */
   const handleIteration = useCallback(() => {
     setCycle((prev) => (prev === 'inhale' ? 'exhale' : 'inhale'));
   }, []);
@@ -87,7 +163,7 @@ export const Marquee: React.FC<MarqueeConfig> = ({
       )}
       aria-label="Дыхательная полоса"
     >
-      {/* Subtle background tint that shifts with breath phase */}
+      {/* Background tint that shifts with breath phase */}
       <div
         className={cn(
           'absolute inset-0 pointer-events-none transition-colors duration-[2000ms]',
@@ -95,57 +171,41 @@ export const Marquee: React.FC<MarqueeConfig> = ({
         )}
       />
 
-      {/* Scroll container */}
-      <div
-        ref={trackRef}
-        className={cn(
-          'marquee-track flex whitespace-nowrap will-change-transform',
-          pauseOnHover && 'hover:[animation-play-state:paused]',
-          'motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:gap-4'
-        )}
-        style={{
-          animationDuration: `${duration}s`,
-        }}
-        onAnimationIteration={handleIteration}
-      >
-        {/* Two identical halves → seamless loop */}
-        {[0, 1].map((half) => (
-          <span key={half} className="flex items-center shrink-0" aria-hidden={half === 1}>
-            {track.map((word, i) => {
-              const isSeparator = word === separator;
-              return (
-                <span key={`${half}-${i}`} className="flex items-center">
-                  <span
-                    className={cn(
-                      'inline-block px-3 md:px-5 font-serif text-lg md:text-2xl lg:text-3xl',
-                      'transition-all duration-[2000ms] ease-in-out',
-                      isSeparator
-                        ? 'italic text-brand-green/60 text-base md:text-xl lg:text-2xl font-light'
-                        : isInhale
-                          ? 'text-brand-dark tracking-wide'
-                          : 'text-brand-text/80 tracking-normal'
-                    )}
-                    style={{
-                      transform: isInhale ? 'scale(1.03)' : 'scale(1)',
-                      opacity: isInhale ? 1 : 0.85,
-                    }}
-                  >
-                    {word}
-                  </span>
-                  {/* Dot separator between items */}
-                  <span
-                    className={cn(
-                      'inline-block w-1.5 h-1.5 rounded-full mx-2 md:mx-3 shrink-0',
-                      'transition-colors duration-[2000ms]',
-                      isInhale ? 'bg-brand-green/30' : 'bg-stone-300/40'
-                    )}
-                    aria-hidden="true"
-                  />
-                </span>
-              );
-            })}
-          </span>
-        ))}
+      {/* Container holds both tracks stacked; crossfade via opacity */}
+      <div ref={containerRef} className="relative h-10 md:h-12">
+        {/* Inhale track — always mounted, fades in/out */}
+        <TrackRow
+          items={inhaleTrack}
+          separator={SEPARATOR_INHALE}
+          isInhale={true}
+          duration={duration}
+          pauseOnHover={pauseOnHover}
+          visible={isInhale}
+          onIteration={isInhale ? handleIteration : undefined}
+        />
+
+        {/* Exhale track — always mounted, fades in/out */}
+        <TrackRow
+          items={exhaleTrack}
+          separator={SEPARATOR_EXHALE}
+          isInhale={false}
+          duration={duration}
+          pauseOnHover={pauseOnHover}
+          visible={!isInhale}
+          onIteration={!isInhale ? handleIteration : undefined}
+        />
+      </div>
+
+      {/* Phase indicator */}
+      <div className="flex justify-center mt-2">
+        <span
+          className={cn(
+            'text-xs tracking-[0.2em] uppercase transition-all duration-[1500ms] ease-in-out font-light',
+            isInhale ? 'text-brand-green/50' : 'text-stone-400/50'
+          )}
+        >
+          {isInhale ? 'вдох' : 'выдох'}
+        </span>
       </div>
 
       {/* Inline keyframes – scoped to this component */}

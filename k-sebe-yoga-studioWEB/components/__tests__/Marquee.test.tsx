@@ -8,20 +8,22 @@ describe('Marquee (WEB)', () => {
     expect(screen.getByLabelText('Дыхательная полоса')).toBeInTheDocument();
   });
 
-  it('renders inhale words initially', () => {
+  it('renders both tracks (two .marquee-track elements)', () => {
     render(<Marquee />);
-    expect(screen.getAllByText('вдох').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('смелость').length).toBeGreaterThanOrEqual(1);
+    const tracks = document.querySelectorAll('.marquee-track');
+    expect(tracks.length).toBe(2);
   });
 
-  it('switches to exhale on animation iteration', () => {
+  it('switches phase indicator on animation iteration', () => {
     render(<Marquee inhaleWords={['Энергия']} words={['Покой']} />);
-    expect(screen.getAllByText('Энергия').length).toBeGreaterThanOrEqual(1);
 
-    const track = document.querySelector('.marquee-track')!;
-    fireEvent.animationIteration(track);
+    // Phase indicator starts as "вдох"
+    const indicator = document.querySelector('.flex.justify-center.mt-2 span');
+    expect(indicator!.textContent).toBe('вдох');
 
-    expect(screen.getAllByText('Покой').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('выдох').length).toBeGreaterThanOrEqual(1);
+    const tracks = document.querySelectorAll('.marquee-track');
+    fireEvent.animationIteration(tracks[0]);
+
+    expect(indicator!.textContent).toBe('выдох');
   });
 });

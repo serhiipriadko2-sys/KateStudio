@@ -143,11 +143,11 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
             {onOpenAdmin && (
               <button
                 onClick={onOpenAdmin}
-                className="opacity-20 hover:opacity-100 transition-opacity flex items-center gap-1"
-                title="Dev Settings"
-                aria-label="Open Developer Settings"
+                className="opacity-30 hover:opacity-100 transition-opacity flex items-center gap-1 hover:text-white/60"
+                title="Управление студией"
+                aria-label="Открыть панель управления"
               >
-                <Terminal className="w-3 h-3" /> Dev
+                <Terminal className="w-3 h-3" /> Управление
               </button>
             )}
           </div>
