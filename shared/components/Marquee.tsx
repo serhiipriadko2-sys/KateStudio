@@ -1,142 +1,97 @@
-/**
- * K Sebe Yoga Studio — Enhanced Marquee Component
- * ================================================
- * Continuous scrolling text loop (infinite marquee) using CSS animation.
- */
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '../utils';
 
 /* ─── Types ─────────────────────────────────────────────── */
 
 export interface MarqueeConfig {
-  /** Words to display in the scrolling loop */
+  /** Words to display during the "Exhale" phase */
   words?: string[];
-  /** Animation duration in seconds (default: 40s) */
+  /** Duration of one full breath cycle (inhale + exhale) in seconds */
   duration?: number;
-  /** Pause animation on hover (default: true) */
-  pauseOnHover?: boolean;
-  /** Direction (default: 'left') */
-  direction?: 'left' | 'right';
-  /** Visual variant */
-  variant?: 'default' | 'minimal' | 'immersive';
   /** Extra CSS class */
   className?: string;
-  // Compatibility props (ignored for new implementation but kept for TS)
+  // Compatibility props (kept to prevent breaking changes, though functionality changes)
+  pauseOnHover?: boolean;
+  direction?: 'left' | 'right';
+  variant?: 'default' | 'minimal' | 'immersive';
   inhaleWords?: string[];
-  exhaleWords?: string[];
-  cycleDuration?: number;
-  wordsDisplayed?: number;
-  showProgress?: boolean;
-  showParticles?: boolean;
-  showIndicator?: boolean;
-  pauseOffscreen?: boolean;
 }
 
 /* ─── Constants ─────────────────────────────────────────── */
 
-const DEFAULT_WORDS = [
-  'Свет',
-  'Любовь',
-  'Радость',
-  'Энергия',
-  'Сила',
-  'Смелость',
-  'Жизнь',
-  'Вдохновение',
-  'Гармония',
-  'Открытость',
-  'Покой',
-  'Тишина',
-  'Мир',
-  'Баланс',
-  'Лёгкость',
+const DEFAULT_EXHALE_WORDS = [
+  'смелость',
+  'энергия',
+  'сила',
+  'любовь',
+  'радость',
+  'гармония',
+  'покой',
+  'свет',
 ];
 
 /* ─── Main Marquee ──────────────────────────────────────── */
 
 export const Marquee: React.FC<MarqueeConfig> = ({
-  words = DEFAULT_WORDS,
-  inhaleWords, // Fallback if words not provided but old props used
-  duration = 40,
-  pauseOnHover = true,
-  direction = 'left',
-  variant = 'default',
+  words = DEFAULT_EXHALE_WORDS,
+  duration = 8, // 4s inhale, 4s exhale
   className,
 }) => {
-  // Use inhaleWords as fallback content if provided
-  const contentSource = words === DEFAULT_WORDS && inhaleWords ? inhaleWords : words;
-  // Duplicate content enough times to fill screen and loop seamlessly
-  const content = [...contentSource, ...contentSource, ...contentSource, ...contentSource];
+  const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale');
+  const [wordIndex, setWordIndex] = useState(0);
 
-  const isImmersive = variant === 'immersive';
-  const pyClass = isImmersive ? 'py-12 md:py-16' : 'py-8 md:py-10';
+  // Cycle phases
+  useEffect(() => {
+    const interval = setInterval(
+      () => {
+        setPhase((prev) => {
+          if (prev === 'inhale') {
+            return 'exhale';
+          } else {
+            setWordIndex((prevIndex) => (prevIndex + 1) % words.length);
+            return 'inhale';
+          }
+        });
+      },
+      (duration * 1000) / 2
+    );
+
+    return () => clearInterval(interval);
+  }, [duration, words.length]);
+
+  const currentWord = phase === 'inhale' ? 'вдох' : words[wordIndex];
+  const isInhale = phase === 'inhale';
 
   return (
     <section
       className={cn(
-        'relative w-full overflow-hidden bg-brand-light border-y border-brand-green/5 select-none',
-        pyClass,
+        'relative w-full flex justify-center items-center py-24 md:py-32 overflow-hidden bg-brand-light select-none',
         className
       )}
-      aria-label="Бегущая строка с ценностями студии"
+      aria-label="Дыхательная практика: вдох и качество"
     >
-      {/* Gradient masks for fade effect */}
-      <div className="absolute inset-y-0 left-0 w-16 md:w-32 bg-gradient-to-r from-brand-light to-transparent z-20 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-16 md:w-32 bg-gradient-to-l from-brand-light to-transparent z-20 pointer-events-none" />
+      {/* Background decoration */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none bg-gradient-to-b from-transparent via-brand-mint/20 to-transparent" />
 
-      {/* Scrolling container wrapper */}
-      <div className="flex min-w-full overflow-hidden">
-        {/* First Loop */}
-        <div
+      {/* Main Text Container */}
+      <div
+        className={cn(
+          'relative z-10 flex flex-col items-center justify-center transition-all ease-in-out'
+        )}
+        style={{
+          transitionDuration: `${(duration * 1000) / 2}ms`,
+          transform: isInhale ? 'scale(1.15)' : 'scale(1.0)',
+          opacity: isInhale ? 1 : 0.85,
+        }}
+      >
+        <h2
           className={cn(
-            'flex whitespace-nowrap items-center shrink-0',
-            'animate-marquee', // Relies on tailwind config: keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-            pauseOnHover && 'hover:[animation-play-state:paused]'
+            'font-serif italic text-4xl md:text-6xl lg:text-7xl transition-colors duration-1000',
+            isInhale ? 'text-brand-green' : 'text-brand-text'
           )}
-          style={{
-            animationDuration: `${duration}s`,
-            animationDirection: direction === 'right' ? 'reverse' : 'normal',
-          }}
         >
-          {content.map((word, i) => (
-            <span
-              key={`a-${i}`}
-              className={cn(
-                'mx-8 md:mx-12 font-serif italic text-2xl md:text-4xl text-brand-text/80',
-                isImmersive && 'text-3xl md:text-5xl opacity-90'
-              )}
-            >
-              {word}
-            </span>
-          ))}
-        </div>
-
-        {/* Second Loop (Exact clone for seamless infinite scroll) */}
-        <div
-          className={cn(
-            'flex whitespace-nowrap items-center shrink-0',
-            'animate-marquee',
-            pauseOnHover && 'hover:[animation-play-state:paused]'
-          )}
-          style={{
-            animationDuration: `${duration}s`,
-            animationDirection: direction === 'right' ? 'reverse' : 'normal',
-          }}
-          aria-hidden="true"
-        >
-          {content.map((word, i) => (
-            <span
-              key={`b-${i}`}
-              className={cn(
-                'mx-8 md:mx-12 font-serif italic text-2xl md:text-4xl text-brand-text/80',
-                isImmersive && 'text-3xl md:text-5xl opacity-90'
-              )}
-            >
-              {word}
-            </span>
-          ))}
-        </div>
+          {currentWord}
+        </h2>
       </div>
     </section>
   );
