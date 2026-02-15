@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FadeIn } from './FadeIn';
+import { isSupabaseConfigured, supabase } from '../services/supabase';
 
 interface FAQItemProps {
   question: string;
@@ -37,7 +38,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
   );
 };
 
-const faqData = [
+const defaultFaqData = [
   {
     question: 'С чего начать, если я никогда не занималась?',
     answer:
@@ -61,6 +62,32 @@ const faqData = [
 ];
 
 export const FAQ: React.FC = () => {
+  const [faqItems, setFaqItems] = useState(defaultFaqData);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    const fetchFAQ = async () => {
+      try {
+        if (!supabase) return;
+        const { data, error } = await supabase
+          .from('faq_items')
+          .select('question, answer')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .order('created_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          setFaqItems(data);
+        }
+      } catch (e) {
+        console.warn('Failed to fetch FAQ', e);
+      }
+    };
+
+    fetchFAQ();
+  }, []);
+
   return (
     <section className="py-24 px-6 max-w-3xl mx-auto scroll-mt-20">
       <FadeIn>
@@ -69,7 +96,7 @@ export const FAQ: React.FC = () => {
         </h2>
       </FadeIn>
       <div className="space-y-2">
-        {faqData.map((item, idx) => (
+        {faqItems.map((item, idx) => (
           <FadeIn key={idx} delay={(idx + 1) * 100} direction="up">
             <FAQItem question={item.question} answer={item.answer} />
           </FadeIn>
