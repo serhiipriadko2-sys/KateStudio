@@ -37,6 +37,7 @@ import { WeeklyRecapCard } from './components/WeeklyRecapCard';
 import { useAuth } from './context/AuthContext';
 import { usePWAUpdate } from './hooks/usePWAUpdate';
 import { retentionService } from './services/retentionService';
+import { isSupabaseConfigured, supabase } from './services/supabaseClient';
 
 // Lazy load heavy components for better initial bundle size
 const AICoach = lazy(() => import('./components/AICoach').then((m) => ({ default: m.AICoach })));
@@ -238,17 +239,40 @@ export default function App() {
   const mainRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    try {
-      const savedTheme = localStorage.getItem('ksebe_theme_config');
-      if (savedTheme) {
-        const colors = JSON.parse(savedTheme);
-        Object.entries(colors).forEach(([key, value]) => {
-          document.documentElement.style.setProperty(key, String(value));
-        });
+    const loadAndSyncTheme = async () => {
+      // 1. Load Local
+      try {
+        const savedTheme = localStorage.getItem('ksebe_theme_config');
+        if (savedTheme) {
+          const colors = JSON.parse(savedTheme);
+          Object.entries(colors).forEach(([key, value]) => {
+            document.documentElement.style.setProperty(key, String(value));
+          });
+        }
+      } catch (e) {
+        console.error('Failed to load theme', e);
       }
-    } catch (e) {
-      console.error('Failed to load theme', e);
-    }
+
+      // 2. Fetch Remote
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { data } = await supabase.from('app_settings').select('key, value').eq('key', 'theme').single();
+          if (data?.value) {
+            const colors = data.value as Record<string, string>;
+            // Apply
+            Object.entries(colors).forEach(([key, value]) => {
+              document.documentElement.style.setProperty(key, String(value));
+            });
+            // Save
+            localStorage.setItem('ksebe_theme_config', JSON.stringify(colors));
+          }
+        } catch (e) {
+          console.warn('Theme sync failed', e);
+        }
+      }
+    };
+
+    loadAndSyncTheme();
   }, []);
 
   useEffect(() => {
