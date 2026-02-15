@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '../utils';
 
 /* ─── Types ─────────────────────────────────────────────── */
@@ -8,7 +8,7 @@ export interface MarqueeConfig {
   inhaleWords?: string[];
   /** Words for the exhale (calm/peace) cycle */
   words?: string[];
-  /** Scroll speed — seconds for one full marquee loop */
+  /** Full breath cycle in seconds (inhale + exhale). Default: 10 */
   duration?: number;
   /** Extra CSS class */
   className?: string;
@@ -61,59 +61,106 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/* ─── Track sub-component (one scrolling row) ──────────── */
+/* ─── WordStrip — a single row of words (no scrolling) ── */
 
-interface TrackRowProps {
+interface WordStripProps {
   items: string[];
   separator: string;
   isInhale: boolean;
-  duration: number;
-  pauseOnHover: boolean;
-  visible: boolean;
-  onIteration?: () => void;
 }
 
-const TrackRow: React.FC<TrackRowProps> = ({
-  items,
-  separator,
-  isInhale,
-  duration,
-  pauseOnHover,
-  visible,
-  onIteration,
+const WordStrip: React.FC<WordStripProps> = ({ items, separator, isInhale }) => (
+  <>
+    {items.map((word, i) => {
+      const isSep = word === separator;
+      return (
+        <span key={i} className="flex items-center">
+          <span
+            className={cn(
+              'inline-block px-2 md:px-4 font-serif text-lg md:text-2xl lg:text-3xl',
+              isSep
+                ? 'italic text-brand-green/60 text-base md:text-xl lg:text-2xl font-light'
+                : isInhale
+                  ? 'text-brand-dark'
+                  : 'text-brand-text/80'
+            )}
+          >
+            {word}
+          </span>
+          <span
+            className={cn(
+              'inline-block w-1.5 h-1.5 rounded-full mx-2 md:mx-3 shrink-0',
+              isInhale ? 'bg-brand-green/30' : 'bg-stone-300/40'
+            )}
+            aria-hidden="true"
+          />
+        </span>
+      );
+    })}
+  </>
+);
+
+/* ─── Main Breathing Strip ──────────────────────────────── */
+
+export const Marquee: React.FC<MarqueeConfig> = ({
+  inhaleWords = DEFAULT_INHALE_WORDS,
+  words = DEFAULT_EXHALE_WORDS,
+  duration = 10,
+  className,
+  pauseOnHover = false,
 }) => {
-  const trackRef = useRef<HTMLDivElement>(null);
+  const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale');
+  const breathRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<Animation | null>(null);
-  const onIterationRef = useRef(onIteration);
-  onIterationRef.current = onIteration;
+
+  const inhaleTrack = buildTrack(inhaleWords, SEPARATOR_INHALE);
+  const exhaleTrack = buildTrack(words, SEPARATOR_EXHALE);
+  const isInhale = phase === 'inhale';
+
+  /** Half the cycle = one phase (inhale OR exhale) */
+  const phaseDurationMs = (duration / 2) * 1000;
 
   /*
-   * Web Animations API — single-iteration loop that restarts on finish.
-   * onfinish fires at the exact moment the marquee completes one full pass,
-   * giving us precise cycle switching (no timers).
-   * At translateX(-50%) the visual is identical to translateX(0) because the
-   * content is duplicated — so the restart is seamless.
+   * Breathing animation via Web Animations API.
+   *
+   * Each phase is a single-iteration animation:
+   *   inhale → scale(0.97) → scale(1.04), letter-spacing widens, opacity rises
+   *   exhale → scale(1.04) → scale(0.97), letter-spacing narrows, opacity drops
+   *
+   * On finish → switch phase (content crossfades) → restart with opposite keyframes.
+   * No horizontal scrolling, no timers — tied to real animation completion.
    */
   useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-
-    // Reduced motion: no scrolling, content stays visible & readable
-    if (prefersReducedMotion()) return;
+    const el = breathRef.current;
+    if (!el || prefersReducedMotion()) return;
 
     let cancelled = false;
+    let currentPhase: 'inhale' | 'exhale' = 'inhale';
+
+    const inhaleKf: Keyframe[] = [
+      { transform: 'scale(0.97)', letterSpacing: '0em', opacity: 0.85 },
+      { transform: 'scale(1.04)', letterSpacing: '0.03em', opacity: 1 },
+    ];
+    const exhaleKf: Keyframe[] = [
+      { transform: 'scale(1.04)', letterSpacing: '0.03em', opacity: 1 },
+      { transform: 'scale(0.97)', letterSpacing: '0em', opacity: 0.85 },
+    ];
 
     const run = () => {
       if (cancelled) return;
-      const anim = el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-50%)' }], {
-        duration: duration * 1000,
-        easing: 'linear',
+
+      const anim = el.animate(currentPhase === 'inhale' ? inhaleKf : exhaleKf, {
+        duration: phaseDurationMs,
+        easing: 'ease-in-out',
+        fill: 'forwards',
       });
       animRef.current = anim;
+
       anim.onfinish = () => {
         if (cancelled) return;
-        onIterationRef.current?.();
-        run(); // seamless restart — -50% ≡ 0% visually
+        currentPhase = currentPhase === 'inhale' ? 'exhale' : 'inhale';
+        setPhase(currentPhase);
+        run();
       };
     };
 
@@ -123,12 +170,12 @@ const TrackRow: React.FC<TrackRowProps> = ({
       cancelled = true;
       animRef.current?.cancel();
     };
-  }, [duration]);
+  }, [phaseDurationMs]);
 
   /* Pause on hover */
   useEffect(() => {
     if (!pauseOnHover) return;
-    const el = trackRef.current;
+    const el = breathRef.current;
     if (!el) return;
 
     const pause = () => animRef.current?.pause();
@@ -142,82 +189,6 @@ const TrackRow: React.FC<TrackRowProps> = ({
   }, [pauseOnHover]);
 
   return (
-    <div
-      ref={trackRef}
-      className={cn(
-        'marquee-track flex whitespace-nowrap will-change-transform',
-        'absolute inset-y-0 left-0 w-max items-center',
-        'transition-opacity duration-[1500ms] ease-in-out'
-      )}
-      style={{
-        opacity: visible ? 1 : 0,
-        pointerEvents: visible ? 'auto' : 'none',
-      }}
-      aria-hidden={!visible}
-    >
-      {/* Two identical halves → seamless loop */}
-      {[0, 1].map((half) => (
-        <span key={half} className="flex items-center shrink-0" aria-hidden={half === 1}>
-          {items.map((word, i) => {
-            const isSep = word === separator;
-            return (
-              <span key={`${half}-${i}`} className="flex items-center">
-                <span
-                  className={cn(
-                    'inline-block px-3 md:px-5 font-serif text-lg md:text-2xl lg:text-3xl',
-                    'transition-all duration-[2000ms] ease-in-out',
-                    isSep
-                      ? 'italic text-brand-green/60 text-base md:text-xl lg:text-2xl font-light'
-                      : isInhale
-                        ? 'text-brand-dark tracking-wide'
-                        : 'text-brand-text/80 tracking-normal'
-                  )}
-                  style={{
-                    transform: isInhale ? 'scale(1.03)' : 'scale(1)',
-                  }}
-                >
-                  {word}
-                </span>
-                {/* Dot separator between items */}
-                <span
-                  className={cn(
-                    'inline-block w-1.5 h-1.5 rounded-full mx-2 md:mx-3 shrink-0',
-                    'transition-colors duration-[2000ms]',
-                    isInhale ? 'bg-brand-green/30' : 'bg-stone-300/40'
-                  )}
-                  aria-hidden="true"
-                />
-              </span>
-            );
-          })}
-        </span>
-      ))}
-    </div>
-  );
-};
-
-/* ─── Main Marquee ──────────────────────────────────────── */
-
-export const Marquee: React.FC<MarqueeConfig> = ({
-  inhaleWords = DEFAULT_INHALE_WORDS,
-  words = DEFAULT_EXHALE_WORDS,
-  duration = 20,
-  className,
-  pauseOnHover = false,
-}) => {
-  const [cycle, setCycle] = useState<'inhale' | 'exhale'>('inhale');
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const inhaleTrack = buildTrack(inhaleWords, SEPARATOR_INHALE);
-  const exhaleTrack = buildTrack(words, SEPARATOR_EXHALE);
-  const isInhale = cycle === 'inhale';
-
-  /** Switch cycle when the VISIBLE track completes one full scroll pass */
-  const handleIteration = useCallback(() => {
-    setCycle((prev) => (prev === 'inhale' ? 'exhale' : 'inhale'));
-  }, []);
-
-  return (
     <section
       className={cn(
         'relative w-full overflow-hidden bg-brand-light select-none',
@@ -229,41 +200,43 @@ export const Marquee: React.FC<MarqueeConfig> = ({
       {/* Background tint that shifts with breath phase */}
       <div
         className={cn(
-          'absolute inset-0 pointer-events-none transition-colors duration-[2000ms]',
+          'absolute inset-0 pointer-events-none transition-colors duration-[3000ms]',
           isInhale ? 'bg-brand-mint/5' : 'bg-stone-100/40'
         )}
       />
 
-      {/* Container holds both tracks stacked; crossfade via opacity */}
-      <div ref={containerRef} className="relative h-10 md:h-12">
-        {/* Inhale track — always mounted, fades in/out */}
-        <TrackRow
-          items={inhaleTrack}
-          separator={SEPARATOR_INHALE}
-          isInhale={true}
-          duration={duration}
-          pauseOnHover={pauseOnHover}
-          visible={isInhale}
-          onIteration={isInhale ? handleIteration : undefined}
-        />
+      {/* Breathing container — the whole block scales/pulses */}
+      <div ref={breathRef} className="relative h-10 md:h-12">
+        {/* Inhale track — crossfades in when phase === 'inhale' */}
+        <div
+          className={cn(
+            'breath-track absolute inset-0 flex items-center justify-center whitespace-nowrap',
+            'transition-opacity duration-[2000ms] ease-in-out',
+            isInhale ? 'opacity-100' : 'opacity-0'
+          )}
+          aria-hidden={!isInhale}
+        >
+          <WordStrip items={inhaleTrack} separator={SEPARATOR_INHALE} isInhale={true} />
+        </div>
 
-        {/* Exhale track — always mounted, fades in/out */}
-        <TrackRow
-          items={exhaleTrack}
-          separator={SEPARATOR_EXHALE}
-          isInhale={false}
-          duration={duration}
-          pauseOnHover={pauseOnHover}
-          visible={!isInhale}
-          onIteration={!isInhale ? handleIteration : undefined}
-        />
+        {/* Exhale track — crossfades in when phase === 'exhale' */}
+        <div
+          className={cn(
+            'breath-track absolute inset-0 flex items-center justify-center whitespace-nowrap',
+            'transition-opacity duration-[2000ms] ease-in-out',
+            !isInhale ? 'opacity-100' : 'opacity-0'
+          )}
+          aria-hidden={isInhale}
+        >
+          <WordStrip items={exhaleTrack} separator={SEPARATOR_EXHALE} isInhale={false} />
+        </div>
       </div>
 
       {/* Phase indicator */}
       <div className="flex justify-center mt-2">
         <span
           className={cn(
-            'text-xs tracking-[0.2em] uppercase transition-all duration-[1500ms] ease-in-out font-light',
+            'text-xs tracking-[0.2em] uppercase transition-all duration-[2000ms] ease-in-out font-light',
             isInhale ? 'text-brand-green/50' : 'text-stone-400/50'
           )}
         >
