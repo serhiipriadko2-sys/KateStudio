@@ -5,7 +5,7 @@ import { isSupabaseConfigured, supabase } from './supabaseClient';
 export const DATA_SOURCES = {
   userProfile: 'supabase',
   bookings: 'supabase',
-  classSchedule: 'local-generated',
+  classSchedule: 'supabase', // Changed from local-generated
   cachedUser: 'local-cache',
   cachedBookings: 'local-cache',
   pendingBookings: 'local-cache',
@@ -120,6 +120,41 @@ export const dataService = {
   // --- Schedule ---
   getClassesForDate: async (date: Date, type: 'offline' | 'online'): Promise<ClassSession[]> => {
     const dateStr = date.toISOString().split('T')[0];
+
+    // 1. Try Fetch from Supabase
+    if (isSupabaseConfigured) {
+      try {
+        const { data: dbClasses, error } = await supabase
+          .from('classes')
+          .select('*')
+          .eq('date', dateStr)
+          .eq('is_online', type === 'online')
+          .order('time', { ascending: true });
+
+        if (error) throw error;
+
+        if (dbClasses && dbClasses.length > 0) {
+          return dbClasses.map((row: any) => ({
+            id: row.id, // UUID
+            dateStr: row.date,
+            time: row.time,
+            name: row.name,
+            instructor: row.instructor || 'Катя Габран',
+            duration: row.duration || (type === 'online' ? '45 мин' : '60 мин'),
+            spotsTotal: row.spots_total || (type === 'online' ? 50 : 20),
+            spotsBooked: row.spots_booked || 0,
+            location: row.location || (type === 'online' ? 'Online' : 'Станционная ул., 5Б'),
+            intensity: (row.intensity || 1) as 1 | 2 | 3,
+            price: type === 'online' ? 400 : 700, // Hardcoded for now based on type
+            isOnline: type === 'online',
+          }));
+        }
+      } catch (e) {
+        console.warn('Supabase fetch failed, falling back to generated schedule', e);
+      }
+    }
+
+    // --- FALLBACK / DEMO MODE ---
     const daySeed = date.getFullYear() * 1000 + (date.getMonth() + 1) * 100 + date.getDate();
 
     // 1. Generate Base Schedule Templates
@@ -190,13 +225,13 @@ export const dataService = {
     // 3. Prepare IDs
     const classesWithIds = todaysClasses.map((tmpl, idx) => ({
       ...tmpl,
-      id: `${dateStr}-${type}-${idx}`,
+      id: `${dateStr}-${type}-${idx}`, // fallback ID
     }));
 
     const classIds = classesWithIds.map((c) => c.id);
     const bookingCounts: Record<string, number> = {};
 
-    // 4. Try Fetch real booking counts from Supabase
+    // 4. Try Fetch real booking counts from Supabase (for fallback IDs)
     try {
       const { data: bookings, error } = await supabase
         .from('bookings')
@@ -248,7 +283,7 @@ export const dataService = {
 
       const bookings = data.map((b: any) => ({
         id: b.id,
-        classId: b.class_id,
+        classId: b.class_id, // This is text (either UUID or fallback ID)
         className: b.class_name,
         date: b.date,
         time: b.time,
@@ -257,7 +292,7 @@ export const dataService = {
       }));
 
       await cacheAdapter.upsertBookings(
-        bookings.map((booking) => ({
+        bookings.map((booking: Booking) => ({
           ...booking,
           phone: user.phone,
           status: 'synced',
@@ -294,12 +329,14 @@ export const dataService = {
     const bookingPayload = {
       user_id: authUserId,
       phone: user.phone,
-      class_id: cls.id,
+      class_id: cls.id, // Store class ID (either UUID or string) in text field
+      class_uuid: isUuid(cls.id) ? cls.id : null, // If UUID, link to classes table
       class_name: cls.name,
       date: cls.dateStr,
       time: cls.time,
       location: cls.location,
       timestamp: Date.now(),
+      // Also add price if possible, or leave it (schema might need update if strict)
     };
 
     try {
@@ -383,6 +420,7 @@ export const dataService = {
               user_id: authUserId,
               phone: booking.phone,
               class_id: booking.classId,
+              class_uuid: isUuid(booking.classId) ? booking.classId : null,
               class_name: booking.className,
               date: booking.date,
               time: booking.time,
