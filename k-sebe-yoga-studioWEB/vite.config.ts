@@ -6,6 +6,8 @@ export default defineConfig(({ mode }) => {
   return {
     // For GitHub Pages: set VITE_BASE_PATH in workflow or use repo name
     base: process.env.VITE_BASE_PATH || '/',
+    // Load .env files from the project root (one level up)
+    envDir: path.resolve(__dirname, '..'),
     server: {
       port: 3000,
       host: '0.0.0.0',
