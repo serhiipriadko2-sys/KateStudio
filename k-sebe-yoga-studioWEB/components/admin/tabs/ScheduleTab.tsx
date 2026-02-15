@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CalendarDays,
@@ -13,6 +12,7 @@ import {
   Flame,
   Save,
 } from 'lucide-react';
+import React, { useState } from 'react';
 import { supabase } from '../../../services/supabase';
 import { ClassRow, ClassFormData } from '../types';
 
@@ -98,13 +98,16 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
 
   // --- MUTATIONS ---
   const saveMutation = useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: async (payload: { id?: string; data: any }) => {
       if (!supabase) throw new Error('Supabase not initialized');
       if (payload.id) {
         const { error } = await supabase.from('classes').update(payload.data).eq('id', payload.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('classes').insert({ ...payload.data, spots_booked: 0 });
+        const { error } = await supabase
+          .from('classes')
+          .insert({ ...payload.data, spots_booked: 0 });
         if (error) throw error;
       }
     },
@@ -293,7 +296,9 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
               <input
                 type="text"
                 value={form.instructor}
-                onChange={(e) => setForm((f: ClassFormData) => ({ ...f, instructor: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f: ClassFormData) => ({ ...f, instructor: e.target.value }))
+                }
                 className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none"
               />
             </label>
@@ -301,7 +306,9 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
               <span className="text-xs text-stone-500 font-medium">Длительность</span>
               <select
                 value={form.duration}
-                onChange={(e) => setForm((f: ClassFormData) => ({ ...f, duration: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f: ClassFormData) => ({ ...f, duration: e.target.value }))
+                }
                 className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none bg-white"
               >
                 <option>30 мин</option>
@@ -322,7 +329,10 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                 max={100}
                 value={form.spots_total}
                 onChange={(e) =>
-                  setForm((f: ClassFormData) => ({ ...f, spots_total: parseInt(e.target.value) || 1 }))
+                  setForm((f: ClassFormData) => ({
+                    ...f,
+                    spots_total: parseInt(e.target.value) || 1,
+                  }))
                 }
                 className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none"
               />
@@ -382,7 +392,11 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
               disabled={saveMutation.isPending}
               className="flex items-center gap-2 px-5 py-2.5 bg-brand-green text-white rounded-xl text-sm font-medium hover:bg-brand-green/90 transition-colors shadow-sm disabled:opacity-50"
             >
-              {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {saveMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
               {editingId ? 'Сохранить' : 'Добавить'}
             </button>
             <button

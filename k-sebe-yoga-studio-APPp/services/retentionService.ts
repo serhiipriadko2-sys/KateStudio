@@ -178,7 +178,9 @@ export const retentionService = {
       .eq('kind', kind)
       .order('day', { ascending: true });
     if (error) throw error;
-    return (data ?? []).map((r) => String((r as any).day));
+    return (data ?? []).map((r) =>
+      String((r as any) /* eslint-disable-line @typescript-eslint/no-explicit-any */.day)
+    );
   },
 
   async bootstrapForUser(userId: string) {

@@ -86,7 +86,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
   const [classes, setClasses] = useState<ClassSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [_hasError, setHasError] = useState(false);
+  const [, setHasError] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {

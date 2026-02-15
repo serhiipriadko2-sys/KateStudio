@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../services/supabase';
 import { Plus, Pencil, Trash2, Save } from 'lucide-react';
+import React, { useState } from 'react';
+import { supabase } from '../../../services/supabase';
 
 // DB Type
 interface DBArticle {
@@ -27,7 +27,11 @@ const ContentTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void
   const [editingId, setEditingId] = useState<string | 'new' | null>(null);
 
   // Fetch Articles
-  const { data: articles, isLoading, error } = useQuery({
+  const {
+    data: articles,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['articles'],
     queryFn: async () => {
       if (!supabase) throw new Error('Supabase not configured');
@@ -61,12 +65,12 @@ const ContentTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void
       const { error } = await supabase
         .from('articles')
         .update({
-            title: article.title,
-            category: article.category,
-            excerpt: article.excerpt,
-            image_url: article.image_url,
-            content: article.content,
-            published_at: article.published_at
+          title: article.title,
+          category: article.category,
+          excerpt: article.excerpt,
+          image_url: article.image_url,
+          content: article.content,
+          published_at: article.published_at,
         })
         .eq('id', article.id);
       if (error) throw error;
@@ -107,26 +111,29 @@ const ContentTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void
   };
 
   if (isLoading) return <div className="p-8 text-center text-stone-400">Загрузка...</div>;
-  if (error) return <div className="p-8 text-center text-rose-500">Ошибка загрузки: {error.message}</div>;
+  if (error)
+    return <div className="p-8 text-center text-rose-500">Ошибка загрузки: {error.message}</div>;
 
   return (
     <div className="space-y-4">
       {/* Editor Overlay */}
       {editingId && (
         <div className="fixed inset-0 z-[110] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
-                 <button
-                    onClick={() => setEditingId(null)}
-                    className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg"
-                 >
-                     <XIcon className="w-5 h-5" />
-                 </button>
-                 <ArticleEditor
-                    initialData={editingId === 'new' ? undefined : articles?.find(a => a.id === editingId)}
-                    onSave={handleSave}
-                    onCancel={() => setEditingId(null)}
-                 />
-            </div>
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            <button
+              onClick={() => setEditingId(null)}
+              className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg"
+            >
+              <XIcon className="w-5 h-5" />
+            </button>
+            <ArticleEditor
+              initialData={
+                editingId === 'new' ? undefined : articles?.find((a) => a.id === editingId)
+              }
+              onSave={handleSave}
+              onCancel={() => setEditingId(null)}
+            />
+          </div>
         </div>
       )}
 
@@ -178,9 +185,9 @@ const ContentTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void
           </div>
         ))}
         {articles?.length === 0 && (
-             <div className="text-center py-8 text-stone-400 text-sm bg-stone-50 rounded-xl border border-dashed border-stone-200">
-                 Нет статей. Создайте первую!
-             </div>
+          <div className="text-center py-8 text-stone-400 text-sm bg-stone-50 rounded-xl border border-dashed border-stone-200">
+            Нет статей. Создайте первую!
+          </div>
         )}
       </div>
     </div>
@@ -188,7 +195,21 @@ const ContentTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void
 };
 
 const XIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
 );
 
 const ArticleEditor: React.FC<{
@@ -208,14 +229,14 @@ const ArticleEditor: React.FC<{
   );
 
   const handleSubmit = () => {
-      if (!draft.title) return alert('Введите заголовок');
-      onSave(draft as any);
+    if (!draft.title) return alert('Введите заголовок');
+    onSave(draft as any /* eslint-disable-line @typescript-eslint/no-explicit-any */);
   };
 
   return (
     <div className="p-6 space-y-4">
       <h3 className="font-semibold text-stone-700 text-lg mb-4">
-          {initialData ? 'Редактировать статью' : 'Новая статья'}
+        {initialData ? 'Редактировать статью' : 'Новая статья'}
       </h3>
 
       <div className="grid grid-cols-2 gap-4">
@@ -234,7 +255,9 @@ const ArticleEditor: React.FC<{
           <input
             type="datetime-local"
             value={draft.published_at?.slice(0, 16)}
-            onChange={(e) => setDraft((d) => ({ ...d, published_at: new Date(e.target.value).toISOString() }))}
+            onChange={(e) =>
+              setDraft((d) => ({ ...d, published_at: new Date(e.target.value).toISOString() }))
+            }
             className="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none focus:border-brand-green"
           />
         </label>

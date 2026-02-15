@@ -1,12 +1,13 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import DOMPurify from 'dompurify';
 import { BookOpen, X, Clock, Calendar as CalendarIcon, User, Share2, Check } from 'lucide-react';
 import React, { useRef, useState, useEffect } from 'react';
 import { useContentData } from '../hooks/useContentData';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
-import { isSupabaseConfigured, supabase } from '../services/supabase';
 
 interface Article {
   id: number | string;
@@ -38,15 +39,22 @@ export const Blog: React.FC = () => {
         .order('published_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
-        const mapped = data.map((item: any) => ({
+        const mapped = data.map(
+          (item: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => ({
             id: item.id,
             category: item.category || 'Блог',
             title: item.title,
             excerpt: item.excerpt || '',
             image: item.image_url || '',
-            date: item.published_at ? new Date(item.published_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : '',
-            content: item.content || ''
-        }));
+            date: item.published_at
+              ? new Date(item.published_at).toLocaleDateString('ru-RU', {
+                  day: 'numeric',
+                  month: 'short',
+                })
+              : '',
+            content: item.content || '',
+          })
+        );
         setArticles(mapped);
       }
     };

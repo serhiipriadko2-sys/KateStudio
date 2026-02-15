@@ -92,7 +92,7 @@ export const dataService = {
       // Auth-first: updates must be tied to the authenticated user_id.
       const authUserId = await getAuthenticatedUserId(user.id);
       if (!authUserId) throw new Error('Missing authenticated user id');
-      const updates: any = {
+      const updates: any /* eslint-disable-line @typescript-eslint/no-explicit-any */ = {
         name: user.name,
         city: user.city,
       };
@@ -134,20 +134,22 @@ export const dataService = {
         if (error) throw error;
 
         if (dbClasses && dbClasses.length > 0) {
-          return dbClasses.map((row: any) => ({
-            id: row.id, // UUID
-            dateStr: row.date,
-            time: row.time,
-            name: row.name,
-            instructor: row.instructor || 'Катя Габран',
-            duration: row.duration || (type === 'online' ? '45 мин' : '60 мин'),
-            spotsTotal: row.spots_total || (type === 'online' ? 50 : 20),
-            spotsBooked: row.spots_booked || 0,
-            location: row.location || (type === 'online' ? 'Online' : 'Станционная ул., 5Б'),
-            intensity: (row.intensity || 1) as 1 | 2 | 3,
-            price: type === 'online' ? 400 : 700, // Hardcoded for now based on type
-            isOnline: type === 'online',
-          }));
+          return dbClasses.map(
+            (row: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => ({
+              id: row.id, // UUID
+              dateStr: row.date,
+              time: row.time,
+              name: row.name,
+              instructor: row.instructor || 'Катя Габран',
+              duration: row.duration || (type === 'online' ? '45 мин' : '60 мин'),
+              spotsTotal: row.spots_total || (type === 'online' ? 50 : 20),
+              spotsBooked: row.spots_booked || 0,
+              location: row.location || (type === 'online' ? 'Online' : 'Станционная ул., 5Б'),
+              intensity: (row.intensity || 1) as 1 | 2 | 3,
+              price: type === 'online' ? 400 : 700, // Hardcoded for now based on type
+              isOnline: type === 'online',
+            })
+          );
         }
       } catch (e) {
         console.warn('Supabase fetch failed, falling back to generated schedule', e);
@@ -241,11 +243,11 @@ export const dataService = {
       if (error) throw error;
 
       if (bookings) {
-        bookings.forEach((b: any) => {
+        bookings.forEach((b: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
           bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
         });
       }
-    } catch (_e) {
+    } catch {
       // Silent fail for offline mode
     }
 
@@ -281,15 +283,17 @@ export const dataService = {
 
       if (error) throw error;
 
-      const bookings = data.map((b: any) => ({
-        id: b.id,
-        classId: b.class_id, // This is text (either UUID or fallback ID)
-        className: b.class_name,
-        date: b.date,
-        time: b.time,
-        location: b.location,
-        timestamp: b.timestamp,
-      }));
+      const bookings = data.map(
+        (b: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => ({
+          id: b.id,
+          classId: b.class_id, // This is text (either UUID or fallback ID)
+          className: b.class_name,
+          date: b.date,
+          time: b.time,
+          location: b.location,
+          timestamp: b.timestamp,
+        })
+      );
 
       await cacheAdapter.upsertBookings(
         bookings.map((booking: Booking) => ({

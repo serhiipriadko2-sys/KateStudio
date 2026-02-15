@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../services/supabase';
 import { Save, RotateCcw, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../../../services/supabase';
 import { ThemeColors, loadTheme, applyTheme, resetTheme } from '../../../services/theme';
 
 const COLOR_FIELDS: { label: string; variable: keyof ThemeColors }[] = [
@@ -132,7 +132,8 @@ export const SettingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
       <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl text-xs text-amber-800 flex gap-2">
         <span className="text-lg">💡</span>
         <p>
-          Изменения применяются мгновенно в этом браузере. После нажатия "Сохранить", новые цвета станут доступны всем посетителям сайта (требуется обновление страницы).
+          Изменения применяются мгновенно в этом браузере. После нажатия &quot;Сохранить&quot;,
+          новые цвета станут доступны всем посетителям сайта (требуется обновление страницы).
         </p>
       </div>
     </div>

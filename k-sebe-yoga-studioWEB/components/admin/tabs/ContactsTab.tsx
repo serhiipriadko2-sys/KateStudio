@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   MessageSquare,
@@ -9,6 +8,7 @@ import {
   Trash2,
   Check,
 } from 'lucide-react';
+import React, { useState } from 'react';
 import { supabase } from '../../../services/supabase';
 import { ContactRow } from '../types';
 
@@ -26,7 +26,11 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const { data: contacts = [], isLoading, refetch } = useQuery({
+  const {
+    data: contacts = [],
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['contacts'],
     queryFn: async () => {
       if (!supabase) throw new Error('Supabase not initialized');
@@ -183,21 +187,21 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                         </div>
                       )}
                       <div className="flex gap-2 text-xs items-center">
-                         <span className="text-stone-400 w-16 shrink-0">Статус</span>
-                         <span className="bg-stone-100 text-stone-500 px-2 py-0.5 rounded capitalize">
-                            {c.status || 'new'}
-                         </span>
+                        <span className="text-stone-400 w-16 shrink-0">Статус</span>
+                        <span className="bg-stone-100 text-stone-500 px-2 py-0.5 rounded capitalize">
+                          {c.status || 'new'}
+                        </span>
                       </div>
                     </div>
                     <div className="mt-3 flex justify-end gap-2">
-                       {c.status !== 'read' && c.status !== 'processed' && (
-                         <button
-                            onClick={() => markAsRead(c.id)}
-                            className="text-xs text-brand-green hover:underline flex items-center gap-1"
-                         >
-                            <Check className="w-3 h-3" /> Прочитано
-                         </button>
-                       )}
+                      {c.status !== 'read' && c.status !== 'processed' && (
+                        <button
+                          onClick={() => markAsRead(c.id)}
+                          className="text-xs text-brand-green hover:underline flex items-center gap-1"
+                        >
+                          <Check className="w-3 h-3" /> Прочитано
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDelete(c.id)}
                         className="text-xs text-rose-500 hover:underline flex items-center gap-1"

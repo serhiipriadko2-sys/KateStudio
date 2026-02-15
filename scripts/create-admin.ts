@@ -1,8 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
-import { createInterface } from 'readline';
-import dotenv from 'dotenv';
+/* eslint-disable no-console */
 import path from 'path';
+import { createInterface } from 'readline';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../.env') });

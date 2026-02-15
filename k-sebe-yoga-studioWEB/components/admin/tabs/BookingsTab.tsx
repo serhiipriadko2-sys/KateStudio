@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ClipboardList,
@@ -10,6 +9,7 @@ import {
   ChevronUp,
   Trash2,
 } from 'lucide-react';
+import React, { useState } from 'react';
 import { supabase } from '../../../services/supabase';
 import { BookingRow } from '../types';
 
@@ -28,7 +28,11 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
   const [expanded, setExpanded] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'purchases' | 'classes'>('all');
 
-  const { data: bookings = [], isLoading, refetch } = useQuery({
+  const {
+    data: bookings = [],
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
       if (!supabase) throw new Error('Supabase not initialized');
@@ -85,7 +89,11 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
         <div className="flex gap-2">
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value as any)}
+            onChange={(e) =>
+              setFilter(
+                e.target.value as any /* eslint-disable-line @typescript-eslint/no-explicit-any */
+              )
+            }
             className="px-2 py-1.5 text-xs rounded-lg border border-stone-200 bg-white"
           >
             <option value="all">Все</option>

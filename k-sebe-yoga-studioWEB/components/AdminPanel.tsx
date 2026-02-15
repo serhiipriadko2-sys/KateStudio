@@ -17,15 +17,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { AdminQueryProvider } from './admin/AdminQueryProvider';
-import { ScheduleTab } from './admin/tabs/ScheduleTab';
 import { BookingsTab } from './admin/tabs/BookingsTab';
 import { ContactsTab } from './admin/tabs/ContactsTab';
 import { ContentTab } from './admin/tabs/ContentTab';
-import { ReviewsTab } from './admin/tabs/ReviewsTab';
-import { PricingTab } from './admin/tabs/PricingTab';
-import { ImagesTab } from './admin/tabs/ImagesTab';
-import { SettingsTab } from './admin/tabs/SettingsTab';
 import { DashboardTab } from './admin/tabs/DashboardTab';
+import { ImagesTab } from './admin/tabs/ImagesTab';
+import { ScheduleTab } from './admin/tabs/ScheduleTab';
+import { SettingsTab } from './admin/tabs/SettingsTab';
 import { AdminTab } from './admin/types';
 
 /* ═══════════════════════════════════════════════════════════

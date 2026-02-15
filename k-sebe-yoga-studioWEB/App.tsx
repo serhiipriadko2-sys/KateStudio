@@ -22,8 +22,8 @@ import { Pricing } from './components/Pricing';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
 import { registerServiceWorker } from './services/serviceWorker';
-import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { isSupabaseConfigured, supabase } from './services/supabase';
+import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { BookingDetails } from './types';
 
 function App() {
