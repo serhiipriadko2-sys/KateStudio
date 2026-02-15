@@ -1,18 +1,58 @@
 import DOMPurify from 'dompurify';
 import { BookOpen, X, Clock, Calendar as CalendarIcon, User, Share2, Check } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useContentData } from '../hooks/useContentData';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
+import { isSupabaseConfigured, supabase } from '../services/supabase';
+
+interface Article {
+  id: number | string;
+  category: string;
+  title: string;
+  excerpt: string;
+  image: string;
+  date: string;
+  content: string;
+}
 
 export const Blog: React.FC = () => {
-  const { articles } = useContentData();
-  const [selectedArticle, setSelectedArticle] = useState<(typeof articles)[0] | null>(null);
+  const { articles: defaultArticles } = useContentData();
+  const [articles, setArticles] = useState<Article[]>(defaultArticles);
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [copied, setCopied] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Fetch from Supabase
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    const fetchArticles = async () => {
+      if (!supabase) return;
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .order('published_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        const mapped = data.map((item: any) => ({
+            id: item.id,
+            category: item.category || 'Блог',
+            title: item.title,
+            excerpt: item.excerpt || '',
+            image: item.image_url || '',
+            date: item.published_at ? new Date(item.published_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : '',
+            content: item.content || ''
+        }));
+        setArticles(mapped);
+      }
+    };
+
+    fetchArticles();
+  }, [defaultArticles]); // Dependency on defaultArticles ensures we don't break if that updates, but main logic is simple fetch.
 
   useScrollLock(!!selectedArticle);
   useFocusTrap(dialogRef, !!selectedArticle, closeButtonRef);
