@@ -92,7 +92,7 @@ export const dataService = {
       // Auth-first: updates must be tied to the authenticated user_id.
       const authUserId = await getAuthenticatedUserId(user.id);
       if (!authUserId) throw new Error('Missing authenticated user id');
-      const updates: any = {
+      const updates: { name: string; city: string; avatar?: string } = {
         name: user.name,
         city: user.city,
       };
@@ -206,7 +206,7 @@ export const dataService = {
       if (error) throw error;
 
       if (bookings) {
-        bookings.forEach((b: any) => {
+        bookings.forEach((b: { class_id: string }) => {
           bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
         });
       }
@@ -246,15 +246,25 @@ export const dataService = {
 
       if (error) throw error;
 
-      const bookings = data.map((b: any) => ({
-        id: b.id,
-        classId: b.class_id,
-        className: b.class_name,
-        date: b.date,
-        time: b.time,
-        location: b.location,
-        timestamp: b.timestamp,
-      }));
+      const bookings = data.map(
+        (b: {
+          id: string;
+          class_id: string;
+          class_name: string;
+          date: string;
+          time: string;
+          location: string;
+          timestamp: number;
+        }) => ({
+          id: b.id,
+          classId: b.class_id,
+          className: b.class_name,
+          date: b.date,
+          time: b.time,
+          location: b.location,
+          timestamp: b.timestamp,
+        })
+      );
 
       await cacheAdapter.upsertBookings(
         bookings.map((booking) => ({
@@ -360,7 +370,7 @@ export const dataService = {
       if (error) throw error;
       await cacheAdapter.removeBooking(bookingId);
       return true;
-    } catch (e) {
+    } catch (e: unknown) {
       console.error('Cancellation error', e);
       return false;
     }

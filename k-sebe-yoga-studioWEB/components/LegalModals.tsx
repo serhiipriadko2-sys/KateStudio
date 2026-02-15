@@ -99,6 +99,9 @@ export const LegalModals: React.FC<LegalModalProps> = ({ type, onClose }) => {
       <div
         className="bg-white w-full max-w-2xl max-h-[80vh] rounded-[2rem] shadow-2xl flex flex-col animate-in slide-in-from-bottom-10 duration-300 relative"
         onClick={(e) => e.stopPropagation()}
+        role="document"
+        onKeyDown={(e) => e.stopPropagation()}
+        tabIndex={-1}
       >
         <div className="flex items-center justify-between p-6 md:p-8 border-b border-stone-100">
           <div className="flex items-center gap-3">
