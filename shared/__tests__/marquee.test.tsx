@@ -24,7 +24,6 @@ function mockAnimate() {
   return proxy;
 }
 
-/** Simulate one breathing phase completing (fires the latest onfinish) */
 function completeBreathPhase() {
   act(() => {
     const cb = finishCallbacks[finishCallbacks.length - 1];
@@ -65,42 +64,46 @@ describe('Marquee (Breathing Strip)', () => {
     expect(screen.getAllByText('вдох').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('shows phase indicator', () => {
+  it('does not render a standalone phase indicator label', () => {
     render(<Marquee />);
-    const indicator = document.querySelector('.flex.justify-center.mt-2 span');
-    expect(indicator).toBeTruthy();
-    expect(indicator!.textContent).toBe('вдох');
+    // Phase indicator was removed — only in-track separators remain
+    const section = document.querySelector('[aria-label="Дыхательная полоса"]');
+    const standaloneLabel = section?.querySelector('.flex.justify-center.mt-2');
+    expect(standaloneLabel).toBeNull();
   });
 
   it('switches phase when breathing animation completes (onfinish)', () => {
     render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
 
+    // Inhale track visible, exhale hidden
+    const tracks = document.querySelectorAll('.breath-track');
+    expect(tracks[0].className).toContain('opacity-100');
+    expect(tracks[1].className).toContain('opacity-0');
+
     completeBreathPhase();
 
-    const indicator = document.querySelector('.flex.justify-center.mt-2 span');
-    expect(indicator!.textContent).toBe('выдох');
+    // After one phase: exhale visible, inhale hidden
+    expect(tracks[0].className).toContain('opacity-0');
+    expect(tracks[1].className).toContain('opacity-100');
   });
 
   it('cycles back to inhale after two breath phases', () => {
     render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
+    const tracks = document.querySelectorAll('.breath-track');
 
-    // inhale → exhale
-    completeBreathPhase();
-    let indicator = document.querySelector('.flex.justify-center.mt-2 span');
-    expect(indicator!.textContent).toBe('выдох');
+    completeBreathPhase(); // → exhale
+    expect(tracks[1].className).toContain('opacity-100');
 
-    // exhale → inhale
-    completeBreathPhase();
-    indicator = document.querySelector('.flex.justify-center.mt-2 span');
-    expect(indicator!.textContent).toBe('вдох');
+    completeBreathPhase(); // → inhale
+    expect(tracks[0].className).toContain('opacity-100');
   });
 
-  it('calls Element.animate with breathing keyframes', () => {
+  it('calls Element.animate with vertical float keyframes', () => {
     render(<Marquee duration={10} />);
     expect(Element.prototype.animate).toHaveBeenCalledWith(
       [
-        { transform: 'scale(0.97)', letterSpacing: '0em', opacity: 0.85 },
-        { transform: 'scale(1.04)', letterSpacing: '0.03em', opacity: 1 },
+        { transform: 'translateY(2px)', opacity: 0.92 },
+        { transform: 'translateY(-2px)', opacity: 1 },
       ],
       { duration: 5000, easing: 'ease-in-out', fill: 'forwards' }
     );
