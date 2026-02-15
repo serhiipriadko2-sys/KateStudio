@@ -82,11 +82,11 @@ const TrackRow: React.FC<TrackRowProps> = ({
       'absolute inset-y-0 left-0 w-max items-center',
       'transition-opacity duration-[1500ms] ease-in-out',
       pauseOnHover && 'hover:[animation-play-state:paused]',
-      'motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:gap-4',
+      'motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:gap-4',
       'motion-reduce:relative motion-reduce:w-auto'
     )}
     style={{
-      animationDuration: `${duration}s`,
+      animation: `marquee ${duration}s linear infinite`,
       opacity: visible ? 1 : 0,
       pointerEvents: visible ? 'auto' : 'none',
     }}
@@ -208,19 +208,16 @@ export const Marquee: React.FC<MarqueeConfig> = ({
         </span>
       </div>
 
-      {/* Inline keyframes – scoped to this component */}
+      {/* @keyframes marquee is defined globally in index.css.
+          Animation is applied via inline style on TrackRow.
+          Reduced-motion override needs !important to beat inline. */}
       <style>{`
-        .marquee-track {
-          animation: marquee-scroll var(--duration, ${duration}s) linear infinite;
-        }
-        @keyframes marquee-scroll {
+        @keyframes marquee {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
         @media (prefers-reduced-motion: reduce) {
-          .marquee-track {
-            animation: none !important;
-          }
+          .marquee-track { animation: none !important; }
         }
       `}</style>
     </section>
