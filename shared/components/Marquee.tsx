@@ -55,6 +55,12 @@ function buildTrack(words: string[], separator: string): string[] {
   return items;
 }
 
+/** Check if user prefers reduced motion */
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 /* ─── Track sub-component (one scrolling row) ──────────── */
 
 interface TrackRowProps {
@@ -78,28 +84,46 @@ const TrackRow: React.FC<TrackRowProps> = ({
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<Animation | null>(null);
+  const onIterationRef = useRef(onIteration);
+  onIterationRef.current = onIteration;
 
-  /* Start Web Animation on mount — bypasses CSS/Tailwind processing entirely */
+  /*
+   * Web Animations API — single-iteration loop that restarts on finish.
+   * onfinish fires at the exact moment the marquee completes one full pass,
+   * giving us precise cycle switching (no timers).
+   * At translateX(-50%) the visual is identical to translateX(0) because the
+   * content is duplicated — so the restart is seamless.
+   */
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
 
-    const anim = el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-50%)' }], {
-      duration: duration * 1000,
-      iterations: Infinity,
-      easing: 'linear',
-    });
+    // Reduced motion: no scrolling, content stays visible & readable
+    if (prefersReducedMotion()) return;
 
-    animRef.current = anim;
-    return () => anim.cancel();
+    let cancelled = false;
+
+    const run = () => {
+      if (cancelled) return;
+      const anim = el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-50%)' }], {
+        duration: duration * 1000,
+        easing: 'linear',
+      });
+      animRef.current = anim;
+      anim.onfinish = () => {
+        if (cancelled) return;
+        onIterationRef.current?.();
+        run(); // seamless restart — -50% ≡ 0% visually
+      };
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+      animRef.current?.cancel();
+    };
   }, [duration]);
-
-  /* Phase-switch timer — fires every full loop (replaces onAnimationIteration) */
-  useEffect(() => {
-    if (!onIteration) return;
-    const id = setInterval(onIteration, duration * 1000);
-    return () => clearInterval(id);
-  }, [onIteration, duration]);
 
   /* Pause on hover */
   useEffect(() => {
@@ -188,7 +212,7 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   const exhaleTrack = buildTrack(words, SEPARATOR_EXHALE);
   const isInhale = cycle === 'inhale';
 
-  /** Switch cycle when the VISIBLE track completes one CSS scroll loop */
+  /** Switch cycle when the VISIBLE track completes one full scroll pass */
   const handleIteration = useCallback(() => {
     setCycle((prev) => (prev === 'inhale' ? 'exhale' : 'inhale'));
   }, []);
@@ -246,9 +270,6 @@ export const Marquee: React.FC<MarqueeConfig> = ({
           {isInhale ? 'вдох' : 'выдох'}
         </span>
       </div>
-
-      {/* Animation is handled via Web Animations API in TrackRow (useEffect).
-          No CSS @keyframes needed — this avoids Tailwind v4 CSS layer conflicts. */}
     </section>
   );
 };
