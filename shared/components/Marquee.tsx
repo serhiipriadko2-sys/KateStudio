@@ -44,8 +44,11 @@ const DEFAULT_EXHALE_WORDS = [
 const SEPARATOR_INHALE = 'вдох';
 const SEPARATOR_EXHALE = 'выдох';
 
-/** Stagger delay between words — creates wave/ripple effect */
 const WORD_STAGGER_MS = 70;
+
+/** CSS mask for haze/mist effect on edges */
+const HAZE_MASK =
+  'linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%)';
 
 /* ─── Helpers ──────────────────────────────────────────── */
 
@@ -62,7 +65,7 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/* ─── WordStrip — staggered breathing wave ──────────────── */
+/* ─── WordStrip — staggered breathing wave + heartbeat dots */
 
 interface WordStripProps {
   items: string[];
@@ -105,16 +108,16 @@ const WordStrip: React.FC<WordStripProps> = ({ items, separator, isInhale }) => 
             {word}
           </span>
 
-          {/* Breathing dot — pulses with the wave */}
+          {/* Heartbeat dot — double-pulse rhythm, staggered wave */}
           <span
-            className="inline-block rounded-full mx-2 md:mx-3 shrink-0 transition-all duration-[3000ms] ease-in-out"
+            className="inline-block rounded-full mx-2 md:mx-3 shrink-0 transition-[background-color,box-shadow] duration-[3000ms] ease-in-out"
             style={{
-              transitionDelay: `${delay + 35}ms`,
-              width: isInhale ? '6px' : '4px',
-              height: isInhale ? '6px' : '4px',
-              opacity: isInhale ? 0.4 : 0.2,
-              backgroundColor: isInhale ? 'rgba(87, 167, 115, 0.4)' : 'rgba(168, 162, 158, 0.3)',
-              boxShadow: isInhale ? '0 0 8px rgba(87, 167, 115, 0.25)' : 'none',
+              width: '5px',
+              height: '5px',
+              backgroundColor: isInhale ? 'rgba(87, 167, 115, 0.5)' : 'rgba(168, 162, 158, 0.35)',
+              boxShadow: isInhale ? '0 0 10px rgba(87, 167, 115, 0.35)' : 'none',
+              animation: `breath-heartbeat ${isInhale ? '2s' : '2.8s'} ease-in-out infinite`,
+              animationDelay: `${Math.round(delay * 0.7)}ms`,
             }}
             aria-hidden="true"
           />
@@ -145,11 +148,8 @@ export const Marquee: React.FC<MarqueeConfig> = ({
 
   /*
    * Container-level breathing via Web Animations API.
-   * Provides a gentle global float; individual words add their own
-   * staggered CSS-transition wave on top.
-   *
-   * onfinish switches the phase → React re-renders → CSS transitions
-   * ripple through each word with WORD_STAGGER_MS delay.
+   * Gentle vertical float; words add staggered CSS transitions on top.
+   * Dots run their own CSS heartbeat keyframe animation.
    */
   useEffect(() => {
     const el = breathRef.current;
@@ -226,8 +226,15 @@ export const Marquee: React.FC<MarqueeConfig> = ({
         )}
       />
 
-      {/* Breathing container — gentle vertical float + word wave */}
-      <div ref={breathRef} className="relative h-10 md:h-14">
+      {/* Breathing container — haze mask + vertical float + word wave */}
+      <div
+        ref={breathRef}
+        className="relative h-10 md:h-14"
+        style={{
+          maskImage: HAZE_MASK,
+          WebkitMaskImage: HAZE_MASK,
+        }}
+      >
         {/* Inhale words — crossfade in */}
         <div
           className={cn(
@@ -252,6 +259,19 @@ export const Marquee: React.FC<MarqueeConfig> = ({
           <WordStrip items={exhaleTrack} separator={SEPARATOR_EXHALE} isInhale={false} />
         </div>
       </div>
+
+      {/* Heartbeat keyframes + reduced-motion override */}
+      <style>{`
+        @keyframes breath-heartbeat {
+          0%, 55%, 100% { transform: scale(1); opacity: 0.25; }
+          14% { transform: scale(2.4); opacity: 0.9; }
+          28% { transform: scale(0.8); opacity: 0.2; }
+          42% { transform: scale(1.9); opacity: 0.7; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .breath-track span { animation: none !important; transition: none !important; }
+        }
+      `}</style>
     </section>
   );
 };
