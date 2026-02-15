@@ -256,7 +256,11 @@ export default function App() {
       // 2. Fetch Remote
       if (isSupabaseConfigured && supabase) {
         try {
-          const { data } = await supabase.from('app_settings').select('key, value').eq('key', 'theme').single();
+          const { data } = await supabase
+            .from('app_settings')
+            .select('key, value')
+            .eq('key', 'theme')
+            .single();
           if (data?.value) {
             const colors = data.value as Record<string, string>;
             // Apply

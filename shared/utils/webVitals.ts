@@ -134,11 +134,13 @@ export function observeINP(callback: ReportCallback): () => void {
     });
 
     // durationThreshold filters out interactions shorter than this value
-    observer.observe({
-      type: 'event',
-      buffered: true,
-      durationThreshold: INP_DURATION_THRESHOLD_MS,
-    } as any);
+    observer.observe(
+      {
+        type: 'event',
+        buffered: true,
+        durationThreshold: INP_DURATION_THRESHOLD_MS,
+      } as any /* eslint-disable-line @typescript-eslint/no-explicit-any */
+    );
 
     return () => observer.disconnect();
   } catch {

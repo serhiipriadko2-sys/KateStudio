@@ -13,7 +13,7 @@ function hexToUint8Array(hex: string): Uint8Array | null {
   return bytes;
 }
 
-type PlanId = 'free' | 'premium' | 'vip';
+// type PlanId = 'free' | 'premium' | 'vip';
 
 const WebhookPayloadSchema = z.object({
   subscription_id: z.string().uuid().optional(),

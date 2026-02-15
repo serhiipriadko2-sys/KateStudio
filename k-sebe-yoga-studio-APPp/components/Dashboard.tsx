@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 // import { Paywall } from '@ksebe/shared'; // Временно скрыто вместе с AI-подпиской
 import {
   LogOut,

@@ -1,10 +1,15 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { useDebounce, useDebouncedCallback } from '../useDebounce';
+import { useLocalStorage } from '../useLocalStorage';
+import { useMediaQuery } from '../useMediaQuery';
+import { useOnlineStatus } from '../useOnlineStatus';
+import { usePWAMode } from '../usePWAMode';
+import { useScrollLock } from '../useScrollLock';
 
 // ---------------------------------------------------------------------------
 // 1. useDebounce
 // ---------------------------------------------------------------------------
-import { useDebounce, useDebouncedCallback } from '../useDebounce';
 
 describe('useDebounce', () => {
   beforeEach(() => {
@@ -114,7 +119,6 @@ describe('useDebouncedCallback', () => {
 // ---------------------------------------------------------------------------
 // 2. useLocalStorage
 // ---------------------------------------------------------------------------
-import { useLocalStorage } from '../useLocalStorage';
 
 describe('useLocalStorage', () => {
   beforeEach(() => {
@@ -157,7 +161,6 @@ describe('useLocalStorage', () => {
 // ---------------------------------------------------------------------------
 // 3. useMediaQuery
 // ---------------------------------------------------------------------------
-import { useMediaQuery } from '../useMediaQuery';
 
 describe('useMediaQuery', () => {
   let listeners: Record<string, ((e: { matches: boolean }) => void)[]>;
@@ -225,7 +228,6 @@ describe('useMediaQuery', () => {
 // ---------------------------------------------------------------------------
 // 4. useOnlineStatus
 // ---------------------------------------------------------------------------
-import { useOnlineStatus } from '../useOnlineStatus';
 
 describe('useOnlineStatus', () => {
   const originalOnLine = navigator.onLine;
@@ -287,7 +289,6 @@ describe('useOnlineStatus', () => {
 // ---------------------------------------------------------------------------
 // 5. usePWAMode
 // ---------------------------------------------------------------------------
-import { usePWAMode } from '../usePWAMode';
 
 describe('usePWAMode', () => {
   beforeEach(() => {
@@ -360,7 +361,6 @@ describe('usePWAMode', () => {
 // ---------------------------------------------------------------------------
 // 6. useScrollLock
 // ---------------------------------------------------------------------------
-import { useScrollLock } from '../useScrollLock';
 
 describe('useScrollLock', () => {
   beforeEach(() => {

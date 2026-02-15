@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 import { Play, Lock, Clock, Sparkles, X, ChevronRight, Loader2 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useToast } from '../context/ToastContext';

@@ -1,7 +1,7 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../../services/supabase';
 import { ClipboardList, MessageSquare, TrendingUp, CalendarDays } from 'lucide-react';
+import React from 'react';
+import { supabase } from '../../../services/supabase';
 
 export const DashboardTab: React.FC = () => {
   // Fetch Stats
@@ -13,7 +13,9 @@ export const DashboardTab: React.FC = () => {
       const [bookingsAll, contactsAll, bookingsToday] = await Promise.all([
         supabase.from('bookings').select('*', { count: 'exact', head: true }),
         supabase.from('contacts').select('*', { count: 'exact', head: true }),
-        supabase.from('bookings').select('*', { count: 'exact', head: true })
+        supabase
+          .from('bookings')
+          .select('*', { count: 'exact', head: true })
           .gte('created_at', new Date().toISOString().split('T')[0]),
       ]);
 
@@ -66,8 +68,12 @@ export const DashboardTab: React.FC = () => {
       <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
         <h3 className="text-lg font-serif text-brand-dark mb-4">Последние записи</h3>
         <div className="space-y-4">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {recentBookings?.map((booking: any, idx: number) => (
-            <div key={idx} className="flex items-center justify-between border-b border-stone-50 pb-2 last:border-0 last:pb-0">
+            <div
+              key={idx}
+              className="flex items-center justify-between border-b border-stone-50 pb-2 last:border-0 last:pb-0"
+            >
               <div>
                 <div className="font-medium text-stone-700">{booking.name}</div>
                 <div className="text-xs text-stone-400">{booking.class_name || 'Занятие'}</div>
@@ -86,17 +92,23 @@ export const DashboardTab: React.FC = () => {
   );
 };
 
-const StatCard: React.FC<{ label: string; value: number | string; icon: React.ReactNode; trend?: string }> = ({
-  label,
-  value,
-  icon,
-  trend,
-}) => (
+const StatCard: React.FC<{
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+  trend?: string;
+}> = ({ label, value, icon, trend }) => (
   <div className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm flex items-start justify-between">
     <div>
-      <div className="text-stone-400 text-xs font-medium uppercase tracking-wider mb-1">{label}</div>
+      <div className="text-stone-400 text-xs font-medium uppercase tracking-wider mb-1">
+        {label}
+      </div>
       <div className="text-2xl font-bold text-stone-800">{value}</div>
-      {trend && <div className="text-xs text-emerald-500 mt-1 flex items-center gap-1"><TrendingUp className="w-3 h-3" /> {trend}</div>}
+      {trend && (
+        <div className="text-xs text-emerald-500 mt-1 flex items-center gap-1">
+          <TrendingUp className="w-3 h-3" /> {trend}
+        </div>
+      )}
     </div>
     <div className="p-3 bg-stone-50 rounded-xl">{icon}</div>
   </div>
