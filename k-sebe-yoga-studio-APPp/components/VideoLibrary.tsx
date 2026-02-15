@@ -11,8 +11,7 @@ const videos = [
     title: 'Утренний Flow',
     duration: '15 мин',
     level: 'Легкий',
-    image:
-      'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?q=80&w=600&auto=format&fit=crop',
+    image: IMAGES.studio[1],
     isLocked: false,
     tags: ['Энергия', 'Сила'],
     videoUrl: 'https://www.youtube.com/embed/sTANio_2E0Q?autoplay=1', // Placeholder video
@@ -22,8 +21,7 @@ const videos = [
     title: 'Здоровая спина',
     duration: '30 мин',
     level: 'Средний',
-    image:
-      'https://images.unsplash.com/photo-1588286840104-4bd54803d9d7?q=80&w=600&auto=format&fit=crop',
+    image: IMAGES.studio[2],
     isLocked: false,
     tags: ['Здоровье', 'Сила'],
     videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1', // Placeholder video
@@ -33,8 +31,7 @@ const videos = [
     title: 'Глубокая растяжка',
     duration: '45 мин',
     level: 'Сложный',
-    image:
-      'https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?q=80&w=600&auto=format&fit=crop',
+    image: IMAGES.studio[3],
     isLocked: true,
     tags: ['Покой', 'Здоровье'],
   },
@@ -43,8 +40,7 @@ const videos = [
     title: 'Медитация перед сном',
     duration: '10 мин',
     level: 'Все уровни',
-    image:
-      'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=600&auto=format&fit=crop',
+    image: IMAGES.studio[4],
     isLocked: true,
     tags: ['Покой', 'Здоровье'],
   },

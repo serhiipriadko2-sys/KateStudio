@@ -28,6 +28,28 @@ const DEFAULT_INHALE_WORDS = [
   'движение',
   'огонь',
   'мощь',
+  'воля',
+  'страсть',
+  'мужество',
+  'решимость',
+  'энтузиазм',
+  'жизнь',
+  'творчество',
+  'свобода',
+  'рост',
+  'победа',
+  'сила духа',
+  'мотивация',
+  'активность',
+  'борьба',
+  'прогресс',
+  'успех',
+  'триумф',
+  'энергия жизни',
+  'огненная страсть',
+  'непоколебимость',
+  'дерзость',
+  'динамика',
 ];
 
 const DEFAULT_EXHALE_WORDS = [
@@ -39,6 +61,28 @@ const DEFAULT_EXHALE_WORDS = [
   'нежность',
   'мягкость',
   'тепло',
+  'спокойствие',
+  'мир',
+  'баланс',
+  'умиротворение',
+  'спокойная сила',
+  'мудрость',
+  'сострадание',
+  'принятие',
+  'благодать',
+  'спокойный ум',
+  'радость тишины',
+  'душевный покой',
+  'гармоничная энергия',
+  'мягкая сила',
+  'внутренний свет',
+  'спокойная решимость',
+  'умиротворенная воля',
+  'тихая мощь',
+  'гармоничный баланс',
+  'спокойное тепло',
+  'нежная любовь',
+  'тихий свет',
 ];
 
 const SEPARATOR_INHALE = 'вдох';
@@ -139,11 +183,18 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   pauseOnHover = false,
 }) => {
   const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale');
+  const [cycleCount, setCycleCount] = useState(0);
   const breathRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<Animation | null>(null);
 
-  const inhaleTrack = buildTrack(inhaleWords, SEPARATOR_INHALE);
-  const exhaleTrack = buildTrack(words, SEPARATOR_EXHALE);
+  // Rotate words on each cycle
+  const rotatedInhale = [...inhaleWords.slice(cycleCount % inhaleWords.length), ...inhaleWords.slice(0, cycleCount % inhaleWords.length)];
+  const currentInhaleWords = rotatedInhale.slice(0, 8);
+  const rotatedExhale = [...words.slice(cycleCount % words.length), ...words.slice(0, cycleCount % words.length)];
+  const currentExhaleWords = rotatedExhale.slice(0, 8);
+
+  const inhaleTrack = buildTrack(currentInhaleWords, SEPARATOR_INHALE);
+  const exhaleTrack = buildTrack(currentExhaleWords, SEPARATOR_EXHALE);
   const isInhale = phase === 'inhale';
 
   const phaseDurationMs = (duration / 2) * 1000;
@@ -183,6 +234,7 @@ export const Marquee: React.FC<MarqueeConfig> = ({
         if (cancelled) return;
         currentPhase = currentPhase === 'inhale' ? 'exhale' : 'inhale';
         setPhase(currentPhase);
+        setCycleCount(prev => prev + 1);
         run();
       };
     };
