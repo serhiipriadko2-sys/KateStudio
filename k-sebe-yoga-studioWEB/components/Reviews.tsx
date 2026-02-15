@@ -1,18 +1,17 @@
 import { IMAGES } from '@ksebe/shared';
 import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
-import { isSupabaseConfigured, supabase } from '../services/supabase';
 
 interface TestimonialProps {
-  id: number | string;
+  id: number;
   name: string;
   text: string;
   image: string;
 }
 
-const defaultTestimonials = [
+const testimonials = [
   {
     id: 1,
     name: 'Екатерина',
@@ -85,37 +84,6 @@ const TestimonialCard: React.FC<TestimonialProps> = ({ id, name, text, image }) 
 
 export const Reviews: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [reviews, setReviews] = useState<TestimonialProps[]>(defaultTestimonials);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return;
-
-    const fetchReviews = async () => {
-      try {
-        if (!supabase) return;
-        const { data, error } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('is_active', true)
-          .order('display_order', { ascending: true })
-          .order('created_at', { ascending: false });
-
-        if (!error && data && data.length > 0) {
-          const mapped = data.map((r: any) => ({
-            id: r.id,
-            name: r.name,
-            text: r.text,
-            image: r.image_url || '/placeholder.png', // Fallback image if missing
-          }));
-          setReviews(mapped);
-        }
-      } catch (e) {
-        console.warn('Failed to fetch reviews', e);
-      }
-    };
-
-    fetchReviews();
-  }, []);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -166,7 +134,7 @@ export const Reviews: React.FC = () => {
             ref={scrollRef}
             className="flex overflow-x-auto pb-16 -mx-6 px-6 scrollbar-hide snap-x snap-mandatory items-stretch"
           >
-            {reviews.map((t) => (
+            {testimonials.map((t) => (
               <TestimonialCard key={t.id} {...t} />
             ))}
             <div className="w-12 flex-shrink-0"></div>

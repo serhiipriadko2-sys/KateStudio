@@ -27,7 +27,6 @@ import { dataService } from '../services/dataService';
 import { uploadFile, supabase } from '../services/supabaseClient';
 import { Booking } from '../types';
 // import { Subscription, SubscriptionPlan, SubscriptionStatus } from '../types'; // Временно скрыто вместе с AI-подпиской
-import { IMAGES } from '@ksebe/shared';
 import { AICoach } from './AICoach';
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
@@ -796,7 +795,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   )}
 
                   <Image
-                    src={user?.avatar || IMAGES.reviews.avatars[0]}
+                    src={
+                      user?.avatar ||
+                      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop'
+                    }
                     alt="User"
                     storageKey="user-avatar-large"
                     containerClassName="w-full h-full"

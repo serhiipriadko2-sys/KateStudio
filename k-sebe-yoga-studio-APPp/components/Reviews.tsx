@@ -1,4 +1,3 @@
-import { IMAGES } from '@ksebe/shared';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useRef, useEffect } from 'react';
 import { FadeIn } from './FadeIn';
@@ -15,31 +14,31 @@ const testimonials = [
   {
     id: 1,
     name: 'Екатерина',
-    image: IMAGES.reviews.avatars[0],
+    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop',
     text: 'Самый чуткий, добрый, открытый тренер! Я не встречала ни одного человека, который так любит и горит своей работой! Полная отдача! 🥰',
   },
   {
     id: 2,
     name: 'Анна',
-    image: IMAGES.reviews.avatars[1],
+    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop',
     text: 'Я с Катей уже больше года, и за это время я стала намного пластичнее и выносливее. Каждое занятие – это плюс 100500 к уверенности в себе.',
   },
   {
     id: 3,
     name: 'Дарья',
-    image: IMAGES.reviews.avatars[2],
+    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
     text: 'Если вы, как и я, никогда не занимались йогой, то лучшего тренера не найти! Катя заражает интересом в Inside Flow с первых секунд.',
   },
   {
     id: 4,
     name: 'Марина',
-    image: IMAGES.reviews.avatars[3],
+    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop',
     text: 'Для меня это не просто спорт, это психотерапия. После занятий выходишь обновленной, спокойной и наполненной энергией.',
   },
   {
     id: 5,
     name: 'Ольга',
-    image: IMAGES.reviews.avatars[4],
+    image: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop',
     text: 'Студия очень атмосферная. Приятно просто находиться здесь. А практики с Катей — это всегда глубокое погружение.',
   },
 ];

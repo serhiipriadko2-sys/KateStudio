@@ -224,8 +224,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     { id: 'schedule', icon: <CalendarDays className="w-4 h-4" />, label: 'Расписание' },
     { id: 'bookings', icon: <ClipboardList className="w-4 h-4" />, label: 'Записи' },
     { id: 'contacts', icon: <MessageSquare className="w-4 h-4" />, label: 'Обращения' },
-    { id: 'reviews', icon: <MessageSquare className="w-4 h-4" />, label: 'Отзывы' },
-    { id: 'pricing', icon: <ClipboardList className="w-4 h-4" />, label: 'Тарифы' },
     { id: 'content', icon: <BookOpen className="w-4 h-4" />, label: 'Контент' },
     { id: 'images', icon: <ImageIcon className="w-4 h-4" />, label: 'Медиа' },
     { id: 'settings', icon: <Palette className="w-4 h-4" />, label: 'Настройки' },
@@ -279,8 +277,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             {activeTab === 'schedule' && <ScheduleTab toast={toast} />}
             {activeTab === 'bookings' && <BookingsTab toast={toast} />}
             {activeTab === 'contacts' && <ContactsTab toast={toast} />}
-            {activeTab === 'reviews' && <ReviewsTab toast={toast} />}
-            {activeTab === 'pricing' && <PricingTab toast={toast} />}
             {activeTab === 'content' && <ContentTab toast={toast} />}
             {activeTab === 'images' && <ImagesTab toast={toast} />}
             {activeTab === 'settings' && <SettingsTab toast={toast} />}

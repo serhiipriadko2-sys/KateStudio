@@ -1,5 +1,14 @@
-import { X, Check, CalendarPlus, ArrowRight, Loader2, AlertCircle, Sparkles } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import {
+  AlertCircle,
+  ArrowRight,
+  CalendarPlus,
+  Check,
+  Loader2,
+  Sparkles,
+  X,
+  KeyRound,
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { dataService } from '../services/dataService';
 import { ClassSession } from '../types';
@@ -17,7 +26,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   classDetails,
   onSuccess,
 }) => {
-  const { user, setUser, authStatus } = useAuth();
+  const { user, setUser, authStatus, requestOtp, verifyOtp, authError } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +34,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Form State
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [otpCode, setOtpCode] = useState('');
 
   // Auto-fill if user is logged in
   useEffect(() => {
@@ -50,29 +60,60 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (authStatus !== 'authenticated' || !user) {
-      setError('Для бронирования нужно войти в аккаунт (подтвердить телефон).');
-      return;
-    }
-    setIsLoading(true);
     setError(null);
+    setIsLoading(true);
 
     try {
-      // Execute booking via Service
-      const success = await dataService.bookClass(classDetails, user);
-
-      if (success) {
-        const cached = await dataService.getUser();
-        if (cached) setUser(cached);
-
-        setIsSubmitted(true);
-        if (onSuccess) onSuccess();
-      } else {
-        setError('Не удалось записаться. Проверьте, что вы вошли в аккаунт.');
+      // 1. Auth Flow: Request OTP
+      if (authStatus === 'anonymous' && !user) {
+        if (!name || !phone) {
+          setError('Пожалуйста, заполните имя и телефон');
+          setIsLoading(false);
+          return;
+        }
+        await requestOtp(name, phone);
+        setIsLoading(false);
+        return; // Wait for OTP entry
       }
-    } catch (e) {
+
+      // 2. Auth Flow: Verify OTP
+      if (authStatus === 'otp_sent') {
+        if (!otpCode || otpCode.length < 6) {
+          setError('Введите 6-значный код из СМС');
+          setIsLoading(false);
+          return;
+        }
+        await verifyOtp(otpCode);
+        // After verify, authStatus becomes 'authenticated', flow continues automatically or on next click
+        // But verifyOtp updates user state, so we can proceed immediately if we want,
+        // or let the user click "Book" one more time?
+        // Let's try to proceed immediately.
+        // We need the updated user object. verifyOtp sets it in context, but React state update might be async.
+        // For safety, let's stop here and let the UI re-render with authenticated state,
+        // then the user clicks "Book" (which is the same button).
+        // Actually, UX is better if we auto-submit.
+        // But verifying OTP might not immediately make 'user' available in this closure.
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. Booking Flow (Authenticated)
+      if (authStatus === 'authenticated' && user) {
+        const success = await dataService.bookClass(classDetails, user);
+
+        if (success) {
+          const cached = await dataService.getUser();
+          if (cached) setUser(cached);
+
+          setIsSubmitted(true);
+          if (onSuccess) onSuccess();
+        } else {
+          setError('Не удалось записаться. Попробуйте еще раз.');
+        }
+      }
+    } catch (e: unknown /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
       console.error(e);
-      setError('Ошибка соединения. Проверьте интернет.');
+      setError((e as Error).message || 'Ошибка соединения. Проверьте интернет.');
     } finally {
       setIsLoading(false);
     }
@@ -84,11 +125,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setPhone(val);
   };
 
+  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    if (val.length > 6) val = val.slice(0, 6);
+    setOtpCode(val);
+  };
+
   const addToCalendarUrl = () => {
     const title = encodeURIComponent(`Йога: ${classDetails.name}`);
     const details = encodeURIComponent(`Студия "К Себе". ${classDetails.location || ''}`);
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
   };
+
+  const isOtpSent = authStatus === 'otp_sent';
 
   return (
     <div
@@ -200,52 +249,81 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             </div>
 
-            {error && (
+            {(error || authError) && (
               <div className="mb-4 p-3 bg-rose-50 text-rose-600 rounded-xl text-sm flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
-                {error}
+                {error || authError}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-1">
-                <input
-                  required
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ваше имя"
-                  disabled={isLoading}
-                  className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400"
-                />
-              </div>
+              {!isOtpSent && (
+                <>
+                  <div className="space-y-1">
+                    <input
+                      required
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Ваше имя"
+                      disabled={isLoading || !!user}
+                      className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400 disabled:opacity-70"
+                    />
+                  </div>
 
-              <div className="space-y-1">
-                <input
-                  required
-                  type="tel"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  placeholder="Телефон"
-                  disabled={isLoading}
-                  className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400"
-                />
-              </div>
+                  <div className="space-y-1">
+                    <input
+                      required
+                      type="tel"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      placeholder="Телефон"
+                      disabled={isLoading || !!user}
+                      className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400 disabled:opacity-70"
+                    />
+                  </div>
+                </>
+              )}
 
-              <div className="flex items-start gap-3 pt-2 group cursor-pointer">
-                <input
-                  type="checkbox"
-                  required
-                  id="privacy"
-                  className="mt-1 w-4 h-4 accent-brand-green cursor-pointer"
-                />
-                <label
-                  htmlFor="privacy"
-                  className="text-xs text-stone-400 leading-relaxed cursor-pointer group-hover:text-stone-500 transition-colors"
-                >
-                  Я подтверждаю, что у меня нет медицинских противопоказаний к занятиям спортом
-                </label>
-              </div>
+              {isOtpSent && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2">
+                  <label className="text-sm font-medium text-stone-500 ml-1">
+                    Код из СМС
+                  </label>
+                  <div className="relative">
+                    <input
+                      required
+                      type="text"
+                      value={otpCode}
+                      onChange={handleOtpChange}
+                      placeholder="000000"
+                      disabled={isLoading}
+                      className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400 text-center text-2xl tracking-widest font-mono"
+                    />
+                    <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-300" />
+                  </div>
+                  <p className="text-xs text-stone-400 text-center">
+                    Мы отправили код на {phone}
+                  </p>
+                </div>
+              )}
+
+              {!user && !isOtpSent && (
+                <div className="flex items-start gap-3 pt-2 group cursor-pointer">
+                  <input
+                    type="checkbox"
+                    required
+                    id="privacy"
+                    className="mt-1 w-4 h-4 accent-brand-green cursor-pointer"
+                  />
+                  <label
+                    htmlFor="privacy"
+                    className="text-xs text-stone-400 leading-relaxed cursor-pointer group-hover:text-stone-500 transition-colors"
+                  >
+                    Я подтверждаю, что у меня нет медицинских противопоказаний к занятиям спортом
+                  </label>
+                </div>
+              )}
 
               <button
                 type="submit"
@@ -256,7 +334,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
-                    <span>Записаться</span>
+                    <span>
+                      {isOtpSent
+                        ? 'Подтвердить и записаться'
+                        : user
+                          ? 'Записаться'
+                          : 'Получить код'}
+                    </span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
