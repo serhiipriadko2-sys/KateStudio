@@ -55,17 +55,18 @@ describe('Marquee (WEB)', () => {
     expect(tracks.length).toBe(2);
   });
 
-  it('switches phase indicator when breath phase completes', () => {
+  it('switches visible track when breath phase completes', () => {
     render(<Marquee inhaleWords={['Энергия']} words={['Покой']} />);
 
-    const indicator = document.querySelector('.flex.justify-center.mt-2 span');
-    expect(indicator!.textContent).toBe('вдох');
+    const tracks = document.querySelectorAll('.breath-track');
+    expect(tracks[0].className).toContain('opacity-100');
 
     act(() => {
       const cb = finishCallbacks[finishCallbacks.length - 1];
       cb?.();
     });
 
-    expect(indicator!.textContent).toBe('выдох');
+    expect(tracks[0].className).toContain('opacity-0');
+    expect(tracks[1].className).toContain('opacity-100');
   });
 });

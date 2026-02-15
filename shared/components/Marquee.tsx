@@ -44,9 +44,11 @@ const DEFAULT_EXHALE_WORDS = [
 const SEPARATOR_INHALE = 'вдох';
 const SEPARATOR_EXHALE = 'выдох';
 
+/** Stagger delay between words — creates wave/ripple effect */
+const WORD_STAGGER_MS = 70;
+
 /* ─── Helpers ──────────────────────────────────────────── */
 
-/** Build the display sequence: word · separator · word · separator · … */
 function buildTrack(words: string[], separator: string): string[] {
   const items: string[] = [];
   for (const w of words) {
@@ -55,13 +57,12 @@ function buildTrack(words: string[], separator: string): string[] {
   return items;
 }
 
-/** Check if user prefers reduced motion */
 function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined') return false;
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/* ─── WordStrip — a single row of words (no scrolling) ── */
+/* ─── WordStrip — staggered breathing wave ──────────────── */
 
 interface WordStripProps {
   items: string[];
@@ -73,25 +74,48 @@ const WordStrip: React.FC<WordStripProps> = ({ items, separator, isInhale }) => 
   <>
     {items.map((word, i) => {
       const isSep = word === separator;
+      const delay = i * WORD_STAGGER_MS;
+
       return (
         <span key={i} className="flex items-center">
           <span
             className={cn(
-              'inline-block px-2 md:px-4 font-serif text-lg md:text-2xl lg:text-3xl',
+              'inline-block px-2 md:px-4 font-serif',
+              'transition-all duration-[3000ms] ease-in-out',
               isSep
-                ? 'italic text-brand-green/60 text-base md:text-xl lg:text-2xl font-light'
-                : isInhale
-                  ? 'text-brand-dark'
-                  : 'text-brand-text/80'
+                ? 'text-sm md:text-lg lg:text-xl font-light italic'
+                : 'text-lg md:text-2xl lg:text-3xl'
             )}
+            style={{
+              transitionDelay: `${delay}ms`,
+              transform: isInhale ? 'scale(1.06) translateY(-2px)' : 'scale(0.97) translateY(1px)',
+              opacity: isSep ? (isInhale ? 0.5 : 0.3) : isInhale ? 1 : 0.7,
+              color: isSep
+                ? undefined
+                : isInhale
+                  ? 'var(--color-brand-dark, #1a1a1a)'
+                  : 'var(--color-brand-text, #444)',
+              textShadow: isSep
+                ? isInhale
+                  ? '0 0 18px rgba(87, 167, 115, 0.35)'
+                  : '0 0 12px rgba(168, 162, 158, 0.2)'
+                : 'none',
+            }}
           >
             {word}
           </span>
+
+          {/* Breathing dot — pulses with the wave */}
           <span
-            className={cn(
-              'inline-block w-1.5 h-1.5 rounded-full mx-2 md:mx-3 shrink-0',
-              isInhale ? 'bg-brand-green/30' : 'bg-stone-300/40'
-            )}
+            className="inline-block rounded-full mx-2 md:mx-3 shrink-0 transition-all duration-[3000ms] ease-in-out"
+            style={{
+              transitionDelay: `${delay + 35}ms`,
+              width: isInhale ? '6px' : '4px',
+              height: isInhale ? '6px' : '4px',
+              opacity: isInhale ? 0.4 : 0.2,
+              backgroundColor: isInhale ? 'rgba(87, 167, 115, 0.4)' : 'rgba(168, 162, 158, 0.3)',
+              boxShadow: isInhale ? '0 0 8px rgba(87, 167, 115, 0.25)' : 'none',
+            }}
             aria-hidden="true"
           />
         </span>
@@ -117,18 +141,15 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   const exhaleTrack = buildTrack(words, SEPARATOR_EXHALE);
   const isInhale = phase === 'inhale';
 
-  /** Half the cycle = one phase (inhale OR exhale) */
   const phaseDurationMs = (duration / 2) * 1000;
 
   /*
-   * Breathing animation via Web Animations API.
+   * Container-level breathing via Web Animations API.
+   * Provides a gentle global float; individual words add their own
+   * staggered CSS-transition wave on top.
    *
-   * Each phase is a single-iteration animation:
-   *   inhale → scale(0.97) → scale(1.04), letter-spacing widens, opacity rises
-   *   exhale → scale(1.04) → scale(0.97), letter-spacing narrows, opacity drops
-   *
-   * On finish → switch phase (content crossfades) → restart with opposite keyframes.
-   * No horizontal scrolling, no timers — tied to real animation completion.
+   * onfinish switches the phase → React re-renders → CSS transitions
+   * ripple through each word with WORD_STAGGER_MS delay.
    */
   useEffect(() => {
     const el = breathRef.current;
@@ -138,12 +159,12 @@ export const Marquee: React.FC<MarqueeConfig> = ({
     let currentPhase: 'inhale' | 'exhale' = 'inhale';
 
     const inhaleKf: Keyframe[] = [
-      { transform: 'scale(0.97)', letterSpacing: '0em', opacity: 0.85 },
-      { transform: 'scale(1.04)', letterSpacing: '0.03em', opacity: 1 },
+      { transform: 'translateY(2px)', opacity: 0.92 },
+      { transform: 'translateY(-2px)', opacity: 1 },
     ];
     const exhaleKf: Keyframe[] = [
-      { transform: 'scale(1.04)', letterSpacing: '0.03em', opacity: 1 },
-      { transform: 'scale(0.97)', letterSpacing: '0em', opacity: 0.85 },
+      { transform: 'translateY(-2px)', opacity: 1 },
+      { transform: 'translateY(2px)', opacity: 0.92 },
     ];
 
     const run = () => {
@@ -192,7 +213,7 @@ export const Marquee: React.FC<MarqueeConfig> = ({
     <section
       className={cn(
         'relative w-full overflow-hidden bg-brand-light select-none',
-        'py-5 md:py-6',
+        'py-6 md:py-8',
         className
       )}
       aria-label="Дыхательная полоса"
@@ -205,13 +226,13 @@ export const Marquee: React.FC<MarqueeConfig> = ({
         )}
       />
 
-      {/* Breathing container — the whole block scales/pulses */}
-      <div ref={breathRef} className="relative h-10 md:h-12">
-        {/* Inhale track — crossfades in when phase === 'inhale' */}
+      {/* Breathing container — gentle vertical float + word wave */}
+      <div ref={breathRef} className="relative h-10 md:h-14">
+        {/* Inhale words — crossfade in */}
         <div
           className={cn(
             'breath-track absolute inset-0 flex items-center justify-center whitespace-nowrap',
-            'transition-opacity duration-[2000ms] ease-in-out',
+            'transition-opacity duration-[2500ms] ease-in-out',
             isInhale ? 'opacity-100' : 'opacity-0'
           )}
           aria-hidden={!isInhale}
@@ -219,29 +240,17 @@ export const Marquee: React.FC<MarqueeConfig> = ({
           <WordStrip items={inhaleTrack} separator={SEPARATOR_INHALE} isInhale={true} />
         </div>
 
-        {/* Exhale track — crossfades in when phase === 'exhale' */}
+        {/* Exhale words — crossfade in */}
         <div
           className={cn(
             'breath-track absolute inset-0 flex items-center justify-center whitespace-nowrap',
-            'transition-opacity duration-[2000ms] ease-in-out',
+            'transition-opacity duration-[2500ms] ease-in-out',
             !isInhale ? 'opacity-100' : 'opacity-0'
           )}
           aria-hidden={isInhale}
         >
           <WordStrip items={exhaleTrack} separator={SEPARATOR_EXHALE} isInhale={false} />
         </div>
-      </div>
-
-      {/* Phase indicator */}
-      <div className="flex justify-center mt-2">
-        <span
-          className={cn(
-            'text-xs tracking-[0.2em] uppercase transition-all duration-[2000ms] ease-in-out font-light',
-            isInhale ? 'text-brand-green/50' : 'text-stone-400/50'
-          )}
-        >
-          {isInhale ? 'вдох' : 'выдох'}
-        </span>
       </div>
     </section>
   );
