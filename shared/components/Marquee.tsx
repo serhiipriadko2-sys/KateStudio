@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '../utils';
 
 /* ─── Types ─────────────────────────────────────────────── */
@@ -75,63 +75,102 @@ const TrackRow: React.FC<TrackRowProps> = ({
   pauseOnHover,
   visible,
   onIteration,
-}) => (
-  <div
-    className={cn(
-      'marquee-track flex whitespace-nowrap will-change-transform',
-      'absolute inset-y-0 left-0 w-max items-center',
-      'transition-opacity duration-[1500ms] ease-in-out',
-      pauseOnHover && 'hover:[animation-play-state:paused]',
-      'motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:gap-4',
-      'motion-reduce:relative motion-reduce:w-auto'
-    )}
-    style={{
-      animation: `marquee ${duration}s linear infinite`,
-      opacity: visible ? 1 : 0,
-      pointerEvents: visible ? 'auto' : 'none',
-    }}
-    onAnimationIteration={onIteration}
-    aria-hidden={!visible}
-  >
-    {/* Two identical halves → seamless loop */}
-    {[0, 1].map((half) => (
-      <span key={half} className="flex items-center shrink-0" aria-hidden={half === 1}>
-        {items.map((word, i) => {
-          const isSep = word === separator;
-          return (
-            <span key={`${half}-${i}`} className="flex items-center">
-              <span
-                className={cn(
-                  'inline-block px-3 md:px-5 font-serif text-lg md:text-2xl lg:text-3xl',
-                  'transition-all duration-[2000ms] ease-in-out',
-                  isSep
-                    ? 'italic text-brand-green/60 text-base md:text-xl lg:text-2xl font-light'
-                    : isInhale
-                      ? 'text-brand-dark tracking-wide'
-                      : 'text-brand-text/80 tracking-normal'
-                )}
-                style={{
-                  transform: isInhale ? 'scale(1.03)' : 'scale(1)',
-                }}
-              >
-                {word}
+}) => {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const animRef = useRef<Animation | null>(null);
+
+  /* Start Web Animation on mount — bypasses CSS/Tailwind processing entirely */
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+
+    const anim = el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-50%)' }], {
+      duration: duration * 1000,
+      iterations: Infinity,
+      easing: 'linear',
+    });
+
+    animRef.current = anim;
+    return () => anim.cancel();
+  }, [duration]);
+
+  /* Phase-switch timer — fires every full loop (replaces onAnimationIteration) */
+  useEffect(() => {
+    if (!onIteration) return;
+    const id = setInterval(onIteration, duration * 1000);
+    return () => clearInterval(id);
+  }, [onIteration, duration]);
+
+  /* Pause on hover */
+  useEffect(() => {
+    if (!pauseOnHover) return;
+    const el = trackRef.current;
+    if (!el) return;
+
+    const pause = () => animRef.current?.pause();
+    const resume = () => animRef.current?.play();
+    el.addEventListener('mouseenter', pause);
+    el.addEventListener('mouseleave', resume);
+    return () => {
+      el.removeEventListener('mouseenter', pause);
+      el.removeEventListener('mouseleave', resume);
+    };
+  }, [pauseOnHover]);
+
+  return (
+    <div
+      ref={trackRef}
+      className={cn(
+        'marquee-track flex whitespace-nowrap will-change-transform',
+        'absolute inset-y-0 left-0 w-max items-center',
+        'transition-opacity duration-[1500ms] ease-in-out'
+      )}
+      style={{
+        opacity: visible ? 1 : 0,
+        pointerEvents: visible ? 'auto' : 'none',
+      }}
+      aria-hidden={!visible}
+    >
+      {/* Two identical halves → seamless loop */}
+      {[0, 1].map((half) => (
+        <span key={half} className="flex items-center shrink-0" aria-hidden={half === 1}>
+          {items.map((word, i) => {
+            const isSep = word === separator;
+            return (
+              <span key={`${half}-${i}`} className="flex items-center">
+                <span
+                  className={cn(
+                    'inline-block px-3 md:px-5 font-serif text-lg md:text-2xl lg:text-3xl',
+                    'transition-all duration-[2000ms] ease-in-out',
+                    isSep
+                      ? 'italic text-brand-green/60 text-base md:text-xl lg:text-2xl font-light'
+                      : isInhale
+                        ? 'text-brand-dark tracking-wide'
+                        : 'text-brand-text/80 tracking-normal'
+                  )}
+                  style={{
+                    transform: isInhale ? 'scale(1.03)' : 'scale(1)',
+                  }}
+                >
+                  {word}
+                </span>
+                {/* Dot separator between items */}
+                <span
+                  className={cn(
+                    'inline-block w-1.5 h-1.5 rounded-full mx-2 md:mx-3 shrink-0',
+                    'transition-colors duration-[2000ms]',
+                    isInhale ? 'bg-brand-green/30' : 'bg-stone-300/40'
+                  )}
+                  aria-hidden="true"
+                />
               </span>
-              {/* Dot separator between items */}
-              <span
-                className={cn(
-                  'inline-block w-1.5 h-1.5 rounded-full mx-2 md:mx-3 shrink-0',
-                  'transition-colors duration-[2000ms]',
-                  isInhale ? 'bg-brand-green/30' : 'bg-stone-300/40'
-                )}
-                aria-hidden="true"
-              />
-            </span>
-          );
-        })}
-      </span>
-    ))}
-  </div>
-);
+            );
+          })}
+        </span>
+      ))}
+    </div>
+  );
+};
 
 /* ─── Main Marquee ──────────────────────────────────────── */
 
@@ -208,18 +247,8 @@ export const Marquee: React.FC<MarqueeConfig> = ({
         </span>
       </div>
 
-      {/* @keyframes marquee is defined globally in index.css.
-          Animation is applied via inline style on TrackRow.
-          Reduced-motion override needs !important to beat inline. */}
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .marquee-track { animation: none !important; }
-        }
-      `}</style>
+      {/* Animation is handled via Web Animations API in TrackRow (useEffect).
+          No CSS @keyframes needed — this avoids Tailwind v4 CSS layer conflicts. */}
     </section>
   );
 };

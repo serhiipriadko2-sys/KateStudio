@@ -1,6 +1,19 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, screen, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Marquee } from '../components/Marquee';
+
+/* Mock Web Animations API (not available in jsdom) */
+beforeEach(() => {
+  vi.useFakeTimers();
+  Element.prototype.animate = vi.fn().mockReturnValue({
+    cancel: vi.fn(),
+    pause: vi.fn(),
+    play: vi.fn(),
+  });
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('Marquee (Breathing Strip)', () => {
   it('renders both tracks simultaneously (crossfade)', () => {
@@ -20,36 +33,37 @@ describe('Marquee (Breathing Strip)', () => {
 
   it('shows phase indicator', () => {
     render(<Marquee />);
-    // Phase indicator at the bottom — find it via the container
     const indicator = document.querySelector('.flex.justify-center.mt-2 span');
     expect(indicator).toBeTruthy();
     expect(indicator!.textContent).toBe('вдох');
   });
 
-  it('switches phase indicator on animationiteration of visible track', () => {
-    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
-    const tracks = document.querySelectorAll('.marquee-track');
-    expect(tracks.length).toBe(2);
+  it('switches phase after one full loop (setInterval-based)', () => {
+    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} duration={20} />);
 
-    // Fire iteration on inhale track (index 0 = visible)
-    fireEvent.animationIteration(tracks[0]);
+    // Advance by one full animation loop (20s)
+    act(() => {
+      vi.advanceTimersByTime(20_000);
+    });
 
-    // Phase indicator should now show "выдох"
     const indicator = document.querySelector('.flex.justify-center.mt-2 span');
     expect(indicator!.textContent).toBe('выдох');
   });
 
-  it('cycles back to inhale after two iterations', () => {
-    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
-    const tracks = document.querySelectorAll('.marquee-track');
+  it('cycles back to inhale after two loops', () => {
+    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} duration={20} />);
 
-    // 1st → exhale
-    fireEvent.animationIteration(tracks[0]);
+    // 1st loop → exhale
+    act(() => {
+      vi.advanceTimersByTime(20_000);
+    });
     let indicator = document.querySelector('.flex.justify-center.mt-2 span');
     expect(indicator!.textContent).toBe('выдох');
 
-    // 2nd → back to inhale
-    fireEvent.animationIteration(tracks[1]);
+    // 2nd loop → back to inhale
+    act(() => {
+      vi.advanceTimersByTime(20_000);
+    });
     indicator = document.querySelector('.flex.justify-center.mt-2 span');
     expect(indicator!.textContent).toBe('вдох');
   });

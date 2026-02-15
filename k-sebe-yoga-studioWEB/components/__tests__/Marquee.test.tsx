@@ -1,6 +1,19 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { render, screen, act } from '@testing-library/react';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { Marquee } from '../Marquee';
+
+/* Mock Web Animations API (not available in jsdom) */
+beforeEach(() => {
+  vi.useFakeTimers();
+  Element.prototype.animate = vi.fn().mockReturnValue({
+    cancel: vi.fn(),
+    pause: vi.fn(),
+    play: vi.fn(),
+  });
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('Marquee (WEB)', () => {
   it('renders with correct aria label', () => {
@@ -14,15 +27,15 @@ describe('Marquee (WEB)', () => {
     expect(tracks.length).toBe(2);
   });
 
-  it('switches phase indicator on animation iteration', () => {
-    render(<Marquee inhaleWords={['Энергия']} words={['Покой']} />);
+  it('switches phase indicator after one full loop', () => {
+    render(<Marquee inhaleWords={['Энергия']} words={['Покой']} duration={20} />);
 
-    // Phase indicator starts as "вдох"
     const indicator = document.querySelector('.flex.justify-center.mt-2 span');
     expect(indicator!.textContent).toBe('вдох');
 
-    const tracks = document.querySelectorAll('.marquee-track');
-    fireEvent.animationIteration(tracks[0]);
+    act(() => {
+      vi.advanceTimersByTime(20_000);
+    });
 
     expect(indicator!.textContent).toBe('выдох');
   });
