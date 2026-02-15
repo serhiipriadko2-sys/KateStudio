@@ -1,4 +1,4 @@
-export type AdminTab = 'schedule' | 'bookings' | 'contacts' | 'content' | 'images' | 'settings';
+export type AdminTab = 'schedule' | 'bookings' | 'contacts' | 'content' | 'images' | 'settings' | 'reviews';
 
 export interface ClassRow {
   id: string;
