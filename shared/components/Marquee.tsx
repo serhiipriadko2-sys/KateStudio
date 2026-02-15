@@ -108,19 +108,21 @@ const WordStrip: React.FC<WordStripProps> = ({ items, separator, isInhale }) => 
             {word}
           </span>
 
-          {/* Heartbeat dot — double-pulse rhythm, staggered wave */}
-          <span
-            className="inline-block rounded-full mx-2 md:mx-3 shrink-0 transition-[background-color,box-shadow] duration-[3000ms] ease-in-out"
-            style={{
-              width: '5px',
-              height: '5px',
-              backgroundColor: isInhale ? 'rgba(87, 167, 115, 0.5)' : 'rgba(168, 162, 158, 0.35)',
-              boxShadow: isInhale ? '0 0 10px rgba(87, 167, 115, 0.35)' : 'none',
-              animation: `breath-heartbeat ${isInhale ? '2s' : '2.8s'} ease-in-out infinite`,
-              animationDelay: `${Math.round(delay * 0.7)}ms`,
-            }}
-            aria-hidden="true"
-          />
+          {/* Heartbeat dot — double-pulse rhythm, staggered wave — only between words */}
+          {!isSep && (
+            <span
+              className="inline-block rounded-full mx-2 md:mx-3 shrink-0 transition-[background-color,box-shadow] duration-[3000ms] ease-in-out"
+              style={{
+                width: '5px',
+                height: '5px',
+                backgroundColor: isInhale ? 'rgba(87, 167, 115, 0.5)' : 'rgba(168, 162, 158, 0.35)',
+                boxShadow: isInhale ? '0 0 10px rgba(87, 167, 115, 0.35)' : 'none',
+                animation: `breath-heartbeat ${isInhale ? '2s' : '2.8s'} ease-in-out infinite`,
+                animationDelay: `${Math.round(delay * 0.7)}ms`,
+              }}
+              aria-hidden="true"
+            />
+          )}
         </span>
       );
     })}
