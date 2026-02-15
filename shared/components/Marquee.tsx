@@ -79,11 +79,11 @@ const TrackRow: React.FC<TrackRowProps> = ({
   <div
     className={cn(
       'marquee-track flex whitespace-nowrap will-change-transform',
-      'absolute inset-0',
+      'absolute inset-y-0 left-0 w-max items-center',
       'transition-opacity duration-[1500ms] ease-in-out',
       pauseOnHover && 'hover:[animation-play-state:paused]',
       'motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:gap-4',
-      'motion-reduce:relative'
+      'motion-reduce:relative motion-reduce:w-auto'
     )}
     style={{
       animationDuration: `${duration}s`,

@@ -25,6 +25,9 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
+  MessageSquare,
+  ShoppingCart,
+  RefreshCw,
 } from 'lucide-react';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ContentData, ContentMode, BlogArticle } from '../data/content';
@@ -50,7 +53,7 @@ interface AdminPanelProps {
   onClose: () => void;
 }
 
-type AdminTab = 'schedule' | 'bookings' | 'content' | 'images' | 'settings';
+type AdminTab = 'schedule' | 'bookings' | 'contacts' | 'content' | 'images' | 'settings';
 
 interface ClassRow {
   id: string;
@@ -90,6 +93,16 @@ interface BookingRow {
   time: string | null;
   created_at: string;
   location: string | null;
+  is_purchase: boolean | null;
+  price: string | null;
+}
+
+interface ContactRow {
+  id: string;
+  name: string | null;
+  phone: string | null;
+  message: string | null;
+  created_at: string;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -160,6 +173,14 @@ const formatDateRu = (dateStr: string) => {
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', weekday: 'short' });
 };
 
+const formatCreatedAt = (iso: string) =>
+  new Date(iso).toLocaleString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
 /* ═══════════════════════════════════════════════════════════
    Toast hook
    ═══════════════════════════════════════════════════════════ */
@@ -185,6 +206,20 @@ function useToast() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   Supabase placeholder
+   ═══════════════════════════════════════════════════════════ */
+
+const NoSupabase = () => (
+  <div className="text-center py-12">
+    <Database className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+    <p className="text-stone-500 mb-2">Supabase не подключен</p>
+    <p className="text-stone-400 text-sm">
+      Задайте VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env
+    </p>
+  </div>
+);
+
+/* ═══════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════ */
 
@@ -199,6 +234,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const tabs: { id: AdminTab; icon: React.ReactNode; label: string }[] = [
     { id: 'schedule', icon: <CalendarDays className="w-4 h-4" />, label: 'Расписание' },
     { id: 'bookings', icon: <ClipboardList className="w-4 h-4" />, label: 'Записи' },
+    { id: 'contacts', icon: <MessageSquare className="w-4 h-4" />, label: 'Обращения' },
     { id: 'content', icon: <BookOpen className="w-4 h-4" />, label: 'Контент' },
     { id: 'images', icon: <ImageIcon className="w-4 h-4" />, label: 'Медиа' },
     { id: 'settings', icon: <Palette className="w-4 h-4" />, label: 'Настройки' },
@@ -233,7 +269,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap px-3 ${
+              className={`flex-1 py-3 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap px-2 min-w-0 ${
                 activeTab === tab.id
                   ? 'bg-white text-brand-green border-b-2 border-brand-green'
                   : 'bg-stone-50 text-stone-400 hover:bg-stone-100 hover:text-stone-600'
@@ -249,6 +285,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
         <div className="flex-1 overflow-y-auto p-5 bg-stone-50/50">
           {activeTab === 'schedule' && <ScheduleTab toast={toast} />}
           {activeTab === 'bookings' && <BookingsTab toast={toast} />}
+          {activeTab === 'contacts' && <ContactsTab toast={toast} />}
           {activeTab === 'content' && <ContentTab toast={toast} />}
           {activeTab === 'images' && <ImagesTab toast={toast} />}
           {activeTab === 'settings' && <SettingsTab toast={toast} />}
@@ -347,27 +384,35 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
       toast('Supabase не настроен', 'error');
       return;
     }
+    if (!form.name.trim()) {
+      toast('Укажите название занятия', 'error');
+      return;
+    }
+    if (!form.date || !form.time) {
+      toast('Укажите дату и время', 'error');
+      return;
+    }
     setSaving(true);
     try {
-      const payload = {
+      const base = {
         date: form.date,
         time: form.time,
-        name: form.name,
-        instructor: form.instructor,
+        name: form.name.trim(),
+        instructor: form.instructor.trim(),
         duration: form.duration,
-        spots_total: form.spots_total,
-        spots_booked: 0,
-        location: form.location,
+        spots_total: Math.max(1, form.spots_total),
+        location: form.location.trim(),
         intensity: form.intensity,
         is_online: form.is_online,
       };
 
       if (editingId) {
-        const { error } = await supabase.from('classes').update(payload).eq('id', editingId);
+        // NOTE: do NOT send spots_booked — it would reset existing bookings
+        const { error } = await supabase.from('classes').update(base).eq('id', editingId);
         if (error) throw error;
         toast('Занятие обновлено');
       } else {
-        const { error } = await supabase.from('classes').insert(payload);
+        const { error } = await supabase.from('classes').insert({ ...base, spots_booked: 0 });
         if (error) throw error;
         toast('Занятие добавлено');
       }
@@ -426,17 +471,7 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
     setForm((prev) => ({ ...prev, ...preset.data }));
   };
 
-  if (!isSupabaseConfigured) {
-    return (
-      <div className="text-center py-12">
-        <Database className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-        <p className="text-stone-500 mb-2">Supabase не подключен</p>
-        <p className="text-stone-400 text-sm">
-          Задайте VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY в .env
-        </p>
-      </div>
-    );
-  }
+  if (!isSupabaseConfigured) return <NoSupabase />;
 
   return (
     <div className="space-y-4">
@@ -587,7 +622,7 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
                     : 'bg-stone-50 text-stone-600 border-stone-200'
                 }`}
               >
-                {form.is_online ? '🌐 Онлайн' : '🏠 В студии'}
+                {form.is_online ? 'Онлайн' : 'В студии'}
               </button>
             </label>
           </div>
@@ -710,7 +745,7 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
 };
 
 /* ═══════════════════════════════════════════════════════════
-   TAB 2: BOOKINGS (Записи)
+   TAB 2: BOOKINGS (Записи на занятия)
    ═══════════════════════════════════════════════════════════ */
 
 const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void }> = ({
@@ -727,10 +762,10 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
       const { data, error } = await supabase
         .from('bookings')
         .select(
-          'id,phone,name,class_name,class_type,class_date,class_time,date,time,created_at,location'
+          'id,phone,name,class_name,class_type,class_date,class_time,date,time,created_at,location,is_purchase,price'
         )
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(100);
       if (error) throw error;
       setBookings((data as BookingRow[]) || []);
     } catch (err) {
@@ -759,21 +794,28 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
     }
   };
 
-  if (!isSupabaseConfigured) {
-    return (
-      <div className="text-center py-12">
-        <Database className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-        <p className="text-stone-500">Supabase не подключен</p>
-      </div>
-    );
-  }
+  if (!isSupabaseConfigured) return <NoSupabase />;
+
+  const purchases = bookings.filter((b) => b.is_purchase);
+  const classBookings = bookings.filter((b) => !b.is_purchase);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-stone-600">Последние 50 записей</h3>
-        <button onClick={fetchBookings} className="text-xs text-brand-green hover:underline">
-          Обновить
+        <h3 className="text-sm font-semibold text-stone-600">
+          Записи ({bookings.length})
+          {purchases.length > 0 && (
+            <span className="ml-2 text-xs font-normal text-stone-400">
+              {purchases.length} покупок · {classBookings.length} занятий
+            </span>
+          )}
+        </h3>
+        <button
+          onClick={fetchBookings}
+          className="p-2 hover:bg-stone-100 rounded-lg transition-colors text-stone-400"
+          title="Обновить"
+        >
+          <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
@@ -790,15 +832,11 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
         <div className="space-y-2">
           {bookings.map((b) => {
             const isOpen = expanded === b.id;
-            const displayName = b.name || b.class_name || b.class_type || 'Запись';
+            const displayName = b.class_name || b.class_type || b.name || 'Запись';
             const displayDate = b.class_date || b.date || '';
             const displayTime = b.class_time || b.time || '';
-            const createdAt = new Date(b.created_at).toLocaleString('ru-RU', {
-              day: 'numeric',
-              month: 'short',
-              hour: '2-digit',
-              minute: '2-digit',
-            });
+            const createdAt = formatCreatedAt(b.created_at);
+            const isPurchase = b.is_purchase;
 
             return (
               <div
@@ -807,17 +845,31 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
               >
                 <button
                   onClick={() => setExpanded(isOpen ? null : b.id)}
-                  className="w-full p-4 flex items-center gap-4 text-left"
+                  className="w-full p-4 flex items-center gap-3 text-left"
                 >
-                  <div className="w-8 h-8 rounded-full bg-brand-mint/30 flex items-center justify-center shrink-0">
-                    <Phone className="w-3.5 h-3.5 text-brand-green" />
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isPurchase ? 'bg-amber-50' : 'bg-brand-mint/30'}`}
+                  >
+                    {isPurchase ? (
+                      <ShoppingCart className="w-3.5 h-3.5 text-amber-500" />
+                    ) : (
+                      <Phone className="w-3.5 h-3.5 text-brand-green" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-stone-700 text-sm truncate">{displayName}</div>
+                    <div className="font-medium text-stone-700 text-sm truncate flex items-center gap-2">
+                      {displayName}
+                      {isPurchase && b.price && (
+                        <span className="text-xs font-normal bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full">
+                          {b.price}
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-stone-400">
+                      {b.name && <span className="mr-2">{b.name}</span>}
                       {displayDate && `${displayDate} `}
                       {displayTime && `в ${displayTime}`}
-                      {!displayDate && !displayTime && createdAt}
+                      {!displayDate && !displayTime && !b.name && createdAt}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -831,7 +883,7 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
                 </button>
                 {isOpen && (
                   <div className="px-4 pb-4 pt-0 border-t border-stone-50 animate-in slide-in-from-top-1 duration-150">
-                    <dl className="grid grid-cols-2 gap-2 text-xs mt-3">
+                    <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs mt-3">
                       {b.phone && (
                         <>
                           <dt className="text-stone-400">Телефон</dt>
@@ -850,10 +902,22 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
                           <dd className="text-stone-700">{b.class_name}</dd>
                         </>
                       )}
+                      {b.class_type && (
+                        <>
+                          <dt className="text-stone-400">Тип</dt>
+                          <dd className="text-stone-700">{b.class_type}</dd>
+                        </>
+                      )}
                       {b.location && (
                         <>
                           <dt className="text-stone-400">Локация</dt>
                           <dd className="text-stone-700">{b.location}</dd>
+                        </>
+                      )}
+                      {isPurchase && b.price && (
+                        <>
+                          <dt className="text-stone-400">Стоимость</dt>
+                          <dd className="text-stone-700 font-medium">{b.price}</dd>
                         </>
                       )}
                     </dl>
@@ -877,7 +941,171 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
 };
 
 /* ═══════════════════════════════════════════════════════════
-   TAB 3: CONTENT (Контент — статьи)
+   TAB 3: CONTACTS (Обращения с формы)
+   ═══════════════════════════════════════════════════════════ */
+
+const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void }> = ({
+  toast,
+}) => {
+  const [contacts, setContacts] = useState<ContactRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const fetchContacts = useCallback(async () => {
+    if (!isSupabaseConfigured || !supabase) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('id,name,phone,message,created_at')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      setContacts((data as ContactRow[]) || []);
+    } catch (err) {
+      console.error(err);
+      toast('Ошибка загрузки обращений', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    fetchContacts();
+  }, [fetchContacts]);
+
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    if (!confirm('Удалить это обращение?')) return;
+    try {
+      const { error } = await supabase.from('contacts').delete().eq('id', id);
+      if (error) throw error;
+      toast('Обращение удалено');
+      fetchContacts();
+    } catch (err) {
+      console.error(err);
+      toast('Ошибка удаления', 'error');
+    }
+  };
+
+  if (!isSupabaseConfigured) return <NoSupabase />;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-stone-600">
+          Обращения с сайта ({contacts.length})
+        </h3>
+        <button
+          onClick={fetchContacts}
+          className="p-2 hover:bg-stone-100 rounded-lg transition-colors text-stone-400"
+          title="Обновить"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="py-12 text-center">
+          <Loader2 className="w-6 h-6 animate-spin text-brand-green mx-auto" />
+        </div>
+      ) : contacts.length === 0 ? (
+        <div className="py-12 text-center">
+          <MessageSquare className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+          <p className="text-stone-400">Обращений пока нет</p>
+          <p className="text-xs text-stone-300 mt-1">
+            Они появятся, когда кто-то отправит форму на сайте
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {contacts.map((c) => {
+            const isOpen = expanded === c.id;
+            const createdAt = formatCreatedAt(c.created_at);
+
+            return (
+              <div
+                key={c.id}
+                className="bg-white rounded-xl border border-stone-100 overflow-hidden transition-colors hover:border-stone-200"
+              >
+                <button
+                  onClick={() => setExpanded(isOpen ? null : c.id)}
+                  className="w-full p-4 flex items-center gap-3 text-left"
+                >
+                  <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-stone-700 text-sm truncate">
+                      {c.name || 'Без имени'}
+                    </div>
+                    <div className="text-xs text-stone-400 truncate">
+                      {c.message
+                        ? c.message.length > 60
+                          ? c.message.slice(0, 60) + '...'
+                          : c.message
+                        : c.phone || '—'}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-stone-400">{createdAt}</span>
+                    {isOpen ? (
+                      <ChevronUp className="w-4 h-4 text-stone-300" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-stone-300" />
+                    )}
+                  </div>
+                </button>
+                {isOpen && (
+                  <div className="px-4 pb-4 pt-0 border-t border-stone-50 animate-in slide-in-from-top-1 duration-150">
+                    <div className="mt-3 space-y-2">
+                      {c.name && (
+                        <div className="flex gap-2 text-xs">
+                          <span className="text-stone-400 w-16 shrink-0">Имя</span>
+                          <span className="text-stone-700 font-medium">{c.name}</span>
+                        </div>
+                      )}
+                      {c.phone && (
+                        <div className="flex gap-2 text-xs">
+                          <span className="text-stone-400 w-16 shrink-0">Телефон</span>
+                          <a
+                            href={`tel:${c.phone}`}
+                            className="text-brand-green font-medium hover:underline"
+                          >
+                            {c.phone}
+                          </a>
+                        </div>
+                      )}
+                      {c.message && (
+                        <div className="text-xs">
+                          <span className="text-stone-400 block mb-1">Сообщение</span>
+                          <p className="text-stone-700 bg-stone-50 rounded-lg p-3 whitespace-pre-wrap leading-relaxed">
+                            {c.message}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={() => handleDelete(c.id)}
+                        className="text-xs text-rose-500 hover:underline flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" /> Удалить
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════════
+   TAB 4: CONTENT (Контент — статьи)
    ═══════════════════════════════════════════════════════════ */
 
 const ContentTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void }> = ({
@@ -1073,7 +1301,7 @@ const ContentTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void
   );
 };
 
-/* ─── Article Editor sub-component ─── */
+/* --- Article Editor sub-component --- */
 
 const ArticleEditor: React.FC<{
   article: BlogArticle;
@@ -1163,7 +1391,7 @@ const ArticleEditor: React.FC<{
 };
 
 /* ═══════════════════════════════════════════════════════════
-   TAB 4: IMAGES (Медиа)
+   TAB 5: IMAGES (Медиа)
    ═══════════════════════════════════════════════════════════ */
 
 const ImagesTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void }> = ({
@@ -1278,7 +1506,7 @@ const ImagesTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void 
 };
 
 /* ═══════════════════════════════════════════════════════════
-   TAB 5: SETTINGS (Цвета + Бэкап)
+   TAB 6: SETTINGS (Цвета + Бэкап)
    ═══════════════════════════════════════════════════════════ */
 
 const SettingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => void }> = ({
@@ -1454,7 +1682,7 @@ const SettingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
             </div>
             <div className="text-xs text-stone-400">
               {isSupabaseConfigured
-                ? 'Расписание и записи работают из базы данных'
+                ? 'Расписание, записи и обращения из базы данных'
                 : 'Задайте VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY'}
             </div>
           </div>
