@@ -239,7 +239,7 @@ export const Marquee: React.FC<MarqueeConfig> = ({
         <div
           className={cn(
             'breath-track absolute inset-0 flex items-center justify-center whitespace-nowrap',
-            'transition-opacity duration-[2500ms] ease-in-out',
+            'transition-opacity duration-[4000ms] ease-in-out',
             isInhale ? 'opacity-100' : 'opacity-0'
           )}
           aria-hidden={!isInhale}
@@ -251,7 +251,7 @@ export const Marquee: React.FC<MarqueeConfig> = ({
         <div
           className={cn(
             'breath-track absolute inset-0 flex items-center justify-center whitespace-nowrap',
-            'transition-opacity duration-[2500ms] ease-in-out',
+            'transition-opacity duration-[4000ms] ease-in-out',
             !isInhale ? 'opacity-100' : 'opacity-0'
           )}
           aria-hidden={isInhale}
@@ -263,10 +263,10 @@ export const Marquee: React.FC<MarqueeConfig> = ({
       {/* Heartbeat keyframes + reduced-motion override */}
       <style>{`
         @keyframes breath-heartbeat {
-          0%, 55%, 100% { transform: scale(1); opacity: 0.25; }
-          14% { transform: scale(2.4); opacity: 0.9; }
-          28% { transform: scale(0.8); opacity: 0.2; }
-          42% { transform: scale(1.9); opacity: 0.7; }
+          0%, 55%, 100% { transform: scale(1); opacity: 0.1; }
+          14% { transform: scale(1.2); opacity: 0.4; }
+          28% { transform: scale(0.9); opacity: 0.15; }
+          42% { transform: scale(1.1); opacity: 0.3; }
         }
         @media (prefers-reduced-motion: reduce) {
           .breath-track span { animation: none !important; transition: none !important; }
