@@ -21,6 +21,7 @@ import { ScheduleTab } from './admin/tabs/ScheduleTab';
 import { BookingsTab } from './admin/tabs/BookingsTab';
 import { ContactsTab } from './admin/tabs/ContactsTab';
 import { ContentTab } from './admin/tabs/ContentTab';
+import { ReviewsTab } from './admin/tabs/ReviewsTab';
 import { ImagesTab } from './admin/tabs/ImagesTab';
 import { SettingsTab } from './admin/tabs/SettingsTab';
 import { DashboardTab } from './admin/tabs/DashboardTab';
@@ -224,6 +225,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     { id: 'schedule', icon: <CalendarDays className="w-4 h-4" />, label: 'Расписание' },
     { id: 'bookings', icon: <ClipboardList className="w-4 h-4" />, label: 'Записи' },
     { id: 'contacts', icon: <MessageSquare className="w-4 h-4" />, label: 'Обращения' },
+    { id: 'reviews', icon: <MessageSquare className="w-4 h-4" />, label: 'Отзывы' },
     { id: 'content', icon: <BookOpen className="w-4 h-4" />, label: 'Контент' },
     { id: 'images', icon: <ImageIcon className="w-4 h-4" />, label: 'Медиа' },
     { id: 'settings', icon: <Palette className="w-4 h-4" />, label: 'Настройки' },
@@ -277,6 +279,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             {activeTab === 'schedule' && <ScheduleTab toast={toast} />}
             {activeTab === 'bookings' && <BookingsTab toast={toast} />}
             {activeTab === 'contacts' && <ContactsTab toast={toast} />}
+            {activeTab === 'reviews' && <ReviewsTab toast={toast} />}
             {activeTab === 'content' && <ContentTab toast={toast} />}
             {activeTab === 'images' && <ImagesTab toast={toast} />}
             {activeTab === 'settings' && <SettingsTab toast={toast} />}
