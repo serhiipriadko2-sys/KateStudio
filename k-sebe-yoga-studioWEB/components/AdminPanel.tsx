@@ -44,6 +44,85 @@ import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { ThemeColors, loadTheme, saveTheme, resetTheme, applyTheme } from '../services/theme';
 import { Image } from './Image';
 
+// --- LOGIN COMPONENT ---
+const LoginScreen: React.FC<{
+  onLogin: () => void;
+}> = ({ onLogin }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase) return;
+    setLoading(true);
+    setError(null);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      onLogin();
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center">
+      <div className="w-16 h-16 bg-brand-green text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-brand-green/20">
+        <Database className="w-8 h-8" />
+      </div>
+      <h2 className="text-2xl font-serif text-brand-dark mb-2">Вход в систему</h2>
+      <p className="text-stone-500 mb-8 max-w-xs">
+        Для управления студией необходима авторизация администратора.
+      </p>
+
+      <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
+        <div>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 outline-none transition-all"
+            required
+          />
+        </div>
+        <div>
+          <input
+            type="password"
+            placeholder="Пароль"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 outline-none transition-all"
+            required
+          />
+        </div>
+
+        {error && (
+          <div className="p-3 bg-rose-50 text-rose-600 text-sm rounded-xl border border-rose-100 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-3 bg-brand-green text-white rounded-xl font-medium hover:bg-brand-green/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Войти'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
 /* ═══════════════════════════════════════════════════════════
    Types
    ═══════════════════════════════════════════════════════════ */
@@ -225,11 +304,63 @@ const NoSupabase = () => (
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('schedule');
+  const [session, setSession] = useState<boolean>(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const { notification, toast } = useToast();
 
   useScrollLock(isOpen);
 
+  useEffect(() => {
+    if (!supabase) {
+      setCheckingAuth(false);
+      return;
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(!!session);
+      setCheckingAuth(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   if (!isOpen) return null;
+
+  // 1. Supabase Config Check
+  if (!isSupabaseConfigured && activeTab !== 'content' && activeTab !== 'images' && activeTab !== 'settings') {
+     return <NoSupabase />;
+  }
+
+  // 2. Auth Gate
+  if (checkingAuth) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+        <Loader2 className="w-10 h-10 animate-spin text-brand-green" />
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
+        <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-stone-100 relative overflow-hidden">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <LoginScreen onLogin={() => setSession(true)} />
+        </div>
+      </div>
+    );
+  }
 
   const tabs: { id: AdminTab; icon: React.ReactNode; label: string }[] = [
     { id: 'schedule', icon: <CalendarDays className="w-4 h-4" />, label: 'Расписание' },
