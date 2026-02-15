@@ -333,8 +333,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   // 1. Supabase Config Check
-  if (!isSupabaseConfigured && activeTab !== 'content' && activeTab !== 'images' && activeTab !== 'settings') {
-     return <NoSupabase />;
+  if (
+    !isSupabaseConfigured &&
+    activeTab !== 'content' &&
+    activeTab !== 'images' &&
+    activeTab !== 'settings'
+  ) {
+    return <NoSupabase />;
   }
 
   // 2. Auth Gate

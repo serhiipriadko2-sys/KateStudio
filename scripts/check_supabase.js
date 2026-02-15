@@ -8,7 +8,7 @@ const loadEnv = () => {
   if (fs.existsSync(envPath)) {
     console.log('📄 Loading .env file...');
     const content = fs.readFileSync(envPath, 'utf-8');
-    content.split('\n').forEach(line => {
+    content.split('\n').forEach((line) => {
       const match = line.match(/^([^=]+)=(.*)$/);
       if (match) {
         const key = match[1].trim();
@@ -30,7 +30,9 @@ const key = process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!url || !key) {
   console.error('❌ Supabase credentials missing.');
-  console.error('Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env or environment variables.');
+  console.error(
+    'Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env or environment variables.'
+  );
   process.exit(1);
 }
 
@@ -42,8 +44,8 @@ try {
     method: 'GET',
     headers: {
       apikey: key,
-      Authorization: `Bearer ${key}`
-    }
+      Authorization: `Bearer ${key}`,
+    },
   });
 
   if (response.ok) {
