@@ -22,7 +22,8 @@ import { Pricing } from './components/Pricing';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
 import { registerServiceWorker } from './services/serviceWorker';
-import { loadTheme, applyTheme } from './services/theme';
+import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
+import { isSupabaseConfigured, supabase } from './services/supabase';
 import { BookingDetails } from './types';
 
 function App() {
@@ -59,10 +60,43 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Initialize Theme
+  // Initialize Theme & Settings from DB
   useEffect(() => {
+    // 1. Load local theme immediately to prevent FOUC
     const theme = loadTheme();
     applyTheme(theme);
+
+    // 2. Fetch fresh settings from DB
+    const syncSettings = async () => {
+      if (!isSupabaseConfigured || !supabase) return;
+
+      try {
+        const { data } = await supabase.from('app_settings').select('key, value');
+        if (data) {
+          data.forEach((setting) => {
+            if (setting.key === 'theme') {
+              const theme = setting.value as unknown as ThemeColors;
+              applyTheme(theme);
+              // Save to local storage using the correct key (handled by saveTheme)
+              // We use saveTheme but it also reapplies theme which is fine
+              saveTheme(theme);
+            }
+            if (setting.key === 'image_map') {
+              const map = setting.value as Record<string, string>;
+              Object.entries(map).forEach(([k, v]) => {
+                localStorage.setItem(`ksebe-img-${k}`, v);
+              });
+              // Dispatch storage event to notify Image components
+              window.dispatchEvent(new Event('storage'));
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to sync settings', err);
+      }
+    };
+
+    syncSettings();
   }, []);
 
   // Service Worker registration for offline/update support
