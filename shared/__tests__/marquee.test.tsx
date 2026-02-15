@@ -13,7 +13,6 @@ function mockAnimate() {
     play: vi.fn(),
     onfinish: null as (() => void) | null,
   };
-  // Capture onfinish when it's set (via property assignment)
   const proxy = new Proxy(anim, {
     set(target, prop, value) {
       if (prop === 'onfinish' && typeof value === 'function') {
@@ -25,21 +24,17 @@ function mockAnimate() {
   return proxy;
 }
 
-/** Simulate one full marquee loop completing.
- *  Fires ALL pending onfinish callbacks — only the visible track's
- *  onIterationRef is set, so only that one triggers the phase switch. */
-function completeOneLoop() {
+/** Simulate one breathing phase completing (fires the latest onfinish) */
+function completeBreathPhase() {
   act(() => {
-    const cbs = [...finishCallbacks];
-    finishCallbacks = [];
-    for (const cb of cbs) cb();
+    const cb = finishCallbacks[finishCallbacks.length - 1];
+    cb?.();
   });
 }
 
 beforeEach(() => {
   finishCallbacks = [];
   Element.prototype.animate = vi.fn().mockImplementation(() => mockAnimate());
-  // Ensure reduced-motion is off in tests
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: vi.fn().mockImplementation((query: string) => ({
@@ -57,11 +52,11 @@ afterEach(() => {
 /* ─── Tests ───────────────────────────────────────────── */
 
 describe('Marquee (Breathing Strip)', () => {
-  it('renders both tracks simultaneously (crossfade)', () => {
+  it('renders both word tracks (inhale & exhale via crossfade)', () => {
     render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
     expect(screen.getAllByText('Огонь').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Тишина').length).toBeGreaterThanOrEqual(1);
-    expect(document.querySelectorAll('.marquee-track').length).toBe(2);
+    expect(document.querySelectorAll('.breath-track').length).toBe(2);
   });
 
   it('renders default inhale words and separator', () => {
@@ -77,41 +72,37 @@ describe('Marquee (Breathing Strip)', () => {
     expect(indicator!.textContent).toBe('вдох');
   });
 
-  it('switches phase when animation completes one full loop (onfinish)', () => {
-    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} duration={20} />);
+  it('switches phase when breathing animation completes (onfinish)', () => {
+    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
 
-    // Simulate the visible track completing one full pass
-    completeOneLoop();
+    completeBreathPhase();
 
     const indicator = document.querySelector('.flex.justify-center.mt-2 span');
     expect(indicator!.textContent).toBe('выдох');
   });
 
-  it('cycles back to inhale after two full loops', () => {
-    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} duration={20} />);
+  it('cycles back to inhale after two breath phases', () => {
+    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
 
-    // 1st loop → exhale
-    completeOneLoop();
+    // inhale → exhale
+    completeBreathPhase();
     let indicator = document.querySelector('.flex.justify-center.mt-2 span');
     expect(indicator!.textContent).toBe('выдох');
 
-    // 2nd loop → back to inhale
-    completeOneLoop();
+    // exhale → inhale
+    completeBreathPhase();
     indicator = document.querySelector('.flex.justify-center.mt-2 span');
     expect(indicator!.textContent).toBe('вдох');
   });
 
-  it('duplicates each track for seamless loop (two halves)', () => {
-    render(<Marquee inhaleWords={['A']} words={['B']} />);
-    expect(screen.getAllByText('A').length).toBe(2);
-    expect(screen.getAllByText('B').length).toBe(2);
-  });
-
-  it('calls Element.animate with correct params', () => {
-    render(<Marquee duration={15} />);
+  it('calls Element.animate with breathing keyframes', () => {
+    render(<Marquee duration={10} />);
     expect(Element.prototype.animate).toHaveBeenCalledWith(
-      [{ transform: 'translateX(0)' }, { transform: 'translateX(-50%)' }],
-      { duration: 15_000, easing: 'linear' }
+      [
+        { transform: 'scale(0.97)', letterSpacing: '0em', opacity: 0.85 },
+        { transform: 'scale(1.04)', letterSpacing: '0.03em', opacity: 1 },
+      ],
+      { duration: 5000, easing: 'ease-in-out', fill: 'forwards' }
     );
   });
 
@@ -125,5 +116,13 @@ describe('Marquee (Breathing Strip)', () => {
 
     render(<Marquee />);
     expect(Element.prototype.animate).not.toHaveBeenCalled();
+  });
+
+  it('words are centered (justify-center) not scrolling', () => {
+    render(<Marquee />);
+    const tracks = document.querySelectorAll('.breath-track');
+    for (const track of tracks) {
+      expect(track.className).toContain('justify-center');
+    }
   });
 });

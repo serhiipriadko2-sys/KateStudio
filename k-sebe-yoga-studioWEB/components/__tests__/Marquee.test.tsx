@@ -49,23 +49,21 @@ describe('Marquee (WEB)', () => {
     expect(screen.getByLabelText('Дыхательная полоса')).toBeInTheDocument();
   });
 
-  it('renders both tracks (two .marquee-track elements)', () => {
+  it('renders both breath tracks', () => {
     render(<Marquee />);
-    const tracks = document.querySelectorAll('.marquee-track');
+    const tracks = document.querySelectorAll('.breath-track');
     expect(tracks.length).toBe(2);
   });
 
-  it('switches phase indicator when animation loop completes', () => {
-    render(<Marquee inhaleWords={['Энергия']} words={['Покой']} duration={20} />);
+  it('switches phase indicator when breath phase completes', () => {
+    render(<Marquee inhaleWords={['Энергия']} words={['Покой']} />);
 
     const indicator = document.querySelector('.flex.justify-center.mt-2 span');
     expect(indicator!.textContent).toBe('вдох');
 
-    // Simulate all tracks completing — only visible track triggers phase switch
     act(() => {
-      const cbs = [...finishCallbacks];
-      finishCallbacks = [];
-      for (const cb of cbs) cb();
+      const cb = finishCallbacks[finishCallbacks.length - 1];
+      cb?.();
     });
 
     expect(indicator!.textContent).toBe('выдох');
