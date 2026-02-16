@@ -217,7 +217,7 @@ const ReviewEditor: React.FC<{
 
   const handleSubmit = () => {
     if (!draft.name || !draft.text) return alert('Заполните имя и текст');
-    onSave(draft as DBReview | Omit<DBReview, "id">);
+    onSave(draft as DBReview | Omit<DBReview, 'id'>);
   };
 
   return (
