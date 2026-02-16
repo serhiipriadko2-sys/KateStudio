@@ -1,14 +1,21 @@
 import { useIsAdmin } from '@ksebe/shared';
-import { Instagram, Send, MapPin, Terminal } from 'lucide-react';
+import { Instagram, Send, MapPin, Terminal, User } from 'lucide-react';
 import React from 'react';
 import { Logo } from './Logo';
 
 interface FooterProps {
   onOpenAdmin?: () => void;
   onOpenLegal?: (type: 'privacy' | 'offer') => void;
+  onOpenAuth?: () => void;
+  isAuthenticated?: boolean;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
+export const Footer: React.FC<FooterProps> = ({
+  onOpenAdmin,
+  onOpenLegal,
+  onOpenAuth,
+  isAuthenticated,
+}) => {
   const { isAdmin } = useIsAdmin();
   return (
     <footer
@@ -81,6 +88,17 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
                   Блог
                 </a>
               </li>
+              {onOpenAuth && (
+                <li>
+                  <button
+                    onClick={onOpenAuth}
+                    className="hover:text-white transition-colors flex items-center gap-2"
+                  >
+                    <User className="w-4 h-4" />
+                    {isAuthenticated ? 'Личный кабинет' : 'Войти'}
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
