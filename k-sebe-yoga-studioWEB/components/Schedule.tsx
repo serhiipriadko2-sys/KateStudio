@@ -135,7 +135,8 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return;
 
-    const channel = supabase
+    const supabaseClient = supabase; // Capture for cleanup
+    const channel = supabaseClient
       .channel('schedule-bookings')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
         fetchClasses(false);
@@ -146,7 +147,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabaseClient.removeChannel(channel);
     };
   }, [fetchClasses]);
 
