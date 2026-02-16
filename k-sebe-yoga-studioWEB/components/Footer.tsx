@@ -1,3 +1,4 @@
+import { useIsAdmin } from '@ksebe/shared';
 import { Instagram, Send, MapPin, Terminal } from 'lucide-react';
 import React from 'react';
 import { Logo } from './Logo';
@@ -8,6 +9,7 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
+  const { isAdmin } = useIsAdmin();
   return (
     <footer
       id="footer"
@@ -140,7 +142,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
             >
               Оферта
             </button>
-            {onOpenAdmin && (
+            {onOpenAdmin && isAdmin && (
               <button
                 onClick={onOpenAdmin}
                 className="opacity-30 hover:opacity-100 transition-opacity flex items-center gap-1 hover:text-white/60"

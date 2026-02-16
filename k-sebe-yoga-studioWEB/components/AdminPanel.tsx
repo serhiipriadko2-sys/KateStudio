@@ -1,4 +1,5 @@
 import type { ClassRow, ClassFormData, BookingRow, ContactRow, BookingStatus } from '@ksebe/shared';
+import { useIsAdmin } from '@ksebe/shared';
 import {
   X,
   Settings,
@@ -33,6 +34,8 @@ import {
   Check,
   XCircle,
   CircleDot,
+  ShieldAlert,
+  LogIn,
 } from 'lucide-react';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ContentData, ContentMode, BlogArticle } from '../data/content';
@@ -217,10 +220,86 @@ const NoSupabase = () => (
 export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('schedule');
   const { notification, toast } = useToast();
+  const { isAdmin, isLoading, user } = useIsAdmin();
 
   useScrollLock(isOpen);
 
   if (!isOpen) return null;
+
+  // Loading state while checking admin status
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in">
+        <div className="w-full max-w-3xl bg-white shadow-2xl h-full ml-auto flex flex-col animate-in slide-in-from-right duration-300 relative">
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="w-10 h-10 text-brand-green animate-spin mx-auto mb-4" />
+              <p className="text-stone-500">Проверка прав доступа...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Access denied if not admin
+  if (!isAdmin) {
+    return (
+      <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in">
+        <div className="w-full max-w-3xl bg-white shadow-2xl h-full ml-auto flex flex-col animate-in slide-in-from-right duration-300 relative">
+          {/* Header with close button */}
+          <div className="p-5 border-b border-stone-100 flex items-center justify-between bg-stone-50 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-rose-100 text-rose-600 rounded-lg">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-stone-800">Доступ запрещен</h2>
+                <p className="text-xs text-stone-400">Администраторская панель</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="Закрыть"
+              className="p-2 hover:bg-stone-200 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5 text-stone-500" />
+            </button>
+          </div>
+
+          {/* Access Denied Content */}
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="text-center max-w-md">
+              <div className="w-20 h-20 rounded-full bg-rose-50 flex items-center justify-center mx-auto mb-6">
+                <ShieldAlert className="w-10 h-10 text-rose-500" />
+              </div>
+              <h3 className="text-xl font-bold text-stone-800 mb-3">Недостаточно прав</h3>
+              <p className="text-stone-500 mb-6">
+                {user
+                  ? 'У вас нет прав администратора для доступа к панели управления студией.'
+                  : 'Для доступа к администраторской панели необходимо войти в систему с правами администратора.'}
+              </p>
+              {!user && (
+                <button
+                  onClick={onClose}
+                  className="flex items-center gap-2 px-6 py-3 bg-brand-green text-white rounded-xl text-sm font-medium hover:bg-brand-green/90 transition-colors shadow-sm mx-auto"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Закрыть
+                </button>
+              )}
+              {user && (
+                <div className="mt-4 p-4 bg-stone-50 rounded-xl">
+                  <p className="text-xs text-stone-400 mb-1">Вы вошли как:</p>
+                  <p className="text-sm font-medium text-stone-700">{user.email}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const tabs: { id: AdminTab; icon: React.ReactNode; label: string }[] = [
     { id: 'schedule', icon: <CalendarDays className="w-4 h-4" />, label: 'Расписание' },

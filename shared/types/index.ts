@@ -121,6 +121,18 @@ export interface ContactRow {
   created_at: string;
 }
 
+/** Row shape from `profiles` table */
+export interface ProfileRow {
+  id: string;
+  user_id: string;
+  phone: string | null;
+  name: string | null;
+  city: string | null;
+  avatar: string | null;
+  is_admin: boolean;
+  created_at: string;
+}
+
 // ============================================
 // AI & CHAT
 // ============================================
