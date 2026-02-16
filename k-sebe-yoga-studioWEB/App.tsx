@@ -1,5 +1,5 @@
 import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
-import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
+import { Menu, X, Instagram, Send, RefreshCcw, WifiOff, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { About } from './components/About';
 import { AdminPanel } from './components/AdminPanel';
@@ -14,6 +14,7 @@ import { Gallery } from './components/Gallery';
 import { Hero } from './components/Hero';
 import { InstagramFeed } from './components/InstagramFeed';
 import { LegalModals } from './components/LegalModals';
+import { LoginModal } from './components/LoginModal';
 import { Logo } from './components/Logo';
 import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
@@ -21,15 +22,20 @@ import { Pricing } from './components/Pricing';
 // Retreats component available from './components/Retreats' when needed
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
+import { UserCabinet } from './components/UserCabinet';
+import { useAuth } from './context/AuthContext';
 import { registerServiceWorker } from './services/serviceWorker';
 import { isSupabaseConfigured, supabase } from './services/supabase';
 import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { BookingDetails } from './types';
 
 function App() {
+  const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isCabinetOpen, setIsCabinetOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'offer' | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOffline, setIsOffline] = useState(
@@ -157,11 +163,13 @@ function App() {
       if (e.key === 'Escape') {
         if (isMenuOpen) setIsMenuOpen(false);
         if (bookingModalData.isOpen) closeBooking();
+        if (isLoginOpen) setIsLoginOpen(false);
+        if (isCabinetOpen) setIsCabinetOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMenuOpen, bookingModalData.isOpen]);
+  }, [isMenuOpen, bookingModalData.isOpen, isLoginOpen, isCabinetOpen]);
 
   // Lock body scroll when menu is open or loading
   useEffect(() => {
@@ -233,28 +241,59 @@ function App() {
             />
           </button>
 
-          <button
-            onClick={toggleMenu}
-            aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
-            className={`
-              group p-3 rounded-full transition-all z-50 pointer-events-auto shadow-sm hover:shadow-md
-              ${
-                isScrolled
-                  ? 'bg-stone-100 hover:bg-stone-200 border border-stone-200'
-                  : 'bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20'
-              }
-            `}
-          >
-            {isMenuOpen ? (
-              <X
-                className={`w-6 h-6 transition-colors ${isScrolled ? 'text-stone-800' : 'text-brand-dark md:text-white'}`}
-              />
-            ) : (
-              <Menu
-                className={`w-6 h-6 transition-colors ${isScrolled ? 'text-brand-green' : 'text-white'}`}
-              />
-            )}
-          </button>
+          <div className="flex items-center gap-2 z-50 pointer-events-auto">
+            {/* User / Login Button */}
+            <button
+              onClick={() => (isAuthenticated ? setIsCabinetOpen(true) : setIsLoginOpen(true))}
+              aria-label={isAuthenticated ? 'Личный кабинет' : 'Войти'}
+              className={`
+                p-2.5 rounded-full transition-all shadow-sm hover:shadow-md
+                ${
+                  isScrolled
+                    ? 'bg-stone-100 hover:bg-stone-200 border border-stone-200'
+                    : 'bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20'
+                }
+              `}
+            >
+              {isAuthenticated && user?.avatar ? (
+                <img src={user.avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+              ) : (
+                <User
+                  className={`w-5 h-5 transition-colors ${
+                    isAuthenticated
+                      ? 'text-brand-green'
+                      : isScrolled
+                        ? 'text-stone-500'
+                        : 'text-white/70'
+                  }`}
+                />
+              )}
+            </button>
+
+            {/* Menu Button */}
+            <button
+              onClick={toggleMenu}
+              aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+              className={`
+                group p-3 rounded-full transition-all shadow-sm hover:shadow-md
+                ${
+                  isScrolled
+                    ? 'bg-stone-100 hover:bg-stone-200 border border-stone-200'
+                    : 'bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20'
+                }
+              `}
+            >
+              {isMenuOpen ? (
+                <X
+                  className={`w-6 h-6 transition-colors ${isScrolled ? 'text-stone-800' : 'text-brand-dark md:text-white'}`}
+                />
+              ) : (
+                <Menu
+                  className={`w-6 h-6 transition-colors ${isScrolled ? 'text-brand-green' : 'text-white'}`}
+                />
+              )}
+            </button>
+          </div>
         </nav>
 
         {(isOffline || updateAvailable) && (
@@ -340,6 +379,22 @@ function App() {
                   {item}
                 </a>
               ))}
+              {/* Auth link in menu */}
+              <button
+                onClick={() => {
+                  toggleMenu();
+                  if (isAuthenticated) setIsCabinetOpen(true);
+                  else setIsLoginOpen(true);
+                }}
+                className="text-3xl md:text-5xl font-serif text-brand-green hover:text-brand-dark hover:scale-105 transition-all duration-300 focus:outline-none focus:text-brand-dark"
+                style={{
+                  animation: 'fade-in-up 0.5s ease-out 0.8s forwards',
+                  opacity: 0,
+                  transform: 'translateY(20px)',
+                }}
+              >
+                {isAuthenticated ? 'Личный кабинет' : 'Войти'}
+              </button>
             </nav>
 
             <div
@@ -397,6 +452,8 @@ function App() {
           <Footer
             onOpenAdmin={() => setIsAdminOpen(true)}
             onOpenLegal={(type) => setLegalModalType(type)}
+            onOpenAuth={() => (isAuthenticated ? setIsCabinetOpen(true) : setIsLoginOpen(true))}
+            isAuthenticated={isAuthenticated}
           />
         </main>
 
@@ -410,6 +467,10 @@ function App() {
           onClose={closeBooking}
           details={bookingModalData.details}
         />
+
+        {/* Auth Modals */}
+        <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+        <UserCabinet isOpen={isCabinetOpen} onClose={() => setIsCabinetOpen(false)} />
 
         {/* Other Modals */}
         <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
