@@ -1,5 +1,7 @@
 import { Check, Loader2, Sparkles } from 'lucide-react';
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { supabase } from '../services/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -62,11 +64,20 @@ export const Paywall: React.FC<PaywallProps> = ({ onClose }) => {
 
           <div className="space-y-4">
             {/* Premium Plan */}
-            <div className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-brand-green/50 transition-colors cursor-pointer"
-                 onClick={() => handleSubscribe('premium')}>
+            <div
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') handleSubscribe('premium');
+              }}
+              className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-brand-green/50 transition-colors cursor-pointer"
+              onClick={() => handleSubscribe('premium')}
+            >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-white">Premium</h3>
-                <span className="text-brand-green font-bold text-xl">499 ₽ <span className="text-sm text-white/40 font-normal">/ мес</span></span>
+                <span className="text-brand-green font-bold text-xl">
+                  499 ₽ <span className="text-sm text-white/40 font-normal">/ мес</span>
+                </span>
               </div>
               <ul className="text-left space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-white/70 text-sm">
@@ -83,19 +94,32 @@ export const Paywall: React.FC<PaywallProps> = ({ onClose }) => {
                 disabled={loading === 'premium'}
                 className="w-full py-3 bg-brand-green text-white rounded-xl font-bold uppercase tracking-wider hover:bg-brand-green/90 transition-all flex justify-center items-center gap-2"
               >
-                {loading === 'premium' ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Оформить подписку'}
+                {loading === 'premium' ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  'Оформить подписку'
+                )}
               </button>
             </div>
 
             {/* VIP Plan */}
-            <div className="bg-gradient-to-br from-brand-gold/20 to-transparent rounded-2xl p-6 border border-brand-gold/30 hover:border-brand-gold/60 transition-colors cursor-pointer relative overflow-hidden"
-                 onClick={() => handleSubscribe('vip')}>
-               <div className="absolute top-0 right-0 bg-brand-gold text-black text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase">
-                 Best Value
-               </div>
+            <div
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') handleSubscribe('vip');
+              }}
+              className="bg-gradient-to-br from-brand-gold/20 to-transparent rounded-2xl p-6 border border-brand-gold/30 hover:border-brand-gold/60 transition-colors cursor-pointer relative overflow-hidden"
+              onClick={() => handleSubscribe('vip')}
+            >
+              <div className="absolute top-0 right-0 bg-brand-gold text-black text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase">
+                Best Value
+              </div>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-brand-gold">VIP</h3>
-                <span className="text-brand-gold font-bold text-xl">1 999 ₽ <span className="text-sm text-white/40 font-normal">/ мес</span></span>
+                <span className="text-brand-gold font-bold text-xl">
+                  1 999 ₽ <span className="text-sm text-white/40 font-normal">/ мес</span>
+                </span>
               </div>
               <ul className="text-left space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-white/70 text-sm">

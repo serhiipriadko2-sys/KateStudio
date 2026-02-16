@@ -127,7 +127,11 @@ Deno.serve(async (req) => {
     const rawPayload = await req.json();
     payload = CreatePaymentRequestSchema.parse(rawPayload);
   } catch (e) {
-    return json({ error: 'Validation error', details: e instanceof z.ZodError ? e.errors : e }, { status: 400 }, cors);
+    return json(
+      { error: 'Validation error', details: e instanceof z.ZodError ? e.errors : e },
+      { status: 400 },
+      cors
+    );
   }
 
   const token = getBearerToken(req);
@@ -135,21 +139,22 @@ Deno.serve(async (req) => {
 
   try {
     const supabase = getSupabaseClient(token);
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
       return json({ error: 'Invalid user session' }, { status: 401 }, cors);
     }
 
     // Upsert subscription status to 'pending'
-    const { error: dbError } = await supabase
-      .from('subscriptions')
-      .upsert({
-        user_id: user.id,
-        plan: payload.plan,
-        status: 'pending',
-        updated_at: new Date().toISOString(),
-      });
+    const { error: dbError } = await supabase.from('subscriptions').upsert({
+      user_id: user.id,
+      plan: payload.plan,
+      status: 'pending',
+      updated_at: new Date().toISOString(),
+    });
 
     if (dbError) {
       console.error('Database error:', dbError);
@@ -160,14 +165,21 @@ Deno.serve(async (req) => {
     const defaultReturnUrl = payload.returnUrl || 'https://app.ksebe-studio.ru/profile';
     const payment = await createYookassaPayment(payload.plan, user.id, defaultReturnUrl, {});
 
-    return json({
-      paymentUrl: payment.confirmation.confirmation_url,
-      paymentId: payment.id,
-      status: payment.status
-    }, {}, cors);
-
+    return json(
+      {
+        paymentUrl: payment.confirmation.confirmation_url,
+        paymentId: payment.id,
+        status: payment.status,
+      },
+      {},
+      cors
+    );
   } catch (e) {
     console.error('Payment creation failed:', e);
-    return json({ error: e instanceof Error ? e.message : 'Internal Server Error' }, { status: 500 }, cors);
+    return json(
+      { error: e instanceof Error ? e.message : 'Internal Server Error' },
+      { status: 500 },
+      cors
+    );
   }
 });

@@ -1,5 +1,4 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import { Paywall } from './Paywall';
 import { IMAGES } from '@ksebe/shared';
 import {
   LogOut,
@@ -34,6 +33,7 @@ import { DeveloperSettings } from './DeveloperSettings';
 // FadeIn available from './FadeIn' when needed
 import { Image } from './Image';
 import { Logo } from './Logo';
+import { Paywall } from './Paywall';
 import { VideoLibrary } from './VideoLibrary';
 
 interface Subscription {
@@ -46,7 +46,6 @@ interface DashboardProps {
   onBack: () => void;
   initialTab?: 'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
 }
-
 
 const subscriptionPlanLabels: Record<string, string> = {
   free: 'Free',
@@ -75,12 +74,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
 
   const { showToast } = useToast();
 
   useEffect(() => {
     if (user?.id) {
+      setSubscriptionLoading(true);
       supabase
         .from('subscriptions')
         .select('*')
@@ -88,7 +89,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         .single()
         .then(({ data }) => {
           if (data) setSubscription(data);
-        });
+        })
+        .finally(() => setSubscriptionLoading(false));
     }
   }, [user?.id]);
 
@@ -187,6 +189,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
   const nextBooking = bookings.length > 0 ? bookings[0] : null;
 
+  const handleCancelSubscription = async () => {
+    setSubscriptionActionLoading(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      showToast('Для отмены подписки напишите в поддержку', 'info');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubscriptionActionLoading(false);
+    }
+  };
+
+  const handleSubscribePlan = (plan: string) => {
+    console.log('Subscribe to', plan);
+  };
   const handleLogout = () => {
     logout();
     onBack();
@@ -783,7 +800,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                       </div>
                     )}
 
-
                     {subscription?.plan !== 'vip' && (
                       <button
                         onClick={() => setShowPaywall(true)}
@@ -792,7 +808,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                         {subscription ? 'Улучшить план' : 'Оформить подписку'}
                       </button>
                     )}
-
 
                     {subscription?.status === 'active' && subscription.plan !== 'free' && (
                       <button
@@ -931,11 +946,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         </div>
       </main>
 
-
-      {showPaywall && (
-        <Paywall onClose={() => setShowPaywall(false)} />
-      )}
-                 {/* QR Modal */}
+      {showPaywall && <Paywall onClose={() => setShowPaywall(false)} />}
+      {/* QR Modal */}
       {expandedQr && (
         <div
           role="dialog"

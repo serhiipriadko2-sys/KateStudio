@@ -12,10 +12,10 @@ function getSupabaseAdmin() {
   });
 }
 
-const allowedOrigins = [
-  'https://yookassa.ru',
-  'https://api.yookassa.ru',
-];
+// const allowedOrigins = [
+// 'https://yookassa.ru',
+// 'https://api.yookassa.ru',
+// ];
 
 Deno.serve(async (req) => {
   // YooKassa webhook security check (basic example, ideally verify IP range or signature)
@@ -42,23 +42,21 @@ Deno.serve(async (req) => {
           const supabase = getSupabaseAdmin();
 
           // Update subscription status to active
-          const { error } = await supabase
-            .from('subscriptions')
-            .upsert({
-              user_id: userId,
-              plan: planId,
-              status: 'active',
-              updated_at: new Date().toISOString(),
-              // Calculate expiration date based on plan (e.g., +1 month)
-              expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-            });
+          const { error } = await supabase.from('subscriptions').upsert({
+            user_id: userId,
+            plan: planId,
+            status: 'active',
+            updated_at: new Date().toISOString(),
+            // Calculate expiration date based on plan (e.g., +1 month)
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          });
 
           if (error) {
             console.error('Failed to update subscription:', error);
             return new Response('Database error', { status: 500 });
           }
 
-          console.log(`Subscription activated for user ${userId} (Plan: ${planId})`);
+          // console.log(`Subscription activated for user ${userId} (Plan: ${planId})`);
         }
       }
     }
