@@ -1,80 +1,48 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ACHIEVEMENTS } from '../constants';
-import type { Achievement, AchievementCategory, AchievementRarity } from '../types';
+import { supabase } from '../services/supabase';
+import type { Achievement, AchievementCategory, AchievementRarity, DBUserAchievement } from '../types';
 
 export interface UseAchievementsOptions {
   /**
-   * Storage key for persisting achievements
+   * Storage key for persisting achievements (fallback)
    */
   storageKey?: string;
   /**
    * Callback when achievement is unlocked
    */
   onUnlock?: (achievement: Achievement) => void;
+  /**
+   * User ID for cloud sync
+   */
+  userId?: string;
 }
 
 export interface UseAchievementsReturn {
-  /**
-   * All achievements with current progress
-   */
   achievements: Achievement[];
-  /**
-   * Unlocked achievements only
-   */
   unlockedAchievements: Achievement[];
-  /**
-   * Locked achievements only
-   */
   lockedAchievements: Achievement[];
-  /**
-   * Most recently unlocked achievement (for modal)
-   */
   recentUnlock: Achievement | null;
-  /**
-   * Clear recent unlock (after showing modal)
-   */
   clearRecentUnlock: () => void;
-  /**
-   * Update progress for an achievement
-   */
   updateProgress: (achievementId: string, progress: number) => void;
-  /**
-   * Increment progress for an achievement
-   */
   incrementProgress: (achievementId: string, amount?: number) => void;
-  /**
-   * Check if achievement should be unlocked based on current progress
-   */
   checkUnlock: (achievementId: string) => boolean;
-  /**
-   * Get achievements by category
-   */
   getByCategory: (category: AchievementCategory) => Achievement[];
-  /**
-   * Get achievements by rarity
-   */
   getByRarity: (rarity: AchievementRarity) => Achievement[];
-  /**
-   * Calculate overall progress percentage
-   */
   overallProgress: number;
-  /**
-   * Total achievements count
-   */
   totalCount: number;
-  /**
-   * Unlocked achievements count
-   */
   unlockedCount: number;
+  isLoading: boolean;
 }
 
 const DEFAULT_STORAGE_KEY = 'ksebe_achievements';
 
 /**
- * Hook for managing user achievements and gamification
+ * Hook for managing user achievements and gamification with Supabase sync
  */
 export function useAchievements(options: UseAchievementsOptions = {}): UseAchievementsReturn {
-  const { storageKey = DEFAULT_STORAGE_KEY, onUnlock } = options;
+  const { storageKey = DEFAULT_STORAGE_KEY, onUnlock, userId } = options;
+  const [isLoading, setIsLoading] = useState(true);
 
   // Initialize achievements with progress from storage
   const [achievements, setAchievements] = useState<Achievement[]>(() => {
@@ -104,6 +72,49 @@ export function useAchievements(options: UseAchievementsOptions = {}): UseAchiev
 
   const [recentUnlock, setRecentUnlock] = useState<Achievement | null>(null);
 
+  // Fetch from Supabase
+  useEffect(() => {
+    if (!userId) {
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchAchievements = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('user_achievements')
+          .select('*')
+          .eq('user_id', userId);
+
+        if (error) throw error;
+
+        if (data) {
+          setAchievements((prev) =>
+            prev.map((ach) => {
+              const remote = data.find((r: DBUserAchievement) => r.achievement_id === ach.id);
+              if (remote) {
+                // Merge logic: take max progress/unlocked state
+                return {
+                  ...ach,
+                  progress: Math.max(ach.progress, remote.progress),
+                  unlocked: ach.unlocked || !!remote.unlocked_at,
+                  unlockedAt: ach.unlockedAt || remote.unlocked_at || undefined,
+                };
+              }
+              return ach;
+            })
+          );
+        }
+      } catch {
+        // Silent fail
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAchievements();
+  }, [userId]);
+
   // Persist to localStorage
   useEffect(() => {
     try {
@@ -124,6 +135,28 @@ export function useAchievements(options: UseAchievementsOptions = {}): UseAchiev
     }
   }, [achievements, storageKey]);
 
+  // Sync to Supabase helper
+  const syncToCloud = useCallback(
+    async (achievement: Achievement) => {
+      if (!userId) return;
+
+      try {
+        await supabase.from('user_achievements').upsert(
+          {
+            user_id: userId,
+            achievement_id: achievement.id,
+            progress: achievement.progress,
+            unlocked_at: achievement.unlocked ? achievement.unlockedAt || new Date().toISOString() : null,
+          },
+          { onConflict: 'user_id, achievement_id' }
+        );
+      } catch {
+        // console.warn('Failed to save achievement to cloud');
+      }
+    },
+    [userId]
+  );
+
   const unlockedAchievements = achievements.filter((a) => a.unlocked);
   const lockedAchievements = achievements.filter((a) => !a.unlocked);
 
@@ -136,6 +169,9 @@ export function useAchievements(options: UseAchievementsOptions = {}): UseAchiev
       setAchievements((prev) =>
         prev.map((ach) => {
           if (ach.id !== achievementId) return ach;
+
+          // Don't downgrade progress
+          if (progress <= ach.progress) return ach;
 
           const newProgress = Math.min(progress, ach.target);
           const shouldUnlock = newProgress >= ach.target && !ach.unlocked;
@@ -152,17 +188,22 @@ export function useAchievements(options: UseAchievementsOptions = {}): UseAchiev
             onUnlock?.(updated);
           }
 
+          // Trigger sync (fire and forget)
+          syncToCloud(updated);
+
           return updated;
         })
       );
     },
-    [onUnlock]
+    [onUnlock, syncToCloud]
   );
 
   const incrementProgress = useCallback(
     (achievementId: string, amount: number = 1) => {
-      setAchievements((prev) =>
-        prev.map((ach) => {
+      setAchievements((prev) => {
+        // Calculate new state first to handle logic outside the map if needed,
+        // but map is cleaner for immutable update.
+        return prev.map((ach) => {
           if (ach.id !== achievementId) return ach;
 
           const newProgress = Math.min(ach.progress + amount, ach.target);
@@ -180,11 +221,14 @@ export function useAchievements(options: UseAchievementsOptions = {}): UseAchiev
             onUnlock?.(updated);
           }
 
+          // Trigger sync
+          syncToCloud(updated);
+
           return updated;
-        })
-      );
+        });
+      });
     },
-    [onUnlock]
+    [onUnlock, syncToCloud]
   );
 
   const checkUnlock = useCallback(
@@ -227,6 +271,7 @@ export function useAchievements(options: UseAchievementsOptions = {}): UseAchiev
     overallProgress,
     totalCount,
     unlockedCount,
+    isLoading,
   };
 }
 
