@@ -108,7 +108,7 @@ const WordStrip: React.FC<WordStripProps> = ({ items, separator, isInhale }) => 
             {word}
           </span>
 
-          {/* Heartbeat dot — double-pulse rhythm, staggered wave */}
+          {/* Heartbeat dot — subtle double-pulse rhythm, staggered wave */}
           <span
             className="inline-block rounded-full mx-2 md:mx-3 shrink-0 transition-[background-color,box-shadow] duration-[3000ms] ease-in-out"
             style={{
@@ -116,7 +116,7 @@ const WordStrip: React.FC<WordStripProps> = ({ items, separator, isInhale }) => 
               height: '5px',
               backgroundColor: isInhale ? 'rgba(87, 167, 115, 0.5)' : 'rgba(168, 162, 158, 0.35)',
               boxShadow: isInhale ? '0 0 10px rgba(87, 167, 115, 0.35)' : 'none',
-              animation: `breath-heartbeat ${isInhale ? '2s' : '2.8s'} ease-in-out infinite`,
+              animation: `breath-heartbeat ${isInhale ? '2.2s' : '3s'} ease-in-out infinite`,
               animationDelay: `${Math.round(delay * 0.7)}ms`,
             }}
             aria-hidden="true"
@@ -235,38 +235,44 @@ export const Marquee: React.FC<MarqueeConfig> = ({
           WebkitMaskImage: HAZE_MASK,
         }}
       >
-        {/* Inhale words — crossfade in */}
+        {/* Inhale words — deep crossfade with delayed entrance */}
         <div
           className={cn(
             'breath-track absolute inset-0 flex items-center justify-center whitespace-nowrap',
-            'transition-opacity duration-[2500ms] ease-in-out',
-            isInhale ? 'opacity-100' : 'opacity-0'
+            'transition-opacity duration-[3500ms] ease-in-out'
           )}
+          style={{
+            opacity: isInhale ? 1 : 0,
+            transitionDelay: isInhale ? '400ms' : '0ms',
+          }}
           aria-hidden={!isInhale}
         >
           <WordStrip items={inhaleTrack} separator={SEPARATOR_INHALE} isInhale={true} />
         </div>
 
-        {/* Exhale words — crossfade in */}
+        {/* Exhale words — deep crossfade with delayed entrance */}
         <div
           className={cn(
             'breath-track absolute inset-0 flex items-center justify-center whitespace-nowrap',
-            'transition-opacity duration-[2500ms] ease-in-out',
-            !isInhale ? 'opacity-100' : 'opacity-0'
+            'transition-opacity duration-[3500ms] ease-in-out'
           )}
+          style={{
+            opacity: !isInhale ? 1 : 0,
+            transitionDelay: !isInhale ? '400ms' : '0ms',
+          }}
           aria-hidden={isInhale}
         >
           <WordStrip items={exhaleTrack} separator={SEPARATOR_EXHALE} isInhale={false} />
         </div>
       </div>
 
-      {/* Heartbeat keyframes + reduced-motion override */}
+      {/* Heartbeat keyframes (subtle) + reduced-motion override */}
       <style>{`
         @keyframes breath-heartbeat {
-          0%, 55%, 100% { transform: scale(1); opacity: 0.25; }
-          14% { transform: scale(2.4); opacity: 0.9; }
-          28% { transform: scale(0.8); opacity: 0.2; }
-          42% { transform: scale(1.9); opacity: 0.7; }
+          0%, 60%, 100% { transform: scale(1); opacity: 0.35; }
+          18% { transform: scale(1.15); opacity: 0.65; }
+          32% { transform: scale(0.92); opacity: 0.28; }
+          46% { transform: scale(1.08); opacity: 0.55; }
         }
         @media (prefers-reduced-motion: reduce) {
           .breath-track span { animation: none !important; transition: none !important; }
