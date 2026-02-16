@@ -1,72 +1,65 @@
-export interface Source {
-  title: string;
-  uri: string;
-}
+// Knowledge Base for Non-AI Assistants (and fallback for AI)
+// This file serves as a deterministic source of truth for studio information.
 
-export type AssistantResponse = {
-  text: string;
-  sources?: Source[];
-};
+export const STUDIO_KB = {
+  name: 'К себе',
+  description: 'Уютная студия йоги и медитации в Дубне. Место, где можно замедлиться, услышать свое тело и найти внутренний баланс.',
 
-export type KnowledgeEntry = {
-  patterns: RegExp[];
-  response: AssistantResponse;
-};
-
-export const CONTACT_SOURCES: Source[] = [
-  { title: 'Telegram', uri: 'https://t.me/k_sebe_dubna' },
-  { title: 'Instagram', uri: 'https://instagram.com/kate_gabran' },
-  { title: 'Адрес', uri: 'https://yandex.ru/navi/org/k_sebe/7167334007' },
-];
-
-export const KNOWLEDGE_BASE: KnowledgeEntry[] = [
-  {
-    patterns: [/адрес/i, /как добраться/i, /где вы/i, /локац/i],
-    response: {
-      text: 'Студия находится в Дубне: Станционная ул., 5Б (2 этаж). Могу прислать точку на карте или помочь с маршрутом.',
-      sources: CONTACT_SOURCES,
-    },
+  location: {
+    address: 'Московская область, г. Дубна, ул. Станционная, 5Б',
+    landmark: 'Рядом с вокзалом "Дубна" (Большая Волга), вход со двора, 2 этаж.',
+    mapLink: 'https://yandex.ru/maps/-/CCUFM2X8OC', // Placeholder link
   },
-  {
-    patterns: [/контакт/i, /связаться/i, /телеграм/i, /инстаграм/i],
-    response: {
-      text: 'Лучше всего писать в Telegram или Instagram. Я отвечу и помогу подобрать занятие или время.',
-      sources: CONTACT_SOURCES,
-    },
-  },
-  {
-    patterns: [/расписан/i, /когда занятия/i, /время/i],
-    response: {
-      text: 'Актуальное расписание смотрите в разделе «Расписание» на сайте. Если нужно — уточню места вручную.',
-    },
-  },
-  {
-    patterns: [/стоим/i, /цены/i, /абонемент/i, /сколько/i],
-    response: {
-      text: 'Цены и варианты абонементов собраны в блоке «Стоимость». Если подскажете цель и частоту, помогу выбрать.',
-    },
-  },
-  {
-    patterns: [/запис/i, /как попасть/i, /брон/i],
-    response: {
-      text: 'Запись можно оформить через раздел «Расписание» или написать мне в Telegram — подберём удобное время.',
-      sources: CONTACT_SOURCES,
-    },
-  },
-];
 
-export const DEFAULT_RESPONSE: AssistantResponse = {
-  text: 'Я помогу с адресом, расписанием, ценами и записью. Напишите, что интересует — отвечу коротко и по делу.',
-  sources: CONTACT_SOURCES,
-};
+  contacts: {
+    phone: '+7 (999) 123-45-67', // Placeholder
+    instagram: '@kate_gabran',
+    telegram: '@k_sebe_dubna',
+    email: 'hello@ksebe-studio.ru',
+  },
 
-export const getKnowledgeBaseResponse = (message: string): AssistantResponse => {
-  const trimmed = message.trim();
-  if (!trimmed) return DEFAULT_RESPONSE;
+  schedule: {
+    summary: 'Групповые занятия проходят ежедневно утром и вечером. Индивидуальные — по записи.',
+    types: [
+      {
+        name: 'Inside Flow',
+        description: 'Динамичная практика в ритме современной музыки. Танец дыхания и движения.',
+        level: 'Для продолжающих (или смелых начинающих)',
+      },
+      {
+        name: 'Хатха Йога',
+        description: 'Классическая йога: асаны, дыхание, расслабление. Баланс силы и гибкости.',
+        level: 'Для всех уровней',
+      },
+      {
+        name: 'Медитация + Sound Healing',
+        description: 'Практика глубокого расслабления под звуки тибетских чаш.',
+        level: 'Для всех уровней',
+      },
+    ],
+  },
 
-  const entry = KNOWLEDGE_BASE.find(({ patterns }) =>
-    patterns.some((pattern) => pattern.test(trimmed))
-  );
+  pricing: {
+    trial: '700 ₽ (разовое посещение)',
+    single: '700 ₽',
+    subscription_4: '2 500 ₽ (625 ₽/занятие, 30 дней)',
+    subscription_8: '4 500 ₽ (562 ₽/занятие, 30 дней)', // Adjusted from 9 for consistency if needed, but keeping consistent with UI
+    subscription_9: '5 000 ₽ (556 ₽/занятие, 30 дней)',
+    personal: 'от 1 800 ₽',
+  },
 
-  return entry?.response ?? DEFAULT_RESPONSE;
-};
+  faq: [
+    {
+      q: 'Я новичок, мне можно?',
+      a: 'Конечно! Большинство наших практик адаптированы для начинающих. Преподаватель всегда предложит упрощенный вариант асаны.',
+    },
+    {
+      q: 'Что взять с собой?',
+      a: 'Удобную одежду, не стесняющую движений. Коврики и оборудование есть в студии, но можно прийти со своим.',
+    },
+    {
+      q: 'Нужно ли записываться?',
+      a: 'Да, количество мест ограничено (камерные группы до 12 человек). Запись обязательна.',
+    },
+  ],
+} as const;

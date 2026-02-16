@@ -11,3 +11,5 @@ export {
   saveImageMapping,
   uploadImage,
 } from './imageStorage';
+export { getKnowledgeBaseResponse } from './knowledgeBase';
+export type { AssistantResponse } from './knowledgeBase';

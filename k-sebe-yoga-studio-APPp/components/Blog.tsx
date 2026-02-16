@@ -14,6 +14,7 @@ import {
   Check,
 } from 'lucide-react';
 import React, { useState } from 'react';
+import { IMAGES } from '@ksebe/shared';
 import { useToast } from '../context/ToastContext';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
@@ -37,8 +38,7 @@ const articles: BlogArticle[] = [
     title: 'Как начать медитировать: 5 простых шагов',
     excerpt:
       'Медитация — это не отсутствие мыслей, а умение их наблюдать. Рассказываем, как сделать первые шаги к осознанности без стресса.',
-    image:
-      'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?q=80&w=800&auto=format&fit=crop',
+    image: IMAGES.blog.articles[0],
     date: '12 Авг',
     author: 'Катя Габран',
     readTime: '3 мин',
@@ -59,8 +59,7 @@ const articles: BlogArticle[] = [
     title: 'Питание и Йога: что есть до и после?',
     excerpt:
       'Легкость в теле — залог успешной практики. Разбираем идеальный рацион для утренних и вечерних занятий.',
-    image:
-      'https://images.unsplash.com/photo-1511690656952-34342d5c22b0?q=80&w=800&auto=format&fit=crop',
+    image: IMAGES.blog.articles[1],
     date: '08 Авг',
     author: 'Катя Габран',
     readTime: '4 мин',
@@ -79,8 +78,7 @@ const articles: BlogArticle[] = [
     title: 'Inside Flow: Танец твоего сердца',
     excerpt:
       'Почему эта практика покоряет мир? Сочетание современной музыки, ритма и традиционных асан в одном потоке.',
-    image:
-      'https://images.unsplash.com/photo-1508672019048-805c276e7e69?q=80&w=800&auto=format&fit=crop',
+    image: IMAGES.blog.articles[2],
     date: '01 Авг',
     author: 'Катя Габран',
     readTime: '5 мин',

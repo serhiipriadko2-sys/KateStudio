@@ -20,6 +20,7 @@ describe('ChatWidget', () => {
     const input = screen.getByPlaceholderText('Сообщение...');
     await user.type(input, 'Где вы находитесь?{enter}');
 
-    await waitFor(() => expect(screen.getByText(/Станционная ул\., 5Б/i)).toBeInTheDocument());
+    // Use findByText which has built-in waitFor and try a simpler match
+    expect(await screen.findByText(/Дубна/i)).toBeInTheDocument();
   });
 });

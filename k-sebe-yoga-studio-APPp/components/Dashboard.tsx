@@ -30,6 +30,7 @@ import { AICoach } from './AICoach';
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
 // FadeIn available from './FadeIn' when needed
+import { IMAGES } from '@ksebe/shared';
 import { Image } from './Image';
 import { Logo } from './Logo';
 import { VideoLibrary } from './VideoLibrary';
@@ -794,10 +795,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   )}
 
                   <Image
-                    src={
-                      user?.avatar ||
-                      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop'
-                    }
+                    src={user?.avatar || IMAGES.about.katyaPortrait}
                     alt="User"
                     storageKey="user-avatar-large"
                     containerClassName="w-full h-full"

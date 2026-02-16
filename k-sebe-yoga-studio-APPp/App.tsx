@@ -1,5 +1,5 @@
 // FadeIn available from '@ksebe/shared' when needed
-import { UpdateBanner, OfflineBanner } from '@ksebe/shared';
+import { UpdateBanner, OfflineBanner, IMAGES } from '@ksebe/shared';
 import { useOnlineStatus } from '@ksebe/shared';
 import {
   Home,
@@ -530,8 +530,8 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
       <div className="relative z-10">
         <div className="relative h-[60vh] min-h-[500px] w-full overflow-hidden rounded-b-[3rem] shadow-2xl">
           <Image
-            src="/hero.jpg"
-            fallbackSrc="https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=1920&auto=format&fit=crop"
+            src={IMAGES.hero.mainBg}
+            fallbackSrc={IMAGES.hero.mainBg}
             alt="Yoga"
             storageKey="hero-main-bg-v4"
             showControlsLabel={true}
@@ -690,7 +690,7 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
 
             <div className="absolute top-0 right-0 w-1/2 h-full opacity-50 z-10 pointer-events-none">
               <Image
-                src="https://images.unsplash.com/photo-1552196563-55cd4e45efb3?q=80&w=400&fit=crop"
+                src={IMAGES.directions.insideFlow}
                 storageKey="home-studio-promo"
                 containerClassName="w-full h-full"
                 className="w-full h-full object-cover mask-linear"
