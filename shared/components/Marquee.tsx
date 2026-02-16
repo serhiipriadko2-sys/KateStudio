@@ -229,6 +229,8 @@ export const Marquee: React.FC<MarqueeConfig> = ({
     const run = () => {
       if (cancelled) return;
 
+      animRef.current?.cancel();
+
       const anim = el.animate(currentPhase === 'inhale' ? inhaleKf : exhaleKf, {
         duration: phaseDurationMs,
         easing: 'ease-in-out',
@@ -238,9 +240,12 @@ export const Marquee: React.FC<MarqueeConfig> = ({
 
       anim.onfinish = () => {
         if (cancelled) return;
-        currentPhase = currentPhase === 'inhale' ? 'exhale' : 'inhale';
+        const nextPhase = currentPhase === 'inhale' ? 'exhale' : 'inhale';
+        currentPhase = nextPhase;
         setPhase(currentPhase);
-        setCycleCount((prev) => prev + 1);
+        if (nextPhase === 'inhale') {
+          setCycleCount((prev) => prev + 1);
+        }
         run();
       };
     };

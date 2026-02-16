@@ -128,4 +128,35 @@ describe('Marquee (Breathing Strip)', () => {
       expect(track.className).toContain('justify-center');
     }
   });
+
+  it('cancels previous animation before starting a new phase', () => {
+    render(<Marquee duration={10} />);
+
+    const firstAnim = (Element.prototype.animate as ReturnType<typeof vi.fn>).mock.results[0].value;
+
+    completeBreathPhase(); // inhale → exhale
+
+    expect(firstAnim.cancel).toHaveBeenCalled();
+  });
+
+  it('increments cycle count once per full breath cycle, not per phase', () => {
+    const inhaleWords = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const exhaleWords = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+    render(<Marquee inhaleWords={inhaleWords} words={exhaleWords} duration={10} />);
+
+    const tracks = document.querySelectorAll('.breath-track') as NodeListOf<HTMLElement>;
+
+    // Initial: inhale track shows 'A' first
+    expect(tracks[0].textContent).toContain('A');
+
+    // inhale → exhale: cycleCount should NOT increment yet
+    completeBreathPhase();
+
+    // exhale → inhale: now cycleCount increments to 1, words rotate by 1
+    completeBreathPhase();
+
+    // After one full cycle, inhale words should start from 'B'
+    expect(tracks[0].textContent).toContain('B');
+  });
 });
