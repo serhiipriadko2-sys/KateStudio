@@ -208,7 +208,9 @@ export function debounceAsync<T extends (...args: unknown[]) => Promise<unknown>
       timeoutId = setTimeout(async () => {
         try {
           const result = await fn(...args);
-          resolvePromise?.(result as any);
+          resolvePromise?.(
+            result as any /* eslint-disable-line @typescript-eslint/no-explicit-any */
+          );
         } catch (error) {
           rejectPromise?.(error);
         }
@@ -258,7 +260,7 @@ export function throttleAsync<T extends (...args: unknown[]) => Promise<unknown>
             lastCall = Date.now();
             const result = await fn(...args);
             pendingPromise = null;
-            resolve(result as any);
+            resolve(result as any /* eslint-disable-line @typescript-eslint/no-explicit-any */);
           },
           delayMs - (now - lastCall)
         );

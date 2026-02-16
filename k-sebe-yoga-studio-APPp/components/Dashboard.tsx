@@ -1,4 +1,6 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 // import { Paywall } from '@ksebe/shared'; // Временно скрыто вместе с AI-подпиской
+import { IMAGES } from '@ksebe/shared';
 import {
   LogOut,
   LayoutDashboard,
@@ -794,10 +796,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   )}
 
                   <Image
-                    src={
-                      user?.avatar ||
-                      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop'
-                    }
+                    src={user?.avatar || IMAGES.reviews.avatars[0]}
                     alt="User"
                     storageKey="user-avatar-large"
                     containerClassName="w-full h-full"

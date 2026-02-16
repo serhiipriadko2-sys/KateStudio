@@ -375,7 +375,8 @@ export const DeveloperSettings: React.FC<{ onBack: () => void }> = ({ onBack }) 
             <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-xl flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
               <div className="text-xs text-yellow-200/80 leading-relaxed font-mono">
-                Для полной защиты от потери данных при очистке кэша используйте вкладку "Бэкап".
+                Для полной защиты от потери данных при очистке кэша используйте вкладку
+                &quot;Бэкап&quot;.
               </div>
             </div>
 

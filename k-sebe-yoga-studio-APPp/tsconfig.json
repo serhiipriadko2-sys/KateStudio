@@ -32,7 +32,14 @@
       "@ksebe/shared/*": ["../shared/*"]
     }
   },
-  "include": ["src", "components", "services", "**/*.ts", "**/*.tsx", "../vite-env.d.ts"],
+  "include": [
+    "src",
+    "components",
+    "services",
+    "**/*.ts",
+    "**/*.tsx",
+    "../vite-env.d.ts"
+  ],
   "exclude": ["node_modules", "dist"],
   "references": [{ "path": "../shared" }]
 }

@@ -1,5 +1,6 @@
 import { Check, Star, ArrowRight } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { FadeIn } from './FadeIn';
 
 interface PricingProps {
@@ -15,109 +16,105 @@ interface PriceOption {
   isDark?: boolean;
 }
 
-// Yoga subscriptions
-const yogaSubscriptions: PriceOption[] = [
-  {
-    title: 'Разовое',
-    price: '700 ₽',
-    description: 'Для знакомства со студией',
-    features: ['1 посещение любой практики', 'Срок действия: 7 дней'],
-    isPopular: false,
-  },
-  {
-    title: '4 занятия',
-    price: '2 500 ₽',
-    description: 'Срок 1 месяц с первого посещения',
-    features: ['625 ₽ за занятие', '4 посещения', 'Экономия 300 ₽', 'Срок действия: 30 дней'],
-    isPopular: false,
-  },
-  {
-    title: '9 занятий',
-    price: '5 000 ₽',
-    description: 'Срок 1 месяц с первого посещения',
-    features: ['556 ₽ за занятие', '9 посещений', 'Экономия 1 300 ₽', 'Срок действия: 30 дней'],
-    isPopular: true,
-  },
-];
-
-// Personal training
-const personalTraining: PriceOption[] = [
-  {
-    title: 'Персональная (1 чел)',
-    price: '1 800 ₽',
-    description: 'Индивидуальный подход',
-    features: ['Удобное время', 'Индивидуальный подход', '1 человек'],
-    isPopular: false,
-    isDark: true,
-  },
-  {
-    title: 'Персональная (2 чел)',
-    price: '2 500 ₽',
-    description: 'Занятие для двоих',
-    features: ['Удобное время', 'Индивидуальный подход', '2 человека'],
-    isPopular: false,
-    isDark: true,
-  },
-];
-
-// Sound Healing
-const soundHealing: PriceOption[] = [
-  {
-    title: 'Групповая сессия',
-    price: '1 500 ₽',
-    description: 'Саундхилинг в группе',
-    features: ['Глубокая релаксация', 'Снятие стресса и тревожности', 'Гармонизация энергии'],
-    isPopular: false,
-  },
-  {
-    title: 'Индивидуальная',
-    price: 'от 3 000 ₽',
-    description: 'Персональная сессия',
-    features: [
-      'Чаши — 3 000 ₽',
-      'Гонг + чаши — 3 500 ₽',
-      'Индивидуальный подход',
-      'Глубокое исцеление',
-    ],
-    isPopular: true,
-  },
-  {
-    title: 'Парная',
-    price: 'от 3 500 ₽',
-    description: 'Сессия для двоих',
-    features: ['Чаши — 3 500 ₽', 'Гонг + чаши — 4 000 ₽', '2 человека', 'Совместное погружение'],
-    isPopular: false,
-  },
-];
-
-// Tibetan Bowl Massage
-const tibetanMassage: PriceOption[] = [
-  {
-    title: 'Индивидуальный',
-    price: '3 500 ₽',
-    description: 'Массаж тибетскими чашами',
-    features: [
-      'Глубокое расслабление',
-      'Снятие мышечных зажимов',
-      'Улучшение сна',
-      'Энергетический баланс',
-    ],
-    isPopular: false,
-  },
-  {
-    title: 'Для двоих',
-    price: '6 000 ₽',
-    description: 'Массаж для пары',
-    features: [
-      'Совместное расслабление',
-      'Гармонизация энергии',
-      'Улучшение кровообращения',
-      'Медитативное погружение',
-    ],
-    isPopular: false,
-    isDark: true,
-  },
-];
+// Default Data (Fallback)
+const defaultPricingData = {
+  yoga: [
+    {
+      title: 'Разовое',
+      price: '700 ₽',
+      description: 'Для знакомства со студией',
+      features: ['1 посещение любой практики', 'Срок действия: 7 дней'],
+      isPopular: false,
+    },
+    {
+      title: '4 занятия',
+      price: '2 500 ₽',
+      description: 'Срок 1 месяц с первого посещения',
+      features: ['625 ₽ за занятие', '4 посещения', 'Экономия 300 ₽', 'Срок действия: 30 дней'],
+      isPopular: false,
+    },
+    {
+      title: '9 занятий',
+      price: '5 000 ₽',
+      description: 'Срок 1 месяц с первого посещения',
+      features: ['556 ₽ за занятие', '9 посещений', 'Экономия 1 300 ₽', 'Срок действия: 30 дней'],
+      isPopular: true,
+    },
+  ] as PriceOption[],
+  personal: [
+    {
+      title: 'Персональная (1 чел)',
+      price: '1 800 ₽',
+      description: 'Индивидуальный подход',
+      features: ['Удобное время', 'Индивидуальный подход', '1 человек'],
+      isPopular: false,
+      isDark: true,
+    },
+    {
+      title: 'Персональная (2 чел)',
+      price: '2 500 ₽',
+      description: 'Занятие для двоих',
+      features: ['Удобное время', 'Индивидуальный подход', '2 человека'],
+      isPopular: false,
+      isDark: true,
+    },
+  ] as PriceOption[],
+  sound: [
+    {
+      title: 'Групповая сессия',
+      price: '1 500 ₽',
+      description: 'Саундхилинг в группе',
+      features: ['Глубокая релаксация', 'Снятие стресса и тревожности', 'Гармонизация энергии'],
+      isPopular: false,
+    },
+    {
+      title: 'Индивидуальная',
+      price: 'от 3 000 ₽',
+      description: 'Персональная сессия',
+      features: [
+        'Чаши — 3 000 ₽',
+        'Гонг + чаши — 3 500 ₽',
+        'Индивидуальный подход',
+        'Глубокое исцеление',
+      ],
+      isPopular: true,
+    },
+    {
+      title: 'Парная',
+      price: 'от 3 500 ₽',
+      description: 'Сессия для двоих',
+      features: ['Чаши — 3 500 ₽', 'Гонг + чаши — 4 000 ₽', '2 человека', 'Совместное погружение'],
+      isPopular: false,
+    },
+  ] as PriceOption[],
+  massage: [
+    {
+      title: 'Индивидуальный',
+      price: '3 500 ₽',
+      description: 'Массаж тибетскими чашами',
+      features: [
+        'Глубокое расслабление',
+        'Снятие мышечных зажимов',
+        'Улучшение сна',
+        'Энергетический баланс',
+      ],
+      isPopular: false,
+    },
+    {
+      title: 'Для двоих',
+      price: '6 000 ₽',
+      description: 'Массаж для пары',
+      features: [
+        'Совместное расслабление',
+        'Гармонизация энергии',
+        'Улучшение кровообращения',
+        'Медитативное погружение',
+      ],
+      isPopular: false,
+      isDark: true,
+    },
+  ] as PriceOption[],
+};
 
 interface PricingCardProps {
   option: PriceOption;
@@ -231,6 +228,50 @@ const PricingSection: React.FC<PricingSectionProps> = ({
 };
 
 export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
+  const [plans, setPlans] = useState<typeof defaultPricingData>(defaultPricingData);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    const fetchPlans = async () => {
+      try {
+        if (!supabase) return;
+        const { data, error } = await supabase
+          .from('pricing_plans')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .order('created_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          const grouped = data.reduce(
+            (acc, plan) => {
+              if (!acc[plan.category]) {
+                acc[plan.category] = [];
+              }
+              acc[plan.category].push({
+                title: plan.title,
+                price: plan.price,
+                description: plan.description || '',
+                features: plan.features || [],
+                isPopular: plan.is_popular,
+                isDark: plan.is_dark,
+              });
+              return acc;
+            },
+            {} as Record<string, PriceOption[]>
+          );
+
+          setPlans((prev) => ({ ...prev, ...grouped }));
+        }
+      } catch (e) {
+        console.warn('Failed to fetch pricing plans', e);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
   const tabs = useMemo(
     () => [
       {
@@ -238,7 +279,7 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
         label: 'Йога-абонементы',
         title: 'Йога-абонементы',
         subtitle: 'Групповые занятия',
-        options: yogaSubscriptions,
+        options: plans.yoga || [],
         columns: 3 as const,
       },
       {
@@ -246,7 +287,7 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
         label: 'Персональные',
         title: 'Персональные тренировки',
         subtitle: 'Индивидуальный подход',
-        options: personalTraining,
+        options: plans.personal || [],
         columns: 2 as const,
       },
       {
@@ -254,7 +295,7 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
         label: 'Саундхилинг',
         title: 'Саундхилинг',
         subtitle: 'Звукотерапия тибетскими чашами и гонгом',
-        options: soundHealing,
+        options: plans.sound || [],
         columns: 3 as const,
       },
       {
@@ -262,12 +303,13 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
         label: 'Массаж',
         title: 'Массаж тибетскими чашами',
         subtitle: 'Глубокое расслабление через вибрации и звук',
-        options: tibetanMassage,
+        options: plans.massage || [],
         columns: 2 as const,
       },
     ],
-    []
+    [plans]
   );
+
   const [activeTab, setActiveTab] = useState(tabs[0].id);
   const activeSection = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
 

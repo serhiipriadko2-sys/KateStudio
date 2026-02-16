@@ -1,5 +1,5 @@
 // FadeIn available from '@ksebe/shared' when needed
-import { UpdateBanner, OfflineBanner } from '@ksebe/shared';
+import { UpdateBanner, OfflineBanner, IMAGES } from '@ksebe/shared';
 import { useOnlineStatus } from '@ksebe/shared';
 import {
   Home,
@@ -37,6 +37,7 @@ import { WeeklyRecapCard } from './components/WeeklyRecapCard';
 import { useAuth } from './context/AuthContext';
 import { usePWAUpdate } from './hooks/usePWAUpdate';
 import { retentionService } from './services/retentionService';
+import { isSupabaseConfigured, supabase } from './services/supabaseClient';
 
 // Lazy load heavy components for better initial bundle size
 const AICoach = lazy(() => import('./components/AICoach').then((m) => ({ default: m.AICoach })));
@@ -238,17 +239,44 @@ export default function App() {
   const mainRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    try {
-      const savedTheme = localStorage.getItem('ksebe_theme_config');
-      if (savedTheme) {
-        const colors = JSON.parse(savedTheme);
-        Object.entries(colors).forEach(([key, value]) => {
-          document.documentElement.style.setProperty(key, String(value));
-        });
+    const loadAndSyncTheme = async () => {
+      // 1. Load Local
+      try {
+        const savedTheme = localStorage.getItem('ksebe_theme_config');
+        if (savedTheme) {
+          const colors = JSON.parse(savedTheme);
+          Object.entries(colors).forEach(([key, value]) => {
+            document.documentElement.style.setProperty(key, String(value));
+          });
+        }
+      } catch (e) {
+        console.error('Failed to load theme', e);
       }
-    } catch (e) {
-      console.error('Failed to load theme', e);
-    }
+
+      // 2. Fetch Remote
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { data } = await supabase
+            .from('app_settings')
+            .select('key, value')
+            .eq('key', 'theme')
+            .single();
+          if (data?.value) {
+            const colors = data.value as Record<string, string>;
+            // Apply
+            Object.entries(colors).forEach(([key, value]) => {
+              document.documentElement.style.setProperty(key, String(value));
+            });
+            // Save
+            localStorage.setItem('ksebe_theme_config', JSON.stringify(colors));
+          }
+        } catch (e) {
+          console.warn('Theme sync failed', e);
+        }
+      }
+    };
+
+    loadAndSyncTheme();
   }, []);
 
   useEffect(() => {
@@ -506,8 +534,8 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
       <div className="relative z-10">
         <div className="relative h-[60vh] min-h-[500px] w-full overflow-hidden rounded-b-[3rem] shadow-2xl">
           <Image
-            src="/hero.jpg"
-            fallbackSrc="https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=1920&auto=format&fit=crop"
+            src={IMAGES.hero.mainBg}
+            fallbackSrc={IMAGES.hero.mainBg}
             alt="Yoga"
             storageKey="hero-main-bg-v4"
             showControlsLabel={true}
@@ -666,7 +694,7 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
 
             <div className="absolute top-0 right-0 w-1/2 h-full opacity-50 z-10 pointer-events-none">
               <Image
-                src="https://images.unsplash.com/photo-1552196563-55cd4e45efb3?q=80&w=400&fit=crop"
+                src={IMAGES.directions.insideFlow}
                 storageKey="home-studio-promo"
                 containerClassName="w-full h-full"
                 className="w-full h-full object-cover mask-linear"
