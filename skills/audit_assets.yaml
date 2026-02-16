@@ -1,5 +1,5 @@
 skill: 'asset_audit_sentinel'
-version: '1.0.0'
+version: '1.1.0'
 description: 'Scans for production-readiness issues like placeholder images and lorem ipsum.'
 trigger:
   event: 'push'
@@ -7,15 +7,21 @@ trigger:
 
 rules:
   forbidden_patterns:
-    - 'unsplash.com/photo-'
+    - 'unsplash.com/photo-' # Remove specific Unsplash placeholders
     - 'lorem ipsum'
     - 'TODO:'
     - 'FIXME:'
+    - 'VITE_GEMINI_API_KEY' # Should not exist in code
   severity: 'warning' # or "error" to block merge
 
 actions:
   - type: 'scan_files'
-    paths: ['src/', 'components/', 'shared/']
+    paths:
+      - 'k-sebe-yoga-studioWEB/src/'
+      - 'k-sebe-yoga-studioWEB/components/'
+      - 'k-sebe-yoga-studio-APPp/src/'
+      - 'k-sebe-yoga-studio-APPp/components/'
+      - 'shared/'
   - type: 'report'
     format: 'markdown'
     output: 'AUDIT_REPORT.md'
