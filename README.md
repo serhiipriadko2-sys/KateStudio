@@ -4,11 +4,13 @@
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![TypeScript](https://img.shields.io/badge/typescript-100%25-blue.svg)
 
-**"К себе" (To Yourself)** is a comprehensive digital ecosystem for the K Sebe Yoga Studio (Dubna, Russia).
+**"К себе" (To Yourself)** is a comprehensive digital ecosystem for the K Sebe
+Yoga Studio (Dubna, Russia).
 
 ## 📚 Documentation
 
-- **[AGENTS.md](./AGENTS.md)**: **MUST READ**. Primary guidelines for AI agents and developers.
+- **[AGENTS.md](./AGENTS.md)**: **MUST READ**. Primary guidelines for AI agents
+  and developers.
 - **[CLAUDE.md](./CLAUDE.md)**: Quick reference context for assistants.
 - **[Architecture](./docs/ARCHITECTURE.md)**: High-level system design.
 - **[Skills](./skills/registry.json)**: Automated agent capabilities.
@@ -25,17 +27,20 @@ This is a **Monorepo** managed with npm workspaces:
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js >= 18
 - npm >= 9
 - Supabase CLI
 
 ### Installation
+
 ```bash
 npm install
 cp .env.example .env
 ```
 
 ### Development
+
 ```bash
 # Web Workspace
 npm run dev:web
@@ -45,6 +50,7 @@ npm run dev:app
 ```
 
 ### Testing
+
 ```bash
 npm run test:run      # Run all tests (Vitest)
 npm run typecheck     # Verify TypeScript
@@ -59,4 +65,5 @@ npm run typecheck     # Verify TypeScript
 **Note**: Never commit `.env` files or expose API keys in client-side code.
 
 ## 📄 License
+
 MIT © K Sebe Yoga Studio
