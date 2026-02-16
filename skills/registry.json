@@ -1,7 +1,7 @@
 {
   "meta": {
-    "last_updated": "2026-01-13T12:00:00Z",
-    "version": "1.0.0"
+    "last_updated": "2026-02-16T18:03:44Z",
+    "version": "1.1.0"
   },
   "skills": [
     {
@@ -16,6 +16,24 @@
     {
       "id": "asset_audit_sentinel",
       "path": "skills/audit_assets.yaml",
+      "enabled": true,
+      "stats": {
+        "success_rate": 0.0,
+        "runs": 0
+      }
+    },
+    {
+      "id": "supabase_ops",
+      "path": "skills/supabase_ops.yaml",
+      "enabled": true,
+      "stats": {
+        "success_rate": 0.0,
+        "runs": 0
+      }
+    },
+    {
+      "id": "code_quality",
+      "path": "skills/code_quality.yaml",
       "enabled": true,
       "stats": {
         "success_rate": 0.0,

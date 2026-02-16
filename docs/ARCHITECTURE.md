@@ -14,8 +14,9 @@
 ```
 KateStudio/
 ├── shared/                    # @ksebe/shared — дизайн/компоненты/хуки/сервисы
-├── k-sebe-yoga-studioWEB/     # WEB (маркетинг + виджеты)
+├── k-sebe-yoga-studioWEB/     # WEB (маркетинг + виджеты + Admin Panel)
 ├── k-sebe-yoga-studio-APPp/   # APP (PWA, offline-first)
+├── supabase/                  # Backend (Edge Functions, DB Migrations)
 └── .github/workflows/         # CI/CD
 ```
 
@@ -25,62 +26,54 @@ KateStudio/
 [User]
   ├─> WEB (GitHub Pages/Firebase Hosting)
   │     ├─ UI (React/Vite)
-  │     ├─ Gemini (client-side ключ)  ⚠️
-  │     └─ Supabase (anon key)        ⚠️ зависит от RLS
+  │     ├─ Supabase Auth (Admin Login)
+  │     └─ Edge Functions (Payment, AI)
   │
   └─> APP (PWA)
         ├─ UI (React/Vite)
         ├─ Offline cache (IndexedDB/localStorage)
-        ├─ Gemini (client-side ключ)  ⚠️
-        └─ Supabase (anon key)        ⚠️ зависит от RLS
+        ├─ Supabase Auth (OTP/Magic Link)
+        └─ Edge Functions (Payment, AI Proxy)
 ```
 
-### Наблюдение (важно)
+### Обновления 2026 (важно)
 
-- **Gemini сейчас вызывается из браузера**, ключ подставляется на этапе сборки
-  (см. `k-sebe-yoga-studioWEB/vite.config.ts`,
-  `k-sebe-yoga-studio-APPp/vite.config.ts`).  
-  Это нормально для демо, но **небезопасно для масштаба/продакшена** → нужен
-  прокси/Edge Function.
-- **APP “Auth” сейчас — профайл по телефону + локальный кэш**, а не Supabase
-  Auth с серверными сессиями.
+- **AI (Gemini)**: Все запросы проходят через `supabase/functions/gemini-proxy`.
+  - Клиентские ключи полностью удалены.
+  - Используется `supabase.functions.invoke()`.
+- **Auth**: Используется Supabase Auth.
+  - RLS политики защищают данные.
+  - `public.admins` таблица управляет правами доступа к админке.
 
 ## 4) Конфигурация окружения (единый стандарт)
 
-Источник — `.env.example` в корне.
+Источник — `.env` (локально) и Secrets (GitHub/Supabase).
 
 - **Supabase (клиент)**:
   - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_ANON_KEY`
-- **Gemini (клиент, демо)**:
-  - `VITE_GEMINI_API_KEY`
-- **Gemini (сервер/edge, целевое состояние)**:
-  - `GEMINI_API_KEY` (секрет в Supabase/Firebase/Cloud Functions — не в клиенте)
+- **Gemini (сервер/edge)**:
+  - `GEMINI_API_KEY` (секрет в Supabase Vault — недоступен клиенту)
 
-Текущее состояние поддерживает _оба_ варианта (`VITE_GEMINI_API_KEY` и
-`GEMINI_API_KEY`) для обратной совместимости, но **рекомендуемый** —
-`VITE_GEMINI_API_KEY`.
-
-## 5) CI/CD (что реально проверяется)
+## 5) CI/CD
 
 См. `.github/workflows/ci.yml`:
 
-- lint: `npm run lint` (ESLint)
+- lint: `npm run lint` (ESLint Flat Config)
 - format: `npm run format:check` (Prettier)
-- typecheck: `npm run typecheck` (tsc)
+- typecheck: `npm run typecheck` (tsc -b)
 - test: `npm run test:run` (Vitest)
 - build: `npm run build:web`, `npm run build:app`
 
 WEB deploy:
 
 - GitHub Pages: `.github/workflows/deploy-pages.yml`
-- Firebase Hosting: `.github/workflows/firebase-deploy.yml`
 
-## 6) Технические “узкие места” (архитектурные)
+## 6) Технические решения
 
-1. **AI ключ в клиенте** → обязательный шаг: вынос в edge/proxy.
-2. **Аутентификация APP** (сейчас “демо-логин”) → перейти на Supabase Auth
-   (OTP/Email).
-3. **Большие компоненты**:
-   - WEB `components/ChatWidget.tsx` ~700 строк
-   - APP `components/ChatWidget.tsx` ~818 строк → декомпозиция + тесты.
+1. **Edge Functions**: Используются для всех чувствительных операций (AI,
+   платежи).
+2. **Offline-First**: PWA использует локальный кэш для расписания и контента,
+   синхронизируясь при подключении.
+3. **Monorepo**: Общий код в `shared` предотвращает дублирование.
+4. **Testing**: TDD подход с Vitest для критической логики.

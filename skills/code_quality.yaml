@@ -1,0 +1,24 @@
+skill: 'code_quality'
+version: '1.0.0'
+description: 'Enforces code style and quality via ESLint and Prettier.'
+trigger:
+  event: 'pull_request'
+  files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.json']
+
+rules:
+  forbidden_patterns:
+    - 'console.log' # Use logger
+    - 'any' # Use strict types
+    - 'debugger'
+  max_complexity: 15
+  file_size_limit_kb: 500
+
+actions:
+  - type: 'run_command'
+    command: 'npm run lint'
+    fix_command: 'npm run lint:fix'
+  - type: 'run_command'
+    command: 'npm run format:check'
+    fix_command: 'npm run format'
+  - type: 'run_command'
+    command: 'npm run typecheck'

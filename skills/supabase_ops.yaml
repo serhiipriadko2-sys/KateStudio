@@ -1,0 +1,22 @@
+skill: 'supabase_ops'
+version: '1.0.0'
+description: 'Manages Supabase database migrations and Edge Function deployments.'
+trigger:
+  event: 'push'
+  paths: ['supabase/migrations/*.sql', 'supabase/functions/**']
+
+rules:
+  migrations:
+    naming_convention: 'YYYYMMDDHHMMSS_description.sql'
+    forbidden_keywords: ['DROP TABLE', 'DROP COLUMN'] # Requires manual review
+  functions:
+    forbidden_files: ['.env']
+    max_size_mb: 10
+
+actions:
+  - type: 'lint_sql'
+    files: 'supabase/migrations/*.sql'
+  - type: 'check_migration_conflicts'
+  - type: 'deploy_function'
+    when: 'path_changed(supabase/functions/{{function_name}})'
+    command: 'supabase functions deploy {{function_name}} --no-verify-jwt'
