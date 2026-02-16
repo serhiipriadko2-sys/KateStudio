@@ -19,3 +19,7 @@ export type { DisplayMode } from './usePWAMode';
 // Gamification hooks (2026)
 export { useAchievements } from './useAchievements';
 export type { UseAchievementsOptions, UseAchievementsReturn } from './useAchievements';
+
+// Admin & Authorization hooks (2026)
+export { useIsAdmin } from './useIsAdmin';
+export type { UseIsAdminReturn } from './useIsAdmin';

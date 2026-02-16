@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 // import { Paywall } from '@ksebe/shared'; // Временно скрыто вместе с AI-подпиской
+import { IMAGES } from '@ksebe/shared';
 import {
   LogOut,
   LayoutDashboard,
@@ -27,7 +28,6 @@ import { dataService } from '../services/dataService';
 import { uploadFile, supabase } from '../services/supabaseClient';
 import { Booking } from '../types';
 // import { Subscription, SubscriptionPlan, SubscriptionStatus } from '../types'; // Временно скрыто вместе с AI-подпиской
-import { IMAGES } from '@ksebe/shared';
 import { AICoach } from './AICoach';
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';

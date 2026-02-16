@@ -22,6 +22,8 @@ import { ContactsTab } from './admin/tabs/ContactsTab';
 import { ContentTab } from './admin/tabs/ContentTab';
 import { DashboardTab } from './admin/tabs/DashboardTab';
 import { ImagesTab } from './admin/tabs/ImagesTab';
+import { PricingTab } from './admin/tabs/PricingTab';
+import { ReviewsTab } from './admin/tabs/ReviewsTab';
 import { ScheduleTab } from './admin/tabs/ScheduleTab';
 import { SettingsTab } from './admin/tabs/SettingsTab';
 import { AdminTab } from './admin/types';

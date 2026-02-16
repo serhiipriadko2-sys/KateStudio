@@ -58,15 +58,15 @@ describe('Marquee (WEB)', () => {
   it('switches visible track when breath phase completes', () => {
     render(<Marquee inhaleWords={['Энергия']} words={['Покой']} />);
 
-    const tracks = document.querySelectorAll('.breath-track');
-    expect(tracks[0].className).toContain('opacity-100');
+    const tracks = document.querySelectorAll('.breath-track') as NodeListOf<HTMLElement>;
+    expect(tracks[0].style.opacity).toBe('1');
 
     act(() => {
       const cb = finishCallbacks[finishCallbacks.length - 1];
       cb?.();
     });
 
-    expect(tracks[0].className).toContain('opacity-0');
-    expect(tracks[1].className).toContain('opacity-100');
+    expect(tracks[0].style.opacity).toBe('0');
+    expect(tracks[1].style.opacity).toBe('1');
   });
 });

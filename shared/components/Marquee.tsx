@@ -152,7 +152,7 @@ const WordStrip: React.FC<WordStripProps> = ({ items, separator, isInhale }) => 
             {word}
           </span>
 
-          {/* Heartbeat dot — double-pulse rhythm, staggered wave — only between words */}
+          {/* Heartbeat dot — subtle double-pulse rhythm, staggered wave — only between words */}
           {!isSep && (
             <span
               className="inline-block rounded-full mx-2 md:mx-3 shrink-0 transition-[background-color,box-shadow] duration-[3000ms] ease-in-out"
@@ -161,7 +161,7 @@ const WordStrip: React.FC<WordStripProps> = ({ items, separator, isInhale }) => 
                 height: '5px',
                 backgroundColor: isInhale ? 'rgba(87, 167, 115, 0.5)' : 'rgba(168, 162, 158, 0.35)',
                 boxShadow: isInhale ? '0 0 10px rgba(87, 167, 115, 0.35)' : 'none',
-                animation: `breath-heartbeat ${isInhale ? '2s' : '2.8s'} ease-in-out infinite`,
+                animation: `breath-heartbeat ${isInhale ? '2.2s' : '3s'} ease-in-out infinite`,
                 animationDelay: `${Math.round(delay * 0.7)}ms`,
               }}
               aria-hidden="true"
@@ -188,9 +188,15 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   const animRef = useRef<Animation | null>(null);
 
   // Rotate words on each cycle
-  const rotatedInhale = [...inhaleWords.slice(cycleCount % inhaleWords.length), ...inhaleWords.slice(0, cycleCount % inhaleWords.length)];
+  const rotatedInhale = [
+    ...inhaleWords.slice(cycleCount % inhaleWords.length),
+    ...inhaleWords.slice(0, cycleCount % inhaleWords.length),
+  ];
   const currentInhaleWords = rotatedInhale.slice(0, 8);
-  const rotatedExhale = [...words.slice(cycleCount % words.length), ...words.slice(0, cycleCount % words.length)];
+  const rotatedExhale = [
+    ...words.slice(cycleCount % words.length),
+    ...words.slice(0, cycleCount % words.length),
+  ];
   const currentExhaleWords = rotatedExhale.slice(0, 8);
 
   const inhaleTrack = buildTrack(currentInhaleWords, SEPARATOR_INHALE);
@@ -234,7 +240,7 @@ export const Marquee: React.FC<MarqueeConfig> = ({
         if (cancelled) return;
         currentPhase = currentPhase === 'inhale' ? 'exhale' : 'inhale';
         setPhase(currentPhase);
-        setCycleCount(prev => prev + 1);
+        setCycleCount((prev) => prev + 1);
         run();
       };
     };
@@ -289,38 +295,46 @@ export const Marquee: React.FC<MarqueeConfig> = ({
           WebkitMaskImage: HAZE_MASK,
         }}
       >
-        {/* Inhale words — crossfade in */}
+        {/* Inhale words — deep crossfade with delayed entrance */}
         <div
           className={cn(
             'breath-track absolute inset-0 flex items-center justify-center whitespace-nowrap',
             'transition-opacity duration-[4000ms] ease-in-out',
             isInhale ? 'opacity-100' : 'opacity-0'
           )}
+          style={{
+            opacity: isInhale ? 1 : 0,
+            transitionDelay: isInhale ? '400ms' : '0ms',
+          }}
           aria-hidden={!isInhale}
         >
           <WordStrip items={inhaleTrack} separator={SEPARATOR_INHALE} isInhale={true} />
         </div>
 
-        {/* Exhale words — crossfade in */}
+        {/* Exhale words — deep crossfade with delayed entrance */}
         <div
           className={cn(
             'breath-track absolute inset-0 flex items-center justify-center whitespace-nowrap',
             'transition-opacity duration-[4000ms] ease-in-out',
             !isInhale ? 'opacity-100' : 'opacity-0'
           )}
+          style={{
+            opacity: !isInhale ? 1 : 0,
+            transitionDelay: !isInhale ? '400ms' : '0ms',
+          }}
           aria-hidden={isInhale}
         >
           <WordStrip items={exhaleTrack} separator={SEPARATOR_EXHALE} isInhale={false} />
         </div>
       </div>
 
-      {/* Heartbeat keyframes + reduced-motion override */}
+      {/* Heartbeat keyframes (subtle) + reduced-motion override */}
       <style>{`
         @keyframes breath-heartbeat {
-          0%, 55%, 100% { transform: scale(1); opacity: 0.1; }
-          14% { transform: scale(1.2); opacity: 0.4; }
-          28% { transform: scale(0.9); opacity: 0.15; }
-          42% { transform: scale(1.1); opacity: 0.3; }
+          0%, 60%, 100% { transform: scale(1); opacity: 0.35; }
+          18% { transform: scale(1.15); opacity: 0.65; }
+          32% { transform: scale(0.92); opacity: 0.28; }
+          46% { transform: scale(1.08); opacity: 0.55; }
         }
         @media (prefers-reduced-motion: reduce) {
           .breath-track span { animation: none !important; transition: none !important; }

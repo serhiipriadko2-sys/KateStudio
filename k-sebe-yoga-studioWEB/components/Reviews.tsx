@@ -1,9 +1,9 @@
 import { IMAGES } from '@ksebe/shared';
 import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
 import React, { useRef, useState, useEffect } from 'react';
+import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
-import { isSupabaseConfigured, supabase } from '../services/supabase';
 
 interface TestimonialProps {
   id: number | string;

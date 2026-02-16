@@ -5,7 +5,7 @@ import { isSupabaseConfigured, supabase } from './supabaseClient';
 export const DATA_SOURCES = {
   userProfile: 'supabase',
   bookings: 'supabase',
-  classSchedule: 'supabase', // Changed from local-generated
+  classSchedule: 'supabase-with-fallback', // Supabase with local fallback
   cachedUser: 'local-cache',
   cachedBookings: 'local-cache',
   pendingBookings: 'local-cache',
@@ -159,7 +159,6 @@ export const dataService = {
     // --- FALLBACK / DEMO MODE ---
     const daySeed = date.getFullYear() * 1000 + (date.getMonth() + 1) * 100 + date.getDate();
 
-    // 1. Generate Base Schedule Templates
     const templates =
       type === 'offline'
         ? [
@@ -221,7 +220,6 @@ export const dataService = {
             },
           ];
 
-    // 2. Filter randomly to create variety
     const todaysClasses = templates.filter((_, i) => pseudoRandom(daySeed + i) > 0.3);
 
     // 3. Prepare IDs
@@ -234,21 +232,25 @@ export const dataService = {
     const bookingCounts: Record<string, number> = {};
 
     // 4. Try Fetch real booking counts from Supabase (for fallback IDs)
-    try {
-      const { data: bookings, error } = await supabase
-        .from('bookings')
-        .select('class_id')
-        .in('class_id', classIds);
+    if (isSupabaseConfigured) {
+      try {
+        const { data: bookings, error } = await supabase
+          .from('bookings')
+          .select('class_id')
+          .in('class_id', classIds);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      if (bookings) {
-        bookings.forEach((b: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
-          bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
-        });
+        if (bookings) {
+          bookings.forEach(
+            (b: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
+              bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
+            }
+          );
+        }
+      } catch {
+        // Silent fail for offline mode
       }
-    } catch {
-      // Silent fail for offline mode
     }
 
     // 5. Map final objects
@@ -264,7 +266,7 @@ export const dataService = {
         instructor: 'Катя Габран',
         duration: tmpl.duration,
         spotsTotal: tmpl.spots,
-        spotsBooked: Math.min(initialBooked + realBookings, tmpl.spots),
+        spotsBooked: realBookings || initialBooked,
         location: tmpl.loc,
         intensity: tmpl.int as 1 | 2 | 3,
         price: tmpl.price,
@@ -340,7 +342,7 @@ export const dataService = {
       time: cls.time,
       location: cls.location,
       timestamp: Date.now(),
-      // Also add price if possible, or leave it (schema might need update if strict)
+      status: 'pending',
     };
 
     try {
@@ -430,6 +432,7 @@ export const dataService = {
               time: booking.time,
               location: booking.location,
               timestamp: booking.timestamp,
+              status: 'pending',
             })
             .select()
             .single();

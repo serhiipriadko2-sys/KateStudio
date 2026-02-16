@@ -1,7 +1,7 @@
 import { Check, Star, ArrowRight } from 'lucide-react';
 import React, { useMemo, useState, useEffect } from 'react';
-import { FadeIn } from './FadeIn';
 import { isSupabaseConfigured, supabase } from '../services/supabase';
+import { FadeIn } from './FadeIn';
 
 interface PricingProps {
   onBook: (plan: string, price: string) => void;
@@ -244,20 +244,23 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
           .order('created_at', { ascending: false });
 
         if (!error && data && data.length > 0) {
-          const grouped = data.reduce((acc, plan) => {
-            if (!acc[plan.category]) {
+          const grouped = data.reduce(
+            (acc, plan) => {
+              if (!acc[plan.category]) {
                 acc[plan.category] = [];
-            }
-            acc[plan.category].push({
+              }
+              acc[plan.category].push({
                 title: plan.title,
                 price: plan.price,
                 description: plan.description || '',
                 features: plan.features || [],
                 isPopular: plan.is_popular,
-                isDark: plan.is_dark
-            });
-            return acc;
-          }, {} as Record<string, PriceOption[]>);
+                isDark: plan.is_dark,
+              });
+              return acc;
+            },
+            {} as Record<string, PriceOption[]>
+          );
 
           setPlans((prev) => ({ ...prev, ...grouped }));
         }

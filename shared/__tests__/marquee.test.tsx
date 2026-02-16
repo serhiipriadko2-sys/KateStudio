@@ -75,27 +75,27 @@ describe('Marquee (Breathing Strip)', () => {
   it('switches phase when breathing animation completes (onfinish)', () => {
     render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
 
-    // Inhale track visible, exhale hidden
-    const tracks = document.querySelectorAll('.breath-track');
-    expect(tracks[0].className).toContain('opacity-100');
-    expect(tracks[1].className).toContain('opacity-0');
+    // Inhale track visible (opacity: 1), exhale hidden (opacity: 0)
+    const tracks = document.querySelectorAll('.breath-track') as NodeListOf<HTMLElement>;
+    expect(tracks[0].style.opacity).toBe('1');
+    expect(tracks[1].style.opacity).toBe('0');
 
     completeBreathPhase();
 
     // After one phase: exhale visible, inhale hidden
-    expect(tracks[0].className).toContain('opacity-0');
-    expect(tracks[1].className).toContain('opacity-100');
+    expect(tracks[0].style.opacity).toBe('0');
+    expect(tracks[1].style.opacity).toBe('1');
   });
 
   it('cycles back to inhale after two breath phases', () => {
     render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} />);
-    const tracks = document.querySelectorAll('.breath-track');
+    const tracks = document.querySelectorAll('.breath-track') as NodeListOf<HTMLElement>;
 
     completeBreathPhase(); // → exhale
-    expect(tracks[1].className).toContain('opacity-100');
+    expect(tracks[1].style.opacity).toBe('1');
 
     completeBreathPhase(); // → inhale
-    expect(tracks[0].className).toContain('opacity-100');
+    expect(tracks[0].style.opacity).toBe('1');
   });
 
   it('calls Element.animate with vertical float keyframes', () => {

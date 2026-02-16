@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../services/supabase';
 import { Plus, Pencil, Trash2, Save, X, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { supabase } from '../../../services/supabase';
 
 interface DBReview {
   id: string;
@@ -20,7 +20,11 @@ export const ReviewsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') 
   const [editingId, setEditingId] = useState<string | 'new' | null>(null);
 
   // Fetch Reviews
-  const { data: reviews, isLoading, error } = useQuery({
+  const {
+    data: reviews,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['reviews'],
     queryFn: async () => {
       if (!supabase) throw new Error('Supabase not configured');
@@ -116,7 +120,9 @@ export const ReviewsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') 
               <X className="w-5 h-5" />
             </button>
             <ReviewEditor
-              initialData={editingId === 'new' ? undefined : reviews?.find((r) => r.id === editingId)}
+              initialData={
+                editingId === 'new' ? undefined : reviews?.find((r) => r.id === editingId)
+              }
               onSave={handleSave}
               onCancel={() => setEditingId(null)}
             />
@@ -139,7 +145,9 @@ export const ReviewsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') 
           <div
             key={review.id}
             className={`bg-white rounded-xl border p-4 flex items-start gap-4 transition-colors ${
-              !review.is_active ? 'border-stone-100 opacity-60' : 'border-stone-100 hover:border-brand-green/20'
+              !review.is_active
+                ? 'border-stone-100 opacity-60'
+                : 'border-stone-100 hover:border-brand-green/20'
             }`}
           >
             <div className="w-12 h-12 rounded-full bg-stone-100 overflow-hidden shrink-0">

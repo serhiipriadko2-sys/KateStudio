@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../../../services/supabase';
 import { Plus, Pencil, Trash2, Save, X, Star, Moon } from 'lucide-react';
+import React, { useState } from 'react';
+import { supabase } from '../../../services/supabase';
 
 type PricingCategory = 'yoga' | 'personal' | 'sound' | 'massage';
 
@@ -34,7 +34,11 @@ export const PricingTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') 
   const [editingId, setEditingId] = useState<string | 'new' | null>(null);
 
   // Fetch Plans
-  const { data: plans, isLoading, error } = useQuery({
+  const {
+    data: plans,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['pricing_plans', activeCategory],
     queryFn: async () => {
       if (!supabase) throw new Error('Supabase not configured');

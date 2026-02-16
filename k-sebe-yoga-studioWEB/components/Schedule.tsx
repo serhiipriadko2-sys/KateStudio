@@ -1,5 +1,6 @@
-import { ChevronRight, ChevronLeft, MapPin, Users, Info, Flame } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import type { ClassSession, ClassRow, LoadLevel } from '@ksebe/shared';
+import { ChevronRight, ChevronLeft, MapPin, Users, Info, Flame, Loader2 } from 'lucide-react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { defaultContent } from '../data/content';
 import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { BookingDetails } from '../types';
@@ -9,41 +10,34 @@ interface ScheduleProps {
   onBook: (details: BookingDetails) => void;
 }
 
-type LoadLevel = 'low' | 'medium' | 'high' | 'full' | 'none';
-
-interface ClassSession {
-  id: string;
-  dateStr: string;
-  time: string;
-  name: string;
-  instructor: string;
-  duration: string;
-  spotsTotal: number;
-  spotsBooked: number;
-  location: string;
-  intensity: 1 | 2 | 3;
-  isOnline: boolean;
-}
-
-interface ClassRow {
-  id: string;
-  date: string;
-  time: string;
-  name: string;
-  instructor: string | null;
-  duration: string | null;
-  spots_total: number | null;
-  spots_booked: number | null;
-  location: string | null;
-  intensity: number | null;
-  is_online: boolean | null;
-}
-
 const formatDateKey = (date: Date) => {
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, '0');
   const day = `${date.getDate()}`.padStart(2, '0');
   return `${year}-${month}-${day}`;
+};
+
+const mapClassRow = (row: ClassRow, activeTab: 'offline' | 'online'): ClassSession => {
+  const intensityValue = row.intensity ?? 1;
+  const intensity: 1 | 2 | 3 = [1, 2, 3].includes(intensityValue)
+    ? (intensityValue as 1 | 2 | 3)
+    : 1;
+
+  return {
+    id: row.id,
+    dateStr: row.date,
+    time: row.time,
+    name: row.name,
+    instructor: row.instructor ?? 'Катя Габран',
+    duration: row.duration ?? '60 мин',
+    spotsTotal: row.spots_total ?? 0,
+    spotsBooked: row.spots_booked ?? 0,
+    location: row.location ?? (activeTab === 'online' ? 'Online' : 'Станционная ул., 5Б'),
+    intensity,
+    isOnline: row.is_online ?? activeTab === 'online',
+    price: row.price ?? undefined,
+    description: row.description ?? undefined,
+  };
 };
 
 const generateFallbackClasses = (date: Date, tab: 'offline' | 'online'): ClassSession[] => {
@@ -56,7 +50,6 @@ const generateFallbackClasses = (date: Date, tab: 'offline' | 'online'): ClassSe
 
   for (let day = 1; day <= daysInMonth; day++) {
     const currentDate = new Date(year, month, day);
-    // Skip Sundays to look realistic
     if (currentDate.getDay() === 0) continue;
 
     const dateStr = formatDateKey(currentDate);
@@ -70,7 +63,7 @@ const generateFallbackClasses = (date: Date, tab: 'offline' | 'online'): ClassSe
         instructor: 'Катя Габран',
         duration: tmpl.duration,
         spotsTotal: tmpl.spotsTotal,
-        spotsBooked: Math.floor(Math.random() * tmpl.spotsTotal * 0.4), // 40% occupancy for demo
+        spotsBooked: Math.floor(Math.random() * tmpl.spotsTotal * 0.4),
         location: tmpl.location,
         intensity: tmpl.intensity,
         isOnline: tab === 'online',
@@ -86,30 +79,27 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
   const [classes, setClasses] = useState<ClassSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [, setHasError] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
 
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) {
-      setIsDemo(true);
-      setClasses(generateFallbackClasses(currentMonth, activeTab));
-      return;
-    }
+  const fetchClasses = useCallback(
+    async (showLoading = true) => {
+      if (!isSupabaseConfigured || !supabase) {
+        setIsDemo(true);
+        setClasses(generateFallbackClasses(currentMonth, activeTab));
+        return;
+      }
 
-    let isActive = true;
-    const fetchClasses = async () => {
-      setIsLoading(true);
-      setHasError(false);
+      if (showLoading) setIsLoading(true);
       setIsDemo(false);
 
       const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
       const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
 
       try {
-        const { data, error } = await supabase!
+        const { data, error } = await supabase
           .from('classes')
           .select(
-            'id,date,time,name,instructor,duration,spots_total,spots_booked,location,intensity,is_online'
+            'id,date,time,name,instructor,duration,spots_total,spots_booked,location,intensity,is_online,price,description'
           )
           .gte('date', formatDateKey(startDate))
           .lte('date', formatDateKey(endDate))
@@ -119,57 +109,47 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
 
         if (error) throw error;
 
-        if (isActive) {
-          if (!data || data.length === 0) {
-            // Fallback if configured but empty
-            setIsDemo(true);
-            setClasses(generateFallbackClasses(currentMonth, activeTab));
-          } else {
-            const mapped = (data as ClassRow[]).map((row) => {
-              const intensityValue = row.intensity ?? 1;
-              const intensity: 1 | 2 | 3 = [1, 2, 3].includes(intensityValue)
-                ? (intensityValue as 1 | 2 | 3)
-                : 1;
-
-              return {
-                id: row.id,
-                dateStr: row.date,
-                time: row.time,
-                name: row.name,
-                instructor: row.instructor ?? 'Катя Габран',
-                duration: row.duration ?? '60 мин',
-                spotsTotal: row.spots_total ?? 0,
-                spotsBooked: row.spots_booked ?? 0,
-                location:
-                  row.location ?? (activeTab === 'online' ? 'Online' : 'Станционная ул., 5Б'),
-                intensity,
-                isOnline: row.is_online ?? activeTab === 'online',
-              };
-            });
-            setClasses(mapped);
-          }
-        }
-      } catch (error) {
-        if (isActive) {
-          console.warn('Schedule fetch error, using fallback', error);
-          setHasError(true);
-          // Fallback on error too
+        if (!data || data.length === 0) {
           setIsDemo(true);
           setClasses(generateFallbackClasses(currentMonth, activeTab));
+        } else {
+          setClasses((data as ClassRow[]).map((row) => mapClassRow(row, activeTab)));
         }
+      } catch (error) {
+        console.warn('Schedule fetch error, using fallback', error);
+        setIsDemo(true);
+        setClasses(generateFallbackClasses(currentMonth, activeTab));
       } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
+        if (showLoading) setIsLoading(false);
       }
-    };
+    },
+    [currentMonth, activeTab]
+  );
 
-    fetchClasses();
+  // Initial fetch
+  useEffect(() => {
+    fetchClasses(true);
+  }, [fetchClasses]);
+
+  // Real-time subscription: refresh when bookings change
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    const supabaseClient = supabase; // Capture for cleanup
+    const channel = supabaseClient
+      .channel('schedule-bookings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        fetchClasses(false);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'classes' }, () => {
+        fetchClasses(false);
+      })
+      .subscribe();
 
     return () => {
-      isActive = false;
+      supabaseClient.removeChannel(channel);
     };
-  }, [currentMonth, activeTab]);
+  }, [fetchClasses]);
 
   const classesByDay = useMemo(() => {
     const map = new Map<number, ClassSession[]>();
@@ -227,6 +207,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
       time: cls.time,
       date: `${selectedDate} ${currentMonth.toLocaleString('ru', { month: 'long' })}`,
       location: cls.location,
+      price: cls.price ? `${cls.price}₽` : undefined,
     });
   };
 
@@ -258,18 +239,26 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
     const totalDays = getDaysInMonth(currentMonth);
     const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
     const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+
+    const today = new Date();
+    const isCurrentMonth =
+      today.getMonth() === currentMonth.getMonth() &&
+      today.getFullYear() === currentMonth.getFullYear();
+    const todayDate = today.getDate();
+
     for (let i = 0; i < startOffset; i++)
       days.push(<div key={`empty-${i}`} className="aspect-square w-full"></div>);
     for (let i = 1; i <= totalDays; i++) {
       const load = getLoadLevel(i);
       const isSelected = selectedDate === i;
       const isDisabled = load === 'none';
+      const isToday = isCurrentMonth && todayDate === i;
       days.push(
         <button
           key={i}
           onClick={() => !isDisabled && setSelectedDate(i)}
           disabled={isDisabled}
-          className={`relative aspect-square p-1 rounded-xl transition-all duration-200 flex flex-col items-center justify-center ${isSelected ? 'bg-brand-green text-white shadow-md scale-105 z-10' : ''} ${!isSelected && !isDisabled ? 'hover:bg-stone-50 bg-white border border-stone-100 text-brand-text' : ''} ${isDisabled ? 'opacity-30 cursor-not-allowed text-stone-300' : ''}`}
+          className={`relative aspect-square p-1 rounded-xl transition-all duration-200 flex flex-col items-center justify-center ${isSelected ? 'bg-brand-green text-white shadow-md scale-105 z-10' : ''} ${!isSelected && !isDisabled ? 'hover:bg-stone-50 bg-white border border-stone-100 text-brand-text' : ''} ${!isSelected && isToday ? 'ring-2 ring-brand-green/40 ring-offset-1' : ''} ${isDisabled ? 'opacity-30 cursor-not-allowed text-stone-300' : ''}`}
         >
           <span className={`text-sm md:text-base font-medium ${isSelected ? 'text-white' : ''}`}>
             {i}
@@ -358,6 +347,19 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-2">{renderCalendar()}</div>
+
+              {/* Legend */}
+              <div className="flex items-center justify-center gap-4 mt-6 text-[10px] text-stone-400">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span> свободно
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-amber-400"></span> заполняется
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-rose-400"></span> почти нет мест
+                </span>
+              </div>
             </div>
           </FadeIn>
         </div>
@@ -378,7 +380,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
               {isLoading && (
                 <FadeIn delay={300}>
                   <div className="p-12 text-center bg-stone-50 rounded-[2rem] border-2 border-dashed border-stone-200">
-                    <Info className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+                    <Loader2 className="w-10 h-10 text-brand-green mx-auto mb-3 animate-spin" />
                     <p className="text-stone-500">Загружаем расписание...</p>
                   </div>
                 </FadeIn>
@@ -402,6 +404,11 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
                               <span className="text-xs text-stone-400 bg-stone-50 px-2 py-1 rounded-md mt-1 whitespace-nowrap">
                                 {cls.duration}
                               </span>
+                              {cls.price !== null && cls.price !== undefined && cls.price > 0 && (
+                                <span className="text-xs font-medium text-brand-green mt-1">
+                                  {cls.price}₽
+                                </span>
+                              )}
                             </div>
                             <div className="w-[1px] h-12 bg-stone-100 hidden md:block"></div>
                             <div>
