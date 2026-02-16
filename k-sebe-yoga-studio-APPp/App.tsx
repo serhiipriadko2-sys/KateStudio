@@ -1,5 +1,5 @@
 // FadeIn available from '@ksebe/shared' when needed
-import { UpdateBanner, OfflineBanner, IMAGES } from '@ksebe/shared';
+import { analytics, UpdateBanner, OfflineBanner, IMAGES } from '@ksebe/shared';
 import { useOnlineStatus } from '@ksebe/shared';
 import {
   Home,
@@ -225,6 +225,10 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
 };
 
 export default function App() {
+  useEffect(() => {
+    analytics.initWebVitals();
+    analytics.pageView(window.location.pathname);
+  }, []);
   const { authStatus, user } = useAuth();
   const isOnline = useOnlineStatus();
   const { updateAvailable, updating, triggerUpdate, dismissUpdate } = usePWAUpdate();
