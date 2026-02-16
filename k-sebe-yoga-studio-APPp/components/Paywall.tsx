@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../services/supabaseClient';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
 
 interface PaywallProps {
   onClose?: () => void;

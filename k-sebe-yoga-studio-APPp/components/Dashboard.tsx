@@ -89,8 +89,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         .single()
         .then(({ data }) => {
           if (data) setSubscription(data);
+          setSubscriptionLoading(false);
         })
-        .finally(() => setSubscriptionLoading(false));
+
     }
   }, [user?.id]);
 
@@ -201,10 +202,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   };
 
-  const handleSubscribePlan = (plan: string) => {
-    console.log('Subscribe to', plan);
-  };
-  const handleLogout = () => {
+const handleLogout = () => {
     logout();
     onBack();
     showToast('Вы вышли из системы', 'info');
