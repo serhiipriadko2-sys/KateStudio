@@ -1,3 +1,4 @@
+import type { ClassRow, ClassFormData, BookingRow, ContactRow, BookingStatus } from '@ksebe/shared';
 import {
   X,
   Settings,
@@ -28,6 +29,10 @@ import {
   MessageSquare,
   ShoppingCart,
   RefreshCw,
+  CopyPlus,
+  Check,
+  XCircle,
+  CircleDot,
 } from 'lucide-react';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ContentData, ContentMode, BlogArticle } from '../data/content';
@@ -54,56 +59,6 @@ interface AdminPanelProps {
 }
 
 type AdminTab = 'schedule' | 'bookings' | 'contacts' | 'content' | 'images' | 'settings';
-
-interface ClassRow {
-  id: string;
-  date: string;
-  time: string;
-  name: string;
-  instructor: string | null;
-  duration: string | null;
-  spots_total: number | null;
-  spots_booked: number | null;
-  location: string | null;
-  intensity: number | null;
-  is_online: boolean | null;
-}
-
-interface ClassFormData {
-  date: string;
-  time: string;
-  name: string;
-  instructor: string;
-  duration: string;
-  spots_total: number;
-  location: string;
-  intensity: 1 | 2 | 3;
-  is_online: boolean;
-}
-
-interface BookingRow {
-  id: string;
-  phone: string | null;
-  name: string | null;
-  class_name: string | null;
-  class_type: string | null;
-  class_date: string | null;
-  class_time: string | null;
-  date: string | null;
-  time: string | null;
-  created_at: string;
-  location: string | null;
-  is_purchase: boolean | null;
-  price: string | null;
-}
-
-interface ContactRow {
-  id: string;
-  name: string | null;
-  phone: string | null;
-  message: string | null;
-  created_at: string;
-}
 
 /* ═══════════════════════════════════════════════════════════
    Constants
@@ -133,14 +88,22 @@ const EMPTY_CLASS: ClassFormData = {
   location: 'Станционная ул., 5Б',
   intensity: 2,
   is_online: false,
+  price: 700,
+  description: '',
 };
 
 const CLASS_PRESETS: { label: string; data: Partial<ClassFormData> }[] = [
-  { label: 'Inside Flow', data: { name: 'Inside Flow', duration: '60 мин', intensity: 3 } },
-  { label: 'Хатха Йога', data: { name: 'Хатха Йога', duration: '60 мин', intensity: 2 } },
+  {
+    label: 'Inside Flow',
+    data: { name: 'Inside Flow', duration: '60 мин', intensity: 3, price: 700 },
+  },
+  {
+    label: 'Хатха Йога',
+    data: { name: 'Хатха Йога', duration: '60 мин', intensity: 2, price: 700 },
+  },
   {
     label: 'Медитация',
-    data: { name: 'Медитация + Sound Healing', duration: '60 мин', intensity: 1 },
+    data: { name: 'Медитация + Sound Healing', duration: '60 мин', intensity: 1, price: 1500 },
   },
   {
     label: 'Утренний поток',
@@ -150,6 +113,7 @@ const CLASS_PRESETS: { label: string; data: Partial<ClassFormData> }[] = [
       intensity: 2,
       is_online: true,
       location: 'Online',
+      price: 400,
     },
   },
   {
@@ -160,9 +124,36 @@ const CLASS_PRESETS: { label: string; data: Partial<ClassFormData> }[] = [
       intensity: 1,
       is_online: true,
       location: 'Online',
+      price: 400,
     },
   },
 ];
+
+const BOOKING_STATUS_CONFIG: Record<
+  BookingStatus,
+  { label: string; color: string; icon: React.ReactNode }
+> = {
+  pending: {
+    label: 'Ожидает',
+    color: 'bg-amber-50 text-amber-600 border-amber-200',
+    icon: <CircleDot className="w-3 h-3" />,
+  },
+  confirmed: {
+    label: 'Подтверждено',
+    color: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+    icon: <Check className="w-3 h-3" />,
+  },
+  cancelled: {
+    label: 'Отменено',
+    color: 'bg-rose-50 text-rose-600 border-rose-200',
+    icon: <XCircle className="w-3 h-3" />,
+  },
+  completed: {
+    label: 'Завершено',
+    color: 'bg-stone-50 text-stone-500 border-stone-200',
+    icon: <CheckCircle className="w-3 h-3" />,
+  },
+};
 
 /* ═══════════════════════════════════════════════════════════
    Helpers
@@ -375,6 +366,8 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
       location: cls.location || 'Станционная ул., 5Б',
       intensity: ([1, 2, 3].includes(cls.intensity || 0) ? cls.intensity : 2) as 1 | 2 | 3,
       is_online: cls.is_online || false,
+      price: cls.price || 700,
+      description: cls.description || '',
     });
     setShowForm(true);
   };
@@ -404,10 +397,11 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
         location: form.location.trim(),
         intensity: form.intensity,
         is_online: form.is_online,
+        price: form.price > 0 ? form.price : null,
+        description: form.description.trim() || null,
       };
 
       if (editingId) {
-        // NOTE: do NOT send spots_booked — it would reset existing bookings
         const { error } = await supabase.from('classes').update(base).eq('id', editingId);
         if (error) throw error;
         toast('Занятие обновлено');
@@ -457,6 +451,8 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
         location: cls.location,
         intensity: cls.intensity,
         is_online: cls.is_online,
+        price: cls.price,
+        description: cls.description,
       });
       if (error) throw error;
       toast(`Скопировано на ${formatDateRu(newDate)}`);
@@ -464,6 +460,39 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
     } catch (err) {
       console.error(err);
       toast('Ошибка копирования', 'error');
+    }
+  };
+
+  const handleDuplicateWeek = async () => {
+    if (!supabase || classes.length === 0) return;
+    if (!confirm('Скопировать все занятия этого месяца на +7 дней?')) return;
+    try {
+      const inserts = classes.map((cls) => {
+        const nextDate = new Date(cls.date + 'T00:00:00');
+        nextDate.setDate(nextDate.getDate() + 7);
+        return {
+          date: nextDate.toISOString().slice(0, 10),
+          time: cls.time,
+          name: cls.name,
+          instructor: cls.instructor,
+          duration: cls.duration,
+          spots_total: cls.spots_total,
+          spots_booked: 0,
+          location: cls.location,
+          intensity: cls.intensity,
+          is_online: cls.is_online,
+          price: cls.price,
+          description: cls.description,
+        };
+      });
+
+      const { error } = await supabase.from('classes').insert(inserts);
+      if (error) throw error;
+      toast(`Скопировано ${inserts.length} занятий (+7 дней)`);
+      fetchClasses();
+    } catch (err) {
+      console.error(err);
+      toast('Ошибка массового копирования', 'error');
     }
   };
 
@@ -483,12 +512,23 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
           onChange={(e) => setDateFilter(e.target.value)}
           className="px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white focus:ring-2 focus:ring-brand-green/30 focus:outline-none"
         />
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-green text-white rounded-xl text-sm font-medium hover:bg-brand-green/90 transition-colors shadow-sm"
-        >
-          <Plus className="w-4 h-4" /> Добавить занятие
-        </button>
+        <div className="flex items-center gap-2">
+          {classes.length > 0 && (
+            <button
+              onClick={handleDuplicateWeek}
+              className="flex items-center gap-1.5 px-3 py-2 bg-stone-100 text-stone-600 rounded-xl text-xs font-medium hover:bg-stone-200 transition-colors"
+              title="Копировать все занятия на +7 дней"
+            >
+              <CopyPlus className="w-3.5 h-3.5" /> +7 дней
+            </button>
+          )}
+          <button
+            onClick={openCreate}
+            className="flex items-center gap-2 px-4 py-2 bg-brand-green text-white rounded-xl text-sm font-medium hover:bg-brand-green/90 transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> Добавить
+          </button>
+        </div>
       </div>
 
       {/* Create/Edit Form */}
@@ -574,7 +614,7 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
             </label>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <label className="space-y-1">
               <span className="text-xs text-stone-500 font-medium">Мест</span>
               <input
@@ -585,6 +625,16 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
                 onChange={(e) =>
                   setForm((f) => ({ ...f, spots_total: parseInt(e.target.value) || 1 }))
                 }
+                className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none"
+              />
+            </label>
+            <label className="space-y-1">
+              <span className="text-xs text-stone-500 font-medium">Цена ₽</span>
+              <input
+                type="number"
+                min={0}
+                value={form.price}
+                onChange={(e) => setForm((f) => ({ ...f, price: parseInt(e.target.value) || 0 }))}
                 className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none"
               />
             </label>
@@ -634,6 +684,17 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
               value={form.location}
               onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
               className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none"
+            />
+          </label>
+
+          <label className="space-y-1 block">
+            <span className="text-xs text-stone-500 font-medium">Описание (опц.)</span>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              rows={2}
+              className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none resize-none"
+              placeholder="Описание для студентов..."
             />
           </label>
 
@@ -710,6 +771,9 @@ const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
                   <span>
                     {cls.spots_booked || 0}/{cls.spots_total || 0} мест
                   </span>
+                  {cls.price !== null && cls.price !== undefined && cls.price > 0 && (
+                    <span className="text-brand-green font-medium">{cls.price}₽</span>
+                  )}
                   {cls.is_online && <span className="text-blue-500 font-medium">онлайн</span>}
                 </div>
               </div>
@@ -754,18 +818,25 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
 
   const fetchBookings = useCallback(async () => {
     if (!isSupabaseConfigured || !supabase) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('bookings')
         .select(
-          'id,phone,name,class_name,class_type,class_date,class_time,date,time,created_at,location,is_purchase,price'
+          'id,user_id,phone,name,class_id,class_name,class_type,class_date,class_time,date,time,created_at,location,is_purchase,price,status'
         )
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(200);
+
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       setBookings((data as BookingRow[]) || []);
     } catch (err) {
@@ -774,11 +845,27 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, statusFilter]);
 
   useEffect(() => {
     fetchBookings();
   }, [fetchBookings]);
+
+  const handleStatusChange = async (bookingId: string, newStatus: BookingStatus) => {
+    if (!supabase) return;
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: newStatus })
+        .eq('id', bookingId);
+      if (error) throw error;
+      toast(`Статус: ${BOOKING_STATUS_CONFIG[newStatus].label}`);
+      fetchBookings();
+    } catch (err) {
+      console.error(err);
+      toast('Ошибка обновления статуса', 'error');
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (!supabase) return;
@@ -819,6 +906,23 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
         </button>
       </div>
 
+      {/* Status filter */}
+      <div className="flex flex-wrap gap-1.5">
+        {(['all', 'pending', 'confirmed', 'cancelled', 'completed'] as const).map((status) => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+              statusFilter === status
+                ? 'bg-brand-green text-white border-brand-green'
+                : 'bg-white text-stone-500 border-stone-200 hover:border-brand-green/50'
+            }`}
+          >
+            {status === 'all' ? `Все` : BOOKING_STATUS_CONFIG[status].label}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div className="py-12 text-center">
           <Loader2 className="w-6 h-6 animate-spin text-brand-green mx-auto" />
@@ -826,7 +930,9 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
       ) : bookings.length === 0 ? (
         <div className="py-12 text-center">
           <ClipboardList className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-stone-400">Записей пока нет</p>
+          <p className="text-stone-400">
+            {statusFilter !== 'all' ? 'Нет записей с таким статусом' : 'Записей пока нет'}
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -837,6 +943,8 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
             const displayTime = b.class_time || b.time || '';
             const createdAt = formatCreatedAt(b.created_at);
             const isPurchase = b.is_purchase;
+            const bookingStatus = (b.status || 'pending') as BookingStatus;
+            const statusConfig = BOOKING_STATUS_CONFIG[bookingStatus];
 
             return (
               <div
@@ -864,6 +972,12 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
                           {b.price}
                         </span>
                       )}
+                      <span
+                        className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border ${statusConfig.color}`}
+                      >
+                        {statusConfig.icon}
+                        {statusConfig.label}
+                      </span>
                     </div>
                     <div className="text-xs text-stone-400">
                       {b.name && <span className="mr-2">{b.name}</span>}
@@ -920,8 +1034,34 @@ const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') => voi
                           <dd className="text-stone-700 font-medium">{b.price}</dd>
                         </>
                       )}
+                      {b.class_id && (
+                        <>
+                          <dt className="text-stone-400">ID занятия</dt>
+                          <dd className="text-stone-700 font-mono text-[10px]">{b.class_id}</dd>
+                        </>
+                      )}
                     </dl>
-                    <div className="mt-3 flex justify-end">
+
+                    {/* Status actions */}
+                    <div className="mt-3 pt-3 border-t border-stone-100 flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-stone-400 mr-1">Статус:</span>
+                      {(['pending', 'confirmed', 'completed', 'cancelled'] as BookingStatus[]).map(
+                        (s) => (
+                          <button
+                            key={s}
+                            onClick={() => handleStatusChange(b.id, s)}
+                            disabled={bookingStatus === s}
+                            className={`text-[10px] px-2.5 py-1 rounded-full border transition-colors ${
+                              bookingStatus === s
+                                ? BOOKING_STATUS_CONFIG[s].color + ' font-bold'
+                                : 'bg-white text-stone-400 border-stone-200 hover:border-stone-400'
+                            }`}
+                          >
+                            {BOOKING_STATUS_CONFIG[s].label}
+                          </button>
+                        )
+                      )}
+                      <div className="flex-1" />
                       <button
                         onClick={() => handleDelete(b.id)}
                         className="text-xs text-rose-500 hover:underline flex items-center gap-1"

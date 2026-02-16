@@ -64,6 +64,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
           location: details.location || null,
           is_purchase: !isSpecificClass,
           price: details.price || null,
+          status: 'pending',
           created_at: new Date().toISOString(),
         },
       ]);

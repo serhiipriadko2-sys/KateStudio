@@ -5,7 +5,7 @@ import { isSupabaseConfigured, supabase } from './supabaseClient';
 export const DATA_SOURCES = {
   userProfile: 'supabase',
   bookings: 'supabase',
-  classSchedule: 'local-generated',
+  classSchedule: 'supabase-with-fallback',
   cachedUser: 'local-cache',
   cachedBookings: 'local-cache',
   pendingBookings: 'local-cache',
@@ -120,9 +120,54 @@ export const dataService = {
   // --- Schedule ---
   getClassesForDate: async (date: Date, type: 'offline' | 'online'): Promise<ClassSession[]> => {
     const dateStr = date.toISOString().split('T')[0];
+
+    // 1. Try fetching from Supabase classes table
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('classes')
+          .select(
+            'id,date,time,name,instructor,duration,spots_total,spots_booked,location,intensity,is_online,price'
+          )
+          .eq('date', dateStr)
+          .eq('is_online', type === 'online')
+          .order('time', { ascending: true });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          return data.map((row) => {
+            const r = row as Record<string, unknown>;
+            const intensityValue = (r.intensity as number) ?? 1;
+            const intensity: 1 | 2 | 3 = [1, 2, 3].includes(intensityValue)
+              ? (intensityValue as 1 | 2 | 3)
+              : 1;
+
+            return {
+              id: r.id as string,
+              dateStr: r.date as string,
+              time: r.time as string,
+              name: r.name as string,
+              instructor: (r.instructor as string) ?? 'Катя Габран',
+              duration: (r.duration as string) ?? '60 мин',
+              spotsTotal: (r.spots_total as number) ?? 0,
+              spotsBooked: (r.spots_booked as number) ?? 0,
+              location:
+                (r.location as string) ?? (type === 'online' ? 'Online' : 'Станционная ул., 5Б'),
+              intensity,
+              price: (r.price as number) ?? 0,
+              isOnline: (r.is_online as boolean) ?? type === 'online',
+            };
+          });
+        }
+      } catch {
+        // Fall through to local generation
+      }
+    }
+
+    // 2. Fallback: generate locally
     const daySeed = date.getFullYear() * 1000 + (date.getMonth() + 1) * 100 + date.getDate();
 
-    // 1. Generate Base Schedule Templates
     const templates =
       type === 'offline'
         ? [
@@ -184,50 +229,21 @@ export const dataService = {
             },
           ];
 
-    // 2. Filter randomly to create variety
     const todaysClasses = templates.filter((_, i) => pseudoRandom(daySeed + i) > 0.3);
 
-    // 3. Prepare IDs
-    const classesWithIds = todaysClasses.map((tmpl, idx) => ({
-      ...tmpl,
-      id: `${dateStr}-${type}-${idx}`,
-    }));
-
-    const classIds = classesWithIds.map((c) => c.id);
-    const bookingCounts: Record<string, number> = {};
-
-    // 4. Try Fetch real booking counts from Supabase
-    try {
-      const { data: bookings, error } = await supabase
-        .from('bookings')
-        .select('class_id')
-        .in('class_id', classIds);
-
-      if (error) throw error;
-
-      if (bookings) {
-        bookings.forEach((b: any) => {
-          bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
-        });
-      }
-    } catch (_e) {
-      // Silent fail for offline mode
-    }
-
-    // 5. Map final objects
-    return classesWithIds.map((tmpl, idx) => {
-      const initialBooked = Math.floor(pseudoRandom(daySeed + idx * 10) * (tmpl.spots / 3)); // Some fake initial load
-      const realBookings = bookingCounts[tmpl.id] || 0;
+    return todaysClasses.map((tmpl, idx) => {
+      const id = `${dateStr}-${type}-${idx}`;
+      const initialBooked = Math.floor(pseudoRandom(daySeed + idx * 10) * (tmpl.spots / 3));
 
       return {
-        id: tmpl.id,
+        id,
         dateStr,
         time: tmpl.time,
         name: tmpl.name,
         instructor: 'Катя Габран',
         duration: tmpl.duration,
         spotsTotal: tmpl.spots,
-        spotsBooked: Math.min(initialBooked + realBookings, tmpl.spots),
+        spotsBooked: initialBooked,
         location: tmpl.loc,
         intensity: tmpl.int as 1 | 2 | 3,
         price: tmpl.price,
@@ -300,6 +316,7 @@ export const dataService = {
       time: cls.time,
       location: cls.location,
       timestamp: Date.now(),
+      status: 'pending',
     };
 
     try {
@@ -388,6 +405,7 @@ export const dataService = {
               time: booking.time,
               location: booking.location,
               timestamp: booking.timestamp,
+              status: 'pending',
             })
             .select()
             .single();

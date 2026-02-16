@@ -22,21 +22,25 @@ export interface UserProfile {
 
 export interface BookingDetails {
   type: string;
-  time: string;
-  date: string;
-  location: string;
+  date?: string;
+  time?: string;
+  location?: string;
+  price?: string;
 }
+
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 
 export interface Booking extends BookingDetails {
   id: string;
   phone: string;
   className: string;
   timestamp: number;
-  status?: 'active' | 'cancelled' | 'completed';
+  status?: BookingStatus;
 }
 
 export interface ClassSession {
   id: string;
+  dateStr: string;
   name: string;
   time: string;
   duration: string;
@@ -45,11 +49,77 @@ export interface ClassSession {
   spotsTotal: number;
   spotsBooked: number;
   intensity: 1 | 2 | 3;
-  type?: 'offline' | 'online';
+  isOnline: boolean;
+  price?: number;
   description?: string;
 }
 
 export type LoadLevel = 'low' | 'medium' | 'high' | 'full' | 'none';
+
+// ============================================
+// DATABASE ROW TYPES (Supabase table shapes)
+// ============================================
+
+/** Row shape from `classes` table */
+export interface ClassRow {
+  id: string;
+  date: string;
+  time: string;
+  name: string;
+  instructor: string | null;
+  duration: string | null;
+  spots_total: number | null;
+  spots_booked: number | null;
+  location: string | null;
+  intensity: number | null;
+  is_online: boolean | null;
+  price: number | null;
+  description: string | null;
+}
+
+/** Form data for creating/editing a class */
+export interface ClassFormData {
+  date: string;
+  time: string;
+  name: string;
+  instructor: string;
+  duration: string;
+  spots_total: number;
+  location: string;
+  intensity: 1 | 2 | 3;
+  is_online: boolean;
+  price: number;
+  description: string;
+}
+
+/** Row shape from `bookings` table */
+export interface BookingRow {
+  id: string;
+  user_id: string | null;
+  phone: string | null;
+  name: string | null;
+  class_id: string | null;
+  class_name: string | null;
+  class_type: string | null;
+  class_date: string | null;
+  class_time: string | null;
+  date: string | null;
+  time: string | null;
+  created_at: string;
+  location: string | null;
+  is_purchase: boolean | null;
+  price: string | null;
+  status: BookingStatus | null;
+}
+
+/** Row shape from `contacts` table */
+export interface ContactRow {
+  id: string;
+  name: string | null;
+  phone: string | null;
+  message: string | null;
+  created_at: string;
+}
 
 // ============================================
 // AI & CHAT
