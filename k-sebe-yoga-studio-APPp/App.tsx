@@ -1,505 +1,221 @@
-// FadeIn available from '@ksebe/shared' when needed
-import { UpdateBanner, OfflineBanner } from '@ksebe/shared';
-import { useOnlineStatus } from '@ksebe/shared';
+import { IMAGES } from '@ksebe/shared';
 import {
-  Home,
-  Calendar,
-  Sparkles,
-  MapPin,
-  User,
-  Bell,
-  Search,
-  Zap,
-  Moon,
-  Heart,
   Activity,
+  Calendar,
   ChevronRight,
+  Heart,
+  Moon,
+  QrCode,
+  Sparkles,
+  User,
+  Video,
   X,
-  Loader2,
+  Zap,
 } from 'lucide-react';
-import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
+import * as ReactDOM from 'react-dom/client';
 import { About } from './components/About';
-import { ChatWidget } from './components/ChatWidget';
+import { AICoach } from './components/AICoach';
+import { BackToTop } from './components/BackToTop';
+import { Breathwork } from './components/Breathwork';
 import { Contact } from './components/Contact';
+import { CookieBanner } from './components/CookieBanner';
+import { Dashboard } from './components/Dashboard';
 import { Directions } from './components/Directions';
 import { Footer } from './components/Footer';
 import { Image } from './components/Image';
 import { LegalModals } from './components/LegalModals';
-import { Logo } from './components/Logo';
-import { OnboardingQuizModal, type OnboardingData } from './components/OnboardingQuizModal';
+import { LoadingFallback } from './components/LoadingFallback';
 import { Philosophy } from './components/Philosophy';
 import { Pricing } from './components/Pricing';
 import { Retreats } from './components/Retreats';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
+import { ScrollProgress } from './components/ScrollProgress';
 import { StreakCard } from './components/StreakCard';
 import { WeeklyRecapCard } from './components/WeeklyRecapCard';
-import { useAuth } from './context/AuthContext';
-import { usePWAUpdate } from './hooks/usePWAUpdate';
-import { retentionService } from './services/retentionService';
-import { isSupabaseConfigured, supabase } from './services/supabaseClient';
+import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import './index.css';
 
-// Lazy load heavy components for better initial bundle size
-const AICoach = lazy(() => import('./components/AICoach').then((m) => ({ default: m.AICoach })));
-const Dashboard = lazy(() =>
-  import('./components/Dashboard').then((m) => ({ default: m.Dashboard }))
+// Lazy load heavy components
+const Gallery = React.lazy(() =>
+  import('./components/Gallery').then((module) => ({ default: module.Gallery }))
 );
-const Gallery = lazy(() => import('./components/Gallery').then((m) => ({ default: m.Gallery })));
-const VideoLibrary = lazy(() =>
-  import('./components/VideoLibrary').then((m) => ({ default: m.VideoLibrary }))
+const VideoLibrary = React.lazy(() =>
+  import('./components/VideoLibrary').then((module) => ({ default: module.VideoLibrary }))
 );
 
-// Loading fallback component
-const LoadingFallback = () => (
-  <div className="flex items-center justify-center py-12">
-    <Loader2 className="w-8 h-8 text-brand-green animate-spin" />
-  </div>
-);
+type Tab = 'home' | 'schedule' | 'ai' | 'studio' | 'profile' | 'videos' | 'breath' | 'dev';
 
-type Tab = 'home' | 'schedule' | 'ai' | 'studio' | 'profile';
+const App = () => {
+  const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [settings, setSettings] = useState<Record<string, any>>({});
 
-const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
-  const [progress, setProgress] = useState(0);
-  const [isSparking, setIsSparking] = useState(false);
-  const [isIgnited, setIsIgnited] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [shake, setShake] = useState(0);
-
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const rewindRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const shakeRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const isCompleteRef = useRef(false);
-
-  // Cleanup timers on unmount
+  // Load app settings from localStorage (synced from DB in main entry logic if needed)
   useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (rewindRef.current) clearInterval(rewindRef.current);
-      if (shakeRef.current) clearInterval(shakeRef.current);
-    };
+    try {
+      const stored = localStorage.getItem('app_settings');
+      if (stored) {
+        setSettings(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Failed to load settings', e);
+    }
   }, []);
 
-  const startShake = () => {
-    if (shakeRef.current) clearInterval(shakeRef.current);
-    shakeRef.current = setInterval(() => {
-      setShake(Math.random() * 2 - 1);
-    }, 50);
-  };
-
-  const stopShake = () => {
-    if (shakeRef.current) clearInterval(shakeRef.current);
-    setShake(0);
-  };
-
-  const startPress = () => {
-    if (isCompleteRef.current) return;
-    if (rewindRef.current) {
-      clearInterval(rewindRef.current);
-      rewindRef.current = null;
+  // Sync theme color
+  useEffect(() => {
+    if (settings.themeColor) {
+      document.documentElement.style.setProperty('--brand-green', settings.themeColor);
     }
-    if (timerRef.current) clearInterval(timerRef.current);
+  }, [settings.themeColor]);
 
-    setIsSparking(true);
-    startShake();
-
-    let current = progress;
-    timerRef.current = setInterval(() => {
-      current += 1.0;
-      if (current > 70) current += 0.5;
-
-      if (current >= 100) {
-        current = 100;
-        if (timerRef.current) clearInterval(timerRef.current);
-        handleSuccess();
-      }
-      setProgress(current);
-    }, 16);
-  };
-
-  const endPress = () => {
-    if (isCompleteRef.current) return;
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return <HomeView setActiveTab={setActiveTab} />;
+      case 'schedule':
+        return (
+          <div className="view-transition px-4 pt-24 pb-24">
+            <h2 className="text-3xl font-serif text-brand-text mb-6">Расписание</h2>
+            <Schedule />
+          </div>
+        );
+      case 'ai':
+        return (
+          <div className="view-transition pt-10 pb-24 h-[100dvh]">
+            <AICoach />
+          </div>
+        );
+      case 'videos':
+        return (
+          <div className="view-transition px-4 pt-24 pb-24">
+            <h2 className="text-3xl font-serif text-brand-text mb-6">Видеотека</h2>
+            <Suspense fallback={<LoadingFallback />}>
+              <VideoLibrary />
+            </Suspense>
+          </div>
+        );
+      case 'breath':
+        return (
+          <div className="view-transition pt-24 pb-24 h-[100dvh] bg-stone-50">
+            <Breathwork />
+          </div>
+        );
+      case 'profile':
+      case 'dev':
+        return (
+          <div className="view-transition pt-24 pb-24">
+            <Dashboard onBack={() => setActiveTab('home')} initialTab={activeTab === 'dev' ? 'dev' : 'overview'} />
+          </div>
+        );
+      case 'studio':
+        return <StudioView />;
+      default:
+        return <HomeView setActiveTab={setActiveTab} />;
     }
-    setIsSparking(false);
-    stopShake();
-
-    if (progress > 0) {
-      if (rewindRef.current) clearInterval(rewindRef.current);
-      rewindRef.current = setInterval(() => {
-        setProgress((prev) => {
-          const next = prev - 3;
-          if (next <= 0) {
-            if (rewindRef.current) clearInterval(rewindRef.current);
-            return 0;
-          }
-          return next;
-        });
-      }, 10);
-    }
-  };
-
-  const handleSuccess = () => {
-    isCompleteRef.current = true;
-    setIsSparking(false);
-    stopShake();
-    setIsIgnited(true);
-    setTimeout(() => {
-      setShowWelcome(true);
-      setTimeout(() => {
-        onComplete();
-      }, 1200);
-    }, 600);
   };
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label="Удерживайте чтобы начать"
-      className={`fixed inset-0 z-[100] bg-[#0F2820] flex flex-col items-center justify-center select-none touch-none transition-opacity duration-1000 ${showWelcome ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-      onMouseDown={startPress}
-      onMouseUp={endPress}
-      onMouseLeave={endPress}
-      onTouchStart={startPress}
-      onTouchEnd={endPress}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          startPress();
-        }
-      }}
-      onKeyUp={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          endPress();
-        }
-      }}
-      onContextMenu={(e) => e.preventDefault()}
-    >
-      <div
-        className={`relative transition-transform duration-[1500ms] ease-out ${showWelcome ? 'scale-125' : 'scale-100'}`}
-        style={{ transform: `translate(${shake}px, ${shake}px) scale(${showWelcome ? 1.2 : 1})` }}
-      >
-        <div className="relative z-10">
-          <Logo
-            className="w-80 h-auto md:w-96"
-            progress={progress}
-            isSparking={isSparking}
-            isIgnited={isIgnited}
-            variant="full"
-          />
-        </div>
-
-        {isSparking && (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/4 right-1/4 w-1 h-1 bg-yellow-200 rounded-full animate-ping"></div>
-            <div className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-ping delay-75"></div>
-            <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl animate-pulse"></div>
-          </div>
-        )}
-      </div>
-
-      <div
-        className={`absolute bottom-24 left-0 right-0 text-center pointer-events-none px-4 h-16 transition-opacity duration-500 ${isIgnited ? 'opacity-0' : 'opacity-100'}`}
-      >
-        <div
-          className={`transition-opacity duration-300 ${progress > 5 ? 'opacity-100' : 'opacity-40'}`}
-        >
-          <p className="text-xs md:text-sm uppercase tracking-[0.25em] text-brand-mint/50 font-medium animate-pulse">
-            {progress > 0 ? 'Заряжаем...' : 'Удерживайте'}
-          </p>
-        </div>
-      </div>
-
-      {!isIgnited && progress > 0 && (
-        <div
-          className="absolute bottom-0 left-0 h-1.5 bg-[#FCEEAC] transition-all duration-75 ease-linear shadow-[0_0_20px_#FCEEAC]"
-          style={{ width: `${progress}%` }}
-        ></div>
-      )}
+    <div className="min-h-screen bg-stone-50 text-stone-800 font-sans selection:bg-brand-green/20 selection:text-brand-dark overflow-x-hidden">
+      <ScrollProgress />
+      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+      <main className="min-h-screen relative">{renderContent()}</main>
+      <CookieBanner />
+      <BackToTop />
     </div>
   );
 };
 
-export default function App() {
-  const { authStatus, user } = useAuth();
-  const isOnline = useOnlineStatus();
-  const { updateAvailable, updating, triggerUpdate, dismissUpdate } = usePWAUpdate();
-  const [introFinished, setIntroFinished] = useState(() => {
-    return localStorage.getItem('ksebe_intro_complete') === 'true';
-  });
-  const [onboardingOpen, setOnboardingOpen] = useState(() => {
-    return localStorage.getItem('ksebe_onboarding_complete') !== 'true';
-  });
-  const [activeTab, setActiveTab] = useState<Tab>('home');
+const Header = ({
+  activeTab,
+  setActiveTab,
+}: {
+  activeTab: Tab;
+  setActiveTab: (t: Tab) => void;
+}) => {
   const [scrolled, setScrolled] = useState(false);
-  const mainRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const loadAndSyncTheme = async () => {
-      // 1. Load Local
-      try {
-        const savedTheme = localStorage.getItem('ksebe_theme_config');
-        if (savedTheme) {
-          const colors = JSON.parse(savedTheme);
-          Object.entries(colors).forEach(([key, value]) => {
-            document.documentElement.style.setProperty(key, String(value));
-          });
-        }
-      } catch (e) {
-        console.error('Failed to load theme', e);
-      }
-
-      // 2. Fetch Remote
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const { data } = await supabase
-            .from('app_settings')
-            .select('key, value')
-            .eq('key', 'theme')
-            .single();
-          if (data?.value) {
-            const colors = data.value as Record<string, string>;
-            // Apply
-            Object.entries(colors).forEach(([key, value]) => {
-              document.documentElement.style.setProperty(key, String(value));
-            });
-            // Save
-            localStorage.setItem('ksebe_theme_config', JSON.stringify(colors));
-          }
-        } catch (e) {
-          console.warn('Theme sync failed', e);
-        }
-      }
-    };
-
-    loadAndSyncTheme();
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (authStatus !== 'authenticated' || !user?.id) return;
-    // Ensure we sync onboarding/streak even if login happened elsewhere.
-    retentionService.bootstrapForUser(user.id).catch(() => {});
-  }, [authStatus, user?.id]);
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    setScrolled(e.currentTarget.scrollTop > 20);
-  };
-
-  const handleTabChange = (tab: Tab) => {
-    setActiveTab(tab);
-    if (mainRef.current) {
-      mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const handleIntroComplete = () => {
-    localStorage.setItem('ksebe_intro_complete', 'true');
-    setIntroFinished(true);
-    if (localStorage.getItem('ksebe_onboarding_complete') !== 'true') {
-      setOnboardingOpen(true);
-    }
-  };
-
-  if (!introFinished) {
-    return <IntroSplash onComplete={handleIntroComplete} />;
-  }
-
-  if (activeTab === 'profile') {
-    return (
-      <>
-        <Suspense fallback={<LoadingFallback />}>
-          <Dashboard initialTab="profile" onBack={() => handleTabChange('home')} />
-        </Suspense>
-        <OnboardingQuizModal
-          open={onboardingOpen}
-          onClose={() => {
-            localStorage.setItem('ksebe_onboarding_complete', 'true');
-            setOnboardingOpen(false);
-          }}
-          onComplete={(data: OnboardingData) => {
-            localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
-            localStorage.setItem('ksebe_onboarding_complete', 'true');
-            setOnboardingOpen(false);
-            if (authStatus === 'authenticated' && user?.id) {
-              retentionService.saveOnboarding(user.id, data).catch(() => {});
-              retentionService
-                .logEvent(user.id, 'onboarding_completed', { source: 'app' })
-                .catch(() => {});
-            }
-          }}
-        />
-      </>
-    );
-  }
-
   return (
-    <div
-      role="application"
-      aria-label="К себе - приложение для йоги"
-      className="flex flex-col h-[100dvh] bg-[#FDFBF7] text-brand-text overflow-hidden relative selection:bg-brand-green selection:text-white animate-in fade-in duration-1000"
-      onContextMenu={(e) => e.preventDefault()}
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5'}`}
     >
-      {/* Skip Link for Accessibility */}
-      <a
-        href="#app-main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:bg-brand-green focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none"
-      >
-        Перейти к основному содержимому
-      </a>
-
-      <header
-        className={`absolute top-0 left-0 right-0 z-30 pt-safe px-6 pb-4 transition-all duration-300 flex justify-between items-center pointer-events-none ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm' : 'bg-transparent'}`}
-      >
-        <div className="pointer-events-auto flex items-center gap-3">
-          <div className="w-10 h-10 bg-brand-green rounded-full flex items-center justify-center text-white shadow-lg overflow-hidden p-2">
-            <Logo className="w-full h-full" color="#fff" variant="symbol" />
+      <div className="container mx-auto px-6 flex justify-between items-center">
+        <button onClick={() => setActiveTab('home')} className="flex items-center gap-2 group">
+          <div className="relative w-8 h-8 overflow-hidden rounded-full border border-current transition-colors">
+            <Image
+              src={IMAGES.brand.logo}
+              alt="Logo"
+              className="w-full h-full object-cover"
+              fallbackSrc="/logo.png"
+            />
           </div>
-          <span
-            className={`font-serif text-lg font-medium transition-opacity duration-300 ${scrolled ? 'opacity-100 text-brand-text' : 'opacity-0'}`}
-          >
-            К себе
+          <span className="font-serif text-lg tracking-wide group-hover:opacity-80 transition-opacity">
+            К СЕБЕ
           </span>
-        </div>
-        <div className="pointer-events-auto flex gap-3">
-          <button className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md border border-stone-100 flex items-center justify-center text-stone-600 hover:text-brand-green shadow-sm active:scale-95 transition-all">
-            <Search className="w-5 h-5" />
+        </button>
+
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-8">
+          <NavButton active={activeTab === 'schedule'} onClick={() => setActiveTab('schedule')}>
+            Расписание
+          </NavButton>
+          <NavButton active={activeTab === 'studio'} onClick={() => setActiveTab('studio')}>
+            Студия
+          </NavButton>
+          <NavButton active={activeTab === 'ai'} onClick={() => setActiveTab('ai')}>
+            AI Coach
+          </NavButton>
+          <button
+            onClick={() => setActiveTab('profile')}
+            className="w-10 h-10 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center transition-colors"
+          >
+            <User className="w-5 h-5 text-stone-600" />
           </button>
-          <button className="relative w-10 h-10 rounded-full bg-white/80 backdrop-blur-md border border-stone-100 flex items-center justify-center text-stone-600 hover:text-brand-green shadow-sm active:scale-95 transition-all">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
-          </button>
-        </div>
-      </header>
+        </nav>
 
-      <main
-        id="app-main-content"
-        ref={mainRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide relative pb-24"
-        onScroll={handleScroll}
-      >
-        {activeTab === 'home' && <HomeView setActiveTab={handleTabChange} />}
-
-        {activeTab === 'schedule' && (
-          <div className="pt-20 view-transition">
-            <Schedule />
-          </div>
-        )}
-
-        {activeTab === 'ai' && (
-          <div className="pt-24 px-4 h-full flex flex-col view-transition">
-            <Suspense fallback={<LoadingFallback />}>
-              <AICoach />
-            </Suspense>
-          </div>
-        )}
-
-        {activeTab === 'studio' && <StudioView />}
-      </main>
-
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-stone-200/50 pb-safe z-40 shadow-[0_-5px_30px_rgba(0,0,0,0.03)]">
-        <div className="flex justify-around items-end h-16 px-2">
-          <NavButton
-            active={activeTab === 'home'}
-            onClick={() => handleTabChange('home')}
-            icon={<Home />}
-            label="Главная"
-          />
-          <NavButton
-            active={activeTab === 'schedule'}
-            onClick={() => handleTabChange('schedule')}
-            icon={<Calendar />}
-            label="Расписание"
-          />
-
-          <div className="relative -top-6">
-            <button
-              onClick={() => handleTabChange('ai')}
-              className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-transform duration-300 ${activeTab === 'ai' ? 'bg-brand-dark scale-110 text-brand-yellow' : 'bg-brand-green text-white hover:scale-105'}`}
-            >
-              <Sparkles className={`w-8 h-8 ${activeTab === 'ai' ? 'animate-pulse' : ''}`} />
-            </button>
-          </div>
-
-          <NavButton
-            active={activeTab === 'studio'}
-            onClick={() => handleTabChange('studio')}
-            icon={<MapPin />}
-            label="Студия"
-          />
-          <NavButton
-            active={false}
-            onClick={() => handleTabChange('profile')}
-            icon={<User />}
-            label="Профиль"
-          />
-        </div>
-      </nav>
-
-      <ChatWidget hidden={activeTab === 'ai'} />
-
-      {/* PWA Update & Offline Banners */}
-      <UpdateBanner
-        visible={updateAvailable}
-        updating={updating}
-        onUpdate={triggerUpdate}
-        onDismiss={dismissUpdate}
-      />
-      <OfflineBanner visible={!isOnline && !updateAvailable} />
-
-      <OnboardingQuizModal
-        open={onboardingOpen}
-        onClose={() => {
-          localStorage.setItem('ksebe_onboarding_complete', 'true');
-          setOnboardingOpen(false);
-        }}
-        onComplete={(data: OnboardingData) => {
-          localStorage.setItem('ksebe_onboarding', JSON.stringify(data));
-          localStorage.setItem('ksebe_onboarding_complete', 'true');
-          setOnboardingOpen(false);
-          if (authStatus === 'authenticated' && user?.id) {
-            retentionService.saveOnboarding(user.id, data).catch(() => {});
-            retentionService
-              .logEvent(user.id, 'onboarding_completed', { source: 'app' })
-              .catch(() => {});
-          }
-        }}
-      />
-    </div>
+        {/* Mobile Profile Icon (Top Right) */}
+        <button
+          onClick={() => setActiveTab('profile')}
+          className="md:hidden w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm border border-black/5 flex items-center justify-center"
+        >
+          <User className="w-4 h-4" />
+        </button>
+      </div>
+    </header>
   );
-}
+};
 
 const NavButton = ({
   active,
   onClick,
-  icon,
-  label,
+  children,
 }: {
   active: boolean;
   onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
+  children: React.ReactNode;
 }) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center justify-center w-16 h-full gap-1 transition-all duration-300 ${active ? 'text-brand-green' : 'text-stone-400 hover:text-stone-600'}`}
+    className={`text-sm font-medium tracking-wide transition-colors hover:text-brand-green ${active ? 'text-brand-green' : 'text-stone-600'}`}
   >
-    <div className={`transition-transform duration-300 ${active ? '-translate-y-1' : ''}`}>
-      {React.cloneElement(icon as React.ReactElement<{ size?: number; strokeWidth?: number }>, {
-        size: 24,
-        strokeWidth: active ? 2.5 : 2,
-      })}
-    </div>
-    <span
-      className={`text-[10px] font-bold tracking-wide transition-all duration-300 ${active ? 'opacity-100' : 'opacity-0 hidden'}`}
-    >
-      {label}
-    </span>
+    {children}
   </button>
 );
+
+const navItems = [
+  { id: 'home' as Tab, icon: <Sparkles size={20} />, label: 'Главная' },
+  { id: 'schedule' as Tab, icon: <Calendar size={20} />, label: 'Расписание' },
+  { id: 'ai' as Tab, icon: <Activity size={20} />, label: 'AI Coach' },
+  { id: 'videos' as Tab, icon: <Video size={20} />, label: 'Видео' },
+];
 
 const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -535,7 +251,7 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
         <div className="relative h-[60vh] min-h-[500px] w-full overflow-hidden rounded-b-[3rem] shadow-2xl">
           <Image
             src="/hero.jpg"
-            fallbackSrc="https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=1920&auto=format&fit=crop"
+            fallbackSrc={IMAGES.hero.mainBg}
             alt="Yoga"
             storageKey="hero-main-bg-v4"
             showControlsLabel={true}
@@ -694,7 +410,7 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
 
             <div className="absolute top-0 right-0 w-1/2 h-full opacity-50 z-10 pointer-events-none">
               <Image
-                src="https://images.unsplash.com/photo-1552196563-55cd4e45efb3?q=80&w=400&fit=crop"
+                src={IMAGES.studio[6]}
                 storageKey="home-studio-promo"
                 containerClassName="w-full h-full"
                 className="w-full h-full object-cover mask-linear"
@@ -744,3 +460,18 @@ const StudioView: React.FC = () => {
     </div>
   );
 };
+
+// Root Render
+const rootElement = document.getElementById('root');
+if (!rootElement) throw new Error('Could not find root element to mount to');
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <ToastProvider>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </ToastProvider>
+  </React.StrictMode>
+);

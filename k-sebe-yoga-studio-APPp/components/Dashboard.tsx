@@ -1,4 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+import { IMAGES } from '@ksebe/shared';
 // import { Paywall } from '@ksebe/shared'; // Временно скрыто вместе с AI-подпиской
 import {
   LogOut,
@@ -88,32 +90,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   }, [authStatus, user, bookings.length]);
 
-  // Временно скрыто вместе с AI-подпиской
-  // const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
-  //   active: 'Активна',
-  //   pending: 'Ожидает оплаты',
-  //   canceled: 'Отменена',
-  //   past_due: 'Проблема оплаты',
-  //   trialing: 'Пробный период',
-  // };
-
-  // const subscriptionPlanLabels: Record<SubscriptionPlan, string> = {
-  //   free: 'Free',
-  //   premium: 'Premium',
-  //   vip: 'VIP',
-  // };
-
-  // const loadSubscription = useCallback(async () => {
-  //   if (authStatus !== 'authenticated' || !isSupabaseConfigured) {
-  //     setSubscription(null);
-  //     return;
-  //   }
-  //   setSubscriptionLoading(true);
-  //   const current = await subscriptionService.getCurrentSubscription();
-  //   setSubscription(current);
-  //   setSubscriptionLoading(false);
-  // }, [authStatus, isSupabaseConfigured]);
-
   // Initial Load & Real-time Subscription
   useEffect(() => {
     fetchBookings();
@@ -143,11 +119,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   }, [authStatus, user?.id, fetchBookings, showToast]);
 
-  // Временно скрыто вместе с AI-подпиской
-  // useEffect(() => {
-  //   loadSubscription();
-  // }, [loadSubscription]);
-
   const nextBooking = bookings.length > 0 ? bookings[0] : null;
 
   const handleLogout = () => {
@@ -156,617 +127,291 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     showToast('Вы вышли из системы', 'info');
   };
 
-  // Временно скрыто вместе с AI-подпиской
-  // const handleSubscribePlan = async (plan: SubscriptionPlan) => {
-  //   if (!isSupabaseConfigured) {
-  //     showToast('Подписки доступны после настройки Supabase', 'info');
-  //     return;
-  //   }
-  //   if (authStatus !== 'authenticated') {
-  //     showToast('Войдите, чтобы оформить подписку', 'info');
-  //     return;
-  //   }
-  //   setSubscriptionActionLoading(true);
-  //   try {
-  //     const result = await subscriptionService.createPayment(plan, window.location.href);
-  //     setSubscription(result.subscription);
-  //     if (result.paymentUrl) {
-  //       window.location.href = result.paymentUrl;
-  //     } else if (result.message) {
-  //       showToast(result.message, 'info');
-  //     } else {
-  //       showToast('Ссылка на оплату недоступна', 'info');
-  //     }
-  //   } catch (e) {
-  //     console.error('Subscription payment error', e);
-  //     showToast('Не удалось начать оплату подписки', 'error');
-  //   } finally {
-  //     setSubscriptionActionLoading(false);
-  //   }
-  // };
-
-  // const handleCancelSubscription = async () => {
-  //   setSubscriptionActionLoading(true);
-  //   try {
-  //     const success = await subscriptionService.cancelSubscription();
-  //     if (success) {
-  //       showToast('Подписка отменена', 'success');
-  //       await loadSubscription();
-  //     } else {
-  //       showToast('Не удалось отменить подписку', 'error');
-  //     }
-  //   } finally {
-  //     setSubscriptionActionLoading(false);
-  //   }
-  // };
-
-  const handleCancelBooking = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!window.confirm('Вы уверены, что хотите отменить запись?')) return;
-
-    const success = await dataService.cancelBooking(id);
-    if (success) {
-      // Optimistic update, though Real-time will also catch it
-      setBookings((prev) => prev.filter((b) => b.id !== id));
-      showToast('Запись отменена', 'success');
-    } else {
-      showToast('Не удалось отменить запись', 'error');
+  // Profile Logic
+  useEffect(() => {
+    if (user) {
+      setEditName(user.name);
+      setEditCity(user.city || '');
     }
-  };
+  }, [user]);
 
   const handleStartEditProfile = () => {
-    setEditName(user?.name || '');
-    setEditCity(user?.city || '');
     setIsEditingProfile(true);
   };
 
   const handleSaveProfile = async () => {
     if (!user) return;
-    const updatedUser = { ...user, name: editName, city: editCity };
-    const success = await dataService.updateUserProfile(updatedUser);
-    if (success) {
+    try {
+      const updatedUser = await dataService.updateUser(user.phone, {
+        name: editName,
+        city: editCity,
+      });
       setUser(updatedUser);
       setIsEditingProfile(false);
       showToast('Профиль обновлен', 'success');
-    } else {
-      showToast('Ошибка при обновлении профиля', 'error');
+    } catch (e) {
+      console.error(e);
+      showToast('Ошибка обновления профиля', 'error');
     }
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('Файл слишком большой (макс 5MB)', 'error');
-      return;
-    }
-
+    if (!e.target.files || e.target.files.length === 0 || !user) return;
+    const file = e.target.files[0];
     setIsAvatarUploading(true);
     try {
-      const fileName = `${user.phone}-${Date.now()}`;
-      const publicUrl = await uploadFile(file, 'avatars', fileName);
-
+      const publicUrl = await uploadFile(file, 'avatars');
       if (publicUrl) {
-        const updatedUser = { ...user, avatar: publicUrl };
-        const success = await dataService.updateUserProfile(updatedUser);
-        if (success) {
-          setUser(updatedUser);
-          showToast('Фото обновлено', 'success');
-        } else {
-          showToast('Не удалось сохранить ссылку', 'error');
-        }
+        const updatedUser = await dataService.updateUser(user.phone, { avatar: publicUrl });
+        setUser(updatedUser);
+        showToast('Фото обновлено', 'success');
       } else {
-        // Fallback to local base64 if cloud fails
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64 = reader.result as string;
-          const updatedUser = { ...user, avatar: base64 };
-          await dataService.updateUserProfile(updatedUser);
-          setUser(updatedUser);
-          showToast('Сохранено локально (облако недоступно)', 'info');
-        };
-        reader.readAsDataURL(file);
+        throw new Error('Upload failed');
       }
     } catch (err) {
       console.error(err);
-      showToast('Ошибка загрузки', 'error');
+      showToast('Ошибка загрузки фото', 'error');
     } finally {
       setIsAvatarUploading(false);
     }
   };
 
-  type DashboardTab = 'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
-  const navItems: { id: DashboardTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'overview', label: 'Главная', icon: <LayoutDashboard className="w-6 h-6" /> },
-    { id: 'videos', label: 'Практики', icon: <Video className="w-6 h-6" /> },
-    { id: 'breath', label: 'Дыхание', icon: <Wind className="w-6 h-6" /> },
-    { id: 'ai', label: 'AI Тренер', icon: <Sparkles className="w-6 h-6" /> },
-    { id: 'profile', label: 'Профиль', icon: <User className="w-6 h-6" /> },
-  ];
+  // Auth Handlers
+  const handleRequestOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginPhone || !loginName) {
+      showToast('Заполните имя и телефон', 'error');
+      return;
+    }
+    try {
+      await requestOtp(loginName, loginPhone);
+    } catch {
+      // Error handled in context
+    }
+  };
 
-  const userName = user?.name || 'Гость';
-  const userCity = user?.city || 'Москва';
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.length < 6) {
+      showToast('Введите 6-значный код', 'error');
+      return;
+    }
+    try {
+      await verifyOtp(otpCode);
+      showToast('Вы успешно вошли!', 'success');
+    } catch {
+      // Error handled in context
+    }
+  };
 
-  // If in Dev mode, render full screen dev component
-  if (activeTab === 'dev') {
-    return <DeveloperSettings onBack={() => setActiveTab('profile')} />;
+  const handleCancelOtp = () => {
+    cancelOtp();
+    setOtpCode('');
+  };
+
+  // Render Content
+  if (activeTab === 'videos') {
+    return (
+      <div className="px-4 pb-24">
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className="w-10 h-10 rounded-full border border-stone-200 flex items-center justify-center hover:bg-stone-100"
+          >
+            <ChevronRight className="w-6 h-6 rotate-180 text-stone-400" />
+          </button>
+          <h2 className="text-3xl font-serif text-brand-text">Видеотека</h2>
+        </div>
+        <VideoLibrary />
+      </div>
+    );
   }
 
+  if (activeTab === 'breath') {
+    return (
+      <div className="h-full bg-stone-50">
+        <div className="px-6 pt-4 mb-4">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className="flex items-center gap-2 text-stone-400 hover:text-brand-green transition-colors"
+          >
+            <ChevronRight className="w-5 h-5 rotate-180" />
+            Назад
+          </button>
+        </div>
+        <Breathwork />
+      </div>
+    );
+  }
+
+  if (activeTab === 'ai') {
+    return (
+      <div className="h-full">
+        <div className="px-6 pt-4 mb-2">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className="flex items-center gap-2 text-stone-400 hover:text-brand-green transition-colors"
+          >
+            <ChevronRight className="w-5 h-5 rotate-180" />
+            Назад
+          </button>
+        </div>
+        <AICoach />
+      </div>
+    );
+  }
+
+  if (activeTab === 'dev') {
+    return (
+      <div className="px-4 pb-24">
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => setActiveTab('profile')}
+            className="w-10 h-10 rounded-full border border-stone-200 flex items-center justify-center hover:bg-stone-100"
+          >
+            <ChevronRight className="w-6 h-6 rotate-180 text-stone-400" />
+          </button>
+          <h2 className="text-2xl font-serif text-brand-text">Настройки разработчика</h2>
+        </div>
+        <DeveloperSettings />
+      </div>
+    );
+  }
+
+  // --- Main Dashboard / Profile View ---
+
+  const userName = user?.name || 'Гость';
+  const userCity = user?.city || 'Москва'; // Fallback city
+
   return (
-    <div className="h-[100dvh] bg-[#FDFBF7] flex overflow-hidden">
-      {/* Desktop Sidebar */}
-      <aside className="w-72 bg-white border-r border-stone-100 hidden md:flex flex-col p-8 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-        <div className="mb-12 pl-2">
-          <Logo className="w-16 h-16" color="#57a773" />
+    <div className="px-4 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="bg-white p-3 rounded-full shadow-sm hover:shadow-md transition-all">
+            <LogOut className="w-5 h-5 text-stone-400 rotate-180" />
+          </button>
+          <h1 className="text-2xl font-serif text-brand-text">Личный кабинет</h1>
         </div>
-
-        <nav className="space-y-3 flex-1">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 text-sm font-semibold tracking-wide ${
-                activeTab === item.id
-                  ? 'bg-brand-green text-white shadow-xl shadow-brand-green/20 scale-105'
-                  : 'text-stone-400 hover:bg-stone-50 hover:text-brand-text'
-              }`}
-            >
-              {item.icon}
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 text-stone-400 hover:text-rose-500 transition-colors px-6 py-4 text-sm font-medium rounded-2xl hover:bg-rose-50"
-        >
-          <LogOut className="w-5 h-5" />
-          Выйти
-        </button>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 relative flex flex-col h-full overflow-hidden">
-        {/* Mobile Header */}
-        <div className="md:hidden flex justify-between items-center px-6 py-4 bg-white/80 backdrop-blur-md border-b border-stone-100 z-20 sticky top-0">
-          <Logo className="w-10 h-10" color="#57a773" />
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-brand-green text-white flex items-center justify-center font-serif text-sm overflow-hidden">
-              {user?.avatar ? (
-                <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                userName.charAt(0)
-              )}
-            </div>
+        {user && (
+          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-stone-100">
+            <Sparkles className="w-4 h-4 text-brand-yellow fill-brand-yellow" />
+            <span className="text-xs font-bold text-stone-600">{user.streak || 0} дней</span>
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide p-6 md:p-12 pb-28 md:pb-12 bg-[#F8F9FA]">
-          {/* --- Overview Tab --- */}
-          {activeTab === 'overview' && (
-            <div className="max-w-4xl mx-auto">
-              <header className="flex justify-between items-end mb-8 md:mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div>
-                  <h1 className="text-2xl md:text-4xl font-serif text-brand-text mb-2">
-                    Привет, {userName}!
-                  </h1>
-                  <p className="text-stone-400 font-light text-sm md:text-base">
-                    Рады видеть тебя снова.
-                  </p>
-                </div>
-              </header>
+      <main className="space-y-6">
+        {/* Auth Section */}
+        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-stone-200/50 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-green/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-                {/* Card 1 */}
-                <div
-                  className="bg-white p-6 rounded-[2rem] shadow-sm border border-stone-100 flex flex-col justify-between h-40 md:h-48 relative overflow-hidden group animate-in zoom-in-95 duration-500 fill-mode-backwards"
-                  style={{ animationDelay: '100ms' }}
-                >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-brand-mint/30 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                  <div className="w-12 h-12 bg-stone-50 rounded-2xl flex items-center justify-center text-brand-green mb-4">
-                    <Calendar className="w-6 h-6" />
-                  </div>
-                  <div className="relative z-10">
-                    <p className="text-4xl font-serif text-brand-text mb-1">{bookings.length}</p>
-                    <p className="text-xs text-stone-400 font-medium uppercase tracking-wider">
-                      Всего записей
-                    </p>
-                  </div>
-                </div>
-
-                {/* Card 2 */}
-                <div
-                  className="bg-brand-dark p-6 rounded-[2rem] shadow-xl shadow-stone-200 flex flex-col justify-between h-40 md:h-48 text-white relative overflow-hidden animate-in zoom-in-95 duration-500 fill-mode-backwards"
-                  style={{ animationDelay: '200ms' }}
-                >
-                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-brand-green to-transparent"></div>
-                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-brand-yellow mb-4 backdrop-blur-sm">
-                    <Trophy className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-serif mb-1">Практик</p>
-                    <p className="text-xs text-white/50 font-medium uppercase tracking-wider">
-                      Ваш статус
-                    </p>
-                  </div>
-                </div>
-
-                {/* Card 3 (Next Class) */}
-                <div
-                  className="bg-brand-green p-6 rounded-[2rem] shadow-xl shadow-brand-green/20 flex flex-col justify-between h-40 md:h-48 text-white relative overflow-hidden cursor-pointer group hover:scale-[1.02] transition-transform animate-in zoom-in-95 duration-500 fill-mode-backwards"
-                  style={{ animationDelay: '300ms' }}
-                >
-                  <div className="absolute -right-6 -top-6 w-24 h-24 border-[6px] border-white/10 rounded-full group-hover:scale-125 transition-transform duration-700"></div>
-                  <div className="relative z-10">
-                    {nextBooking ? (
-                      <>
-                        <div className="flex items-center gap-2 mb-4">
-                          <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider">
-                            Ближайшее
-                          </span>
-                          <span className="flex w-2 h-2 relative">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                          </span>
-                        </div>
-                        <p className="text-xl font-serif mb-1 truncate">{nextBooking.className}</p>
-                        <p className="text-white/70 text-sm">
-                          {nextBooking.time} • {nextBooking.date}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider mb-4">
-                          Нет записей
-                        </span>
-                        <p className="text-xl font-serif mb-1">Записаться?</p>
-                        <p className="text-white/70 text-sm">Выбери практику</p>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider mt-auto">
-                    Перейти <ChevronRight className="w-4 h-4" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Booking History / Tickets */}
-              <div
-                className="mb-24 md:mb-0 animate-in fade-in slide-in-from-bottom-8 duration-700"
-                style={{ animationDelay: '400ms' }}
-              >
-                <h3 className="font-serif text-xl mb-6 flex items-center gap-2">
-                  <Ticket className="w-5 h-5 text-brand-green" />
-                  Мои билеты
-                </h3>
-
-                {loading ? (
-                  <div className="flex justify-center py-10 bg-white rounded-[2rem] border border-stone-100">
-                    <Loader2 className="w-6 h-6 animate-spin text-brand-green" />
-                  </div>
-                ) : bookings.length > 0 ? (
-                  <div className="grid gap-4">
-                    {bookings.map((b) => {
-                      const isFuture =
-                        new Date(b.date) >= new Date(new Date().setHours(0, 0, 0, 0));
-
-                      return (
-                        <div
-                          key={b.id}
-                          className={`relative bg-white rounded-[2rem] border transition-all duration-300 overflow-hidden flex flex-col md:flex-row ${isFuture ? 'border-brand-green/30 shadow-md hover:shadow-lg' : 'border-stone-100 opacity-80 grayscale hover:grayscale-0'}`}
-                        >
-                          {/* Left: Content */}
-                          <div className="flex-1 p-6 md:p-8 flex flex-col justify-center relative z-10">
-                            <div className="flex justify-between items-start mb-4">
-                              <div>
-                                <span
-                                  className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2 inline-block ${isFuture ? 'bg-brand-mint text-brand-green' : 'bg-stone-100 text-stone-400'}`}
-                                >
-                                  {isFuture ? 'Активен' : 'Завершен'}
-                                </span>
-                                <h4 className="text-2xl font-serif text-brand-text">
-                                  {b.className}
-                                </h4>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-2xl font-medium text-brand-text">{b.time}</div>
-                                <div className="text-xs text-stone-400">{b.date}</div>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center justify-between border-t border-dashed border-stone-200 pt-4 mt-2">
-                              <div className="flex items-center gap-2 text-sm text-stone-500">
-                                <div className="p-1.5 bg-stone-50 rounded-full">
-                                  <LayoutDashboard className="w-4 h-4" />
-                                </div>
-                                {b.location}
-                              </div>
-                              {isFuture && (
-                                <button
-                                  onClick={(e) => handleCancelBooking(b.id, e)}
-                                  className="text-xs text-rose-400 hover:text-rose-600 font-medium transition-colors"
-                                >
-                                  Отменить
-                                </button>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Right: QR Stub */}
-                          <div className="relative w-full md:w-32 bg-stone-50 flex items-center justify-center p-4 border-t md:border-t-0 md:border-l border-dashed border-stone-300">
-                            {/* Cutout circles */}
-                            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8F9FA] rounded-full hidden md:block"></div>
-                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8F9FA] rounded-full hidden md:block"></div>
-
-                            <div
-                              role="button"
-                              tabIndex={0}
-                              aria-label="Показать QR-код"
-                              className="opacity-20 hover:opacity-100 transition-opacity flex flex-col items-center gap-1 cursor-pointer"
-                              onClick={() => setExpandedQr(b.id)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault();
-                                  setExpandedQr(b.id);
-                                }
-                              }}
-                            >
-                              <QrCode className="w-16 h-16" />
-                              <span className="text-[9px] font-mono tracking-widest">SCAN</span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-white rounded-[2rem] border border-dashed border-stone-200">
-                    <div className="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-4 text-stone-300">
-                      <Ticket className="w-8 h-8" />
-                    </div>
-                    <p className="text-stone-400 text-sm">У вас пока нет билетов на практику.</p>
-                  </div>
-                )}
+          {!isSupabaseConfigured && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-start gap-3 text-amber-800 text-sm">
+              <span className="text-lg">⚠️</span>
+              <div>
+                <strong>Режим демонстрации</strong>
+                <p className="mt-1 opacity-80">
+                  База данных не подключена. Данные сохраняются только в браузере.
+                </p>
               </div>
             </div>
           )}
 
-          {/* ... Other Tabs remain identical ... */}
-          {activeTab === 'videos' && (
-            <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
-              <header className="mb-8">
-                <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">Видеотека</h1>
-                <p className="text-stone-400 font-light text-sm">Твоя студия всегда с тобой.</p>
-              </header>
-              <VideoLibrary />
-            </div>
-          )}
-
-          {activeTab === 'breath' && (
-            <div className="max-w-lg mx-auto h-[70vh] flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
-              <header className="mb-6 text-center">
-                <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">Дыхание</h1>
-                <p className="text-stone-400 font-light text-sm">Успокой ум за 4 минуты.</p>
-              </header>
-              <div className="flex-1 bg-white rounded-[3rem] shadow-xl shadow-stone-100 border border-stone-50 p-6 flex flex-col justify-center relative overflow-hidden">
-                <Breathwork />
+          {authStatus === 'anonymous' && (
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="w-10 h-10 text-stone-400" />
               </div>
-            </div>
-          )}
+              <div>
+                <h2 className="text-2xl font-serif text-brand-text mb-2">Войти в профиль</h2>
+                <p className="text-stone-400 text-sm">
+                  Чтобы сохранять прогресс, историю посещений и получать рекомендации.
+                </p>
+              </div>
 
-          {activeTab === 'ai' && (
-            <div className="max-w-2xl mx-auto h-[80vh] flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-500 pb-24">
-              <header className="mb-6">
-                <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">AI Тренер</h1>
-                <p className="text-stone-400 font-light text-sm">Анализ асан, чат и творчество.</p>
-              </header>
-              <AICoach />
-            </div>
-          )}
-
-          {activeTab === 'profile' && (
-            <div className="max-w-md mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500 pb-24">
-              {authStatus !== 'authenticated' && (
-                <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
-                  <h2 className="text-xl font-serif text-brand-text mb-2">Вход по телефону</h2>
-                  <p className="text-stone-400 text-sm mb-4">
-                    Подтверди номер — и откроются “дорогие” AI‑функции (анализ/генерации).
-                  </p>
-
-                  {!isSupabaseConfigured && (
-                    <div className="mb-4 p-3 bg-amber-50 text-amber-700 rounded-xl text-sm">
-                      Конфигурация не настроена. Авторизация недоступна.
-                    </div>
-                  )}
-
-                  {authError && (
-                    <div className="mb-4 p-3 bg-rose-50 text-rose-600 rounded-xl text-sm">
-                      {authError}
-                    </div>
-                  )}
-
-                  {authStatus === 'otp_sent' ? (
-                    <div className="space-y-3">
-                      <div className="text-xs text-stone-400">
-                        Код отправлен на: <span className="font-mono">{pendingPhone}</span>
-                      </div>
-                      <input
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value)}
-                        inputMode="numeric"
-                        placeholder="Код из SMS"
-                        className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400"
-                      />
-                      <div className="flex gap-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            cancelOtp();
-                            setOtpCode('');
-                          }}
-                          disabled={authLoading}
-                          className="flex-1 py-4 rounded-2xl bg-stone-50 text-stone-600 font-medium hover:bg-stone-100 transition-colors disabled:opacity-70"
-                        >
-                          Изменить номер
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            try {
-                              await verifyOtp(otpCode);
-                              showToast('Телефон подтверждён', 'success');
-                            } catch {
-                              // error shown in UI
-                            }
-                          }}
-                          disabled={authLoading || !otpCode.trim()}
-                          className="flex-1 py-4 rounded-2xl bg-brand-green text-white font-medium hover:bg-brand-green/90 transition-colors shadow-lg shadow-brand-green/20 disabled:opacity-70"
-                        >
-                          {authLoading ? (
-                            <span className="inline-flex items-center gap-2">
-                              <Loader2 className="w-4 h-4 animate-spin" /> Проверяю…
-                            </span>
-                          ) : (
-                            'Подтвердить'
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <input
-                        value={loginName}
-                        onChange={(e) => setLoginName(e.target.value)}
-                        placeholder="Имя"
-                        disabled={!isSupabaseConfigured}
-                        className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400"
-                      />
-                      <input
-                        value={loginPhone}
-                        onChange={(e) => setLoginPhone(e.target.value)}
-                        inputMode="tel"
-                        placeholder="Телефон (например: +79001234567)"
-                        disabled={!isSupabaseConfigured}
-                        className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400"
-                      />
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const name = (loginName || user?.name || 'Пользователь').trim();
-                          const phone = (loginPhone || user?.phone || '').trim();
-                          if (!phone) {
-                            showToast('Введите телефон', 'error');
-                            return;
-                          }
-                          try {
-                            await requestOtp(name, phone);
-                            showToast('Код отправлен', 'success');
-                          } catch {
-                            // error shown in UI
-                          }
-                        }}
-                        disabled={authLoading || !isSupabaseConfigured}
-                        className="w-full py-4 rounded-2xl bg-brand-green text-white font-medium hover:bg-brand-green/90 transition-colors shadow-lg shadow-brand-green/20 disabled:opacity-70"
-                      >
-                        {authLoading ? (
-                          <span className="inline-flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" /> Отправляю…
-                          </span>
-                        ) : (
-                          'Получить код'
-                        )}
-                      </button>
-                    </div>
-                  )}
+              {authError && (
+                <div className="p-3 bg-rose-50 text-rose-600 rounded-xl text-sm flex items-center justify-center gap-2">
+                  <X className="w-4 h-4" />
+                  {authError}
                 </div>
               )}
 
-              {/* Временно скрыто: AI-подписка */}
-              {/* <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-serif text-brand-text">AI-подписка</h3>
-                    <p className="text-sm text-stone-400">Управляйте лимитами и тарифами.</p>
-                  </div>
-                  {subscription && (
-                    <span className="text-xs uppercase tracking-[0.2em] text-brand-green">
-                      {subscriptionPlanLabels[subscription.plan]}
-                    </span>
-                  )}
+              <form onSubmit={handleRequestOtp} className="space-y-4 max-w-xs mx-auto">
+                <input
+                  type="text"
+                  placeholder="Ваше имя"
+                  value={loginName}
+                  onChange={(e) => setLoginName(e.target.value)}
+                  className="w-full px-5 py-4 rounded-2xl bg-stone-50 border border-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-green/20 text-center placeholder:text-stone-400"
+                  required
+                />
+                <input
+                  type="tel"
+                  placeholder="+7 (999) 000-00-00"
+                  value={loginPhone}
+                  onChange={(e) => setLoginPhone(e.target.value)}
+                  className="w-full px-5 py-4 rounded-2xl bg-stone-50 border border-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-green/20 text-center placeholder:text-stone-400"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full bg-brand-dark text-white font-medium py-4 rounded-2xl hover:bg-stone-800 transition-all shadow-lg shadow-brand-dark/20 flex items-center justify-center gap-2 disabled:opacity-70"
+                >
+                  {authLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Получить код'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {authStatus === 'otp_sent' && (
+            <div className="text-center space-y-6 animate-in zoom-in-95 duration-300">
+              <div className="w-20 h-20 bg-brand-mint rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-10 h-10 text-brand-green" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-serif text-brand-text mb-2">Введите код</h2>
+                <p className="text-stone-400 text-sm">Мы отправили СМС на номер {pendingPhone}</p>
+              </div>
+
+              {authError && (
+                <div className="p-3 bg-rose-50 text-rose-600 rounded-xl text-sm flex items-center justify-center gap-2">
+                  <X className="w-4 h-4" />
+                  {authError}
                 </div>
+              )}
 
-                {!isSupabaseConfigured && (
-                  <p className="text-sm text-stone-400">
-                    Настройте Supabase, чтобы подключить подписку и управлять лимитами AI.
-                  </p>
-                )}
+              <form onSubmit={handleVerifyOtp} className="space-y-4 max-w-xs mx-auto">
+                <input
+                  type="text"
+                  placeholder="000000"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  maxLength={6}
+                  className="w-full px-5 py-4 rounded-2xl bg-stone-50 border border-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-green/20 text-center text-2xl tracking-widest font-mono placeholder:text-stone-300"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full bg-brand-green text-white font-medium py-4 rounded-2xl hover:bg-brand-green/90 transition-all shadow-lg shadow-brand-green/20 flex items-center justify-center gap-2 disabled:opacity-70"
+                >
+                  {authLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Войти'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelOtp}
+                  className="text-stone-400 text-sm hover:text-stone-600 transition-colors"
+                >
+                  Изменить номер
+                </button>
+              </form>
+            </div>
+          )}
 
-                {isSupabaseConfigured && authStatus !== 'authenticated' && (
-                  <p className="text-sm text-stone-400">
-                    Войдите, чтобы увидеть текущую подписку и управлять тарифом.
-                  </p>
-                )}
-
-                {isSupabaseConfigured && authStatus === 'authenticated' && (
-                  <>
-                    {subscriptionLoading ? (
-                      <div className="flex items-center gap-2 text-sm text-stone-400">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Загружаем статус подписки…
-                      </div>
-                    ) : (
-                      <div className="mb-4 rounded-2xl bg-stone-50 p-4 text-sm text-stone-600">
-                        <div className="flex items-center justify-between">
-                          <span>Тариф:</span>
-                          <span className="font-medium">
-                            {subscription ? subscriptionPlanLabels[subscription.plan] : 'Free'}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between mt-1">
-                          <span>Статус:</span>
-                          <span className="font-medium">
-                            {subscription
-                              ? subscriptionStatusLabels[subscription.status]
-                              : 'Базовый'}
-                          </span>
-                        </div>
-                        {subscription?.current_period_end && (
-                          <div className="flex items-center justify-between mt-1">
-                            <span>Оплачено до:</span>
-                            <span className="font-medium">
-                              {new Date(subscription.current_period_end).toLocaleDateString(
-                                'ru-RU'
-                              )}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <Paywall
-                      currentPlan={subscription?.plan ?? 'free'}
-                      currentStatus={subscription?.status ?? 'active'}
-                      onSelectPlan={handleSubscribePlan}
-                      isLoading={subscriptionActionLoading}
-                    />
-
-                    {subscription?.status === 'active' && subscription.plan !== 'free' && (
-                      <button
-                        type="button"
-                        onClick={handleCancelSubscription}
-                        disabled={subscriptionActionLoading}
-                        className="mt-6 w-full py-3 rounded-xl text-sm font-medium text-rose-500 bg-rose-50 hover:bg-rose-100 transition-colors disabled:opacity-70"
-                      >
-                        Отменить подписку
-                      </button>
-                    )}
-                  </>
-                )}
-              </div> */}
-
+          {authStatus === 'authenticated' && (
+            <div className="animate-in fade-in duration-500">
               <div className="flex flex-col items-center mb-8 relative">
                 <div
                   role={isEditingProfile ? 'button' : undefined}
@@ -797,7 +442,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   <Image
                     src={
                       user?.avatar ||
-                      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop'
+                      IMAGES.reviews.avatars[0] // Use a valid placeholder
                     }
                     alt="User"
                     storageKey="user-avatar-large"
@@ -923,12 +568,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-stone-200/50 pb-safe z-50 flex justify-around items-center px-1 py-3 shadow-[0_-5px_20px_rgba(0,0,0,0.03)] safe-area-bottom">
-        {navItems.map((item) => {
+        {[
+          { id: 'overview', icon: <LayoutDashboard size={20} />, label: 'Кабинет' },
+          { id: 'videos', icon: <Video size={20} />, label: 'Видео' },
+          { id: 'breath', icon: <Wind size={20} />, label: 'Дыхание' },
+          { id: 'ai', icon: <Sparkles size={20} />, label: 'AI' },
+        ].map((item) => {
           const isActive = activeTab === item.id;
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => setActiveTab(item.id as any)}
               className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-300 min-w-[60px] relative ${isActive ? 'text-brand-green' : 'text-stone-400'}`}
             >
               <div

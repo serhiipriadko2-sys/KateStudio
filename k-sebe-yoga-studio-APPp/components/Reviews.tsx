@@ -1,168 +1,89 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useRef, useEffect } from 'react';
-import { FadeIn } from './FadeIn';
+import { IMAGES } from '@ksebe/shared';
+import { Star } from 'lucide-react';
+import React from 'react';
 import { Image } from './Image';
 
-interface TestimonialProps {
-  id: number;
-  name: string;
-  text: string;
-  image: string;
-}
-
-const testimonials = [
+const reviews = [
   {
     id: 1,
-    name: 'Екатерина',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop',
-    text: 'Самый чуткий, добрый, открытый тренер! Я не встречала ни одного человека, который так любит и горит своей работой! Полная отдача! 🥰',
+    name: 'Анна М.',
+    role: 'Постоянный клиент',
+    text: 'Невероятная атмосфера и профессиональные преподаватели. Inside Flow изменил мое представление о йоге!',
+    image: IMAGES.reviews.avatars[0],
+    rating: 5,
   },
   {
     id: 2,
-    name: 'Анна',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop',
-    text: 'Я с Катей уже больше года, и за это время я стала намного пластичнее и выносливее. Каждое занятие – это плюс 100500 к уверенности в себе.',
+    name: 'Мария К.',
+    role: 'Новичок',
+    text: 'Очень боялась идти первый раз, но Катя создала такое безопасное пространство, что страх сразу ушел.',
+    image: IMAGES.reviews.avatars[1],
+    rating: 5,
   },
   {
     id: 3,
-    name: 'Дарья',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
-    text: 'Если вы, как и я, никогда не занимались йогой, то лучшего тренера не найти! Катя заражает интересом в Inside Flow с первых секунд.',
+    name: 'Елена В.',
+    role: 'Практикует 3 года',
+    text: 'Студия очень стильная и уютная. Каждая деталь продумана с любовью. Рекомендую всем!',
+    image: IMAGES.reviews.avatars[2],
+    rating: 5,
   },
   {
     id: 4,
-    name: 'Марина',
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop',
-    text: 'Для меня это не просто спорт, это психотерапия. После занятий выходишь обновленной, спокойной и наполненной энергией.',
+    name: 'Ольга С.',
+    role: 'Любит медитации',
+    text: 'Медитации с поющими чашами — это космос. Полное перезагрузка за час.',
+    image: IMAGES.reviews.avatars[3],
+    rating: 5,
   },
   {
     id: 5,
-    name: 'Ольга',
-    image: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop',
-    text: 'Студия очень атмосферная. Приятно просто находиться здесь. А практики с Катей — это всегда глубокое погружение.',
+    name: 'Татьяна П.',
+    role: 'Inside Flow фанат',
+    text: 'Музыка, движения, дыхание... Это больше чем спорт, это искусство. Спасибо за вдохновение!',
+    image: IMAGES.reviews.avatars[4],
+    rating: 5,
   },
 ];
 
-const TestimonialCard: React.FC<TestimonialProps> = ({ id, name, text, image }) => (
-  <div className="relative mt-12 mb-8 mx-4 flex-shrink-0 w-80 md:w-96 snap-center group">
-    <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-brand-green/10 h-full flex flex-col justify-between group-hover:shadow-xl group-hover:border-brand-green/30 transition-all duration-500">
-      <p className="text-brand-text/80 text-sm md:text-base leading-relaxed mb-6 font-light italic">
-        &quot;{text}&quot;
-      </p>
-      <div className="flex items-center justify-end gap-3">
-        <div className="h-[1px] w-8 bg-brand-green/30"></div>
-        <h4 className="text-brand-green font-medium text-lg font-serif">{name}</h4>
-      </div>
-    </div>
-    <div className="absolute -top-6 right-8 w-16 h-16 rounded-full border-4 border-stone-50 overflow-hidden shadow-lg group-hover:scale-110 transition-transform duration-500 bg-stone-200">
-      <Image
-        src={image}
-        alt={name}
-        storageKey={`review-avatar-${id}`}
-        containerClassName="w-full h-full"
-        className="w-full h-full object-cover"
-        controlsClassName="-top-2 -right-2 scale-75 origin-top-right"
-      />
-    </div>
-  </div>
-);
-
 export const Reviews: React.FC = () => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const isHoveredRef = useRef(false);
-
-  const startAutoScroll = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      if (!scrollRef.current || isHoveredRef.current) return;
-
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      // If reached end, wrap smoothly to start (logic simplified: scroll back to 0)
-      // Or infinite scroll logic: append children. For simplicity, just reset or bounce.
-      if (scrollLeft + clientWidth >= scrollWidth - 50) {
-        scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
-      }
-    }, 4000);
-  };
-
-  useEffect(() => {
-    startAutoScroll();
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, []);
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 350;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-    }
-  };
-
-  const handleMouseEnter = () => {
-    isHoveredRef.current = true;
-  };
-  const handleMouseLeave = () => {
-    isHoveredRef.current = false;
-  };
-
   return (
-    <section
-      id="reviews"
-      className="py-24 bg-stone-50 overflow-hidden scroll-mt-20 relative group/section"
-    >
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <FadeIn>
-          <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
-            <div className="text-center md:text-left">
-              <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">
-                Доверие
-              </h4>
-              <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">
-                Отзывы учеников
-              </h2>
-            </div>
+    <section className="py-12 bg-stone-50">
+      <div className="px-6 mb-8">
+        <span className="text-xs font-bold uppercase tracking-widest text-brand-green mb-2 block">
+          Отзывы
+        </span>
+        <h2 className="text-3xl font-serif text-brand-text">Что говорят гости</h2>
+      </div>
 
-            {/* Navigation Buttons */}
-            <div className="hidden md:flex gap-2">
-              <button
-                onClick={() => scroll('left')}
-                className="w-12 h-12 rounded-full border border-stone-200 flex items-center justify-center hover:bg-white hover:shadow-md transition-all active:scale-95"
-              >
-                <ChevronLeft className="w-5 h-5 text-stone-600" />
-              </button>
-              <button
-                onClick={() => scroll('right')}
-                className="w-12 h-12 rounded-full border border-stone-200 flex items-center justify-center hover:bg-white hover:shadow-md transition-all active:scale-95"
-              >
-                <ChevronRight className="w-5 h-5 text-stone-600" />
-              </button>
-            </div>
-          </div>
-        </FadeIn>
-
-        <FadeIn delay={200} direction="up">
+      <div className="flex overflow-x-auto px-6 gap-4 pb-8 scrollbar-hide snap-x">
+        {reviews.map((review) => (
           <div
-            ref={scrollRef}
-            className="flex overflow-x-auto pb-12 -mx-6 px-6 scrollbar-hide snap-x snap-mandatory md:gap-2"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onTouchStart={handleMouseEnter}
-            onTouchEnd={handleMouseLeave}
-            role="region"
-            aria-label="Отзывы клиентов"
+            key={review.id}
+            className="min-w-[300px] bg-white p-6 rounded-[2rem] shadow-sm border border-stone-100 snap-center"
           >
-            {testimonials.map((t) => (
-              <TestimonialCard key={t.id} {...t} />
-            ))}
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full overflow-hidden border border-stone-100">
+                <Image
+                  src={review.image}
+                  alt={review.name}
+                  storageKey={`review-avatar-${review.id}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h4 className="font-serif text-brand-text">{review.name}</h4>
+                <p className="text-xs text-stone-400">{review.role}</p>
+              </div>
+            </div>
+            <div className="flex gap-1 mb-3">
+              {[...Array(review.rating)].map((_, i) => (
+                <Star key={i} className="w-3 h-3 fill-brand-yellow text-brand-yellow" />
+              ))}
+            </div>
+            <p className="text-sm text-stone-600 leading-relaxed font-light">"{review.text}"</p>
           </div>
-        </FadeIn>
+        ))}
       </div>
     </section>
   );
