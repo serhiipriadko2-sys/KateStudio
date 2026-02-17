@@ -1,5 +1,5 @@
 skill: 'react_component_test_gen'
-version: '1.0.0'
+version: '1.1.0'
 description: 'Automatically generates Vitest unit tests for new React components.'
 trigger:
   event: 'pull_request'
@@ -11,21 +11,28 @@ rules:
   library: '@testing-library/react'
   style: 'functional'
   coverage_threshold: 80
-  mocking_strategy: 'shallow'
+  mocking_strategy: 'vi.mock' # Use Vitest mocks
 
 prompt_template: |
-  You are an expert React QA engineer.
+  You are an expert React QA engineer using Vitest.
   Analyze the component in {{file_path}}.
   Generate a unit test file using Vitest and React Testing Library.
-  Ensure the following test cases are covered:
-  - Renders correctly (snapshot or basic element check)
-  - Handles props correctly
-  - User interactions (clicks, inputs) if applicable
-  - Error states if applicable
+
+  **Guidelines:**
+  1. Use `import { describe, it, expect, vi } from 'vitest';`
+  2. Mock external dependencies, especially `@ksebe/shared` and `supabase-js`.
+  3. If the component uses Supabase, mock `useSupabase` or the client directly.
+  4. Use `vi.hoisted(() => ...)` for modules that need to be mocked before import.
+  5. Test cases:
+     - Renders correctly (snapshot or basic element check)
+     - Handles props correctly
+     - User interactions (clicks, inputs)
+     - Error states
+     - Loading states
 
 actions:
   - type: 'analyze_code'
   - type: 'generate_file'
-    output_pattern: '{{dir}}/{{name}}.test.tsx'
+    output_pattern: '{{dir}}/__tests__/{{name}}.test.tsx' # Standardize on __tests__ folder
   - type: 'run_command'
     command: 'npm run test:run {{output_file}}'

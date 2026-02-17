@@ -12,6 +12,16 @@ interface TestimonialProps {
   image: string;
 }
 
+interface ReviewData {
+  id: number | string;
+  name: string;
+  text: string;
+  image_url?: string;
+  display_order?: number;
+  created_at?: string;
+  is_active?: boolean;
+}
+
 const defaultTestimonials = [
   {
     id: 1,
@@ -101,7 +111,7 @@ export const Reviews: React.FC = () => {
           .order('created_at', { ascending: false });
 
         if (!error && data && data.length > 0) {
-          const mapped = data.map((r: any) => ({
+          const mapped = data.map((r: ReviewData) => ({
             id: r.id,
             name: r.name,
             text: r.text,
@@ -109,8 +119,8 @@ export const Reviews: React.FC = () => {
           }));
           setReviews(mapped);
         }
-      } catch (e) {
-        console.warn('Failed to fetch reviews', e);
+      } catch {
+        // void('Failed to fetch reviews');
       }
     };
 

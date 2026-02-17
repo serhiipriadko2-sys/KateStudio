@@ -286,7 +286,7 @@ const PlanEditor: React.FC<{
 
   const handleSubmit = () => {
     if (!draft.title || !draft.price) return alert('Заполните название и цену');
-    onSave(draft as any);
+    onSave(draft as DBPricingPlan | Omit<DBPricingPlan, 'id'>);
   };
 
   return (

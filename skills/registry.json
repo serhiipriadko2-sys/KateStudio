@@ -43,6 +43,24 @@
         "success_rate": 0.0,
         "runs": 0
       }
+    },
+    {
+      "id": "supabase_ops",
+      "path": "skills/supabase_ops.yaml",
+      "enabled": true,
+      "stats": {
+        "success_rate": 0.0,
+        "runs": 0
+      }
+    },
+    {
+      "id": "code_quality",
+      "path": "skills/code_quality.yaml",
+      "enabled": true,
+      "stats": {
+        "success_rate": 0.0,
+        "runs": 0
+      }
     }
   ]
 }
