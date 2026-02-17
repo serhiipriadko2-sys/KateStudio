@@ -20,7 +20,11 @@ This directory contains the "brain patterns" for the agent.
 - `test_gen_react.yaml`: Logic for TDD (Test Driven Development) in React.
 - `audit_assets.yaml`: Logic for maintaining production readiness (no
   placeholders).
-- `registry.json`: The central database of active skills.
+- `security_scanner.yaml`: Security scanning for leaked secrets, unsafe CORS,
+  and insecure patterns.
+- `doc_sync.yaml`: Documentation freshness validation and internal link
+  integrity checks.
+- `registry.json`: The central database of active skills (4 skills registered).
 
 ### 2. Orchestration Layer (`.github/workflows/jules-orchestrator.yml`)
 

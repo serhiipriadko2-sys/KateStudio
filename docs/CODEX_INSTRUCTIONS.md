@@ -1,6 +1,8 @@
-# Custom Instructions — KateStudio (K себе)
+# Custom Instructions — KateStudio (К себе)
 
-Ты — инженер‑лид/рефакторинг‑ассистент для монорепозитория KateStudio. Цель:
+> **Обновлено:** 16 февраля 2026
+
+Ты — инженер-лид/рефакторинг-ассистент для монорепозитория KateStudio. Цель:
 довести проект до запуска. На старте ИИ-функции НЕ развиваем: ассистент — только
 навигация/контакты (rule-based).
 
@@ -12,8 +14,8 @@
   - k-sebe-yoga-studio-APPp/ — PWA приложение (Firebase deploy)
   - shared/ — общая библиотека @ksebe/shared
   - supabase/ — Edge Functions + migrations
-- Ключевая проблема сейчас: UI ссылается на таблицы Supabase
-  (contacts/classes/bookings/profiles), но миграции создают не все таблицы.
+- **Текущий статус**: 174 теста, 100% TypeScript, 0 lint errors
+- **Security P0**: Все критические блокеры устранены (CORS, RLS, Webhook, API key)
 - Запуск без AI: ChatWidget должен работать без Gemini, отвечая по локальной
   базе знаний.
 
@@ -21,54 +23,57 @@
 
 - Нельзя коммитить секреты (.env, ключи).
 - Нельзя использовать SUPABASE_SERVICE_ROLE_KEY в браузере.
-- Нельзя оставлять Edge Functions с CORS '\*' и “опциональным” webhook secret.
+- Нельзя оставлять Edge Functions с CORS '\*' и "опциональным" webhook secret.
 - Нельзя делать большие переписывания без причины: приоритет — маленькие
   безопасные PR.
+- Нельзя ослаблять TypeScript strict mode.
 
 ## 2) Приоритеты (в порядке)
 
-P0 Security:
+P0 (Оставшиеся блокеры):
 
-1. payment-webhook: secret обязателен + корректная валидация подписи (минимум —
-   отказ без секрета).
-2. create-payment: убрать fallback на anon key; требовать service role.
-3. subscriptions: убрать update policy, чтобы пользователь не мог сам менять
-   план.
-4. CORS whitelist для всех Edge Functions.
+1. Создать production .env файлы (Root, WEB, APP)
+2. Установить GitHub Secrets
+3. Заменить оставшиеся Unsplash изображения в APP
 
-P0 Data/Schema: 5) Добавить миграции для таблиц, которые реально используются:
+P1 Security/Backend:
 
-- contacts (WEB Contact)
-- classes (WEB Schedule)
-- bookings или booking_requests (WEB booking flow)
-- profiles (APP)
+4. Input validation (Zod) для Edge Functions
+5. Rate limiting в Redis/KV для gemini-proxy
+6. YooKassa интеграция (полная) для create-payment
 
-* включить RLS и политики, соответствующие сценариям (гостевой сайт vs auth-only
-  app).
+P1 Data/Schema:
 
-P1 Product (без AI): 6) Сделать ChatWidget “навигационным”:
+7. Добавить миграции для таблиц, которые реально используются:
+   - contacts (WEB Contact)
+   - classes (WEB Schedule)
+   - bookings или booking_requests (WEB booking flow)
+   - profiles (APP)
+   - включить RLS и политики
 
-- вынести KB в отдельный файл (contacts/address/schedule/pricing/faq)
-- ответы детерминированные (keyword/rule routing), без вызова Gemini.
+P1 Product (без AI):
 
-7. Schedule на WEB: fallback на локальный контент, если Supabase не настроен.
+8. Сделать ChatWidget "навигационным":
+   - вынести KB в отдельный файл (contacts/address/schedule/pricing/faq)
+   - ответы детерминированные (keyword/rule routing), без вызова Gemini.
 
-P1 Deploy: 8) Прокинуть env в firebase-deploy (VITE_SUPABASE_URL и т.д.) или
-обеспечить корректную сборку без них.
+9. Schedule на WEB: fallback на локальный контент, если Supabase не настроен.
 
-P2 Content: 9) Заменить Unsplash плейсхолдеры в APP на локальные ассеты. 10)
-Оптимизировать изображения (WebP) по мере готовности.
+P2 Content:
+
+10. Заменить Unsplash плейсхолдеры в APP на локальные ассеты.
+11. Оптимизировать изображения (WebP) по мере готовности.
 
 ## 3) Рабочий протокол (как ты отвечаешь/работаешь)
 
-- Всегда начинай с короткого “что я увидел в репо” + план 1–3 шагов.
+- Всегда начинай с короткого "что я увидел в репо" + план 1-3 шагов.
 - Всегда делай изменения через минимальные патчи:
   1. найти точные файлы
   2. предложить diff
   3. добавить/обновить тесты (Vitest) если логика изменилась
   4. обновить docs/LAUNCH_CHECKLIST.md или CURRENT_TASKS.md
 - После кода — команды проверки (что запускать локально):
-  - npm test
+  - npm run test:run
   - npm run lint
   - npm run typecheck
   - npm run build:web / npm run build:app
@@ -79,15 +84,27 @@ P2 Content: 9) Заменить Unsplash плейсхолдеры в APP на л
 
 - TypeScript строгий, не ослаблять типы.
 - Не добавлять новые зависимости без необходимости.
-- UX: все деградации должны быть “мягкими” (понятное сообщение, а не падение).
+- UX: все деградации должны быть "мягкими" (понятное сообщение, а не падение).
+- Prefer named exports over default exports.
+- Keep components under 300 lines.
 
 ## 5) Definition of Done для каждого PR
 
 PASS, если:
 
-- сборка/тесты проходят,
+- сборка/тесты проходят (`npm run build:all && npm run test:run`),
 - нет секретов в git,
 - Edge Functions закрыты (CORS whitelist + обязательные секреты),
 - миграции воспроизводят нужные таблицы,
-- ассистент работает без AI ключей и отвечает по KB. FAIL, если любое из этого
-  не выполнено.
+- TypeScript strict mode проходит (`npm run typecheck`),
+- ассистент работает без AI ключей и отвечает по KB.
+
+FAIL, если любое из этого не выполнено.
+
+## 6) Ссылки
+
+- [CLAUDE.md](../CLAUDE.md) — основные инструкции для AI-агентов
+- [AGENTS.md](../AGENTS.md) — мульти-агентная архитектура
+- [CURRENT_TASKS.md](../CURRENT_TASKS.md) — текущие задачи
+- [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) — чеклист запуска
+- [SECURITY_REPORT_2026_02_11.md](./SECURITY_REPORT_2026_02_11.md) — аудит безопасности

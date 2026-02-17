@@ -5,8 +5,8 @@ running quickly.
 
 ## Prerequisites
 
-- Node.js 18+ (check with `node --version`)
-- npm 9+ (check with `npm --version`)
+- Node.js 22+ (check with `node --version`; CI uses Node.js 22)
+- npm 10+ (check with `npm --version`)
 - Git (check with `git --version`)
 
 ## Quick Setup
@@ -212,13 +212,16 @@ chore: Update dependencies
 
 - [Full Documentation](./README.md)
 - [Contributing Guide](./CONTRIBUTING.md)
-- [Architecture Overview](./CLAUDE.md)
-- [Roadmap](./ROADMAP.md)
+- [AI Agent Instructions](./CLAUDE.md)
+- [Multi-Agent Architecture](./AGENTS.md)
+- [Documentation Index](./docs/INDEX.md)
 - [Current Tasks](./CURRENT_TASKS.md)
+- [Roadmap](./ROADMAP.md)
 
 ## Getting Help
 
 - Check [CLAUDE.md](./CLAUDE.md) for AI assistant context
+- Check [AGENTS.md](./AGENTS.md) for multi-agent setup
 - Review existing code for patterns
 - Ask in team chat or create GitHub issue
 

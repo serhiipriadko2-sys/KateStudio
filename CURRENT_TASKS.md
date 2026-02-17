@@ -4,72 +4,73 @@
 **PRODUCTION_READINESS_AUDIT.md** и **REMEDIATION_PLAN.md**). Фокус на задачах,
 которые можно брать в работу прямо сейчас.
 
-_Обновлено: 12 января 2026 (после полного production audit)._
+_Обновлено: 16 февраля 2026 (после security audit и обновления документации)._
 
 ---
 
-## 🚨 КРИТИЧЕСКИЕ БЛОКЕРЫ (P0) - Немедленное внимание!
+## Завершённые задачи (P0 Security)
 
-**Нельзя запускать в продакшн без исправления этих проблем!**
+Все критические security-блокеры **устранены** (см.
+[Security Report](./docs/SECURITY_REPORT_2026_02_11.md)):
 
-| #     | Задача                                      | Где менять                                          | Время    | Статус |
-| ----- | ------------------------------------------- | --------------------------------------------------- | -------- | ------ |
-| **1** | **npm install - установить зависимости**    | Root                                                | 5 мин    | 🔴     |
-| **2** | **Исправить webhook secret (обязательный)** | `supabase/functions/payment-webhook/index.ts:41-46` | 10 мин   | 🔴     |
-| **3** | **Убрать subscriptions update RLS policy**  | Новая миграция `20260112_fix_subscriptions_rls.sql` | 15 мин   | 🔴     |
-| **4** | **Ограничить CORS конкретными доменами**    | Все 3 Edge Functions                                | 15 мин   | 🔴     |
-| **5** | **Убрать API key fallback для production**  | `vite.config.ts` (WEB+APP)                          | 20 мин   | 🔴     |
-| **6** | **Требовать Service Role Key**              | `supabase/functions/create-payment/index.ts:32-34`  | 10 мин   | 🔴     |
-| **7** | **Создать .env файлы**                      | Root, WEB, APP                                      | 15 мин   | 🔴     |
-| **8** | **Установить GitHub Secrets**               | GitHub Settings                                     | 10 мин   | 🔴     |
-| **9** | **Заменить 16 Unsplash изображений**        | Reviews, Blog, Retreats, VideoLibrary               | 2-4 часа | 🔴     |
+| #     | Задача                                      | Статус         |
+| ----- | ------------------------------------------- | -------------- |
+| **1** | npm install — установить зависимости        | ✅ Завершено   |
+| **2** | Исправить webhook secret (обязательный)     | ✅ Завершено   |
+| **3** | Убрать subscriptions update RLS policy      | ✅ Завершено   |
+| **4** | Ограничить CORS конкретными доменами        | ✅ Завершено   |
+| **5** | Убрать API key fallback для production      | ✅ Завершено   |
+| **6** | Требовать Service Role Key                  | ✅ Завершено   |
 
-**Total P0:** ~1.5 часа + контент (2-4 часа) **Security Score:** 55 → 85+ после
-исправления
+**Security Score:** 55 → 85+ после исправлений
 
-## Завершённые задачи
+## Оставшиеся P0 (Блокеры запуска)
 
-| #   | Задача                                                                      | Где менять                                                                                  | Ожидаемый результат                                       |
-| --- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| 1   | ✅ Создать Edge Function-прокси для Gemini API с rate limiting по `user_id` | `supabase/functions/gemini-proxy/index.ts`                                                  | Безопасный прокси для Gemini, ограничение частоты вызовов |
-| 2   | ✅ Добавить вебхуки оплаты: `create-payment` и `payment-webhook`            | `supabase/functions/create-payment/index.ts`, `supabase/functions/payment-webhook/index.ts` | Готовая обработка оплаты и подтверждения статуса          |
-| 3   | ✅ Сгенерировать PWA-иконки 72–512px                                        | `k-sebe-yoga-studioWEB/public/icons/`                                                       | Полный набор иконок для manifest/PWA                      |
-| 4   | ✅ Добавить `og-image.jpg` для соцсетей                                     | `k-sebe-yoga-studioWEB/public/og-image.jpg`                                                 | Корректный предпросмотр ссылок сайта                      |
-| 5   | ✅ Рефакторинг ChatWidget: разбить на подкомпоненты и хук                   | `k-sebe-yoga-studioWEB/components/ChatWidget/`                                              | Компактный (<200 LOC) и поддерживаемый виджет чата        |
+| #     | Задача                                   | Где менять                       | Время    | Статус |
+| ----- | ---------------------------------------- | -------------------------------- | -------- | ------ |
+| **7** | **Создать .env файлы**                   | Root, WEB, APP                   | 15 мин   | ⏳     |
+| **8** | **Установить GitHub Secrets**            | GitHub Settings                  | 10 мин   | ⏳     |
+| **9** | **Заменить Unsplash изображения в APP**  | APP components                   | 2-4 часа | 🔄     |
 
-## Sprint: Полировка экосистемы (Январь 2026)
+**Примечание:** WEB-изображения заменены на локальные ассеты
+(`shared/constants/images.ts`). Остаётся APP.
 
-| #   | Задача                                 | Где менять                                   | Статус |
-| --- | -------------------------------------- | -------------------------------------------- | ------ |
-| 6   | ✅ Добавить `.env.example` в APP       | `k-sebe-yoga-studio-APPp/.env.example`       | ✅     |
-| 7   | ✅ Добавить `robots.txt` в APP         | `k-sebe-yoga-studio-APPp/public/robots.txt`  | ✅     |
-| 8   | ✅ Добавить `sitemap.xml` в APP        | `k-sebe-yoga-studio-APPp/public/sitemap.xml` | ✅     |
-| 9   | ✅ Обновить sitemap.xml с датой 2026   | `k-sebe-yoga-studioWEB/public/sitemap.xml`   | ✅     |
-| 10  | ✅ Исправить `any` типы в shared/utils | `shared/utils/index.ts`                      | ✅     |
-| 11  | ✅ Исправить неиспользуемые переменные | `shared/components/Marquee.tsx`              | ✅     |
-| 12  | ✅ Исправить a11y предупреждения       | Blog, BookingModal, Image                    | ✅     |
-| 13  | ✅ Экранирование кавычек в JSX         | Blog.tsx, Image.tsx                          | ✅     |
+---
 
-## Sprint: Глобальное обновление (Январь 2026)
+## Завершённые задачи (Sprint: Полировка экосистемы)
 
-| #   | Задача                                  | Где менять                          | Статус |
-| --- | --------------------------------------- | ----------------------------------- | ------ |
-| 14  | ✅ Обновить типы для геймификации       | `shared/types/index.ts`             | ✅     |
-| 15  | ✅ Добавить константы достижений        | `shared/constants/index.ts`         | ✅     |
-| 16  | ✅ Добавить INSIDE_FLOW info            | `shared/constants/index.ts`         | ✅     |
-| 17  | ✅ Добавить ARIA_CONFIG                 | `shared/constants/index.ts`         | ✅     |
-| 18  | ✅ Добавить SUBSCRIPTION_PLANS          | `shared/constants/index.ts`         | ✅     |
-| 19  | ✅ Создать COMPREHENSIVE_UPDATE_2026.md | `docs/COMPREHENSIVE_UPDATE_2026.md` | ✅     |
+| #   | Задача                                                                      | Статус |
+| --- | --------------------------------------------------------------------------- | ------ |
+| 1   | ✅ Создать Edge Function-прокси для Gemini API с rate limiting              | ✅     |
+| 2   | ✅ Добавить вебхуки оплаты: `create-payment` и `payment-webhook`            | ✅     |
+| 3   | ✅ Сгенерировать PWA-иконки 72–512px                                        | ✅     |
+| 4   | ✅ Добавить `og-image.jpg` для соцсетей                                     | ✅     |
+| 5   | ✅ Рефакторинг ChatWidget: разбить на подкомпоненты и хук                   | ✅     |
+| 6   | ✅ Добавить `.env.example` в APP                                            | ✅     |
+| 7   | ✅ Добавить `robots.txt` в APP                                              | ✅     |
+| 8   | ✅ Добавить `sitemap.xml` в APP                                             | ✅     |
+| 9   | ✅ Обновить sitemap.xml с датой 2026                                        | ✅     |
+| 10  | ✅ Исправить `any` типы в shared/utils                                      | ✅     |
+| 11  | ✅ Исправить неиспользуемые переменные                                      | ✅     |
+| 12  | ✅ Исправить a11y предупреждения                                            | ✅     |
+| 13  | ✅ Экранирование кавычек в JSX                                              | ✅     |
+| 14  | ✅ Обновить типы для геймификации                                            | ✅     |
+| 15  | ✅ Добавить константы достижений                                             | ✅     |
+| 16  | ✅ Добавить INSIDE_FLOW info                                                 | ✅     |
+| 17  | ✅ Добавить ARIA_CONFIG                                                      | ✅     |
+| 18  | ✅ Добавить SUBSCRIPTION_PLANS                                               | ✅     |
+| 19  | ✅ Создать COMPREHENSIVE_UPDATE_2026.md                                      | ✅     |
+| 20  | ✅ Обновить документацию (CLAUDE.md, AGENTS.md, skills, docs)               | ✅     |
 
-## 🟡 Высокий приоритет (P1) - Очень желательно перед запуском
+---
 
-**Рекомендуется исправить для качественного запуска**
+## 🟡 Высокий приоритет (P1) — Очень желательно перед запуском
 
 | #   | Задача                                    | Где менять                                    | Время     | Статус |
 | --- | ----------------------------------------- | --------------------------------------------- | --------- | ------ |
 | 10  | **Input validation (Zod)**                | `supabase/functions/gemini-proxy/index.ts`    | 2-3 часа  | ⏳     |
 | 11  | **Rate limiting в Redis/KV**              | `supabase/functions/gemini-proxy/index.ts`    | 3-4 часа  | ⏳     |
-| 12  | **Webhook signature verification (HMAC)** | `supabase/functions/payment-webhook/index.ts` | 1-2 часа  | ⏳     |
+| 12  | **Webhook signature verification (HMAC)** | `supabase/functions/payment-webhook/index.ts` | ✅        | ✅     |
 | 13  | **YooKassa интеграция (полная)**          | `supabase/functions/create-payment/index.ts`  | 1-2 дня   | ⏳     |
 | 14  | **Заменить 4 placeholder видео**          | `APP/components/VideoLibrary.tsx`             | 4-8 часов | ⏳     |
 | 15  | **Интегрировать расписание с Supabase**   | `APP/services/dataService.ts` + новая таблица | 1-2 дня   | ⏳     |
@@ -78,10 +79,10 @@ _Обновлено: 12 января 2026 (после полного production 
 | 18  | **Исправить nullable user_id**            | Миграция cleanup                              | 30 мин    | ⏳     |
 | 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ⏳     |
 
-**Total P1:** 1-2 недели **Testing Coverage:** 15% → 50%+ **Payment
+**Total P1:** 1-2 недели **Testing Coverage:** ~20% → 50%+ **Payment
 Integration:** 30% → 90%
 
-## 🟢 Средний приоритет (P2) - После запуска, но скоро
+## 🟢 Средний приоритет (P2) — После запуска, но скоро
 
 | #   | Задача                               | Где менять                                  | Время    | Статус |
 | --- | ------------------------------------ | ------------------------------------------- | -------- | ------ |
@@ -99,7 +100,7 @@ Integration:** 30% → 90%
 
 **Total P2:** 2-4 недели
 
-## 🔵 Низкий приоритет (P3) - Backlog
+## 🔵 Низкий приоритет (P3) — Backlog
 
 | #   | Задача                                    | Где менять           | Статус |
 | --- | ----------------------------------------- | -------------------- | ------ |
@@ -116,56 +117,52 @@ Integration:** 30% → 90%
 
 ---
 
-## 📚 НОВАЯ ДОКУМЕНТАЦИЯ (январь 2026)
+## Документация
 
-После полного production audit созданы три ключевых документа:
+### Ключевые документы:
 
-### 🎯 Для быстрого ознакомления:
-
-- **[AUDIT_EXECUTIVE_SUMMARY.md](./AUDIT_EXECUTIVE_SUMMARY.md)** - краткий обзор
+- **[AUDIT_EXECUTIVE_SUMMARY.md](./AUDIT_EXECUTIVE_SUMMARY.md)** — краткий обзор
   (3 минуты чтения)
-
-### 📊 Для детального изучения:
-
-- **[PRODUCTION_READINESS_AUDIT.md](./PRODUCTION_READINESS_AUDIT.md)** - полный
+- **[PRODUCTION_READINESS_AUDIT.md](./PRODUCTION_READINESS_AUDIT.md)** — полный
   аудит (84 KB, 20 минут чтения)
-- **[REMEDIATION_PLAN.md](./REMEDIATION_PLAN.md)** - план исправлений с кодом
+- **[REMEDIATION_PLAN.md](./REMEDIATION_PLAN.md)** — план исправлений с кодом
   (45 KB, 15 минут чтения)
+- **[Security Report (Feb 2026)](./docs/SECURITY_REPORT_2026_02_11.md)** — аудит
+  безопасности
 
-### 📖 Предыдущая документация:
+### Стратегические:
 
-- **Стратегическая дорожная карта**:
-  [STRATEGIC_ROADMAP_2026.md](./STRATEGIC_ROADMAP_2026.md)
-- **План действий**: [ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md)
-- **Комплексное обновление 2026**:
-  [docs/COMPREHENSIVE_UPDATE_2026.md](./docs/COMPREHENSIVE_UPDATE_2026.md)
-- **Исполнительная дорожная карта**:
-  [docs/ROADMAP_EXECUTION_2026.md](./docs/ROADMAP_EXECUTION_2026.md)
-
----
-
-## 📈 PRODUCTION READINESS
-
-**Текущая оценка: 68/100**
-
-| Метрика     | Текущее    | После P0   | После P1   | Цель       |
-| ----------- | ---------- | ---------- | ---------- | ---------- |
-| Security    | 55/100 🔴  | 85/100 🟢  | 90/100 🟢  | 95/100     |
-| Testing     | 25/100 🔴  | 25/100 🔴  | 50/100 🟡  | 70/100     |
-| Content     | 60/100 🟡  | 95/100 🟢  | 100/100 🟢 | 100/100    |
-| Payment     | 30/100 🔴  | 30/100 🔴  | 90/100 🟢  | 100/100    |
-| **OVERALL** | **68/100** | **75/100** | **85/100** | **90/100** |
+- **[STRATEGIC_ROADMAP_2026.md](./STRATEGIC_ROADMAP_2026.md)** — дорожная карта
+- **[ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md)** — план действий
+- **[docs/COMPREHENSIVE_UPDATE_2026.md](./docs/COMPREHENSIVE_UPDATE_2026.md)** —
+  комплексное обновление
+- **[docs/INDEX.md](./docs/INDEX.md)** — центральный индекс документации
 
 ---
 
-## ⏱️ TIMELINE
+## PRODUCTION READINESS
 
-- **Week 1 (P0):** Security + Content → 75/100
-- **Week 2-3 (P1):** Backend + Features → 85/100
-- **Week 4-6 (P2):** Polish + Optimization → 90/100
+**Текущая оценка: 75/100** (было 68, security P0 устранены)
+
+| Метрика     | Текущее    | После P1   | Цель       |
+| ----------- | ---------- | ---------- | ---------- |
+| Security    | 85/100     | 90/100     | 95/100     |
+| Testing     | 25/100     | 50/100     | 70/100     |
+| Content     | 80/100     | 100/100    | 100/100    |
+| Payment     | 30/100     | 90/100     | 100/100    |
+| **OVERALL** | **75/100** | **85/100** | **90/100** |
+
+---
+
+## TIMELINE
+
+- **Done (P0 Security):** Webhook, RLS, CORS, API key, Service Role Key
+- **Week 1 (P0 remaining):** .env, GitHub Secrets, APP images
+- **Week 2-3 (P1):** Backend + Features
+- **Week 4-6 (P2):** Polish + Optimization
 - **Week 7+ (P3):** Advanced Features (ongoing)
 
 ---
 
-> Обновляйте таблицу по мере выполнения: ✅ для сделанных, ⚠️ для в работе, ⏳
-> для запланированных, 🔴 для блокеров.
+> Обновляйте таблицу по мере выполнения: ✅ для сделанных, 🔄 для в работе, ⏳
+> для запланированных.
