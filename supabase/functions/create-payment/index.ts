@@ -46,7 +46,6 @@ function getSupabaseClient(token?: string) {
   const url = Deno.env.get('SUPABASE_URL');
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-  // Strict check: Service Role is required. No fallback to Anon Key.
   if (!url || !serviceRoleKey)
     throw new Error('Supabase configuration error: Service Role missing');
 
@@ -56,84 +55,131 @@ function getSupabaseClient(token?: string) {
   });
 }
 
-function buildPaymentUrl(plan: PlanId, subscriptionId: string, returnUrl?: string): string | null {
-  const checkoutBase = Deno.env.get('PAYMENT_CHECKOUT_URL');
-  if (!checkoutBase) return returnUrl ?? null;
-  const url = new URL(checkoutBase);
-  url.searchParams.set('plan', plan);
-  url.searchParams.set('subscription_id', subscriptionId);
-  if (returnUrl) url.searchParams.set('return_url', returnUrl);
-  return url.toString();
+const PLANS: Record<PlanId, { amount: string; currency: string; description: string }> = {
+  free: { amount: '0.00', currency: 'RUB', description: 'Basic Access' },
+  premium: { amount: '499.00', currency: 'RUB', description: 'Premium Access (Monthly)' },
+  vip: { amount: '1999.00', currency: 'RUB', description: 'VIP Access + Personal Plan' },
+};
+
+async function createYookassaPayment(
+  planId: PlanId,
+  userId: string,
+  returnUrl: string,
+  metadata: Record<string, string>
+) {
+  const shopId = Deno.env.get('YOOKASSA_SHOP_ID');
+  const secretKey = Deno.env.get('YOOKASSA_SECRET_KEY');
+
+  if (!shopId || !secretKey) {
+    throw new Error('YooKassa credentials missing');
+  }
+
+  const plan = PLANS[planId];
+  const idempotencyKey = crypto.randomUUID();
+
+  const body = {
+    amount: {
+      value: plan.amount,
+      currency: plan.currency,
+    },
+    capture: true,
+    confirmation: {
+      type: 'redirect',
+      return_url: returnUrl,
+    },
+    description: `Subscription: ${plan.description}`,
+    metadata: {
+      user_id: userId,
+      plan_id: planId,
+      ...metadata,
+    },
+  };
+
+  const response = await fetch('https://api.yookassa.ru/v3/payments', {
+    method: 'POST',
+    headers: {
+      'Idempotency-Key': idempotencyKey,
+      'Content-Type': 'application/json',
+      Authorization: `Basic ${btoa(`${shopId}:${secretKey}`)}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('YooKassa Error:', errorText);
+    throw new Error(`YooKassa API error: ${response.status}`);
+  }
+
+  return response.json();
 }
 
 Deno.serve(async (req) => {
   const cors = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
-  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, { status: 405 }, cors);
+
+  if (req.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, { status: 405 }, cors);
+  }
 
   let payload: CreatePaymentRequest;
   try {
     const rawPayload = await req.json();
     payload = CreatePaymentRequestSchema.parse(rawPayload);
   } catch (e) {
-    if (e instanceof z.ZodError) {
-      return json({ error: 'Validation error', details: e.errors }, { status: 400 }, cors);
-    }
-    return json({ error: 'Invalid JSON' }, { status: 400 }, cors);
+    return json(
+      { error: 'Validation error', details: e instanceof z.ZodError ? e.errors : e },
+      { status: 400 },
+      cors
+    );
   }
 
   const token = getBearerToken(req);
-  if (!token) {
-    return json({ error: 'Authentication required' }, { status: 401 }, cors);
-  }
+  if (!token) return json({ error: 'Authentication required' }, { status: 401 }, cors);
 
   try {
-    // 1. Verify user with Supabase Auth (using Service Role but validating token)
-    const supabaseAuth = getSupabaseClient(token);
-    const { data: authData, error: authError } = await supabaseAuth.auth.getUser(token);
-    if (authError || !authData.user?.id) {
+    const supabase = getSupabaseClient(token);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
       return json({ error: 'Invalid user session' }, { status: 401 }, cors);
     }
 
-    // 2. Perform DB operations using Service Role
-    // We reuse the client which is initialized with Service Role
-    const supabase = getSupabaseClient(token);
-    const now = new Date().toISOString();
+    // Upsert subscription status to 'pending'
+    const { error: dbError } = await supabase.from('subscriptions').upsert({
+      user_id: user.id,
+      plan: payload.plan,
+      status: 'pending',
+      updated_at: new Date().toISOString(),
+    });
 
-    // Upsert subscription status (Service Role required for this table if RLS blocks users)
-    const { data: subscription, error } = await supabase
-      .from('subscriptions')
-      .upsert(
-        {
-          user_id: authData.user.id,
-          plan: payload.plan,
-          status: payload.plan === 'free' ? 'active' : 'pending',
-          updated_at: now,
-        },
-        { onConflict: 'user_id' }
-      )
-      .select()
-      .single();
-
-    if (error || !subscription) {
-      console.error('create-payment upsert error', error);
-      return json({ error: 'Failed to create subscription' }, { status: 500 }, cors);
+    if (dbError) {
+      console.error('Database error:', dbError);
+      return json({ error: 'Failed to initialize subscription' }, { status: 500 }, cors);
     }
 
-    const paymentUrl = buildPaymentUrl(payload.plan, subscription.id, payload.returnUrl);
+    // Call YooKassa API
+    const defaultReturnUrl = payload.returnUrl || 'https://app.ksebe-studio.ru/profile';
+    const payment = await createYookassaPayment(payload.plan, user.id, defaultReturnUrl, {});
 
     return json(
       {
-        status: subscription.status,
-        subscription,
-        paymentUrl,
-        message: paymentUrl ? undefined : 'Провайдер оплаты не настроен',
+        paymentUrl: payment.confirmation.confirmation_url,
+        paymentId: payment.id,
+        status: payment.status,
       },
       {},
       cors
     );
   } catch (e) {
-    console.error('create-payment error', e);
-    return json({ error: 'Internal error' }, { status: 500 }, cors);
+    console.error('Payment creation failed:', e);
+    return json(
+      { error: e instanceof Error ? e.message : 'Internal Server Error' },
+      { status: 500 },
+      cors
+    );
   }
 });

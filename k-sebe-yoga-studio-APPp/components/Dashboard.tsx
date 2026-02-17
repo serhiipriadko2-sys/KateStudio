@@ -1,5 +1,4 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-// import { Paywall } from '@ksebe/shared'; // Временно скрыто вместе с AI-подпиской
 import { IMAGES } from '@ksebe/shared';
 import {
   LogOut,
@@ -34,13 +33,31 @@ import { DeveloperSettings } from './DeveloperSettings';
 // FadeIn available from './FadeIn' when needed
 import { Image } from './Image';
 import { Logo } from './Logo';
+import { Paywall } from './Paywall';
 import { VideoLibrary } from './VideoLibrary';
+
+interface Subscription {
+  plan: 'free' | 'premium' | 'vip';
+  status: 'active' | 'canceled' | 'expired';
+  current_period_end?: string;
+}
 
 interface DashboardProps {
   onBack: () => void;
   initialTab?: 'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
 }
 
+const subscriptionPlanLabels: Record<string, string> = {
+  free: 'Free',
+  premium: 'Premium',
+  vip: 'VIP',
+};
+const subscriptionStatusLabels: Record<string, string> = {
+  active: 'Активна',
+  pending: 'Ожидает оплаты',
+  canceled: 'Отменена',
+  expired: 'Истекла',
+};
 export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'overview' }) => {
   const {
     user,
@@ -55,7 +72,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     pendingPhone,
     isSupabaseConfigured,
   } = useAuth();
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+
   const { showToast } = useToast();
+
+  useEffect(() => {
+    if (user?.id) {
+      setSubscriptionLoading(true);
+      supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data) setSubscription(data);
+          setSubscriptionLoading(false);
+        });
+    }
+  }, [user?.id]);
+
   const [activeTab, setActiveTab] = useState<
     'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev'
   >(initialTab);
@@ -150,6 +188,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   // }, [loadSubscription]);
 
   const nextBooking = bookings.length > 0 ? bookings[0] : null;
+
+  const handleCancelSubscription = async () => {
+    setSubscriptionActionLoading(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      showToast('Для отмены подписки напишите в поддержку', 'info');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubscriptionActionLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -686,7 +736,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               )}
 
               {/* Временно скрыто: AI-подписка */}
-              {/* <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
+              <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-xl font-serif text-brand-text">AI-подписка</h3>
@@ -747,12 +797,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                       </div>
                     )}
 
-                    <Paywall
-                      currentPlan={subscription?.plan ?? 'free'}
-                      currentStatus={subscription?.status ?? 'active'}
-                      onSelectPlan={handleSubscribePlan}
-                      isLoading={subscriptionActionLoading}
-                    />
+                    {subscription?.plan !== 'vip' && (
+                      <button
+                        onClick={() => setShowPaywall(true)}
+                        className="w-full py-3 bg-brand-green text-white rounded-xl font-bold uppercase tracking-wider hover:bg-brand-green/90 transition-colors shadow-lg shadow-brand-green/20"
+                      >
+                        {subscription ? 'Улучшить план' : 'Оформить подписку'}
+                      </button>
+                    )}
 
                     {subscription?.status === 'active' && subscription.plan !== 'free' && (
                       <button
@@ -766,7 +818,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                     )}
                   </>
                 )}
-              </div> */}
+              </div>
 
               <div className="flex flex-col items-center mb-8 relative">
                 <div
@@ -891,6 +943,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         </div>
       </main>
 
+      {showPaywall && <Paywall onClose={() => setShowPaywall(false)} />}
       {/* QR Modal */}
       {expandedQr && (
         <div
