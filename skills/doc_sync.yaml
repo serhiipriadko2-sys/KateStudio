@@ -1,0 +1,45 @@
+skill: 'doc_sync'
+version: '1.0.0'
+description: 'Validates documentation freshness, detects broken internal links, and ensures key docs are up to date.'
+trigger:
+  event: 'push'
+  branches: ['main', 'develop']
+  files: ['**/*.md', 'skills/**', 'docs/**']
+
+rules:
+  staleness_threshold_days: 60
+  required_docs:
+    - path: 'CLAUDE.md'
+      max_age_days: 90
+      description: 'AI agent instructions'
+    - path: 'AGENTS.md'
+      max_age_days: 90
+      description: 'Multi-agent architecture'
+    - path: 'CURRENT_TASKS.md'
+      max_age_days: 30
+      description: 'Active task tracking'
+    - path: 'docs/INDEX.md'
+      max_age_days: 60
+      description: 'Central documentation index'
+    - path: 'docs/LAUNCH_CHECKLIST.md'
+      max_age_days: 60
+      description: 'Pre-launch gap analysis'
+  check_internal_links: true
+  check_anchor_links: false
+  scan_paths:
+    - '*.md'
+    - 'docs/*.md'
+    - 'shared/*.md'
+
+actions:
+  - type: 'scan_files'
+    paths: ['*.md', 'docs/*.md']
+  - type: 'validate_links'
+    scope: 'internal'
+  - type: 'check_freshness'
+    threshold: 60
+  - type: 'report'
+    format: 'markdown'
+    output: 'DOC_SYNC_REPORT.md'
+  - type: 'notify'
+    channel: 'github_comment'

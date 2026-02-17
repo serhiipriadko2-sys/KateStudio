@@ -1,7 +1,9 @@
 # CLAUDE.md - AI Agent Instructions
 
-This file provides context and instructions for AI assistants (Claude, GitHub
-Copilot, Cursor, etc.) working with the KateStudio codebase.
+> **Last updated:** February 16, 2026 | **Version:** 3.0.0
+
+This file provides context and instructions for AI assistants (Claude Code,
+GitHub Copilot, Cursor, Codex, etc.) working with the KateStudio codebase.
 
 ## Project Overview
 
@@ -13,25 +15,53 @@ main applications sharing a common library.
 
 ```
 KateStudio/
-├── shared/                    # Shared library (@ksebe/shared)
-│   ├── components/           # Reusable React components
-│   ├── hooks/               # Custom React hooks
-│   ├── services/            # API and backend services
-│   ├── types/               # TypeScript interfaces
-│   ├── utils/               # Utility functions
-│   ├── constants/           # Brand constants
-│   └── styles/              # Tailwind preset
-├── k-sebe-yoga-studioWEB/    # Landing page / Marketing site
-└── k-sebe-yoga-studio-APPp/  # Mobile-first PWA application
+├── .github/                    # CI/CD workflows, templates, dependabot
+│   ├── workflows/
+│   │   ├── ci.yml              # Lint, typecheck, test, build
+│   │   ├── deploy-pages.yml    # GitHub Pages deployment (WEB)
+│   │   └── firebase-deploy.yml # Firebase deployment (APP)
+│   ├── ISSUE_TEMPLATE/
+│   └── PULL_REQUEST_TEMPLATE.md
+├── shared/                     # Shared library (@ksebe/shared)
+│   ├── components/             # 10+ reusable React components
+│   ├── hooks/                  # Custom React hooks (5+)
+│   ├── services/               # Supabase client, image storage
+│   ├── types/                  # 25+ TypeScript interfaces
+│   ├── utils/                  # 28 utility functions
+│   ├── constants/              # Brand, pricing, achievements, KB
+│   └── styles/                 # Tailwind preset with brand tokens
+├── k-sebe-yoga-studioWEB/      # Landing page / Marketing site
+├── k-sebe-yoga-studio-APPp/    # Mobile-first PWA application
+├── supabase/                   # Edge Functions + migrations
+│   ├── functions/
+│   │   ├── gemini-proxy/       # AI proxy with rate limiting
+│   │   ├── create-payment/     # Payment initiation
+│   │   └── payment-webhook/    # Payment confirmation
+│   └── migrations/             # Database schema + RLS
+├── skills/                     # Agent skill definitions (YAML)
+├── scripts/                    # Build & automation scripts
+├── docs/                       # Technical documentation (18 files)
+└── raw_assets/                 # Original/unoptimized assets
 ```
 
 ### Tech Stack
 
-- **Frontend**: React 19.2, TypeScript 5.8, Vite 6.2
+- **Frontend**: React 19.2, TypeScript 5.7, Vite 6.2
 - **Styling**: Tailwind CSS with custom preset
-- **Backend**: Supabase (Auth, Database, Storage)
-- **AI**: Google Gemini API (Chat, Vision, TTS, Image Generation)
+- **Backend**: Supabase (Auth, Database, Storage, Edge Functions)
+- **AI**: Google Gemini API via Edge Function proxy
+- **Testing**: Vitest 2.1 + React Testing Library
 - **Package Management**: npm workspaces (monorepo)
+- **CI/CD**: GitHub Actions (Node.js 22)
+- **Deployment**: GitHub Pages (WEB), Firebase Hosting (APP)
+
+### Current Status (February 2026)
+
+- **Tests**: 174 passing across 27 suites (~20% coverage)
+- **TypeScript**: 100% compliance (strict mode, `tsc -b` passes)
+- **Lint**: 0 errors, ~35 warnings (mostly a11y)
+- **Build**: Both WEB and APP build successfully
+- **Production Readiness**: 68/100 (security resolved, payments pending)
 
 ## Key Conventions
 
@@ -63,13 +93,18 @@ KateStudio/
 
 ## Important Files
 
-| File                          | Purpose                                  |
-| ----------------------------- | ---------------------------------------- |
-| `shared/types/index.ts`       | All TypeScript interfaces                |
-| `shared/constants/index.ts`   | Brand constants, API endpoints           |
-| `shared/utils/index.ts`       | Utility functions (cn, formatDate, etc.) |
-| `shared/services/supabase.ts` | Supabase client configuration            |
-| `.env.example`                | Required environment variables           |
+| File                              | Purpose                                  |
+| --------------------------------- | ---------------------------------------- |
+| `shared/types/index.ts`           | All TypeScript interfaces                |
+| `shared/constants/index.ts`       | Brand constants, API endpoints           |
+| `shared/constants/images.ts`      | Centralized asset management             |
+| `shared/utils/index.ts`           | Utility functions (cn, formatDate, etc.) |
+| `shared/services/supabase.ts`     | Supabase client configuration            |
+| `.env.example`                    | Required environment variables           |
+| `CURRENT_TASKS.md`                | Active priorities and task tracking      |
+| `docs/CODEX_INSTRUCTIONS.md`      | Development protocol for AI agents       |
+| `docs/LAUNCH_CHECKLIST.md`        | Pre-launch gap analysis                  |
+| `skills/registry.json`            | Agent skill registry                     |
 
 ## Common Tasks
 
@@ -102,19 +137,14 @@ const { data, error } = await supabase
   .eq('user_id', user.id);
 ```
 
-### Working with Gemini AI
+### Working with Gemini AI (via Edge Function Proxy)
 
 ```typescript
-import { geminiService } from '@app/services/geminiService';
+// All Gemini calls MUST go through the Edge Function proxy
+// NEVER use VITE_GEMINI_API_KEY in client code
 
-// Chat
-const response = await geminiService.chat(messages, mode);
-
-// Image analysis
-const analysis = await geminiService.analyzeAsana(imageBase64);
-
-// Text-to-speech
-const audioUrl = await geminiService.textToSpeech(text);
+// The proxy handles: rate limiting, auth, subscription-based quotas
+// Location: supabase/functions/gemini-proxy/index.ts
 ```
 
 ## Domain Knowledge
@@ -127,6 +157,8 @@ Inside Flow is a modern yoga style created by Young Ho Kim that combines:
 - Emotional expression through movement
 - Breath-to-beat coordination
 - Contemporary music integration
+- 10,000+ certified teachers globally
+- Elite Training Frankfurt (May-June 2026)
 
 ### Key Features
 
@@ -135,6 +167,8 @@ Inside Flow is a modern yoga style created by Young Ho Kim that combines:
 3. **Schedule**: Class booking with Supabase backend
 4. **Breathwork**: Square breathing and pranayama exercises
 5. **Blog**: Articles about yoga, wellness, mindfulness
+6. **Gamification**: Streaks, achievements, progress tracking
+7. **Admin Panel**: Schedule, bookings, contacts management
 
 ### User Personas
 
@@ -145,23 +179,52 @@ Inside Flow is a modern yoga style created by Young Ho Kim that combines:
 ## Testing
 
 ```bash
-npm run lint        # ESLint
-npm run typecheck   # TypeScript
-npm run format      # Prettier
-npm run test        # Run tests (when configured)
+npm run test          # Run tests in watch mode
+npm run test:run      # Run tests once (CI)
+npm run test:coverage # Run with coverage report
+npm run test:ui       # Visual test UI
+npm run lint          # ESLint
+npm run typecheck     # TypeScript type check
+npm run format:check  # Prettier check
 ```
+
+### Before Making Changes
+
+1. Run existing tests: `npm run test:run`
+2. Type check: `npm run typecheck`
+3. Lint: `npm run lint`
+
+### After Making Changes
+
+1. Run tests: `npm run test:run`
+2. Type check: `npm run typecheck`
+3. Lint: `npm run lint`
+4. Build: `npm run build:web` / `npm run build:app`
 
 ## Deployment
 
-- **WEB**: Deployed via GitHub Pages (deploy-pages.yml workflow)
-- **APP**: PWA deployable to any static hosting
+- **WEB**: GitHub Pages via `deploy-pages.yml` (domain: ksebe-studio.ru)
+- **APP**: Firebase Hosting via `firebase-deploy.yml` (PWA)
+- **CI**: Runs on push to main/develop and all PRs
 
-## Security Notes
+## Security Model
 
-- Never commit `.env` files
-- API keys stored in GitHub Secrets
-- Supabase RLS policies protect user data
-- Gemini API key is client-side (rate limited)
+### Resolved (February 2026)
+
+- **Edge Function Proxy**: Gemini API key in Supabase secrets, not client-side
+- **Payment Webhook**: HMAC signature verification, secret required
+- **Service Role Key**: Required for backend ops, no anon fallback
+- **RLS Policies**: Subscriptions locked down (no user self-update)
+- **CORS**: Restricted to ksebe-studio.ru, app.ksebe-studio.ru, localhost
+
+### Rules
+
+- Never commit `.env` files or secrets
+- Never use `SUPABASE_SERVICE_ROLE_KEY` in browser code
+- Never use `VITE_GEMINI_API_KEY` in production builds
+- All Gemini calls must go through Edge Function proxy
+- CORS must be restricted to specific domains (no wildcard `*`)
+- All Edge Functions must validate required secrets on startup
 
 ## Contact
 
@@ -173,103 +236,54 @@ npm run test        # Run tests (when configured)
 
 ---
 
-**Remember**: This is a passion project for a yoga studio. Prioritize:
+**Principles**: This is a passion project for a yoga studio. Prioritize:
 
 - Clean, maintainable code
 - Accessible design (WCAG 2.1 AA)
 - Mobile-first responsive layouts
 - Calm, mindful user experience
+- Security first (Edge Functions proxy, RLS, input validation)
 
-## 2026 Updates and Best Practices
+## Current Priorities (February 2026)
 
-### Latest Research (January 2026)
+### P0 Critical (Blockers)
 
-The project has been comprehensively analyzed against 2026 industry trends. See
-[DEEP_ANALYSIS_2026.md](./docs/DEEP_ANALYSIS_2026.md) for full details.
+| Task                                 | Status     |
+| ------------------------------------ | ---------- |
+| Webhook secret validation            | ✅ Resolved |
+| Subscriptions RLS policy             | ✅ Resolved |
+| CORS restrictions                    | ✅ Resolved |
+| API key fallback removal             | ✅ Resolved |
+| Service Role Key enforcement         | ✅ Resolved |
+| Replace Unsplash placeholder images  | 🔄 WEB done, APP remaining |
+| Configure production .env            | ⏳ Pending  |
+| Set GitHub Secrets                   | ⏳ Pending  |
 
-#### Key Findings
+### P1 High Priority
 
-**Inside Flow Ecosystem:**
+- Input validation with Zod for Edge Functions
+- YooKassa payment integration (full)
+- Database migrations for missing tables (contacts, classes)
+- Increase test coverage to 50%+
+- Replace placeholder videos in APP
 
-- 10,000+ certified teachers globally
-- Elite Training Frankfurt (May-June 2026)
-- Annual licensing model (€108/year)
-- Strong emphasis on emotional storytelling and music integration
+### P2 Medium Priority
 
-**AI Trends:**
+- Remove remaining default exports
+- Image optimization (WebP)
+- Newsletter integration (Mailchimp)
+- Logging & monitoring (Sentry)
+- Database type generation
 
-- Gemini 2.5: Deep Think mode, 1M token context, native audio I/O
-- Real-time computer vision for pose correction
-- Hyper-personalization through ML
-- Voice coaching becoming standard
+See [CURRENT_TASKS.md](./CURRENT_TASKS.md) for the full task list.
 
-**Monetization:**
+## Gamification (Implemented)
 
-- Freemium conversion: 6-8% (top tier)
-- Subscription: Primary revenue model ($10-15/month)
-- Gamification: +50% retention improvement
-- Community features: +50% retention
+- **Streaks**: StreakCard + StreakCalendar + milestones (3/7/14/30/60/100 days)
+- **Achievements**: 20+ achievements, AchievementUnlockedModal, AchievementsGrid
+- **Push Notifications**: UI ready, Firebase Cloud Messaging planned
 
-**Tech Stack Updates:**
-
-- React 19: Automatic memoization, improved batching
-- Vite 6: Smarter HMR, 40% faster builds
-- TypeScript 5.8: Granular checks, better performance
-- Tailwind 4 (beta): 5-10x faster builds with Oxide engine
-
-### Critical Security Priorities
-
-✅ **RESOLVED:** API keys are now protected via Edge Functions
-
-1. **Edge Function Proxy** ✅ Implemented
-
-   ```
-   Location: supabase/functions/gemini-proxy/index.ts
-   Status: GEMINI_API_KEY moved to Supabase secrets
-   Features: Rate limiting, subscription-based quotas
-   ```
-
-2. **Rate Limiting** ✅ Implemented
-
-   ```
-   Free tier: 80 cheap/24 medium/6 expensive ops per minute
-   Premium: 160/64/24 ops per minute
-   VIP: 320/140/48 ops per minute
-   ```
-
-3. **Input Validation** 🔄 In Progress
-   ```
-   Sanitize all user inputs
-   Prevent prompt injection attacks
-   Add content moderation
-   ```
-
-### Gamification Strategy (Proven ROI)
-
-**Priority 1: Streaks** (+30-40% DAU) ✅ Implemented
-
-- StreakCard component ✅
-- StreakCalendar visualization ✅ NEW
-- Streak milestones (3/7/14/30/60/100 days) ✅
-- useAchievements hook ✅
-
-**Priority 2: Achievements** (+20-25% engagement) ✅ Implemented
-
-- 20+ achievements defined ✅ (was 10, now 20+)
-- AchievementUnlockedModal ✅
-- AchievementsGrid ✅
-- Progress tracking ✅
-
-**Priority 3: Push Notifications** (Essential for retention) 🔄 Planned
-
-- NotificationPreferences component ✅ NEW
-- Firebase Cloud Messaging setup 🔄 Planned
-- Notification types defined ✅
-- User preferences UI ✅ NEW
-
-### Monetization Roadmap
-
-**Recommended Pricing (Russia):**
+## Monetization
 
 ```
 Free:     0₽      - AI Chat (100 msg/day), 3 videos/week
@@ -277,103 +291,40 @@ Premium:  990₽/mo - All videos, offline, AI programs
 VIP:      2,990₽  - Premium + consultations with Katya (2/month)
 ```
 
-**Implementation:**
+Payment: YooKassa (Russia) + Stripe (international) — integration in progress.
 
-```
-Q1 2026: YooKassa (Russia) + Stripe (international)
-Q2 2026: Optimize conversion with A/B testing
-Target:  8% conversion rate by Q4 2026
-```
+## AI Agent Ecosystem
 
-### AI Differentiation
+This project supports multiple AI agents. See [AGENTS.md](./AGENTS.md) for
+the full multi-agent architecture.
 
-**Unique Competitive Advantages:**
+### Agent-Specific Files
 
-1. ✅ Inside Flow specialization (vs. generic yoga apps)
-2. ✅ AI Vision analysis (Gemini 2.5 Flash)
-3. ✅ Personal brand (Katya Gabran)
-4. ✅ Russian language native support
-5. ✅ Daily AI recommendations (DailyRecommendation component)
-6. ✅ 7-day personalized programs (PersonalProgram types)
-7. ✅ Weekly recap with AI insights (WeeklyRecap component) NEW
-8. ✅ Onboarding quiz for personalization (OnboardingQuiz component) NEW
+| File                         | Agent Target       |
+| ---------------------------- | ------------------ |
+| `CLAUDE.md`                  | Claude Code, Claude|
+| `AGENTS.md`                  | All AI agents      |
+| `docs/CODEX_INSTRUCTIONS.md` | OpenAI Codex       |
+| `skills/*.yaml`              | Jules agent skills |
+| `skills/registry.json`       | Skill registry     |
 
-### Performance Targets 2026
+## Performance Targets 2026
 
 | Metric             | Current | Q4 2026 Target |
 | ------------------ | ------- | -------------- |
-| Lighthouse Score   | 75      | 90+            |
-| Test Coverage      | 50%     | 70%+           |
+| Lighthouse Score   | ~75     | 90+            |
+| Test Coverage      | ~20%    | 70%+           |
 | Bundle Size (gzip) | ~300KB  | <200KB         |
 | LCP                | ~3s     | <2.5s          |
+| Tests Passing      | 174     | 300+           |
 
-### Development Workflow
+## Resources
 
-**Before Making Changes:**
-
-1. Check existing tests: `npm run test:run`
-2. Run type check: `npm run typecheck`
-3. Run linter: `npm run lint`
-
-**When Adding AI Features:**
-
-1. Use Edge Functions proxy (security)
-2. Implement rate limiting
-3. Add error handling and fallbacks
-4. Cache responses where possible
-5. Monitor usage and costs
-
-**When Adding Gamification:**
-
-1. Track engagement metrics
-2. A/B test mechanics
-3. Balance fun vs. pressure
-4. Provide opt-out options
-
-### Code Patterns 2026
-
-**React 19:**
-
-```typescript
-// Automatic memoization (no React.memo needed)
-function VideoCard({ video }: { video: Video }) {
-  return <div>{video.title}</div>;
-}
-
-// useOptimistic for optimistic updates
-function AddBooking() {
-  const [optimisticBookings, addOptimistic] = useOptimistic(
-    bookings,
-    (state, newBooking) => [...state, newBooking]
-  );
-}
-```
-
-**Error Boundaries:**
-
-```typescript
-// Already have ErrorBoundary in shared
-import { ErrorBoundary } from '@ksebe/shared';
-
-<ErrorBoundary fallback={<ErrorView />}>
-  <YourComponent />
-</ErrorBoundary>
-```
-
-**Offline-First:**
-
-```typescript
-// Already implemented with IndexedDB
-import { storage } from '@ksebe/shared';
-
-// Check online status
-import { useOnlineStatus } from '@ksebe/shared';
-const isOnline = useOnlineStatus();
-```
-
-### Resources
-
+- [Current Tasks](./CURRENT_TASKS.md)
 - [Strategic Roadmap 2026](./STRATEGIC_ROADMAP_2026.md)
 - [Deep Analysis 2026](./docs/DEEP_ANALYSIS_2026.md)
 - [Action Plan 2026](./ACTION_PLAN_2026.md)
 - [Architecture](./docs/ARCHITECTURE.md)
+- [Launch Checklist](./docs/LAUNCH_CHECKLIST.md)
+- [Security Report](./docs/SECURITY_REPORT_2026_02_11.md)
+- [Documentation Index](./docs/INDEX.md)

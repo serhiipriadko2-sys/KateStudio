@@ -1,13 +1,14 @@
 {
   "meta": {
-    "last_updated": "2026-01-13T12:00:00Z",
-    "version": "1.0.0"
+    "last_updated": "2026-02-16T12:00:00Z",
+    "version": "2.0.0"
   },
   "skills": [
     {
       "id": "react_component_test_gen",
       "path": "skills/test_gen_react.yaml",
       "enabled": true,
+      "description": "Auto-generates Vitest unit tests for new React components on PR",
       "stats": {
         "success_rate": 0.0,
         "runs": 0
@@ -17,6 +18,27 @@
       "id": "asset_audit_sentinel",
       "path": "skills/audit_assets.yaml",
       "enabled": true,
+      "description": "Scans for Unsplash placeholders, lorem ipsum, TODO/FIXME on push to main",
+      "stats": {
+        "success_rate": 0.0,
+        "runs": 0
+      }
+    },
+    {
+      "id": "security_scanner",
+      "path": "skills/security_scanner.yaml",
+      "enabled": true,
+      "description": "Checks PRs for leaked secrets, unsafe CORS, and insecure patterns",
+      "stats": {
+        "success_rate": 0.0,
+        "runs": 0
+      }
+    },
+    {
+      "id": "doc_sync",
+      "path": "skills/doc_sync.yaml",
+      "enabled": true,
+      "description": "Validates documentation freshness and internal link integrity on push",
       "stats": {
         "success_rate": 0.0,
         "runs": 0
