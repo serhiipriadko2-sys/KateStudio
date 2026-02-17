@@ -1,0 +1,46 @@
+skill: 'security_scanner'
+version: '1.0.0'
+description: 'Scans pull requests for security vulnerabilities: leaked secrets, unsafe patterns, and insecure configurations.'
+trigger:
+  event: 'pull_request'
+  files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.env*', '**/*.json']
+  ignore: ['**/*.test.ts', '**/*.test.tsx', '**/node_modules/**']
+
+rules:
+  forbidden_patterns:
+    - pattern: 'SUPABASE_SERVICE_ROLE_KEY'
+      context: 'browser'
+      severity: 'error'
+      message: 'Service Role Key must not be used in client-side code'
+    - pattern: 'VITE_GEMINI_API_KEY'
+      context: 'production'
+      severity: 'error'
+      message: 'Gemini API key must not be exposed in production builds'
+    - pattern: 'Access-Control-Allow-Origin.*\*'
+      severity: 'error'
+      message: 'Wildcard CORS is not allowed; use specific domain whitelist'
+    - pattern: '(sk-|sk_live_|rk_live_|whsec_)'
+      severity: 'error'
+      message: 'Potential API key or secret detected in source code'
+    - pattern: 'password\s*[:=]\s*["\x27][^"\x27]{4,}'
+      severity: 'warning'
+      message: 'Potential hardcoded password detected'
+  scan_paths:
+    - 'shared/'
+    - 'k-sebe-yoga-studioWEB/'
+    - 'k-sebe-yoga-studio-APPp/'
+    - 'supabase/functions/'
+  ignore_paths:
+    - '*.test.ts'
+    - '*.test.tsx'
+    - '.env.example'
+
+actions:
+  - type: 'scan_files'
+    paths: ['shared/', 'k-sebe-yoga-studioWEB/', 'k-sebe-yoga-studio-APPp/', 'supabase/']
+  - type: 'report'
+    format: 'markdown'
+    output: 'SECURITY_SCAN_REPORT.md'
+  - type: 'notify'
+    channel: 'github_comment'
+    on_failure: 'block_merge'
