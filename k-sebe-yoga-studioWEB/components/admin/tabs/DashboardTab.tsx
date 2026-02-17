@@ -1,5 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { ClipboardList, MessageSquare, TrendingUp, CalendarDays } from 'lucide-react';
+import {
+  ClipboardList,
+  MessageSquare,
+  TrendingUp,
+  CalendarDays,
+  Activity,
+  Globe,
+} from 'lucide-react';
 import React from 'react';
 import { supabase } from '../../../services/supabase';
 
@@ -8,21 +15,28 @@ export const DashboardTab: React.FC = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboard_stats'],
     queryFn: async () => {
-      if (!supabase) return { bookings: 0, contacts: 0, todayBookings: 0 };
+      if (!supabase) return { bookings: 0, contacts: 0, todayBookings: 0, pageViews: 0 };
 
-      const [bookingsAll, contactsAll, bookingsToday] = await Promise.all([
+      const today = new Date().toISOString().split('T')[0];
+
+      const [bookingsAll, contactsAll, bookingsToday, pageViewsAll] = await Promise.all([
         supabase.from('bookings').select('*', { count: 'exact', head: true }),
         supabase.from('contacts').select('*', { count: 'exact', head: true }),
         supabase
           .from('bookings')
           .select('*', { count: 'exact', head: true })
-          .gte('created_at', new Date().toISOString().split('T')[0]),
+          .gte('created_at', today),
+        supabase
+          .from('analytics_events')
+          .select('*', { count: 'exact', head: true })
+          .eq('event_name', 'page_view'),
       ]);
 
       return {
         bookings: bookingsAll.count || 0,
         contacts: contactsAll.count || 0,
         todayBookings: bookingsToday.count || 0,
+        pageViews: pageViewsAll.count || 0,
       };
     },
   });
@@ -44,7 +58,7 @@ export const DashboardTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Всего записей"
           value={stats?.bookings || 0}
@@ -63,29 +77,65 @@ export const DashboardTab: React.FC = () => {
           icon={<MessageSquare className="w-5 h-5 text-amber-500" />}
           trend="Новые"
         />
+        <StatCard
+          label="Просмотры"
+          value={stats?.pageViews || 0}
+          icon={<Globe className="w-5 h-5 text-indigo-500" />}
+          trend="Всего"
+        />
       </div>
 
-      <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
-        <h3 className="text-lg font-serif text-brand-dark mb-4">Последние записи</h3>
-        <div className="space-y-4">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {recentBookings?.map((booking: any, idx: number) => (
-            <div
-              key={idx}
-              className="flex items-center justify-between border-b border-stone-50 pb-2 last:border-0 last:pb-0"
-            >
-              <div>
-                <div className="font-medium text-stone-700">{booking.name}</div>
-                <div className="text-xs text-stone-400">{booking.class_name || 'Занятие'}</div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
+          <h3 className="text-lg font-serif text-brand-dark mb-4">Последние записи</h3>
+          <div className="space-y-4">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {recentBookings?.map((booking: any, idx: number) => (
+              <div
+                key={idx}
+                className="flex items-center justify-between border-b border-stone-50 pb-2 last:border-0 last:pb-0"
+              >
+                <div>
+                  <div className="font-medium text-stone-700">{booking.name}</div>
+                  <div className="text-xs text-stone-400">{booking.class_name || 'Занятие'}</div>
+                </div>
+                <div className="text-xs text-stone-400">
+                  {new Date(booking.created_at).toLocaleDateString()}
+                </div>
               </div>
-              <div className="text-xs text-stone-400">
-                {new Date(booking.created_at).toLocaleDateString()}
+            ))}
+            {recentBookings?.length === 0 && (
+              <div className="text-center text-stone-400 py-4">Нет записей</div>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
+          <h3 className="text-lg font-serif text-brand-dark mb-4">Здоровье системы</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <Activity className="w-5 h-5 text-green-500" />
+                <div>
+                  <div className="text-sm font-medium text-stone-700">Supabase</div>
+                  <div className="text-xs text-stone-400">База данных</div>
+                </div>
               </div>
+              <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-lg">
+                Online
+              </span>
             </div>
-          ))}
-          {recentBookings?.length === 0 && (
-            <div className="text-center text-stone-400 py-4">Нет записей</div>
-          )}
+            <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <Globe className="w-5 h-5 text-blue-500" />
+                <div>
+                  <div className="text-sm font-medium text-stone-700">WEB Client</div>
+                  <div className="text-xs text-stone-400">v1.0.0</div>
+                </div>
+              </div>
+              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg">Stable</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

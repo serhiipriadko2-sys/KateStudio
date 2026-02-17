@@ -1,269 +1,187 @@
-import type { ClassSession, ClassRow, LoadLevel } from '@ksebe/shared';
-import { ChevronRight, ChevronLeft, MapPin, Users, Info, Flame, Loader2 } from 'lucide-react';
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { defaultContent } from '../data/content';
-import { isSupabaseConfigured, supabase } from '../services/supabase';
-import { BookingDetails } from '../types';
+import {
+  BookingDetails,
+
+  ClassRow,
+  ClassSession,
+  LoadLevel,
+  supabase,
+} from '@ksebe/shared';
+import { useQuery } from '@tanstack/react-query';
+import { ChevronLeft, ChevronRight, Info, Loader2, MapPin, Users } from 'lucide-react';
+import React, { useState } from 'react';
 import { FadeIn } from './FadeIn';
 
 interface ScheduleProps {
   onBook: (details: BookingDetails) => void;
+  isDemo?: boolean;
 }
 
-const formatDateKey = (date: Date) => {
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
 const mapClassRow = (row: ClassRow, activeTab: 'offline' | 'online'): ClassSession => {
-  const intensityValue = row.intensity ?? 1;
-  const intensity: 1 | 2 | 3 = [1, 2, 3].includes(intensityValue)
-    ? (intensityValue as 1 | 2 | 3)
-    : 1;
+  // Handle intensity being string or number
+  const rawIntensity = row.intensity;
+  let intensityValue = 1;
+
+  if (typeof rawIntensity === 'number') {
+    intensityValue = rawIntensity;
+  } else if (typeof rawIntensity === 'string') {
+    intensityValue = parseInt(rawIntensity, 10);
+  }
+
+  // Map numeric intensity to LoadLevel if needed, or just use as is if UI expects specific enum
+  // The UI renderIntensity expects 1 | 2 | 3.
+  // But ClassSession defines intensity as LoadLevel ('low' | 'medium' | 'high').
+  // Let's map it.
+  let intensity: LoadLevel = 'low';
+  if (intensityValue === 2) intensity = 'medium';
+  if (intensityValue >= 3) intensity = 'high';
 
   return {
     id: row.id,
     dateStr: row.date,
+    date: row.date,
     time: row.time,
     name: row.name,
     instructor: row.instructor ?? 'Катя Габран',
-    duration: row.duration ?? '60 мин',
+    duration: typeof row.duration === 'string' ? parseInt(row.duration, 10) : (row.duration ?? 60),
     spotsTotal: row.spots_total ?? 0,
     spotsBooked: row.spots_booked ?? 0,
     location: row.location ?? (activeTab === 'online' ? 'Online' : 'Станционная ул., 5Б'),
     intensity,
-    isOnline: row.is_online ?? activeTab === 'online',
-    price: row.price ?? undefined,
+    type: activeTab === 'online' ? 'online' : 'group',
+    price: row.price ?? 0,
     description: row.description ?? undefined,
   };
 };
 
-const generateFallbackClasses = (date: Date, tab: 'offline' | 'online'): ClassSession[] => {
-  const templates =
-    tab === 'offline' ? defaultContent.schedule.offline : defaultContent.schedule.online;
-  const classes: ClassSession[] = [];
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const currentDate = new Date(year, month, day);
-    if (currentDate.getDay() === 0) continue;
-
-    const dateStr = formatDateKey(currentDate);
-
-    templates.forEach((tmpl, idx) => {
-      classes.push({
-        id: `fallback-${dateStr}-${idx}`,
-        dateStr,
-        time: tmpl.time,
-        name: tmpl.name,
-        instructor: 'Катя Габран',
-        duration: tmpl.duration,
-        spotsTotal: tmpl.spotsTotal,
-        spotsBooked: Math.floor(Math.random() * tmpl.spotsTotal * 0.4),
-        location: tmpl.location,
-        intensity: tmpl.intensity,
-        isOnline: tab === 'online',
-      });
-    });
-  }
-  return classes;
-};
-
-export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
+export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
   const [activeTab, setActiveTab] = useState<'offline' | 'online'>('offline');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
-  const [classes, setClasses] = useState<ClassSession[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDemo, setIsDemo] = useState(false);
 
-  const fetchClasses = useCallback(
-    async (showLoading = true) => {
-      if (!isSupabaseConfigured || !supabase) {
-        setIsDemo(true);
-        setClasses(generateFallbackClasses(currentMonth, activeTab));
-        return;
-      }
+  const { data: classes, isLoading } = useQuery({
+    queryKey: ['classes', activeTab, currentMonth.getMonth(), currentMonth.getFullYear()],
+    queryFn: async () => {
+      if (!supabase) return [];
 
-      if (showLoading) setIsLoading(true);
-      setIsDemo(false);
+      const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).toISOString();
+      const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).toISOString();
 
-      const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-      const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+      const { data, error } = await supabase
+        .from('classes')
+        .select('*')
+        .eq('is_online', activeTab === 'online')
+        .gte('date', startOfMonth)
+        .lte('date', endOfMonth)
+        .order('date')
+        .order('time');
 
-      try {
-        const { data, error } = await supabase
-          .from('classes')
-          .select(
-            'id,date,time,name,instructor,duration,spots_total,spots_booked,location,intensity,is_online,price,description'
-          )
-          .gte('date', formatDateKey(startDate))
-          .lte('date', formatDateKey(endDate))
-          .eq('is_online', activeTab === 'online')
-          .order('date', { ascending: true })
-          .order('time', { ascending: true });
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-          setIsDemo(true);
-          setClasses(generateFallbackClasses(currentMonth, activeTab));
-        } else {
-          setClasses((data as ClassRow[]).map((row) => mapClassRow(row, activeTab)));
-        }
-      } catch (error) {
-        console.warn('Schedule fetch error, using fallback', error);
-        setIsDemo(true);
-        setClasses(generateFallbackClasses(currentMonth, activeTab));
-      } finally {
-        if (showLoading) setIsLoading(false);
-      }
+      if (error) throw error;
+      // We cast here because Supabase types might be slightly different or inferred
+      return (data || []) as unknown as ClassRow[];
     },
-    [currentMonth, activeTab]
-  );
+  });
 
-  // Initial fetch
-  useEffect(() => {
-    fetchClasses(true);
-  }, [fetchClasses]);
+  const selectedClasses =
+    classes
+      ?.map((row) => mapClassRow(row, activeTab))
+      .filter((c) => {
+        const d = new Date(c.date);
+        return d.getDate() === selectedDate;
+      }) || [];
 
-  // Real-time subscription: refresh when bookings change
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return;
+  const daysInMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() + 1,
+    0
+  ).getDate();
+  const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
+  // Adjust for Monday start (0=Sun -> 6, 1=Mon -> 0)
+  const startOffset = firstDay === 0 ? 6 : firstDay - 1;
 
-    const supabaseClient = supabase; // Capture for cleanup
-    const channel = supabaseClient
-      .channel('schedule-bookings')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
-        fetchClasses(false);
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'classes' }, () => {
-        fetchClasses(false);
-      })
-      .subscribe();
-
-    return () => {
-      supabaseClient.removeChannel(channel);
-    };
-  }, [fetchClasses]);
-
-  const classesByDay = useMemo(() => {
-    const map = new Map<number, ClassSession[]>();
-    classes.forEach((cls) => {
-      const day = Number(cls.dateStr.split('-')[2]);
-      if (!map.has(day)) {
-        map.set(day, []);
-      }
-      map.get(day)?.push(cls);
-    });
-    return map;
-  }, [classes]);
-
-  const selectedDateKey = useMemo(() => {
-    const date = new Date(currentMonth);
-    date.setDate(selectedDate);
-    return formatDateKey(date);
-  }, [currentMonth, selectedDate]);
-
-  const selectedClasses = useMemo(
-    () => classes.filter((cls) => cls.dateStr === selectedDateKey),
-    [classes, selectedDateKey]
-  );
-
-  const getLoadLevel = (day: number): LoadLevel => {
-    const dayClasses = classesByDay.get(day);
-    if (!dayClasses || dayClasses.length === 0) return 'none';
-    const totalSpots = dayClasses.reduce((sum, cls) => sum + cls.spotsTotal, 0);
-    const bookedSpots = dayClasses.reduce((sum, cls) => sum + cls.spotsBooked, 0);
-    if (totalSpots === 0) return 'none';
-    const ratio = bookedSpots / totalSpots;
-    if (ratio >= 1) return 'full';
-    if (ratio > 0.85) return 'high';
-    if (ratio > 0.6) return 'medium';
-    return 'low';
-  };
-
-  const changeMonth = (offset: number) => {
-    const newDate = new Date(currentMonth);
-    newDate.setMonth(newDate.getMonth() + offset);
-    setCurrentMonth(newDate);
+  const changeMonth = (delta: number) => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + delta, 1));
     setSelectedDate(1);
   };
+
   const goToToday = () => {
-    const now = new Date();
-    setCurrentMonth(now);
-    setSelectedDate(now.getDate());
+    const today = new Date();
+    setCurrentMonth(today);
+    setSelectedDate(today.getDate());
   };
-  const getDaysInMonth = (date: Date) =>
-    new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 
   const handleBookingClick = (cls: ClassSession) => {
     onBook({
       type: cls.name,
-      time: cls.time,
-      date: `${selectedDate} ${currentMonth.toLocaleString('ru', { month: 'long' })}`,
-      location: cls.location,
-      price: cls.price ? `${cls.price}₽` : undefined,
+      date: `${cls.dateStr} ${cls.time}`,
+      price: `${cls.price}₽`,
+      classId: cls.id,
     });
   };
 
-  const LoadIndicator = ({ level }: { level: LoadLevel }) => {
-    if (level === 'none') return null;
-    const colors = {
-      low: 'bg-emerald-400',
-      medium: 'bg-amber-400',
-      high: 'bg-rose-400',
-      full: 'bg-stone-300',
-      none: 'bg-transparent',
-    };
-    return <div className={`w-1.5 h-1.5 rounded-full ${colors[level]} mx-auto mt-1`}></div>;
+  const renderIntensity = (level: LoadLevel) => {
+    const count = level === 'high' ? 3 : level === 'medium' ? 2 : 1;
+    return (
+      <div className="flex gap-1 mt-2">
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={i}
+            className={`w-2 h-2 rounded-full ${
+              i < count ? 'bg-brand-green' : 'bg-stone-200'
+            }`}
+          />
+        ))}
+      </div>
+    );
   };
-
-  const renderIntensity = (level: number) => (
-    <div className="flex gap-0.5 mt-2" title={`Интенсивность: ${level}/3`}>
-      {[1, 2, 3].map((i) => (
-        <Flame
-          key={i}
-          className={`w-3 h-3 ${i <= level ? 'text-brand-green fill-brand-green' : 'text-stone-200'}`}
-        />
-      ))}
-    </div>
-  );
 
   const renderCalendar = () => {
     const days = [];
-    const totalDays = getDaysInMonth(currentMonth);
-    const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
-    const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+    // Empty cells
+    for (let i = 0; i < startOffset; i++) {
+      days.push(<div key={`empty-${i}`} className="aspect-square"></div>);
+    }
 
-    const today = new Date();
-    const isCurrentMonth =
-      today.getMonth() === currentMonth.getMonth() &&
-      today.getFullYear() === currentMonth.getFullYear();
-    const todayDate = today.getDate();
+    // Days
+    for (let i = 1; i <= daysInMonth; i++) {
+      // Check status for this day
+      const dayClasses = classes?.filter((c) => {
+        const d = new Date(c.date);
+        return d.getDate() === i;
+      });
 
-    for (let i = 0; i < startOffset; i++)
-      days.push(<div key={`empty-${i}`} className="aspect-square w-full"></div>);
-    for (let i = 1; i <= totalDays; i++) {
-      const load = getLoadLevel(i);
-      const isSelected = selectedDate === i;
-      const isDisabled = load === 'none';
-      const isToday = isCurrentMonth && todayDate === i;
+      let statusColor = 'bg-stone-100 text-stone-400'; // Default/Empty
+
+      if (dayClasses && dayClasses.length > 0) {
+        // Calculate load
+        const totalSpots = dayClasses.reduce((acc, c) => acc + (c.spots_total || 0), 0);
+        const bookedSpots = dayClasses.reduce((acc, c) => acc + (c.spots_booked || 0), 0);
+        const load = totalSpots > 0 ? bookedSpots / totalSpots : 0;
+
+        if (load >= 1) statusColor = 'bg-rose-400 text-white shadow-md shadow-rose-200';
+        else if (load > 0.7) statusColor = 'bg-amber-400 text-white shadow-md shadow-amber-200';
+        else statusColor = 'bg-emerald-400 text-white shadow-md shadow-emerald-200';
+      }
+
+      const isSelected = i === selectedDate;
+      const isToday =
+        i === new Date().getDate() &&
+        currentMonth.getMonth() === new Date().getMonth() &&
+        currentMonth.getFullYear() === new Date().getFullYear();
+
       days.push(
         <button
           key={i}
-          onClick={() => !isDisabled && setSelectedDate(i)}
-          disabled={isDisabled}
-          className={`relative aspect-square p-1 rounded-xl transition-all duration-200 flex flex-col items-center justify-center ${isSelected ? 'bg-brand-green text-white shadow-md scale-105 z-10' : ''} ${!isSelected && !isDisabled ? 'hover:bg-stone-50 bg-white border border-stone-100 text-brand-text' : ''} ${!isSelected && isToday ? 'ring-2 ring-brand-green/40 ring-offset-1' : ''} ${isDisabled ? 'opacity-30 cursor-not-allowed text-stone-300' : ''}`}
+          onClick={() => setSelectedDate(i)}
+          className={`
+            aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 transition-all duration-300 relative
+            ${isSelected ? 'scale-110 ring-2 ring-brand-green ring-offset-2 z-10' : 'hover:scale-105'}
+            ${statusColor}
+          `}
         >
-          <span className={`text-sm md:text-base font-medium ${isSelected ? 'text-white' : ''}`}>
-            {i}
-          </span>
-          {!isDisabled && <LoadIndicator level={load} />}
+          {isToday && (
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-white rounded-full"></span>
+          )}
+          <span className={`text-sm md:text-base font-bold ${isSelected || statusColor.includes('text-white') ? '' : 'text-stone-600'}`}>{i}</span>
         </button>
       );
     }
@@ -271,25 +189,32 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
   };
 
   return (
-    <section id="schedule" className="py-24 px-4 md:px-12 max-w-7xl mx-auto scroll-mt-20">
-      <div className="text-center mb-12">
+    <section id="schedule" className="py-24 bg-white relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent"></div>
+
+      <div className="max-w-7xl mx-auto px-6 mb-12 flex flex-col md:flex-row justify-between items-end gap-8">
         <FadeIn>
-          <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">
-            Запись
-          </h4>
-          <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90 mb-6">Расписание</h2>
+          <div>
+            <h4 className="text-brand-green tracking-[0.2em] text-xs font-bold uppercase mb-4">
+              Планирование
+            </h4>
+            <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90 leading-tight">
+              Расписание
+              <br />
+              <span className="italic text-brand-green">практик</span>
+            </h2>
+          </div>
         </FadeIn>
-      </div>
-      <div className="flex justify-center mb-12">
-        <FadeIn delay={100}>
-          <div className="bg-stone-100 p-1.5 rounded-full inline-flex relative">
+
+        <FadeIn direction="left" delay={200}>
+          <div className="flex bg-stone-100 p-1.5 rounded-full relative">
             <div
-              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-full shadow-sm transition-all duration-300 ease-out ${activeTab === 'online' ? 'translate-x-[calc(100%+6px)]' : 'translate-x-0'}`}
+              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-full shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${activeTab === 'online' ? 'translate-x-full left-1.5' : 'left-1.5'}`}
             ></div>
             <button
               onClick={() => {
                 setActiveTab('offline');
-                setSelectedDate(1);
+                setSelectedDate(new Date().getDate());
               }}
               className={`relative z-10 px-8 py-3 rounded-full text-sm font-medium transition-colors duration-300 ${activeTab === 'offline' ? 'text-brand-green' : 'text-stone-500 hover:text-brand-text'}`}
             >
@@ -307,7 +232,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
           </div>
         </FadeIn>
       </div>
-      <div className="flex flex-col lg:flex-row gap-12 min-h-[500px]">
+      <div className="flex flex-col lg:flex-row gap-12 min-h-[500px] px-6 max-w-7xl mx-auto">
         <div className="lg:w-5/12">
           <FadeIn delay={200} direction="right">
             <div className="bg-white rounded-[2.5rem] p-6 md:p-8 shadow-xl shadow-stone-100 border border-stone-100">
@@ -402,7 +327,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook }) => {
                                 {cls.time}
                               </span>
                               <span className="text-xs text-stone-400 bg-stone-50 px-2 py-1 rounded-md mt-1 whitespace-nowrap">
-                                {cls.duration}
+                                {cls.duration} мин
                               </span>
                               {cls.price !== null && cls.price !== undefined && cls.price > 0 && (
                                 <span className="text-xs font-medium text-brand-green mt-1">

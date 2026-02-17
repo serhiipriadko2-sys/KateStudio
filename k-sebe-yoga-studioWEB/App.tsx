@@ -1,4 +1,4 @@
-import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
+import { analytics, ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { About } from './components/About';
@@ -30,6 +30,10 @@ import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme'
 import { BookingDetails } from './types';
 
 function App() {
+  useEffect(() => {
+    analytics.initWebVitals();
+    analytics.pageView(window.location.pathname);
+  }, []);
   const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
