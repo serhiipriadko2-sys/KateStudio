@@ -1,5 +1,5 @@
 /**
- * Supabase Client for APP
+ * Supabase Client for APP (aligned with shared implementation)
  * Configuration is loaded from environment variables.
  * See .env.example for required variables.
  */
@@ -8,37 +8,21 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // Configuration from environment variables (Vite uses VITE_ prefix)
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
-const devMode = import.meta.env.VITE_DEV_MODE === 'true';
 
-const missingConfigMessage =
-  'Supabase configuration missing. Please set VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, and VITE_DEV_MODE.';
+// Log loudly but never throw at module level — a missing env var must not white-screen the app.
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseKey);
 
-export const isSupabaseConfigured =
-  !!supabaseUrl &&
-  !!supabaseKey &&
-  devMode &&
-  /^https?:\/\//.test(supabaseUrl) &&
-  !supabaseUrl.includes('placeholder');
-
-// Validate configuration
 if (!isSupabaseConfigured) {
-  console.error(missingConfigMessage);
+  console.error(
+    '[supabase] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY not set. Data features will be unavailable; the app will show demo/fallback content.'
+  );
 }
 
-const createDisabledClient = (): SupabaseClient =>
-  new Proxy(
-    {},
-    {
-      get() {
-        throw new Error(missingConfigMessage);
-      },
-    }
-  ) as SupabaseClient;
+const supabaseUrlFinal = supabaseUrl || 'https://placeholder.supabase.co';
+const supabaseKeyFinal = supabaseKey || 'placeholder-key';
 
-// Create a single supabase client for interacting with your database
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseKey)
-  : createDisabledClient();
+// Create singleton client (safe to import across APP)
+export const supabase: SupabaseClient = createClient(supabaseUrlFinal, supabaseKeyFinal);
 
 /**
  * Helper to upload a file to Supabase Storage
@@ -50,7 +34,7 @@ export const uploadFile = async (
   bucket: string,
   path: string
 ): Promise<string | null> => {
-  if (!supabase) return null;
+  if (!supabaseUrl || !supabaseKey) return null; // Fail early if not configured
 
   try {
     // 1. Try to upload directly
@@ -62,14 +46,12 @@ export const uploadFile = async (
       (error.message.includes('Bucket not found') ||
         error.message.includes('The resource was not found'))
     ) {
-      // Attempt to create a public bucket
       const { error: createError } = await supabase.storage.createBucket(bucket, {
         public: true,
         fileSizeLimit: 5242880, // 5MB
       });
 
       if (createError) {
-        // If creation fails (likely due to permissions), return null to trigger local fallback
         console.warn('Cloud storage unavailable. Using local storage.');
         return null;
       }
