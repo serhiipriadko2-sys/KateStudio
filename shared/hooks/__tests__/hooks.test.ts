@@ -1,15 +1,31 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { useDebounce, useDebouncedCallback } from '../useDebounce';
-import { useLocalStorage } from '../useLocalStorage';
-import { useMediaQuery } from '../useMediaQuery';
-import { useOnlineStatus } from '../useOnlineStatus';
-import { usePWAMode } from '../usePWAMode';
-import { useScrollLock } from '../useScrollLock';
+/* eslint-disable import/order */
 
 // ---------------------------------------------------------------------------
 // 1. useDebounce
 // ---------------------------------------------------------------------------
+import { useDebounce, useDebouncedCallback } from '../useDebounce';
+// ---------------------------------------------------------------------------
+// 2. useLocalStorage
+// ---------------------------------------------------------------------------
+import { useLocalStorage } from '../useLocalStorage';
+// ---------------------------------------------------------------------------
+// 3. useMediaQuery
+// ---------------------------------------------------------------------------
+import { useMediaQuery } from '../useMediaQuery';
+// ---------------------------------------------------------------------------
+// 4. useOnlineStatus
+// ---------------------------------------------------------------------------
+import { useOnlineStatus } from '../useOnlineStatus';
+// ---------------------------------------------------------------------------
+// 5. usePWAMode
+// ---------------------------------------------------------------------------
+import { usePWAMode } from '../usePWAMode';
+// ---------------------------------------------------------------------------
+// 6. useScrollLock
+// ---------------------------------------------------------------------------
+import { useScrollLock } from '../useScrollLock';
 
 describe('useDebounce', () => {
   beforeEach(() => {
@@ -116,10 +132,6 @@ describe('useDebouncedCallback', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// 2. useLocalStorage
-// ---------------------------------------------------------------------------
-
 describe('useLocalStorage', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -157,10 +169,6 @@ describe('useLocalStorage', () => {
     expect(localStorage.getItem('test-key')).toBeNull();
   });
 });
-
-// ---------------------------------------------------------------------------
-// 3. useMediaQuery
-// ---------------------------------------------------------------------------
 
 describe('useMediaQuery', () => {
   let listeners: Record<string, ((e: { matches: boolean }) => void)[]>;
@@ -225,10 +233,6 @@ describe('useMediaQuery', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// 4. useOnlineStatus
-// ---------------------------------------------------------------------------
-
 describe('useOnlineStatus', () => {
   const originalOnLine = navigator.onLine;
 
@@ -285,10 +289,6 @@ describe('useOnlineStatus', () => {
     expect(result.current).toBe(true);
   });
 });
-
-// ---------------------------------------------------------------------------
-// 5. usePWAMode
-// ---------------------------------------------------------------------------
 
 describe('usePWAMode', () => {
   beforeEach(() => {
@@ -357,10 +357,6 @@ describe('usePWAMode', () => {
     expect(result.current).toBe('twa');
   });
 });
-
-// ---------------------------------------------------------------------------
-// 6. useScrollLock
-// ---------------------------------------------------------------------------
 
 describe('useScrollLock', () => {
   beforeEach(() => {
