@@ -12,8 +12,8 @@ and this project adheres to
 
 ### Added
 
-- **Skills**: `security_scanner.yaml` — checks PRs for leaked secrets and
-  unsafe patterns
+- **Skills**: `security_scanner.yaml` — checks PRs for leaked secrets and unsafe
+  patterns
 - **Skills**: `doc_sync.yaml` — validates documentation freshness and internal
   links
 - **Docs**: Security Report (Feb 2026) — all P0 security blockers resolved
@@ -21,11 +21,10 @@ and this project adheres to
 
 ### Changed
 
-- **CLAUDE.md**: Major update (v3.0.0) — expanded architecture diagram,
-  security model, current priorities, gamification, monetization, performance
-  targets
-- **AGENTS.md**: Rewritten (v2.0.0) — multi-agent architecture with Claude
-  Code, Jules, Codex, Copilot, Cursor support
+- **CLAUDE.md**: Major update (v3.0.0) — expanded architecture diagram, security
+  model, current priorities, gamification, monetization, performance targets
+- **AGENTS.md**: Rewritten (v2.0.0) — multi-agent architecture with Claude Code,
+  Jules, Codex, Copilot, Cursor support
 - **skills/registry.json**: Updated to v2.0.0 — added 2 new skills (4 total),
   added descriptions
 - **CURRENT_TASKS.md**: Refreshed — marked P0 security items as resolved,
@@ -35,8 +34,7 @@ and this project adheres to
 - **docs/CODEX_INSTRUCTIONS.md**: Updated priorities reflecting resolved
   security items
 - **CONTRIBUTING.md**: Updated Node.js requirement to 22+
-- **DEVELOPER_GUIDE.md**: Updated Node.js requirement, added AGENTS.md
-  reference
+- **DEVELOPER_GUIDE.md**: Updated Node.js requirement, added AGENTS.md reference
 
 ### Security
 

@@ -93,18 +93,18 @@ KateStudio/
 
 ## Important Files
 
-| File                              | Purpose                                  |
-| --------------------------------- | ---------------------------------------- |
-| `shared/types/index.ts`           | All TypeScript interfaces                |
-| `shared/constants/index.ts`       | Brand constants, API endpoints           |
-| `shared/constants/images.ts`      | Centralized asset management             |
-| `shared/utils/index.ts`           | Utility functions (cn, formatDate, etc.) |
-| `shared/services/supabase.ts`     | Supabase client configuration            |
-| `.env.example`                    | Required environment variables           |
-| `CURRENT_TASKS.md`                | Active priorities and task tracking      |
-| `docs/CODEX_INSTRUCTIONS.md`      | Development protocol for AI agents       |
-| `docs/LAUNCH_CHECKLIST.md`        | Pre-launch gap analysis                  |
-| `skills/registry.json`            | Agent skill registry                     |
+| File                          | Purpose                                  |
+| ----------------------------- | ---------------------------------------- |
+| `shared/types/index.ts`       | All TypeScript interfaces                |
+| `shared/constants/index.ts`   | Brand constants, API endpoints           |
+| `shared/constants/images.ts`  | Centralized asset management             |
+| `shared/utils/index.ts`       | Utility functions (cn, formatDate, etc.) |
+| `shared/services/supabase.ts` | Supabase client configuration            |
+| `.env.example`                | Required environment variables           |
+| `CURRENT_TASKS.md`            | Active priorities and task tracking      |
+| `docs/CODEX_INSTRUCTIONS.md`  | Development protocol for AI agents       |
+| `docs/LAUNCH_CHECKLIST.md`    | Pre-launch gap analysis                  |
+| `skills/registry.json`        | Agent skill registry                     |
 
 ## Common Tasks
 
@@ -248,16 +248,16 @@ npm run format:check  # Prettier check
 
 ### P0 Critical (Blockers)
 
-| Task                                 | Status     |
-| ------------------------------------ | ---------- |
-| Webhook secret validation            | ✅ Resolved |
-| Subscriptions RLS policy             | ✅ Resolved |
-| CORS restrictions                    | ✅ Resolved |
-| API key fallback removal             | ✅ Resolved |
-| Service Role Key enforcement         | ✅ Resolved |
-| Replace Unsplash placeholder images  | 🔄 WEB done, APP remaining |
-| Configure production .env            | ⏳ Pending  |
-| Set GitHub Secrets                   | ⏳ Pending  |
+| Task                                | Status                     |
+| ----------------------------------- | -------------------------- |
+| Webhook secret validation           | ✅ Resolved                |
+| Subscriptions RLS policy            | ✅ Resolved                |
+| CORS restrictions                   | ✅ Resolved                |
+| API key fallback removal            | ✅ Resolved                |
+| Service Role Key enforcement        | ✅ Resolved                |
+| Replace Unsplash placeholder images | 🔄 WEB done, APP remaining |
+| Configure production .env           | ⏳ Pending                 |
+| Set GitHub Secrets                  | ⏳ Pending                 |
 
 ### P1 High Priority
 
@@ -295,18 +295,18 @@ Payment: YooKassa (Russia) + Stripe (international) — integration in progress.
 
 ## AI Agent Ecosystem
 
-This project supports multiple AI agents. See [AGENTS.md](./AGENTS.md) for
-the full multi-agent architecture.
+This project supports multiple AI agents. See [AGENTS.md](./AGENTS.md) for the
+full multi-agent architecture.
 
 ### Agent-Specific Files
 
-| File                         | Agent Target       |
-| ---------------------------- | ------------------ |
-| `CLAUDE.md`                  | Claude Code, Claude|
-| `AGENTS.md`                  | All AI agents      |
-| `docs/CODEX_INSTRUCTIONS.md` | OpenAI Codex       |
-| `skills/*.yaml`              | Jules agent skills |
-| `skills/registry.json`       | Skill registry     |
+| File                         | Agent Target        |
+| ---------------------------- | ------------------- |
+| `CLAUDE.md`                  | Claude Code, Claude |
+| `AGENTS.md`                  | All AI agents       |
+| `docs/CODEX_INSTRUCTIONS.md` | OpenAI Codex        |
+| `skills/*.yaml`              | Jules agent skills  |
+| `skills/registry.json`       | Skill registry      |
 
 ## Performance Targets 2026
 

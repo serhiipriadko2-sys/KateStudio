@@ -60,12 +60,15 @@ export function useGamification(userId?: string): UseGamificationReturn {
           setTotalXP(data.total_xp);
           setLevel(data.level);
 
-          localStorage.setItem('ksebe_user_progress', JSON.stringify({
-            currentStreak: data.current_streak,
-            maxStreak: data.max_streak,
-            totalXP: data.total_xp,
-            level: data.level
-          }));
+          localStorage.setItem(
+            'ksebe_user_progress',
+            JSON.stringify({
+              currentStreak: data.current_streak,
+              maxStreak: data.max_streak,
+              totalXP: data.total_xp,
+              level: data.level,
+            })
+          );
         } else {
           // Initialize if not exists
           await supabase.from('user_progress').insert({ user_id: userId });
@@ -80,17 +83,20 @@ export function useGamification(userId?: string): UseGamificationReturn {
     fetchProgress();
   }, [userId]);
 
-  const syncToCloud = useCallback(async (updates: Partial<DBUserProgress>) => {
-    if (!userId) return;
-    try {
-      await supabase
-        .from('user_progress')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('user_id', userId);
-    } catch {
-      // Ignore
-    }
-  }, [userId]);
+  const syncToCloud = useCallback(
+    async (updates: Partial<DBUserProgress>) => {
+      if (!userId) return;
+      try {
+        await supabase
+          .from('user_progress')
+          .update({ ...updates, updated_at: new Date().toISOString() })
+          .eq('user_id', userId);
+      } catch {
+        // Ignore
+      }
+    },
+    [userId]
+  );
 
   const updateStreak = useCallback(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -112,47 +118,56 @@ export function useGamification(userId?: string): UseGamificationReturn {
     setCurrentStreak(newStreak);
     setMaxStreak(newMax);
     localStorage.setItem('ksebe_last_activity', today);
-    localStorage.setItem('ksebe_user_progress', JSON.stringify({
-      currentStreak: newStreak,
-      maxStreak: newMax,
-      totalXP,
-      level
-    }));
+    localStorage.setItem(
+      'ksebe_user_progress',
+      JSON.stringify({
+        currentStreak: newStreak,
+        maxStreak: newMax,
+        totalXP,
+        level,
+      })
+    );
 
     syncToCloud({
       current_streak: newStreak,
       max_streak: newMax,
-      last_activity_date: today
+      last_activity_date: today,
     });
   }, [currentStreak, maxStreak, totalXP, level, syncToCloud]);
 
-  const addXP = useCallback((amount: number) => {
-    const newXP = totalXP + amount;
+  const addXP = useCallback(
+    (amount: number) => {
+      const newXP = totalXP + amount;
 
-    // Calculate new level
-    let newLevel = level;
-    for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-      if (newXP >= LEVEL_THRESHOLDS[i]) {
-        newLevel = i + 1;
-        break;
+      // Calculate new level
+      let newLevel = level;
+      for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+        if (newXP >= LEVEL_THRESHOLDS[i]) {
+          newLevel = i + 1;
+          break;
+        }
       }
-    }
 
-    setTotalXP(newXP);
-    setLevel(newLevel);
+      setTotalXP(newXP);
+      setLevel(newLevel);
 
-    localStorage.setItem('ksebe_user_progress', JSON.stringify({
-      currentStreak,
-      maxStreak,
-      totalXP: newXP,
-      level: newLevel
-    }));
+      localStorage.setItem(
+        'ksebe_user_progress',
+        JSON.stringify({
+          currentStreak,
+          maxStreak,
+          totalXP: newXP,
+          level: newLevel,
+        })
+      );
 
-    syncToCloud({
-      total_xp: newXP,
-      level: newLevel
-    });
-  }, [totalXP, level, currentStreak, maxStreak, syncToCloud]);
+      syncToCloud({
+        total_xp: newXP,
+        level: newLevel,
+      });
+    },
+    [totalXP, level, currentStreak, maxStreak, syncToCloud]
+  );
 
   return {
     currentStreak,

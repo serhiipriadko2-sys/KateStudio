@@ -1,5 +1,4 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Dashboard } from '../Dashboard';
 
@@ -30,6 +29,10 @@ vi.mock('../../services/supabaseClient', () => ({
       }),
     }),
     removeChannel: vi.fn(),
+    from: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue({ data: null, error: null }),
   },
 }));
 
@@ -71,27 +74,33 @@ describe('Dashboard', () => {
     vi.clearAllMocks();
   });
 
-  it('renders overview tab by default', () => {
+  it('renders overview tab by default', async () => {
     render(<Dashboard onBack={vi.fn()} />);
-    expect(screen.getByText(`Привет, ${mockUser.name}!`)).toBeInTheDocument();
-    expect(screen.getByText('Всего записей')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(`Привет, ${mockUser.name}!`)).toBeInTheDocument();
+      expect(screen.getByText('Всего записей')).toBeInTheDocument();
+    });
   });
 
-  it('switches tabs correctly', () => {
+  it('switches tabs correctly', async () => {
     render(<Dashboard onBack={vi.fn()} />);
 
     // Switch to Videos (multiple elements exist for sidebar/mobile nav, click first)
     const videosTabs = screen.getAllByText('Практики');
     fireEvent.click(videosTabs[0]);
-    expect(screen.getByText('VideoLibrary Component')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('VideoLibrary Component')).toBeInTheDocument();
+    });
 
     // Switch to Profile
     const profileTabs = screen.getAllByText('Профиль');
     fireEvent.click(profileTabs[0]);
-    expect(screen.getByText(mockUser.phone)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(mockUser.phone)).toBeInTheDocument();
+    });
   });
 
-  it('calls logout when button clicked', () => {
+  it('calls logout when button clicked', async () => {
     const onBack = vi.fn();
     render(<Dashboard onBack={onBack} initialTab="profile" />);
 
@@ -99,7 +108,9 @@ describe('Dashboard', () => {
     const logoutButtons = screen.getAllByText(/Выйти/i);
     fireEvent.click(logoutButtons[0]);
 
-    expect(mockLogout).toHaveBeenCalled();
-    expect(onBack).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockLogout).toHaveBeenCalled();
+      expect(onBack).toHaveBeenCalled();
+    });
   });
 });
