@@ -1,11 +1,4 @@
-import {
-  BookingDetails,
-
-  ClassRow,
-  ClassSession,
-  LoadLevel,
-  supabase,
-} from '@ksebe/shared';
+import { BookingDetails, ClassRow, ClassSession, LoadLevel, supabase } from '@ksebe/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Info, Loader2, MapPin, Users } from 'lucide-react';
 import React, { useState } from 'react';
@@ -63,8 +56,16 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
     queryFn: async () => {
       if (!supabase) return [];
 
-      const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).toISOString();
-      const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).toISOString();
+      const startOfMonth = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        1
+      ).toISOString();
+      const endOfMonth = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth() + 1,
+        0
+      ).toISOString();
 
       const { data, error } = await supabase
         .from('classes')
@@ -125,9 +126,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
         {[...Array(3)].map((_, i) => (
           <div
             key={i}
-            className={`w-2 h-2 rounded-full ${
-              i < count ? 'bg-brand-green' : 'bg-stone-200'
-            }`}
+            className={`w-2 h-2 rounded-full ${i < count ? 'bg-brand-green' : 'bg-stone-200'}`}
           />
         ))}
       </div>
@@ -181,7 +180,11 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
           {isToday && (
             <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-white rounded-full"></span>
           )}
-          <span className={`text-sm md:text-base font-bold ${isSelected || statusColor.includes('text-white') ? '' : 'text-stone-600'}`}>{i}</span>
+          <span
+            className={`text-sm md:text-base font-bold ${isSelected || statusColor.includes('text-white') ? '' : 'text-stone-600'}`}
+          >
+            {i}
+          </span>
         </button>
       );
     }

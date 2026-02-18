@@ -1,7 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ACHIEVEMENTS } from '../constants';
 import { supabase } from '../services/supabase';
-import type { Achievement, AchievementCategory, AchievementRarity, DBUserAchievement } from '../types';
+import type {
+  Achievement,
+  AchievementCategory,
+  AchievementRarity,
+  DBUserAchievement,
+} from '../types';
 
 export interface UseAchievementsOptions {
   /**
@@ -146,7 +151,9 @@ export function useAchievements(options: UseAchievementsOptions = {}): UseAchiev
             user_id: userId,
             achievement_id: achievement.id,
             progress: achievement.progress,
-            unlocked_at: achievement.unlocked ? achievement.unlockedAt || new Date().toISOString() : null,
+            unlocked_at: achievement.unlocked
+              ? achievement.unlockedAt || new Date().toISOString()
+              : null,
           },
           { onConflict: 'user_id, achievement_id' }
         );
