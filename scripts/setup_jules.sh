@@ -1,30 +1,25 @@
 #!/bin/bash
 set -e
 
-echo "Starting Jules setup..."
+# Ensure we are in the project root
+cd "$(dirname "$0")/.."
 
-# Create .env if it doesn't exist, using environment variables
-if [ ! -f .env ]; then
-  echo "Creating .env file from environment variables..."
-  cat <<EOT > .env
-VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
-VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
-VITE_APP_NAME="${VITE_APP_NAME}"
-VITE_APP_URL=${VITE_APP_URL}
-VITE_DEV_MODE=${VITE_DEV_MODE}
-EOT
-fi
+echo "🚀 Starting Jules Environment Setup..."
 
 # Install dependencies
-echo "Installing dependencies..."
-npm install
+if [ ! -d "node_modules" ]; then
+    echo "📦 Installing dependencies..."
+    npm install
+else
+    echo "✅ Dependencies already installed."
+fi
 
-# Run type check to ensure code quality
-echo "Running type check..."
-npm run typecheck
-
-# Run build to ensure everything works
-echo "Running build..."
+# Build shared workspace
+echo "🏗️ Building shared workspace..."
 npm run build:all
 
-echo "Jules setup complete!"
+# Run Typecheck to ensure integrity
+echo "🔍 Running Typecheck..."
+npm run typecheck
+
+echo "✅ Setup Complete!"
