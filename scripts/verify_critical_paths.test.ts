@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import { dataService } from '../k-sebe-yoga-studio-APPp/services/dataService';
-import { cacheAdapter } from '../k-sebe-yoga-studio-APPp/services/localCache';
 
 // Mock Supabase
 vi.mock('../k-sebe-yoga-studio-APPp/services/supabaseClient', () => ({
