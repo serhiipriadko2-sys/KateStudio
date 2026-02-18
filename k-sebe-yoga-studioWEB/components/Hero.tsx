@@ -86,12 +86,13 @@ export const Hero: React.FC<HeroProps> = ({ onBook }) => {
         ref={indicatorRef}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 block transition-opacity duration-300"
       >
-        <div
+        <button
           onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
-          className="animate-bounce p-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-white/80 hover:bg-white/20 transition-colors cursor-pointer"
+          className="animate-bounce p-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-white/80 hover:bg-white/20 transition-colors cursor-pointer appearance-none"
+          aria-label="Прокрутить вниз"
         >
           <ArrowDown className="w-5 h-5" />
-        </div>
+        </button>
       </div>
     </section>
   );
