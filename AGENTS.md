@@ -9,13 +9,13 @@ agent has its own instruction files and capabilities.
 
 ## Supported Agents
 
-| Agent                | Config File                    | Purpose                              |
-| -------------------- | ------------------------------ | ------------------------------------ |
-| **Claude Code**      | `CLAUDE.md`                    | Primary development assistant        |
-| **Jules**            | `AGENTS.md` + `skills/*.yaml` | Automated CI/CD skills               |
-| **OpenAI Codex**     | `docs/CODEX_INSTRUCTIONS.md`  | Focused refactoring & security fixes |
-| **GitHub Copilot**   | `CLAUDE.md`                    | Inline code suggestions              |
-| **Cursor**           | `CLAUDE.md`                    | IDE-integrated AI assistance         |
+| Agent              | Config File                   | Purpose                              |
+| ------------------ | ----------------------------- | ------------------------------------ |
+| **Claude Code**    | `CLAUDE.md`                   | Primary development assistant        |
+| **Jules**          | `AGENTS.md` + `skills/*.yaml` | Automated CI/CD skills               |
+| **OpenAI Codex**   | `docs/CODEX_INSTRUCTIONS.md`  | Focused refactoring & security fixes |
+| **GitHub Copilot** | `CLAUDE.md`                   | Inline code suggestions              |
+| **Cursor**         | `CLAUDE.md`                   | IDE-integrated AI assistance         |
 
 ---
 
@@ -39,7 +39,8 @@ All Claude Code instructions are in [CLAUDE.md](./CLAUDE.md). Key points:
 2. **TypeScript strict mode** — do not weaken types
 3. **Security first** — never commit secrets, always use Edge Function proxy
 4. **Minimal patches** — prefer small, safe PRs over large rewrites
-5. **Test after changes** — `npm run test:run && npm run typecheck && npm run lint`
+5. **Test after changes** —
+   `npm run test:run && npm run typecheck && npm run lint`
 
 ### Verification Commands
 
@@ -56,8 +57,8 @@ npm run build:all    # Build both
 
 ## Jules Agent (Automated Skills)
 
-Jules is an autonomous software engineering agent integrated into CI/CD via
-the **Jules Protocol** — a skill-based architecture.
+Jules is an autonomous software engineering agent integrated into CI/CD via the
+**Jules Protocol** — a skill-based architecture.
 
 ### How It Works
 
@@ -68,23 +69,24 @@ the **Jules Protocol** — a skill-based architecture.
 
 ### Active Skills
 
-| Skill                     | File                          | Trigger     | Description                              |
-| ------------------------- | ----------------------------- | ----------- | ---------------------------------------- |
-| React Test Generator      | `skills/test_gen_react.yaml`  | Pull Request| Auto-generates Vitest tests for `.tsx`   |
-| Asset Audit Sentinel      | `skills/audit_assets.yaml`    | Push (main) | Scans for placeholders & TODOs           |
-| Security Scanner          | `skills/security_scanner.yaml`| Pull Request| Checks for secrets, unsafe patterns      |
-| Documentation Sync        | `skills/doc_sync.yaml`        | Push (main) | Validates doc freshness & broken links   |
+| Skill                | File                           | Trigger      | Description                            |
+| -------------------- | ------------------------------ | ------------ | -------------------------------------- |
+| React Test Generator | `skills/test_gen_react.yaml`   | Pull Request | Auto-generates Vitest tests for `.tsx` |
+| Asset Audit Sentinel | `skills/audit_assets.yaml`     | Push (main)  | Scans for placeholders & TODOs         |
+| Security Scanner     | `skills/security_scanner.yaml` | Pull Request | Checks for secrets, unsafe patterns    |
+| Documentation Sync   | `skills/doc_sync.yaml`         | Push (main)  | Validates doc freshness & broken links |
 
 ### Adding a New Skill
 
 1. Create a `.yaml` file in `skills/`:
+
    ```yaml
    skill: 'your_skill_name'
    version: '1.0.0'
    description: 'What this skill does'
    trigger:
-     event: 'pull_request'  # or 'push', 'issue'
-     files: ['**/*.tsx']     # optional file filter
+     event: 'pull_request' # or 'push', 'issue'
+     files: ['**/*.tsx'] # optional file filter
    rules:
      your_config: 'value'
    actions:
@@ -109,7 +111,8 @@ Codex operates as a focused refactoring and security agent.
 
 ### Instructions
 
-All Codex instructions are in [docs/CODEX_INSTRUCTIONS.md](./docs/CODEX_INSTRUCTIONS.md).
+All Codex instructions are in
+[docs/CODEX_INSTRUCTIONS.md](./docs/CODEX_INSTRUCTIONS.md).
 
 ### Key Priorities
 
@@ -160,20 +163,20 @@ A PR is FAIL if any of the above is not met.
 
 ## Documentation Map
 
-| Document                          | Purpose                          |
-| --------------------------------- | -------------------------------- |
-| `CLAUDE.md`                       | AI agent instructions (primary)  |
-| `AGENTS.md`                       | Multi-agent architecture (this)  |
-| `CURRENT_TASKS.md`                | Active task tracking             |
-| `CONTRIBUTING.md`                 | Human contributor guidelines     |
-| `DEVELOPER_GUIDE.md`             | Quick start for developers       |
-| `docs/CODEX_INSTRUCTIONS.md`     | Codex-specific instructions      |
-| `docs/LAUNCH_CHECKLIST.md`       | Pre-launch gap analysis          |
-| `docs/JULES_ARCHITECTURE.md`     | Jules platform architecture      |
-| `docs/ARCHITECTURE.md`           | System architecture overview     |
-| `docs/SECURITY_MODEL.md`         | Security model & RLS policies    |
-| `docs/INDEX.md`                   | Central documentation index      |
-| `skills/registry.json`           | Skill metadata registry          |
+| Document                     | Purpose                         |
+| ---------------------------- | ------------------------------- |
+| `CLAUDE.md`                  | AI agent instructions (primary) |
+| `AGENTS.md`                  | Multi-agent architecture (this) |
+| `CURRENT_TASKS.md`           | Active task tracking            |
+| `CONTRIBUTING.md`            | Human contributor guidelines    |
+| `DEVELOPER_GUIDE.md`         | Quick start for developers      |
+| `docs/CODEX_INSTRUCTIONS.md` | Codex-specific instructions     |
+| `docs/LAUNCH_CHECKLIST.md`   | Pre-launch gap analysis         |
+| `docs/JULES_ARCHITECTURE.md` | Jules platform architecture     |
+| `docs/ARCHITECTURE.md`       | System architecture overview    |
+| `docs/SECURITY_MODEL.md`     | Security model & RLS policies   |
+| `docs/INDEX.md`              | Central documentation index     |
+| `skills/registry.json`       | Skill metadata registry         |
 
 ---
 

@@ -77,8 +77,8 @@ describe('Dashboard', () => {
   it('renders overview tab by default', async () => {
     render(<Dashboard onBack={vi.fn()} />);
     await waitFor(() => {
-        expect(screen.getByText(`Привет, ${mockUser.name}!`)).toBeInTheDocument();
-        expect(screen.getByText('Всего записей')).toBeInTheDocument();
+      expect(screen.getByText(`Привет, ${mockUser.name}!`)).toBeInTheDocument();
+      expect(screen.getByText('Всего записей')).toBeInTheDocument();
     });
   });
 
@@ -89,14 +89,14 @@ describe('Dashboard', () => {
     const videosTabs = screen.getAllByText('Практики');
     fireEvent.click(videosTabs[0]);
     await waitFor(() => {
-        expect(screen.getByText('VideoLibrary Component')).toBeInTheDocument();
+      expect(screen.getByText('VideoLibrary Component')).toBeInTheDocument();
     });
 
     // Switch to Profile
     const profileTabs = screen.getAllByText('Профиль');
     fireEvent.click(profileTabs[0]);
     await waitFor(() => {
-        expect(screen.getByText(mockUser.phone)).toBeInTheDocument();
+      expect(screen.getByText(mockUser.phone)).toBeInTheDocument();
     });
   });
 
@@ -109,8 +109,8 @@ describe('Dashboard', () => {
     fireEvent.click(logoutButtons[0]);
 
     await waitFor(() => {
-        expect(mockLogout).toHaveBeenCalled();
-        expect(onBack).toHaveBeenCalled();
+      expect(mockLogout).toHaveBeenCalled();
+      expect(onBack).toHaveBeenCalled();
     });
   });
 });
