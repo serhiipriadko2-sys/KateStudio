@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ACHIEVEMENTS, gamificationService, UserProgress } from '../services/gamificationService';
 
-const iconMap: Record<string, React.FC<any>> = {
+const iconMap: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
   Footprints,
   Flame,
   Trophy,

@@ -22,13 +22,13 @@ import { Pricing } from './components/Pricing';
 // Retreats component available from './components/Retreats' when needed
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
+import { SEO } from './components/SEO';
 import { UserCabinet } from './components/UserCabinet';
 import { useAuth } from './context/AuthContext';
 import { registerServiceWorker } from './services/serviceWorker';
 import { isSupabaseConfigured, supabase } from './services/supabase';
 import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { BookingDetails } from './types';
-import { SEO } from './components/SEO';
 
 function App() {
   useEffect(() => {

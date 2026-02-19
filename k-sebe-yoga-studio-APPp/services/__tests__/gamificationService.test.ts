@@ -59,27 +59,27 @@ describe('gamificationService', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: mockSingle
-            })
+              single: mockSingle,
+            }),
           }),
-          update: mockUpdate
+          update: mockUpdate,
         };
       }
       if (table === 'user_achievements') {
         return {
           select: () => ({
-            eq: () => Promise.resolve({ data: [] })
+            eq: () => Promise.resolve({ data: [] }),
           }),
-          insert: mockInsert
+          insert: mockInsert,
         };
       }
       if (table === 'practice_events') {
         return {
           select: () => ({
             eq: () => ({
-              eq: () => Promise.resolve({ count: 10 }) // 10 practices
-            })
-          })
+              eq: () => Promise.resolve({ count: 10 }), // 10 practices
+            }),
+          }),
         };
       }
       return {};
@@ -87,7 +87,7 @@ describe('gamificationService', () => {
 
     // Mock update response
     mockUpdate.mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null })
+      eq: vi.fn().mockResolvedValue({ error: null }),
     });
 
     const result = await gamificationService.processActivity('user-1', 'practice_completed');
@@ -96,9 +96,11 @@ describe('gamificationService', () => {
     expect(result.newLevel).toBe(1); // 60 < 100
 
     // Check update called
-    expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({
-      total_xp: 60,
-      level: 1
-    }));
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        total_xp: 60,
+        level: 1,
+      })
+    );
   });
 });

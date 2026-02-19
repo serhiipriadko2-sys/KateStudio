@@ -63,7 +63,8 @@ export const gamificationService = {
       .eq('user_id', userId)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 is 'not found'
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 is 'not found'
       console.error('Error fetching user progress:', error);
       return null;
     }
@@ -91,16 +92,19 @@ export const gamificationService = {
       .select('achievement_id')
       .eq('user_id', userId);
 
-    return data ? data.map((row: any) => row.achievement_id) : [];
+    return data ? data.map((row: { achievement_id: string }) => row.achievement_id) : [];
   },
 
-  async processActivity(userId: string, type: 'practice_completed'): Promise<{
+  async processActivity(
+    userId: string,
+    type: 'practice_completed'
+  ): Promise<{
     newXp: number;
     newLevel: number;
     unlocked: Achievement[];
   }> {
     // 1. Get current progress
-    let progress = await this.getUserProgress(userId);
+    const progress = await this.getUserProgress(userId);
     if (!progress) throw new Error('Could not load user progress');
 
     // 2. Calculate new XP
@@ -165,5 +169,5 @@ export const gamificationService = {
       newLevel: newLevel,
       unlocked: newlyUnlocked,
     };
-  }
+  },
 };
