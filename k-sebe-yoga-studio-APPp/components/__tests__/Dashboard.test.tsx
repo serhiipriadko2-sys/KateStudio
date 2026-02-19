@@ -61,6 +61,7 @@ vi.mock('../../context/ToastContext', () => ({
 }));
 
 // Mock Sub-components
+vi.mock('../Achievements', () => ({ Achievements: () => <div>Achievements Component</div> }));
 vi.mock('../AICoach', () => ({ AICoach: () => <div>AICoach Component</div> }));
 vi.mock('../Breathwork', () => ({ Breathwork: () => <div>Breathwork Component</div> }));
 vi.mock('../VideoLibrary', () => ({ VideoLibrary: () => <div>VideoLibrary Component</div> }));

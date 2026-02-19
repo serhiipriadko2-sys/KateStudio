@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { usePracticeCompletions } from '../hooks/usePracticeCompletions';
 import { useStreak } from '../hooks/useStreak';
 import { retentionService } from '../services/retentionService';
+import { gamificationService } from '../services/gamificationService';
 
 export const StreakCard: React.FC<{ onOpenRecommended?: () => void }> = ({ onOpenRecommended }) => {
   const { authStatus, user } = useAuth();
@@ -71,6 +72,13 @@ export const StreakCard: React.FC<{ onOpenRecommended?: () => void }> = ({ onOpe
                       .catch(() => {});
                     retentionService
                       .logEvent(user.id, 'practice_completed', { day: streak.today })
+                      .catch(() => {});
+                    gamificationService.processActivity(user.id, 'practice_completed')
+                      .then((res) => {
+                        if (res.unlocked.length > 0) {
+                          res.unlocked.forEach(ach => showToast(`🏆 Достижение: ${ach.title}`, 'success'));
+                        }
+                      })
                       .catch(() => {});
                   }
                 } else {

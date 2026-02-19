@@ -28,6 +28,7 @@ import { registerServiceWorker } from './services/serviceWorker';
 import { isSupabaseConfigured, supabase } from './services/supabase';
 import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { BookingDetails } from './types';
+import { SEO } from './components/SEO';
 
 function App() {
   useEffect(() => {
@@ -201,6 +202,7 @@ function App() {
 
   return (
     <>
+      <SEO />
       {loading && <Preloader onComplete={() => setLoading(false)} />}
 
       <div
