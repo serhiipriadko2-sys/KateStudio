@@ -1,10 +1,8 @@
 import { analytics, ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff, User } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { About } from './components/About';
-import { AdminPanel } from './components/AdminPanel';
 import { BookingModal } from './components/BookingModal';
-import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
 import { Directions } from './components/Directions';
 import { FAQ } from './components/FAQ';
@@ -29,6 +27,13 @@ import { registerServiceWorker } from './services/serviceWorker';
 import { isSupabaseConfigured, supabase } from './services/supabase';
 import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { BookingDetails } from './types';
+
+const AdminPanel = lazy(() =>
+  import('./components/AdminPanel').then((m) => ({ default: m.AdminPanel }))
+);
+const ChatWidget = lazy(() =>
+  import('./components/ChatWidget').then((m) => ({ default: m.ChatWidget }))
+);
 
 function App() {
   useEffect(() => {
@@ -262,7 +267,11 @@ function App() {
               `}
             >
               {isAuthenticated && user?.avatar ? (
-                <img src={user.avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+                <img
+                  src={user.avatar}
+                  alt="Аватар пользователя"
+                  className="w-6 h-6 rounded-full object-cover"
+                />
               ) : (
                 <User
                   className={`w-5 h-5 transition-colors ${
@@ -464,7 +473,9 @@ function App() {
         </main>
 
         <BackToTop />
-        <ChatWidget />
+        <Suspense fallback={null}>
+          <ChatWidget />
+        </Suspense>
         <CookieBanner />
 
         {/* Global Booking Modal */}
@@ -479,7 +490,9 @@ function App() {
         <UserCabinet isOpen={isCabinetOpen} onClose={() => setIsCabinetOpen(false)} />
 
         {/* Other Modals */}
-        <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
+        <Suspense fallback={null}>
+          <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
+        </Suspense>
         <LegalModals type={legalModalType} onClose={() => setLegalModalType(null)} />
       </div>
     </>

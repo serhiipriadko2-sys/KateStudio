@@ -171,7 +171,11 @@ export const UserCabinet: React.FC<UserCabinetProps> = ({ isOpen, onClose }) => 
           <div className="flex items-center gap-4 mb-6">
             <div className="w-16 h-16 bg-brand-mint/30 rounded-2xl flex items-center justify-center shrink-0">
               {user.avatar ? (
-                <img src={user.avatar} alt="" className="w-16 h-16 rounded-2xl object-cover" />
+                <img
+                  src={user.avatar}
+                  alt="Аватар пользователя"
+                  className="w-16 h-16 rounded-2xl object-cover"
+                />
               ) : (
                 <User className="w-8 h-8 text-brand-green" />
               )}

@@ -13,7 +13,7 @@ const DEFAULT_TITLE = 'К себе — Студия йоги Кати Габра
 const DEFAULT_DESCRIPTION =
   'Студия йоги в Дубне. Inside Flow, Хатха-йога, саундхилинг. Пространство для гармонии тела и души.';
 const DEFAULT_IMAGE = '/og-image.jpg';
-const SITE_URL = 'https://ksebe.yoga';
+const SITE_URL = 'https://ksebe-studio.ru';
 
 export const SEO: React.FC<SEOProps> = ({
   title = DEFAULT_TITLE,

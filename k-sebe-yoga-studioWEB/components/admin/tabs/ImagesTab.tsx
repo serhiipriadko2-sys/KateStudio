@@ -143,7 +143,7 @@ export const ImagesTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') =
               >
                 <div className="w-16 h-16 bg-stone-100 rounded-lg overflow-hidden shrink-0 relative group">
                   {currentUrl ? (
-                    <img src={currentUrl} alt="" className="w-full h-full object-cover" />
+                    <img src={currentUrl} alt={item.label} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-stone-300">
                       <ImageIcon className="w-6 h-6" />
