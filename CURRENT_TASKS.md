@@ -35,6 +35,9 @@ _Обновлено: 16 февраля 2026 (после security audit и обн
 **Примечание:** WEB-изображения заменены на локальные ассеты
 (`shared/constants/images.ts`). Остаётся APP.
 
+**Операционное примечание (repo settings):** `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`
+настраиваются вручную в GitHub Secrets (в репозиторий не коммитятся).
+
 ---
 
 ## Завершённые задачи (Sprint: Полировка экосистемы)
@@ -81,6 +84,9 @@ _Обновлено: 16 февраля 2026 (после security audit и обн
 | 19a | **APP ChatWidget: non-AI режим (без client live)** | `APP/components/ChatWidget/useChatSession.ts` | 30-60 мин | ✅     |
 | 19b | **Toolchain guardrail (Vite/Vitest baseline)** | `docs/TOOLCHAIN_UPGRADE_PLAYBOOK.md` + `scripts/verify_toolchain.mjs` | 30 мин | ✅     |
 | 19c | **Снять конфликт PR (CURRENT_TASKS + useChatSession)** | `CURRENT_TASKS.md`, `APP/components/ChatWidget/useChatSession.ts` | 15 мин | ✅     |
+
+**Риск-заметка по зависимостям:** `npm audit` показывает 22 уязвимости в dev-deps
+(`minimatch`/`glob` через ESLint-цепочку); production bundle не затронут.
 
 **Total P1:** 1-2 недели **Testing Coverage:** ~20% → 50%+ **Payment
 Integration:** 30% → 90%
