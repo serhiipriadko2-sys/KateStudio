@@ -1,4 +1,3 @@
-
 import { IMAGES } from '@ksebe/shared';
 import { ArrowDown } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';

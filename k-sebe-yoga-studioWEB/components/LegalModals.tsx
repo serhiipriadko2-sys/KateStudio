@@ -1,4 +1,3 @@
-
 import { X, Shield, FileText } from 'lucide-react';
 import React from 'react';
 import { useScrollLock } from '../hooks/useScrollLock';
