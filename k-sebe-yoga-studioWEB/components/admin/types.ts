@@ -6,7 +6,8 @@ export type AdminTab =
   | 'images'
   | 'settings'
   | 'reviews'
-  | 'pricing';
+  | 'pricing'
+  | 'faq';
 
 export interface ClassRow {
   id: string;
@@ -58,4 +59,19 @@ export interface ContactRow {
   message: string | null;
   created_at: string;
   status?: 'new' | 'read' | 'processed' | 'spam';
+}
+
+
+export interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  category?: string;
+  order_index: number;
+  created_at: string;
+}
+
+
+export interface AdminTabProps {
+  toast: (message: string, type?: 'success' | 'error') => void;
 }
