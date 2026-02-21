@@ -115,7 +115,7 @@ export const Reviews: React.FC = () => {
             id: r.id,
             name: r.name,
             text: r.text,
-            image: r.image_url || '/placeholder.png', // Fallback image if missing
+            image: r.image_url || IMAGES.reviews.avatars[0],
           }));
           setReviews(mapped);
         }

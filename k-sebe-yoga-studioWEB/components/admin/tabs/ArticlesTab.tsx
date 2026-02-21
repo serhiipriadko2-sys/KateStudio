@@ -156,7 +156,11 @@ export const ArticlesTab: React.FC<AdminTabProps> = ({ toast }) => {
           >
             <div className="w-14 h-14 rounded-lg bg-stone-100 overflow-hidden shrink-0">
               {article.image_url && (
-                <img src={article.image_url} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={article.image_url}
+                  alt={article.title}
+                  className="w-full h-full object-cover"
+                />
               )}
             </div>
             <div className="flex-1 min-w-0">
