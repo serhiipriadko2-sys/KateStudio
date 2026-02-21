@@ -78,7 +78,7 @@ _Обновлено: 16 февраля 2026 (после security audit и обн
 | 17  | **Повысить test coverage до 50%+**        | Все `__tests__/`                              | Ongoing   | ⏳     |
 | 18  | **Исправить nullable user_id**            | Миграция cleanup                              | 30 мин    | ⏳     |
 | 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ⏳     |
-| 19a | **APP ChatWidget: non-AI режим (без client live)** | `APP/components/ChatWidget/useChatSession.ts` | 30-60 мин | ✅     |
+| 19a | **APP ChatWidget: non-AI режим (без client live)** | `APP/components/ChatWidget/useChatSession.ts` | 30-60 мин | 🔄     |
 
 **Total P1:** 1-2 недели **Testing Coverage:** ~20% → 50%+ **Payment
 Integration:** 30% → 90%

@@ -1,147 +1,116 @@
-import { Check, Loader2, Sparkles } from 'lucide-react';
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { supabase } from '../services/supabaseClient';
+import { Check, Loader2, X } from 'lucide-react';
+import React from 'react';
 
 interface PaywallProps {
-  onClose?: () => void;
+  onClose: () => void;
+  onSubscribe?: (plan: string) => void;
 }
 
-export const Paywall: React.FC<PaywallProps> = ({ onClose }) => {
-  const { user } = useAuth();
-  const { showToast } = useToast();
-  const [loading, setLoading] = useState<string | null>(null);
+export const Paywall: React.FC<PaywallProps> = ({ onClose, onSubscribe }) => {
+  const [loadingPlan, setLoadingPlan] = React.useState<string | null>(null);
 
-  const handleSubscribe = async (plan: 'premium' | 'vip') => {
-    if (!user) {
-      showToast('Пожалуйста, войдите в систему', 'error');
-      return;
+  const handleSubscribe = (plan: string) => {
+    if (onSubscribe) {
+      setLoadingPlan(plan);
+      onSubscribe(plan);
     }
+  };
 
-    setLoading(plan);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: {
-          plan,
-          returnUrl: window.location.origin, // Return to app after payment
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.paymentUrl) {
-        window.location.href = data.paymentUrl;
-      } else {
-        throw new Error('Не удалось получить ссылку на оплату');
-      }
-    } catch (err) {
-      console.error('Payment error:', err);
-      showToast('Ошибка при создании платежа', 'error');
-    } finally {
-      setLoading(null);
+  const handleKeyDown = (e: React.KeyboardEvent, plan: string) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleSubscribe(plan);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-[#1a1a1a] w-full max-w-lg rounded-3xl overflow-hidden relative border border-white/10 shadow-2xl">
+    <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl relative animate-in slide-in-from-bottom-10 duration-500">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+          className="absolute top-6 right-6 p-2 rounded-full bg-stone-100 hover:bg-stone-200 transition-colors z-10"
         >
-          ✕
+          <X className="w-5 h-5 text-stone-500" />
         </button>
 
-        <div className="p-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-green/20 rounded-full mb-6">
-            <Sparkles className="w-8 h-8 text-brand-green" />
+        <div className="p-8 pb-6 text-center">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-widest mb-6">
+            Premium Access
           </div>
-          <h2 className="text-3xl font-serif text-white mb-2">K Sebe Premium</h2>
-          <p className="text-white/60 mb-8">Откройте полный доступ к практикам и AI-коучу</p>
-
-          <div className="space-y-4">
-            {/* Premium Plan */}
-            <div
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') handleSubscribe('premium');
-              }}
-              className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-brand-green/50 transition-colors cursor-pointer"
-              onClick={() => handleSubscribe('premium')}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white">Premium</h3>
-                <span className="text-brand-green font-bold text-xl">
-                  499 ₽ <span className="text-sm text-white/40 font-normal">/ мес</span>
-                </span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-white/70 text-sm">
-                  <Check className="w-4 h-4 text-brand-green" /> Безлимитный AI-коуч
-                </li>
-                <li className="flex items-center gap-2 text-white/70 text-sm">
-                  <Check className="w-4 h-4 text-brand-green" /> Полная библиотека видео
-                </li>
-                <li className="flex items-center gap-2 text-white/70 text-sm">
-                  <Check className="w-4 h-4 text-brand-green" /> Персональные программы
-                </li>
-              </ul>
-              <button
-                disabled={loading === 'premium'}
-                className="w-full py-3 bg-brand-green text-white rounded-xl font-bold uppercase tracking-wider hover:bg-brand-green/90 transition-all flex justify-center items-center gap-2"
-              >
-                {loading === 'premium' ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  'Оформить подписку'
-                )}
-              </button>
-            </div>
-
-            {/* VIP Plan */}
-            <div
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') handleSubscribe('vip');
-              }}
-              className="bg-gradient-to-br from-brand-gold/20 to-transparent rounded-2xl p-6 border border-brand-gold/30 hover:border-brand-gold/60 transition-colors cursor-pointer relative overflow-hidden"
-              onClick={() => handleSubscribe('vip')}
-            >
-              <div className="absolute top-0 right-0 bg-brand-gold text-black text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase">
-                Best Value
-              </div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-brand-gold">VIP</h3>
-                <span className="text-brand-gold font-bold text-xl">
-                  1 999 ₽ <span className="text-sm text-white/40 font-normal">/ мес</span>
-                </span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-white/70 text-sm">
-                  <Check className="w-4 h-4 text-brand-gold" /> Всё, что в Premium
-                </li>
-                <li className="flex items-center gap-2 text-white/70 text-sm">
-                  <Check className="w-4 h-4 text-brand-gold" /> Личный разбор техники (видео)
-                </li>
-                <li className="flex items-center gap-2 text-white/70 text-sm">
-                  <Check className="w-4 h-4 text-brand-gold" /> Приоритетная поддержка 24/7
-                </li>
-              </ul>
-              <button
-                disabled={loading === 'vip'}
-                className="w-full py-3 bg-brand-gold text-black rounded-xl font-bold uppercase tracking-wider hover:bg-brand-gold/90 transition-all flex justify-center items-center gap-2"
-              >
-                {loading === 'vip' ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Стать VIP'}
-              </button>
-            </div>
-          </div>
-
-          <p className="text-xs text-white/30 mt-6">
-            Отменяйте в любое время. Безопасная оплата через YooKassa.
+          <h2 className="text-3xl font-serif text-brand-text mb-3">
+            Открой полный потенциал
+          </h2>
+          <p className="text-stone-500 text-sm leading-relaxed max-w-xs mx-auto">
+            Получи доступ к эксклюзивным практикам, AI-анализу и персональным рекомендациям.
           </p>
+        </div>
+
+        <div className="px-6 space-y-4 mb-8">
+          <div
+            onClick={() => handleSubscribe('premium')}
+            onKeyDown={(e) => handleKeyDown(e, 'premium')}
+            role="button"
+            tabIndex={0}
+            className="group relative p-6 rounded-[2rem] border-2 border-brand-green bg-brand-mint/10 cursor-pointer transition-all hover:scale-[1.02] outline-none focus:ring-2 focus:ring-brand-green"
+          >
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-lg font-serif font-bold text-brand-text">Premium</span>
+              <span className="text-lg font-bold text-brand-green">990 ₽ <span className="text-xs font-normal text-stone-500">/ мес</span></span>
+            </div>
+            <ul className="space-y-2 mb-4">
+              <li className="flex items-center gap-2 text-sm text-stone-600">
+                <Check className="w-4 h-4 text-brand-green" /> Безлимитный AI чат
+              </li>
+              <li className="flex items-center gap-2 text-sm text-stone-600">
+                <Check className="w-4 h-4 text-brand-green" /> Анализ асан по фото
+              </li>
+              <li className="flex items-center gap-2 text-sm text-stone-600">
+                <Check className="w-4 h-4 text-brand-green" /> Доступ ко всем видео
+              </li>
+            </ul>
+            <button
+              disabled={!!loadingPlan}
+              className="w-full py-3 bg-brand-green text-white rounded-xl font-bold uppercase tracking-wide shadow-lg shadow-brand-green/20 group-hover:bg-brand-green/90 transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+            >
+              {loadingPlan === 'premium' && <Loader2 className="w-4 h-4 animate-spin" />}
+              Попробовать бесплатно
+            </button>
+            <p className="text-[10px] text-center text-stone-400 mt-2">7 дней бесплатно, затем 990 ₽/мес</p>
+          </div>
+
+          <div
+            onClick={() => handleSubscribe('vip')}
+            onKeyDown={(e) => handleKeyDown(e, 'vip')}
+            role="button"
+            tabIndex={0}
+            className="group p-6 rounded-[2rem] border border-stone-100 bg-white hover:border-brand-yellow/50 cursor-pointer transition-all hover:scale-[1.02] outline-none focus:ring-2 focus:ring-brand-yellow"
+          >
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-lg font-serif font-bold text-brand-text">VIP</span>
+              <span className="text-lg font-bold text-brand-text">2,990 ₽ <span className="text-xs font-normal text-stone-500">/ мес</span></span>
+            </div>
+            <ul className="space-y-2 mb-4">
+              <li className="flex items-center gap-2 text-sm text-stone-600">
+                <Check className="w-4 h-4 text-brand-yellow" /> Всё из Premium
+              </li>
+              <li className="flex items-center gap-2 text-sm text-stone-600">
+                <Check className="w-4 h-4 text-brand-yellow" /> Личные консультации
+              </li>
+            </ul>
+            <button
+              disabled={!!loadingPlan}
+              className="w-full py-3 bg-stone-100 text-stone-600 rounded-xl font-bold uppercase tracking-wide hover:bg-stone-200 transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+            >
+              {loadingPlan === 'vip' && <Loader2 className="w-4 h-4 animate-spin" />}
+              Выбрать VIP
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 bg-stone-50 text-center">
+          <button onClick={onClose} className="text-xs text-stone-400 hover:text-stone-600 underline">
+            Восстановить покупки
+          </button>
         </div>
       </div>
     </div>
