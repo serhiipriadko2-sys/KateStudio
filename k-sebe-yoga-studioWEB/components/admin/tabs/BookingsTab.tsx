@@ -8,6 +8,10 @@ import {
   ChevronDown,
   ChevronUp,
   Trash2,
+  CheckCircle,
+  XCircle,
+  UserX,
+  PlayCircle
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { supabase } from '../../../services/supabase';
@@ -64,8 +68,28 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
     },
   });
 
+  const statusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: BookingRow['status'] }) => {
+      if (!supabase) throw new Error('Supabase not initialized');
+      const { error } = await supabase.from('bookings').update({ status }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      toast('Статус обновлен');
+    },
+    onError: (err) => {
+      console.error(err);
+      toast('Ошибка обновления статуса', 'error');
+    },
+  });
+
   const handleDelete = (id: string) => {
     if (confirm('Удалить эту запись?')) deleteMutation.mutate(id);
+  };
+
+  const handleStatusChange = (id: string, status: BookingRow['status']) => {
+    statusMutation.mutate({ id, status });
   };
 
   const filteredBookings = bookings.filter((b) => {
@@ -128,11 +152,16 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
             const displayTime = b.class_time || b.time || '';
             const createdAt = formatCreatedAt(b.created_at);
             const isPurchase = b.is_purchase;
+            const status = b.status || 'active';
 
             return (
               <div
                 key={b.id}
-                className="bg-white rounded-xl border border-stone-100 overflow-hidden transition-colors hover:border-stone-200"
+                className={`bg-white rounded-xl border transition-colors hover:border-stone-300 ${
+                  status === 'cancelled' || status === 'no_show'
+                    ? 'border-stone-100 opacity-60'
+                    : 'border-stone-200'
+                }`}
               >
                 <button
                   onClick={() => setExpanded(isOpen ? null : b.id)}
@@ -157,9 +186,15 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                           {b.price}
                         </span>
                       )}
-                      {b.status && b.status !== 'active' && (
-                        <span className="text-[10px] uppercase font-bold text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded">
-                          {b.status}
+                      {status !== 'active' && (
+                        <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                            status === 'completed' ? 'bg-green-100 text-green-600' :
+                            status === 'cancelled' ? 'bg-rose-100 text-rose-500' :
+                            'bg-stone-100 text-stone-400'
+                        }`}>
+                          {status === 'no_show' ? 'Неявка' :
+                           status === 'cancelled' ? 'Отмена' :
+                           status === 'completed' ? 'Завершено' : status}
                         </span>
                       )}
                     </div>
@@ -185,7 +220,9 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                       {b.phone && (
                         <>
                           <dt className="text-stone-400">Телефон</dt>
-                          <dd className="text-stone-700 font-medium">{b.phone}</dd>
+                          <dd className="text-stone-700 font-medium">
+                             <a href={`tel:${b.phone}`} className="hover:text-brand-green">{b.phone}</a>
+                          </dd>
                         </>
                       )}
                       {b.name && (
@@ -213,12 +250,50 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                         </>
                       )}
                     </dl>
-                    <div className="mt-3 flex justify-end">
+
+                    <div className="mt-4 pt-4 border-t border-stone-100 flex flex-wrap gap-2 justify-end">
+                      {status !== 'active' && (
+                        <button
+                           onClick={() => handleStatusChange(b.id, 'active')}
+                           className="px-3 py-1.5 rounded-lg border border-stone-200 text-stone-600 text-xs hover:bg-stone-50 flex items-center gap-1.5"
+                        >
+                            <PlayCircle className="w-3.5 h-3.5" /> Активен
+                        </button>
+                      )}
+
+                      {status !== 'completed' && (
+                        <button
+                           onClick={() => handleStatusChange(b.id, 'completed')}
+                           className="px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-xs hover:bg-green-100 flex items-center gap-1.5"
+                        >
+                            <CheckCircle className="w-3.5 h-3.5" /> Завершено
+                        </button>
+                      )}
+
+                      {status !== 'no_show' && !isPurchase && (
+                        <button
+                           onClick={() => handleStatusChange(b.id, 'no_show')}
+                           className="px-3 py-1.5 rounded-lg border border-stone-200 text-stone-500 text-xs hover:bg-stone-50 flex items-center gap-1.5"
+                        >
+                            <UserX className="w-3.5 h-3.5" /> Неявка
+                        </button>
+                      )}
+
+                      {status !== 'cancelled' && (
+                        <button
+                           onClick={() => handleStatusChange(b.id, 'cancelled')}
+                           className="px-3 py-1.5 rounded-lg border border-rose-100 text-rose-600 text-xs hover:bg-rose-50 flex items-center gap-1.5"
+                        >
+                            <XCircle className="w-3.5 h-3.5" /> Отмена
+                        </button>
+                      )}
+
+                      <div className="flex-1"></div>
                       <button
                         onClick={() => handleDelete(b.id)}
-                        className="text-xs text-rose-500 hover:underline flex items-center gap-1"
+                        className="text-xs text-rose-400 hover:text-rose-600 hover:underline flex items-center gap-1 ml-auto"
                       >
-                        <Trash2 className="w-3 h-3" /> Удалить
+                        <Trash2 className="w-3 h-3" /> Удалить запись
                       </button>
                     </div>
                   </div>
