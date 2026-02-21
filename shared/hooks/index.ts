@@ -23,3 +23,4 @@ export type { UseAchievementsOptions, UseAchievementsReturn } from './useAchieve
 // Admin & Authorization hooks (2026)
 export { useIsAdmin } from './useIsAdmin';
 export type { UseIsAdminReturn } from './useIsAdmin';
+export * from './useGamification';

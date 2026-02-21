@@ -29,6 +29,8 @@ export const useChatSession = () => {
     setIsLoading(true);
 
     try {
+      // In a real implementation this would call gemini-proxy via assistantService
+      // Currently using mock/fallback
       const response = getAssistantResponse(textToSend);
       setMessages((prev) => [
         ...prev,

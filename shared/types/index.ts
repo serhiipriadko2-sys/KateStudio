@@ -1,103 +1,60 @@
 /**
- * K Sebe Yoga Studio - Unified Types
- * Shared across WEB and APP platforms
+ * Shared Type Definitions
+ *
+ * This file contains all shared types for the application.
+ * It is organized by domain (Bookings, Contacts, AI, etc.)
  */
 
 // ============================================
-// USER & AUTHENTICATION
+// CORE DATA
 // ============================================
 
-export interface UserProfile {
-  phone: string;
-  name?: string;
-  city?: string;
-  avatar?: string;
-  isAdmin?: boolean;
-  createdAt?: number;
+export type AppSource = 'web' | 'app';
+
+// ============================================
+// BOOKINGS & CLASSES
+// ============================================
+
+export type BookingStatus = 'active' | 'cancelled' | 'completed' | 'no_show';
+export type LoadLevel = 'low' | 'medium' | 'high' | 'full' | 'none';
+
+export interface ClassSession {
+  id: string;
+  name: string;
+  date: string; // ISO Date YYYY-MM-DD
+  time: string; // HH:mm
+  duration: number; // minutes or string like '1h 30m' (prefer number for calc, string for display)
+  instructor: string;
+  spotsTotal: number; // Renamed from spots for clarity
+  spotsBooked: number; // Renamed from booked
+  price: number;
+  type: 'group' | 'individual' | 'online' | 'event';
+  description?: string;
+  image?: string;
+  location: string;
+  intensity: LoadLevel;
+  dateStr?: string; // Helper for UI (e.g. "12 октября")
 }
-
-// ============================================
-// BOOKING & SCHEDULE
-// ============================================
 
 export interface BookingDetails {
   type: string;
   date?: string;
   time?: string;
-  location?: string;
   price?: string;
+  classId?: string; // Links to a specific ClassSession
 }
-
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
-
-export interface Booking extends BookingDetails {
-  id: string;
-  phone: string;
-  className: string;
-  timestamp: number;
-  status?: BookingStatus;
-}
-
-export interface ClassSession {
-  id: string;
-  dateStr: string;
-  name: string;
-  time: string;
-  duration: string;
-  instructor: string;
-  location: string;
-  spotsTotal: number;
-  spotsBooked: number;
-  intensity: 1 | 2 | 3;
-  isOnline: boolean;
-  price?: number;
-  description?: string;
-}
-
-export type LoadLevel = 'low' | 'medium' | 'high' | 'full' | 'none';
 
 // ============================================
-// DATABASE ROW TYPES (Supabase table shapes)
+// DATABASE TYPES (Supabase Mirrors)
 // ============================================
-
-/** Row shape from `classes` table */
-export interface ClassRow {
-  id: string;
-  date: string;
-  time: string;
-  name: string;
-  instructor: string | null;
-  duration: string | null;
-  spots_total: number | null;
-  spots_booked: number | null;
-  location: string | null;
-  intensity: number | null;
-  is_online: boolean | null;
-  price: number | null;
-  description: string | null;
-}
-
-/** Form data for creating/editing a class */
-export interface ClassFormData {
-  date: string;
-  time: string;
-  name: string;
-  instructor: string;
-  duration: string;
-  spots_total: number;
-  location: string;
-  intensity: 1 | 2 | 3;
-  is_online: boolean;
-  price: number;
-  description: string;
-}
 
 /** Row shape from `bookings` table */
 export interface BookingRow {
   id: string;
-  user_id: string | null;
-  phone: string | null;
-  name: string | null;
+  user_id: string;
+  name: string;
+  phone: string;
+  instagram: string | null;
   class_id: string | null;
   class_name: string | null;
   class_type: string | null;
@@ -110,6 +67,24 @@ export interface BookingRow {
   is_purchase: boolean | null;
   price: string | null;
   status: BookingStatus | null;
+}
+
+/** Row shape from `classes` table (if exists) or inferred */
+export interface ClassRow {
+  id: string;
+  name: string;
+  date: string;
+  time: string;
+  duration: number;
+  instructor: string;
+  spots_total: number;
+  spots_booked: number;
+  price: number;
+  type: string;
+  description: string | null;
+  image: string | null;
+  location: string;
+  intensity: string;
 }
 
 /** Row shape from `contacts` table */
@@ -130,6 +105,27 @@ export interface ProfileRow {
   city: string | null;
   avatar: string | null;
   is_admin: boolean;
+  created_at: string;
+}
+
+/** Row shape from `user_progress` table */
+export interface DBUserProgress {
+  user_id: string;
+  current_streak: number;
+  max_streak: number;
+  last_activity_date: string | null;
+  total_xp: number;
+  level: number;
+  updated_at: string;
+}
+
+/** Row shape from `user_achievements` table */
+export interface DBUserAchievement {
+  id: string;
+  user_id: string;
+  achievement_id: string;
+  progress: number;
+  unlocked_at: string | null;
   created_at: string;
 }
 

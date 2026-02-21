@@ -12,6 +12,7 @@ export default defineConfig({
       'shared/**/*.{test,spec}.{ts,tsx}',
       'k-sebe-yoga-studioWEB/**/*.{test,spec}.{ts,tsx}',
       'k-sebe-yoga-studio-APPp/**/*.{test,spec}.{ts,tsx}',
+      'scripts/**/*.{test,spec}.{ts,tsx}',
     ],
     exclude: ['**/node_modules/**', '**/dist/**'],
     coverage: {

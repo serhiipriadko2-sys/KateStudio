@@ -5,7 +5,7 @@ import { isSupabaseConfigured, supabase } from './supabaseClient';
 export const DATA_SOURCES = {
   userProfile: 'supabase',
   bookings: 'supabase',
-  classSchedule: 'supabase-with-fallback', // Supabase with local fallback
+  classSchedule: 'local-generated',
   cachedUser: 'local-cache',
   cachedBookings: 'local-cache',
   pendingBookings: 'local-cache',
@@ -92,7 +92,7 @@ export const dataService = {
       // Auth-first: updates must be tied to the authenticated user_id.
       const authUserId = await getAuthenticatedUserId(user.id);
       if (!authUserId) throw new Error('Missing authenticated user id');
-      const updates: any /* eslint-disable-line @typescript-eslint/no-explicit-any */ = {
+      const updates: { name: string; city: string; avatar?: string } = {
         name: user.name,
         city: user.city,
       };
@@ -120,45 +120,9 @@ export const dataService = {
   // --- Schedule ---
   getClassesForDate: async (date: Date, type: 'offline' | 'online'): Promise<ClassSession[]> => {
     const dateStr = date.toISOString().split('T')[0];
-
-    // 1. Try Fetch from Supabase
-    if (isSupabaseConfigured) {
-      try {
-        const { data: dbClasses, error } = await supabase
-          .from('classes')
-          .select('*')
-          .eq('date', dateStr)
-          .eq('is_online', type === 'online')
-          .order('time', { ascending: true });
-
-        if (error) throw error;
-
-        if (dbClasses && dbClasses.length > 0) {
-          return dbClasses.map(
-            (row: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => ({
-              id: row.id, // UUID
-              dateStr: row.date,
-              time: row.time,
-              name: row.name,
-              instructor: row.instructor || 'Катя Габран',
-              duration: row.duration || (type === 'online' ? '45 мин' : '60 мин'),
-              spotsTotal: row.spots_total || (type === 'online' ? 50 : 20),
-              spotsBooked: row.spots_booked || 0,
-              location: row.location || (type === 'online' ? 'Online' : 'Станционная ул., 5Б'),
-              intensity: (row.intensity || 1) as 1 | 2 | 3,
-              price: type === 'online' ? 400 : 700, // Hardcoded for now based on type
-              isOnline: type === 'online',
-            })
-          );
-        }
-      } catch (e) {
-        console.warn('Supabase fetch failed, falling back to generated schedule', e);
-      }
-    }
-
-    // --- FALLBACK / DEMO MODE ---
     const daySeed = date.getFullYear() * 1000 + (date.getMonth() + 1) * 100 + date.getDate();
 
+    // 1. Generate Base Schedule Templates
     const templates =
       type === 'offline'
         ? [
@@ -220,37 +184,34 @@ export const dataService = {
             },
           ];
 
+    // 2. Filter randomly to create variety
     const todaysClasses = templates.filter((_, i) => pseudoRandom(daySeed + i) > 0.3);
 
     // 3. Prepare IDs
     const classesWithIds = todaysClasses.map((tmpl, idx) => ({
       ...tmpl,
-      id: `${dateStr}-${type}-${idx}`, // fallback ID
+      id: `${dateStr}-${type}-${idx}`,
     }));
 
     const classIds = classesWithIds.map((c) => c.id);
     const bookingCounts: Record<string, number> = {};
 
-    // 4. Try Fetch real booking counts from Supabase (for fallback IDs)
-    if (isSupabaseConfigured) {
-      try {
-        const { data: bookings, error } = await supabase
-          .from('bookings')
-          .select('class_id')
-          .in('class_id', classIds);
+    // 4. Try Fetch real booking counts from Supabase
+    try {
+      const { data: bookings, error } = await supabase
+        .from('bookings')
+        .select('class_id')
+        .in('class_id', classIds);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        if (bookings) {
-          bookings.forEach(
-            (b: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
-              bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
-            }
-          );
-        }
-      } catch {
-        // Silent fail for offline mode
+      if (bookings) {
+        bookings.forEach((b: { class_id: string }) => {
+          bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
+        });
       }
+    } catch {
+      // Silent fail for offline mode
     }
 
     // 5. Map final objects
@@ -266,7 +227,7 @@ export const dataService = {
         instructor: 'Катя Габран',
         duration: tmpl.duration,
         spotsTotal: tmpl.spots,
-        spotsBooked: realBookings || initialBooked,
+        spotsBooked: Math.min(initialBooked + realBookings, tmpl.spots),
         location: tmpl.loc,
         intensity: tmpl.int as 1 | 2 | 3,
         price: tmpl.price,
@@ -286,9 +247,17 @@ export const dataService = {
       if (error) throw error;
 
       const bookings = data.map(
-        (b: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => ({
+        (b: {
+          id: string;
+          class_id: string;
+          class_name: string;
+          date: string;
+          time: string;
+          location: string;
+          timestamp: number;
+        }) => ({
           id: b.id,
-          classId: b.class_id, // This is text (either UUID or fallback ID)
+          classId: b.class_id,
           className: b.class_name,
           date: b.date,
           time: b.time,
@@ -298,7 +267,7 @@ export const dataService = {
       );
 
       await cacheAdapter.upsertBookings(
-        bookings.map((booking: Booking) => ({
+        bookings.map((booking) => ({
           ...booking,
           phone: user.phone,
           status: 'synced',
@@ -335,14 +304,12 @@ export const dataService = {
     const bookingPayload = {
       user_id: authUserId,
       phone: user.phone,
-      class_id: cls.id, // Store class ID (either UUID or string) in text field
-      class_uuid: isUuid(cls.id) ? cls.id : null, // If UUID, link to classes table
+      class_id: cls.id,
       class_name: cls.name,
       date: cls.dateStr,
       time: cls.time,
       location: cls.location,
       timestamp: Date.now(),
-      status: 'pending',
     };
 
     try {
@@ -403,7 +370,7 @@ export const dataService = {
       if (error) throw error;
       await cacheAdapter.removeBooking(bookingId);
       return true;
-    } catch (e) {
+    } catch (e: unknown) {
       console.error('Cancellation error', e);
       return false;
     }
@@ -426,13 +393,11 @@ export const dataService = {
               user_id: authUserId,
               phone: booking.phone,
               class_id: booking.classId,
-              class_uuid: isUuid(booking.classId) ? booking.classId : null,
               class_name: booking.className,
               date: booking.date,
               time: booking.time,
               location: booking.location,
               timestamp: booking.timestamp,
-              status: 'pending',
             })
             .select()
             .single();

@@ -1,4 +1,4 @@
-import { ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
+import { analytics, ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { About } from './components/About';
@@ -22,6 +22,7 @@ import { Pricing } from './components/Pricing';
 // Retreats component available from './components/Retreats' when needed
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
+import { SEO } from './components/SEO';
 import { UserCabinet } from './components/UserCabinet';
 import { useAuth } from './context/AuthContext';
 import { registerServiceWorker } from './services/serviceWorker';
@@ -30,6 +31,10 @@ import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme'
 import { BookingDetails } from './types';
 
 function App() {
+  useEffect(() => {
+    analytics.initWebVitals();
+    analytics.pageView(window.location.pathname);
+  }, []);
   const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -197,6 +202,7 @@ function App() {
 
   return (
     <>
+      <SEO />
       {loading && <Preloader onComplete={() => setLoading(false)} />}
 
       <div

@@ -14,8 +14,9 @@
   - k-sebe-yoga-studio-APPp/ — PWA приложение (Firebase deploy)
   - shared/ — общая библиотека @ksebe/shared
   - supabase/ — Edge Functions + migrations
-- **Текущий статус**: 178 тестов, 100% TypeScript, 0 lint errors
-- **Security P0**: Все критические блокеры устранены (CORS, RLS, Webhook, API key)
+- **Текущий статус**: 174 теста, 100% TypeScript, 0 lint errors
+- **Security P0**: Все критические блокеры устранены (CORS, RLS, Webhook, API
+  key)
 - Запуск без AI: ChatWidget должен работать без Gemini, отвечая по локальной
   базе знаний.
 
@@ -107,4 +108,5 @@ FAIL, если любое из этого не выполнено.
 - [AGENTS.md](../AGENTS.md) — мульти-агентная архитектура
 - [CURRENT_TASKS.md](../CURRENT_TASKS.md) — текущие задачи
 - [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) — чеклист запуска
-- [SECURITY_REPORT_2026_02_11.md](./SECURITY_REPORT_2026_02_11.md) — аудит безопасности
+- [SECURITY_REPORT_2026_02_11.md](./SECURITY_REPORT_2026_02_11.md) — аудит
+  безопасности

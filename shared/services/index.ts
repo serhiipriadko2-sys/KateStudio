@@ -11,3 +11,4 @@ export {
   saveImageMapping,
   uploadImage,
 } from './imageStorage';
+export { analytics } from './analytics';

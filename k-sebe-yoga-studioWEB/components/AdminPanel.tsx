@@ -12,6 +12,7 @@ import {
   ClipboardList,
   MessageSquare,
   LayoutDashboard,
+  HelpCircle,
 } from 'lucide-react';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useScrollLock } from '../hooks/useScrollLock';
@@ -21,6 +22,7 @@ import { BookingsTab } from './admin/tabs/BookingsTab';
 import { ContactsTab } from './admin/tabs/ContactsTab';
 import { ContentTab } from './admin/tabs/ContentTab';
 import { DashboardTab } from './admin/tabs/DashboardTab';
+import { FAQTab } from './admin/tabs/FAQTab';
 import { ImagesTab } from './admin/tabs/ImagesTab';
 import { PricingTab } from './admin/tabs/PricingTab';
 import { ReviewsTab } from './admin/tabs/ReviewsTab';
@@ -230,6 +232,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     { id: 'pricing', icon: <ClipboardList className="w-4 h-4" />, label: 'Тарифы' },
     { id: 'content', icon: <BookOpen className="w-4 h-4" />, label: 'Контент' },
     { id: 'images', icon: <ImageIcon className="w-4 h-4" />, label: 'Медиа' },
+    { id: 'faq', icon: <HelpCircle className="w-4 h-4" />, label: 'FAQ' },
     { id: 'settings', icon: <Palette className="w-4 h-4" />, label: 'Настройки' },
   ];
 
@@ -285,6 +288,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             {activeTab === 'pricing' && <PricingTab toast={toast} />}
             {activeTab === 'content' && <ContentTab toast={toast} />}
             {activeTab === 'images' && <ImagesTab toast={toast} />}
+            {activeTab === 'faq' && <FAQTab toast={toast} />}
             {activeTab === 'settings' && <SettingsTab toast={toast} />}
           </div>
 
