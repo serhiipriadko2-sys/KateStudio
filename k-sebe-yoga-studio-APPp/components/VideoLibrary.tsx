@@ -1,51 +1,13 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 import { IMAGES } from '@ksebe/shared';
+import { useQuery } from '@tanstack/react-query';
 import { Play, Lock, Clock, Sparkles, X, ChevronRight, Loader2 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useToast } from '../context/ToastContext';
+import { videoService, Video } from '../services/videoService';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
-
-const videos = [
-  {
-    id: 1,
-    title: 'Утренний Flow',
-    duration: '15 мин',
-    level: 'Легкий',
-    image: IMAGES.studio[1],
-    isLocked: false,
-    tags: ['Энергия', 'Сила'],
-    videoUrl: 'https://www.youtube.com/embed/sTANio_2E0Q?autoplay=1', // Placeholder video
-  },
-  {
-    id: 2,
-    title: 'Здоровая спина',
-    duration: '30 мин',
-    level: 'Средний',
-    image: IMAGES.studio[2],
-    isLocked: false,
-    tags: ['Здоровье', 'Сила'],
-    videoUrl: 'https://www.youtube.com/embed/inpok4MKVLM?autoplay=1', // Placeholder video
-  },
-  {
-    id: 3,
-    title: 'Глубокая растяжка',
-    duration: '45 мин',
-    level: 'Сложный',
-    image: IMAGES.studio[3],
-    isLocked: true,
-    tags: ['Покой', 'Здоровье'],
-  },
-  {
-    id: 4,
-    title: 'Медитация перед сном',
-    duration: '10 мин',
-    level: 'Все уровни',
-    image: IMAGES.studio[4],
-    isLocked: true,
-    tags: ['Покой', 'Здоровье'],
-  },
-];
+import { Paywall } from './Paywall';
 
 interface VideoLibraryProps {
   selectedMood?: string | null;
@@ -53,18 +15,29 @@ interface VideoLibraryProps {
 
 export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
   const { showToast } = useToast();
-  const [activeVideo, setActiveVideo] = useState<(typeof videos)[0] | null>(null);
+  const [activeVideo, setActiveVideo] = useState<Video | null>(null);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  // Fetch videos from DB
+  const { data: videos = [], isLoading } = useQuery({
+    queryKey: ['videos'],
+    queryFn: videoService.getVideos,
+  });
 
   const filteredVideos = useMemo(() => {
     if (!selectedMood) return videos;
     return videos.filter((v) => v.tags.includes(selectedMood));
-  }, [selectedMood]);
+  }, [selectedMood, videos]);
 
-  const handleVideoClick = (video: (typeof videos)[0]) => {
-    if (video.isLocked) {
-      showToast('Доступно по подписке', 'info');
+  const handleVideoClick = (video: Video) => {
+    if (video.is_locked) {
+      setShowPaywall(true);
       return;
+    }
+    if (!video.video_url) {
+        showToast('Видео временно недоступно', 'error');
+        return;
     }
     setIsVideoLoading(true);
     setActiveVideo(video);
@@ -74,6 +47,14 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
     setActiveVideo(null);
     setIsVideoLoading(true);
   };
+
+  if (isLoading) {
+    return (
+        <div className="flex justify-center items-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
+        </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -109,23 +90,23 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
             >
               <div className="aspect-video relative overflow-hidden">
                 <Image
-                  src={vid.image}
+                  src={vid.image_url || IMAGES.studio[1]}
                   alt={vid.title}
                   storageKey={`video-thumb-${vid.id}`}
-                  className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${vid.isLocked ? 'grayscale-[0.5]' : ''}`}
+                  className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${vid.is_locked ? 'grayscale-[0.5]' : ''}`}
                 />
 
                 {/* Overlay */}
                 <div
-                  className={`absolute inset-0 transition-colors flex items-center justify-center ${vid.isLocked ? 'bg-black/40 backdrop-blur-[2px]' : 'bg-black/10 group-hover:bg-black/20'}`}
+                  className={`absolute inset-0 transition-colors flex items-center justify-center ${vid.is_locked ? 'bg-black/40 backdrop-blur-[2px]' : 'bg-black/10 group-hover:bg-black/20'}`}
                 >
                   <div
                     className={`
                         w-14 h-14 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all shadow-lg border border-white/20
-                        ${vid.isLocked ? 'bg-stone-900/60' : 'bg-white/30 group-hover:scale-110'}
+                        ${vid.is_locked ? 'bg-stone-900/60' : 'bg-white/30 group-hover:scale-110'}
                     `}
                   >
-                    {vid.isLocked ? (
+                    {vid.is_locked ? (
                       <Lock className="w-5 h-5" />
                     ) : (
                       <Play className="w-5 h-5 pl-0.5" />
@@ -148,7 +129,7 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span
-                    className={`text-[9px] uppercase tracking-wider px-2 py-1 rounded-md font-bold ${vid.isLocked ? 'bg-stone-100 text-stone-400' : 'bg-brand-mint/40 text-brand-green'}`}
+                    className={`text-[9px] uppercase tracking-wider px-2 py-1 rounded-md font-bold ${vid.is_locked ? 'bg-stone-100 text-stone-400' : 'bg-brand-mint/40 text-brand-green'}`}
                   >
                     {vid.level}
                   </span>
@@ -164,9 +145,9 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
 
                 <div className="mt-auto pt-4 border-t border-stone-50 flex justify-between items-center">
                   <p className="text-xs text-stone-400 font-medium">
-                    {vid.isLocked ? 'По подписке' : 'Бесплатно'}
+                    {vid.is_locked ? 'По подписке' : 'Бесплатно'}
                   </p>
-                  {!vid.isLocked && (
+                  {!vid.is_locked && (
                     <ChevronRight className="w-4 h-4 text-brand-green opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                   )}
                 </div>
@@ -188,7 +169,9 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
             <p className="text-white/60 text-sm mb-6 max-w-[200px] mx-auto leading-relaxed">
               Оформите подписку, чтобы получить неограниченный доступ к библиотеке.
             </p>
-            <button className="w-full py-4 bg-brand-green text-white rounded-xl text-xs uppercase font-bold tracking-wider hover:bg-brand-green/90 transition-all shadow-lg shadow-brand-green/20 hover:scale-[1.02] active:scale-95">
+            <button
+                onClick={() => setShowPaywall(true)}
+                className="w-full py-4 bg-brand-green text-white rounded-xl text-xs uppercase font-bold tracking-wider hover:bg-brand-green/90 transition-all shadow-lg shadow-brand-green/20 hover:scale-[1.02] active:scale-95">
               Подписаться
             </button>
           </div>
@@ -227,9 +210,9 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
               </div>
             )}
 
-            {activeVideo.videoUrl ? (
+            {activeVideo.video_url ? (
               <iframe
-                src={activeVideo.videoUrl}
+                src={activeVideo.video_url}
                 title={activeVideo.title}
                 className="w-full h-full relative z-20"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -253,6 +236,8 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
           </div>
         </div>
       )}
+
+      {showPaywall && <Paywall onClose={() => setShowPaywall(false)} />}
     </div>
   );
 };
