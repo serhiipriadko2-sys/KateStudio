@@ -136,6 +136,8 @@ Integration:** 30% → 90%
 - **[ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md)** — план действий
 - **[docs/COMPREHENSIVE_UPDATE_2026.md](./docs/COMPREHENSIVE_UPDATE_2026.md)** —
   комплексное обновление
+- **[docs/DEEP_RESEARCH_STACK_2026_02_19.md](./docs/DEEP_RESEARCH_STACK_2026_02_19.md)** —
+  глубокое исследование репозитория и roadmap доработки
 - **[docs/INDEX.md](./docs/INDEX.md)** — центральный индекс документации
 
 ---
