@@ -1,4 +1,4 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
+
 import { X, Shield, FileText } from 'lucide-react';
 import React from 'react';
 import { useScrollLock } from '../hooks/useScrollLock';

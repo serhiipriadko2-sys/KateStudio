@@ -1,4 +1,4 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
+
 import { IMAGES } from '@ksebe/shared';
 import { ArrowDown } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
