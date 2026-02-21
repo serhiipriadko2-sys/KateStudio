@@ -10,16 +10,11 @@ const DEFAULT_WELCOME_MSG: ChatMessage = {
 };
 
 interface UseChatSessionOptions {
-  allowClientFallback: boolean;
   isOpen: boolean;
   userLocation?: { lat: number; lng: number };
 }
 
-export const useChatSession = ({
-  allowClientFallback: _allowClientFallback,
-  isOpen,
-  userLocation,
-}: UseChatSessionOptions) => {
+export const useChatSession = ({ isOpen, userLocation }: UseChatSessionOptions) => {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     try {
       const saved = sessionStorage.getItem('ksebe_chat_history');

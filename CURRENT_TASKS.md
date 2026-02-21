@@ -80,6 +80,7 @@ _Обновлено: 16 февраля 2026 (после security audit и обн
 | 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ⏳     |
 | 19a | **APP ChatWidget: non-AI режим (без client live)** | `APP/components/ChatWidget/useChatSession.ts` | 30-60 мин | ✅     |
 | 19b | **Toolchain guardrail (Vite/Vitest baseline)** | `docs/TOOLCHAIN_UPGRADE_PLAYBOOK.md` + `scripts/verify_toolchain.mjs` | 30 мин | ✅     |
+| 19c | **Снять конфликт PR (CURRENT_TASKS + useChatSession)** | `CURRENT_TASKS.md`, `APP/components/ChatWidget/useChatSession.ts` | 15 мин | ✅     |
 
 **Total P1:** 1-2 недели **Testing Coverage:** ~20% → 50%+ **Payment
 Integration:** 30% → 90%
