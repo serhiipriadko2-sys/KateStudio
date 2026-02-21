@@ -22,6 +22,7 @@ import { Pricing } from './components/Pricing';
 // Retreats component available from './components/Retreats' when needed
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
+import { SEO } from './components/SEO';
 import { UserCabinet } from './components/UserCabinet';
 import { useAuth } from './context/AuthContext';
 import { registerServiceWorker } from './services/serviceWorker';
@@ -201,6 +202,7 @@ function App() {
 
   return (
     <>
+      <SEO />
       {loading && <Preloader onComplete={() => setLoading(false)} />}
 
       <div

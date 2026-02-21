@@ -27,6 +27,7 @@ import { dataService } from '../services/dataService';
 import { uploadFile, supabase } from '../services/supabaseClient';
 import { Booking } from '../types';
 // import { Subscription, SubscriptionPlan, SubscriptionStatus } from '../types'; // Временно скрыто вместе с AI-подпиской
+import { Achievements } from './Achievements';
 import { AICoach } from './AICoach';
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
@@ -819,6 +820,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   </>
                 )}
               </div>
+
+              <Achievements />
 
               <div className="flex flex-col items-center mb-8 relative">
                 <div

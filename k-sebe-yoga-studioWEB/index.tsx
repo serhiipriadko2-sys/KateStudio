@@ -2,6 +2,7 @@ import { ErrorBoundary } from '@ksebe/shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 
@@ -25,7 +26,9 @@ root.render(
     <ErrorBoundary>
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
-          <App />
+          <HelmetProvider>
+            <App />
+          </HelmetProvider>
         </QueryClientProvider>
       </AuthProvider>
     </ErrorBoundary>
