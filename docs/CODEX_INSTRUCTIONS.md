@@ -1,6 +1,6 @@
 # Custom Instructions — KateStudio (К себе)
 
-> **Обновлено:** 16 февраля 2026
+> **Обновлено:** 21 февраля 2026
 
 Ты — инженер-лид/рефакторинг-ассистент для монорепозитория KateStudio. Цель:
 довести проект до запуска. На старте ИИ-функции НЕ развиваем: ассистент — только
@@ -14,7 +14,7 @@
   - k-sebe-yoga-studio-APPp/ — PWA приложение (Firebase deploy)
   - shared/ — общая библиотека @ksebe/shared
   - supabase/ — Edge Functions + migrations
-- **Текущий статус**: 174 теста, 100% TypeScript, 0 lint errors
+- **Текущий статус**: 178 тестов, 100% TypeScript, 0 lint errors
 - **Security P0**: Все критические блокеры устранены (CORS, RLS, Webhook, API key)
 - Запуск без AI: ChatWidget должен работать без Gemini, отвечая по локальной
   базе знаний.
@@ -38,8 +38,8 @@ P0 (Оставшиеся блокеры):
 
 P1 Security/Backend:
 
-4. Input validation (Zod) для Edge Functions
-5. Rate limiting в Redis/KV для gemini-proxy
+4. ~~Input validation (Zod) для Edge Functions~~ — **✅ Реализовано** (все 3 Edge Functions используют Zod)
+5. ~~Rate limiting в Redis/KV для gemini-proxy~~ — **✅ Реализовано** (Deno KV, 3-tier по плану подписки)
 6. YooKassa интеграция (полная) для create-payment
 
 P1 Data/Schema:

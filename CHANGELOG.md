@@ -8,6 +8,20 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-02-21
+
+### Changed
+
+- **CLAUDE.md**: Updated to v3.2.0 — fixed scripts count (3→4), verified all
+  metrics against codebase
+- **AGENTS.md**: Updated to v2.1.0 — refreshed Codex priorities (P0 security
+  all resolved), updated date
+- **CURRENT_TASKS.md**: Marked Zod validation (#10) and Rate limiting (#11) as
+  completed (already implemented in gemini-proxy)
+- **docs/CODEX_INSTRUCTIONS.md**: Marked Zod and Rate limiting as resolved
+- **docs/INDEX.md**: Updated to v6.1.0 — added Zod/Rate limiting to completed
+  items, updated version
+
 ## [2.0.0] - 2026-02-16
 
 ### Added

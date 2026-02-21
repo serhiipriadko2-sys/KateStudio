@@ -4,7 +4,7 @@
 **PRODUCTION_READINESS_AUDIT.md** и **REMEDIATION_PLAN.md**). Фокус на задачах,
 которые можно брать в работу прямо сейчас.
 
-_Обновлено: 16 февраля 2026 (после security audit и обновления документации)._
+_Обновлено: 21 февраля 2026 (после полного аудита и обновления документации)._
 
 ---
 
@@ -68,14 +68,14 @@ _Обновлено: 16 февраля 2026 (после security audit и обн
 
 | #   | Задача                                    | Где менять                                    | Время     | Статус |
 | --- | ----------------------------------------- | --------------------------------------------- | --------- | ------ |
-| 10  | **Input validation (Zod)**                | `supabase/functions/gemini-proxy/index.ts`    | 2-3 часа  | ⏳     |
-| 11  | **Rate limiting в Redis/KV**              | `supabase/functions/gemini-proxy/index.ts`    | 3-4 часа  | ⏳     |
+| 10  | **Input validation (Zod)**                | `supabase/functions/gemini-proxy/index.ts`    | 2-3 часа  | ✅     |
+| 11  | **Rate limiting в Redis/KV**              | `supabase/functions/gemini-proxy/index.ts`    | 3-4 часа  | ✅     |
 | 12  | **Webhook signature verification (HMAC)** | `supabase/functions/payment-webhook/index.ts` | ✅        | ✅     |
 | 13  | **YooKassa интеграция (полная)**          | `supabase/functions/create-payment/index.ts`  | 1-2 дня   | ⏳     |
 | 14  | **Заменить 4 placeholder видео**          | `APP/components/VideoLibrary.tsx`             | 4-8 часов | ⏳     |
 | 15  | **Интегрировать расписание с Supabase**   | `APP/services/dataService.ts` + новая таблица | 1-2 дня   | ⏳     |
 | 16  | **Добавить database индексы**             | Новая миграция                                | 30 мин    | ⏳     |
-| 17  | **Повысить test coverage до 50%+**        | Все `__tests__/`                              | Ongoing   | ⏳     |
+| 17  | **Повысить test coverage до 50%+ (178 тестов)** | Все `__tests__/`                         | Ongoing   | ⏳     |
 | 18  | **Исправить nullable user_id**            | Миграция cleanup                              | 30 мин    | ⏳     |
 | 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ⏳     |
 
