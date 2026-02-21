@@ -1,6 +1,6 @@
 # AGENTS.md - Multi-Agent Architecture
 
-> **Last updated:** February 16, 2026 | **Version:** 2.0.0
+> **Last updated:** February 21, 2026 | **Version:** 2.1.0
 
 This repository is designed to work with multiple AI engineering agents. Each
 agent has its own instruction files and capabilities.
@@ -116,11 +116,11 @@ All Codex instructions are in
 
 ### Key Priorities
 
-1. **P0 Security**: Edge Function hardening, RLS policies, CORS
-2. **P0 Schema**: Missing database migrations (contacts, classes, bookings)
-3. **P1 Product**: ChatWidget KB mode (no Gemini dependency)
-4. **P1 Deploy**: Environment variable propagation
-5. **P2 Content**: Replace Unsplash placeholders, optimize images
+1. ~~**P0 Security**: Edge Function hardening, RLS policies, CORS~~ — **All resolved**
+2. **P0 Deploy**: Create production .env files, set GitHub Secrets
+3. **P1 Product**: ChatWidget KB mode (no Gemini dependency), YooKassa integration
+4. **P1 Testing**: Increase test coverage to 50%+ (currently ~20%, 178 tests)
+5. **P2 Content**: Replace APP Unsplash placeholders, optimize images (WebP)
 
 ### Working Protocol
 
