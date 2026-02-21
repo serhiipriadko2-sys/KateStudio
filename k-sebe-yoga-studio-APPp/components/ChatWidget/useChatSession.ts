@@ -1,8 +1,6 @@
-import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { useEffect, useRef, useState } from 'react';
 import { getGeminiChatResponse, generateSpeech } from '../../services/geminiService';
 import type { ChatMessage } from '../../types';
-import { createPcmBlob, decodeAudioData, decodeBase64 } from './liveAudio';
 
 const DEFAULT_WELCOME_MSG: ChatMessage = {
   role: 'model',
@@ -16,7 +14,7 @@ interface UseChatSessionOptions {
 }
 
 export const useChatSession = ({
-  allowClientFallback,
+  allowClientFallback: _allowClientFallback,
   isOpen,
   userLocation,
 }: UseChatSessionOptions) => {
@@ -38,22 +36,9 @@ export const useChatSession = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const inputAudioContextRef = useRef<AudioContext | null>(null);
-  const outputAudioContextRef = useRef<AudioContext | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const sessionPromiseRef = useRef<Promise<unknown> | null>(null);
-  const nextStartTimeRef = useRef<number>(0);
-  const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
-
   useEffect(() => {
     sessionStorage.setItem('ksebe_chat_history', JSON.stringify(messages));
   }, [messages]);
-
-  useEffect(() => {
-    return () => {
-      void stopLiveSession();
-    };
-  }, []);
 
   useEffect(() => {
     if (!isLiveMode) {
@@ -72,13 +57,20 @@ export const useChatSession = ({
     setMessages((prev) => [...prev, { role: 'user', text: message }]);
     setIsLoading(true);
 
-    const response = await getGeminiChatResponse(message, userLocation);
-
-    setMessages((prev) => [
-      ...prev,
-      { role: 'model', text: response.text, sources: response.sources },
-    ]);
-    setIsLoading(false);
+    try {
+      const response = await getGeminiChatResponse(message, userLocation);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'model', text: response.text, sources: response.sources },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'model', text: 'Не удалось обработать запрос. Попробуйте ещё раз.' },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const playTts = async (index: number, text: string) => {
@@ -104,152 +96,15 @@ export const useChatSession = ({
   };
 
   const startLiveSession = async () => {
-    await stopLiveSession();
-
     setIsLiveMode(true);
-    setLiveError(null);
-    if (!allowClientFallback) {
-      setLiveError('Live-сессия доступна только в режиме разработки.');
-      return;
-    }
-    if (!process.env.API_KEY) {
-      setLiveError('API ключ не найден');
-      return;
-    }
-
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-      type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext };
-      const AudioContextClass = window.AudioContext || (window as WebkitWindow).webkitAudioContext;
-      const inputCtx = new AudioContextClass!({
-        sampleRate: 16000,
-      });
-      const outputCtx = new AudioContextClass!({
-        sampleRate: 24000,
-      });
-
-      inputAudioContextRef.current = inputCtx;
-      outputAudioContextRef.current = outputCtx;
-
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaStreamRef.current = stream;
-
-      const inputSource = inputCtx.createMediaStreamSource(stream);
-      const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
-
-      const outputNode = outputCtx.createGain();
-      const muteNode = inputCtx.createGain();
-      muteNode.gain.value = 0;
-
-      const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
-          },
-          systemInstruction:
-            'You are a friendly yoga studio assistant named Katya. Keep responses concise and warm. Speak Russian.',
-        },
-        callbacks: {
-          onopen: () => {
-            setIsLiveConnected(true);
-
-            scriptProcessor.onaudioprocess = (e) => {
-              const inputData = e.inputBuffer.getChannelData(0);
-              const pcmBlob = createPcmBlob(inputData);
-              sessionPromise.then((session) => session.sendRealtimeInput({ media: pcmBlob }));
-            };
-
-            inputSource.connect(scriptProcessor);
-            scriptProcessor.connect(muteNode);
-            muteNode.connect(inputCtx.destination);
-          },
-          onmessage: async (message: LiveServerMessage) => {
-            const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (base64Audio && outputAudioContextRef.current) {
-              const ctx = outputAudioContextRef.current;
-              nextStartTimeRef.current = Math.max(nextStartTimeRef.current, ctx.currentTime);
-
-              const audioBuffer = await decodeAudioData(decodeBase64(base64Audio), ctx, 24000, 1);
-
-              const source = ctx.createBufferSource();
-              source.buffer = audioBuffer;
-              source.connect(outputNode);
-              outputNode.connect(ctx.destination);
-
-              source.addEventListener('ended', () => {
-                sourcesRef.current.delete(source);
-              });
-
-              source.start(nextStartTimeRef.current);
-              nextStartTimeRef.current += audioBuffer.duration;
-              sourcesRef.current.add(source);
-            }
-          },
-          onclose: () => {
-            setIsLiveConnected(false);
-          },
-          onerror: () => {
-            setLiveError('Ошибка соединения');
-          },
-        },
-      });
-
-      sessionPromiseRef.current = sessionPromise;
-    } catch (e) {
-      console.error('Failed to start live session', e);
-      setLiveError('Нет доступа к микрофону');
-    }
+    setIsLiveConnected(false);
+    setLiveError('Live-сессия временно недоступна в non-AI режиме.');
   };
 
   const stopLiveSession = async () => {
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
-    }
-    if (inputAudioContextRef.current) {
-      try {
-        await inputAudioContextRef.current.close();
-      } catch (error) {
-        console.warn('Failed to close input audio context', error);
-      }
-      inputAudioContextRef.current = null;
-    }
-    if (outputAudioContextRef.current) {
-      try {
-        await outputAudioContextRef.current.close();
-      } catch (error) {
-        console.warn('Failed to close output audio context', error);
-      }
-      outputAudioContextRef.current = null;
-    }
-    sourcesRef.current.forEach((s) => {
-      try {
-        s.stop();
-      } catch (error) {
-        console.warn('Failed to stop audio source', error);
-      }
-    });
-    sourcesRef.current.clear();
-
-    if (sessionPromiseRef.current) {
-      sessionPromiseRef.current.then((session) => {
-        const liveSession = session as { close?: () => void };
-        if (typeof liveSession?.close === 'function') {
-          try {
-            liveSession.close();
-          } catch (error) {
-            console.warn('Failed to close live session', error);
-          }
-        }
-      });
-      sessionPromiseRef.current = null;
-    }
-
     setIsLiveConnected(false);
     setIsLiveMode(false);
+    setLiveError(null);
   };
 
   return {

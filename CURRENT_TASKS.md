@@ -78,6 +78,7 @@ _Обновлено: 16 февраля 2026 (после security audit и обн
 | 17  | **Повысить test coverage до 50%+**        | Все `__tests__/`                              | Ongoing   | ⏳     |
 | 18  | **Исправить nullable user_id**            | Миграция cleanup                              | 30 мин    | ⏳     |
 | 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ⏳     |
+| 19a | **APP ChatWidget: non-AI режим (без client live)** | `APP/components/ChatWidget/useChatSession.ts` | 30-60 мин | ✅     |
 
 **Total P1:** 1-2 недели **Testing Coverage:** ~20% → 50%+ **Payment
 Integration:** 30% → 90%
@@ -136,6 +137,8 @@ Integration:** 30% → 90%
 - **[ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md)** — план действий
 - **[docs/COMPREHENSIVE_UPDATE_2026.md](./docs/COMPREHENSIVE_UPDATE_2026.md)** —
   комплексное обновление
+- **[docs/DEEP_RESEARCH_STACK_2026_02_19.md](./docs/DEEP_RESEARCH_STACK_2026_02_19.md)** —
+  глубокое исследование репозитория и roadmap доработки
 - **[docs/INDEX.md](./docs/INDEX.md)** — центральный индекс документации
 
 ---
