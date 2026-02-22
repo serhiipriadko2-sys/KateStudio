@@ -114,9 +114,7 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
           <select
             value={filter}
             onChange={(e) =>
-              setFilter(
-                e.target.value as any /* eslint-disable-line @typescript-eslint/no-explicit-any */
-              )
+              setFilter(e.target.value as 'all' | 'purchases' | 'classes')
             }
             className="px-2 py-1.5 text-xs rounded-lg border border-stone-200 bg-white"
           >
