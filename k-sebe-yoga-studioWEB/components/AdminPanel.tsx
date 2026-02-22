@@ -1,42 +1,43 @@
+import { useIsAdmin } from '@ksebe/shared';
 import {
-  X,
-  Settings,
-  Image as ImageIcon,
-  Palette,
-  Loader2,
-  Database,
-  CheckCircle,
   AlertCircle,
-  CalendarDays,
   BookOpen,
+  CalendarDays,
+  CheckCircle,
   ClipboardList,
-  MessageSquare,
-  LayoutDashboard,
+  Database,
   HelpCircle,
+  Image as ImageIcon,
+  LayoutDashboard,
+  Loader2,
+  MessageSquare,
+  Palette,
+  Settings,
+  X,
 } from 'lucide-react';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { AdminQueryProvider } from './admin/AdminQueryProvider';
-import { BookingsTab } from './admin/tabs/BookingsTab';
-import { ContactsTab } from './admin/tabs/ContactsTab';
-import { ContentTab } from './admin/tabs/ContentTab';
-import { DashboardTab } from './admin/tabs/DashboardTab';
-import { FAQTab } from './admin/tabs/FAQTab';
-import { ImagesTab } from './admin/tabs/ImagesTab';
-import { PricingTab } from './admin/tabs/PricingTab';
-import { ReviewsTab } from './admin/tabs/ReviewsTab';
-import { ScheduleTab } from './admin/tabs/ScheduleTab';
-import { SettingsTab } from './admin/tabs/SettingsTab';
+import {
+  BookingsTab,
+  ContactsTab,
+  ContentTab,
+  DashboardTab,
+  FAQTab,
+  ImagesTab,
+  PricingTab,
+  ReviewsTab,
+  ScheduleTab,
+  SettingsTab,
+} from './admin/tabs';
 import { AdminTab } from './admin/types';
 
 /* ═══════════════════════════════════════════════════════════
-   Login Screen
+   Login Screen (Embedded)
    ═══════════════════════════════════════════════════════════ */
 
-const LoginScreen: React.FC<{
-  onLogin: () => void;
-}> = ({ onLogin }) => {
+const LoginScreen: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,11 +46,12 @@ const LoginScreen: React.FC<{
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) return;
+
     setLoading(true);
     setError(null);
 
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     });
 
@@ -165,31 +167,12 @@ const NoSupabase = () => (
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<AdminTab | 'dashboard'>('dashboard');
-  const [session, setSession] = useState<boolean>(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const { notification, toast } = useToast();
 
+  // Use shared admin hook for robust checking
+  const { isAdmin, isLoading: isLoadingAdmin, user } = useIsAdmin();
+
   useScrollLock(isOpen);
-
-  useEffect(() => {
-    if (!supabase) {
-      setCheckingAuth(false);
-      return;
-    }
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(!!session);
-      setCheckingAuth(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(!!session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   if (!isOpen) return null;
 
@@ -199,7 +182,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   }
 
   // 2. Auth Gate
-  if (checkingAuth) {
+  if (isLoadingAdmin) {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
         <Loader2 className="w-10 h-10 animate-spin text-brand-green" />
@@ -207,7 +190,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     );
   }
 
-  if (!session) {
+  // If not logged in, show login screen
+  if (!user) {
     return (
       <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-stone-100 relative overflow-hidden">
@@ -217,7 +201,40 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           >
             <X className="w-5 h-5" />
           </button>
-          <LoginScreen onLogin={() => setSession(true)} />
+          {/* onLogin is handled by auth state listener in useIsAdmin */}
+          <LoginScreen onLogin={() => {}} />
+        </div>
+      </div>
+    );
+  }
+
+  // If logged in but not admin
+  if (!isAdmin) {
+    return (
+      <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
+        <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-stone-100 p-8 text-center relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold text-stone-800 mb-2">Доступ запрещен</h2>
+          <p className="text-stone-500 mb-6">
+            Ваш аккаунт ({user.email}) не обладает правами администратора.
+          </p>
+          <button
+            onClick={async () => {
+                await supabase?.auth.signOut();
+                // State update will trigger re-render showing login screen
+            }}
+            className="px-6 py-2 border border-stone-200 rounded-xl text-stone-600 hover:bg-stone-50 transition-colors"
+          >
+            Выйти из аккаунта
+          </button>
         </div>
       </div>
     );
