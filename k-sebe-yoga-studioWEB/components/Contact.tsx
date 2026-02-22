@@ -1,290 +1,225 @@
-import {
-  Phone,
-  MapPin,
-  Navigation,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
-  MessageCircle,
-} from 'lucide-react';
+import { Mail, MapPin, Phone, Send, Navigation, MessageCircle } from 'lucide-react';
 import React, { useState } from 'react';
+import { useStudioContacts } from '../hooks/useStudioContacts';
 import { supabase } from '../services/supabase';
 import { FadeIn } from './FadeIn';
 
 export const Contact: React.FC = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    message: '',
-  });
+  const [formData, setFormData] = useState({ name: '', phone: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [touched, setTouched] = useState<{ name?: boolean; phone?: boolean }>({});
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length === 0) return '';
-    if (numbers.length <= 1) return `+7 (${numbers}`;
-    if (numbers.length <= 4) return `+7 (${numbers.slice(1)}`;
-    if (numbers.length <= 7) return `+7 (${numbers.slice(1, 4)}) ${numbers.slice(4)}`;
-    if (numbers.length <= 9)
-      return `+7 (${numbers.slice(1, 4)}) ${numbers.slice(4, 7)}-${numbers.slice(7)}`;
-    return `+7 (${numbers.slice(1, 4)}) ${numbers.slice(4, 7)}-${numbers.slice(7, 9)}-${numbers.slice(9, 11)}`;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    if (name === 'phone') {
-      const raw = value.replace(/\D/g, '');
-      if (raw.length === 0) {
-        setFormData((prev) => ({ ...prev, phone: '' }));
-      } else {
-        setFormData((prev) => ({ ...prev, phone: formatPhoneNumber(value) }));
-      }
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setTouched((prev) => ({ ...prev, [e.target.name]: true }));
-  };
-
-  const isPhoneValid = formData.phone.length >= 16; // +7 (999) 000-00-00 is 18 chars, but allow relaxed
-  const isNameValid = formData.name.trim().length > 1;
+  const { data: contacts } = useStudioContacts();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isPhoneValid || !isNameValid) {
-      setTouched({ name: true, phone: true });
-      return;
-    }
+    if (!formData.name || !formData.phone) return;
 
     setStatus('loading');
-    setErrorMessage(null);
-
     try {
-      if (!supabase) {
-        setStatus('error');
-        setErrorMessage('Онлайн-форма недоступна: сервис не настроен.');
-        return;
-      }
+      if (!supabase) throw new Error('Supabase client not initialized');
       const { error } = await supabase.from('contacts').insert([
         {
           name: formData.name,
           phone: formData.phone,
           message: formData.message,
-          created_at: new Date().toISOString(),
+          status: 'new',
         },
       ]);
 
       if (error) throw error;
-
       setStatus('success');
       setFormData({ name: '', phone: '', message: '' });
-      setTouched({});
-
-      setTimeout(() => setStatus('idle'), 5000);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      setErrorMessage('Ошибка сервера. Попробуйте позже.');
+    } catch (err) {
+      console.error(err);
       setStatus('error');
     }
   };
 
+  const mapUrl = contacts?.map_url || "https://yandex.ru/map-widget/v1/?ll=37.121500%2C56.742200&mode=search&oid=7167334007&ol=biz&z=17";
+
   return (
-    <section id="contact" className="py-24 px-6 max-w-7xl mx-auto mb-10">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Contact Form */}
-        <div className="bg-[#1a1a1a] text-white rounded-[3rem] p-8 md:p-16 relative overflow-hidden flex flex-col justify-center shadow-2xl">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-brand-green/20 rounded-full blur-[100px] pointer-events-none"></div>
+    <section id="contacts" className="py-20 bg-white relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent" />
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
+        <FadeIn>
+          <div className="text-center mb-16">
+            <span className="text-brand-green uppercase tracking-widest text-xs font-bold mb-3 block">
+              Связь
+            </span>
+            <h2 className="text-3xl md:text-4xl font-serif text-brand-dark mb-6">
+              Напишите нам
+            </h2>
+            <p className="text-stone-500 max-w-lg mx-auto leading-relaxed">
+              Мы всегда рады ответить на ваши вопросы и помочь выбрать подходящее направление.
+            </p>
+          </div>
+        </FadeIn>
 
-          <div className="relative z-10">
-            <FadeIn>
-              <h2 className="text-3xl md:text-5xl font-serif mb-6">Напишите нам</h2>
-              <p className="text-white/50 mb-10 font-light text-lg">
-                Оставьте заявку, и мы перезвоним в течение 15 минут
-              </p>
-            </FadeIn>
-
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <FadeIn delay={100} fullWidth>
-                <div className="relative group">
-                  <label htmlFor="name" className="sr-only">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+          {/* Form */}
+          <div className="relative">
+            <div className="absolute -inset-4 bg-stone-50 rounded-[2rem] -z-10 transform rotate-1"></div>
+            <FadeIn delay={0.1} className="bg-white p-8 rounded-[1.5rem] shadow-sm border border-stone-100 relative">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">
                     Ваше имя
                   </label>
                   <input
-                    id="name"
                     type="text"
-                    name="name"
+                    id="name"
                     value={formData.name}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="Ваше имя"
-                    className={`w-full bg-transparent border-b px-4 py-4 focus:outline-none placeholder:text-white/30 transition-all text-lg focus:bg-white/5 rounded-t-lg
-                        ${touched.name && !isNameValid ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/20 focus:border-brand-green'}
-                    `}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full bg-stone-50 border-transparent focus:bg-white focus:border-brand-green/30 rounded-xl px-4 py-3 outline-none transition-all placeholder:text-stone-300"
+                    placeholder="Как к вам обращаться?"
+                    required
                   />
-                  {touched.name && !isNameValid && (
-                    <span className="absolute right-4 top-4 text-rose-500">
-                      <AlertCircle className="w-5 h-5" />
-                    </span>
-                  )}
                 </div>
-              </FadeIn>
-              <FadeIn delay={200} fullWidth>
-                <div className="relative group">
-                  <label htmlFor="phone" className="sr-only">
+                <div>
+                  <label htmlFor="phone" className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">
                     Телефон
                   </label>
                   <input
-                    id="phone"
                     type="tel"
-                    name="phone"
+                    id="phone"
                     value={formData.phone}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full bg-stone-50 border-transparent focus:bg-white focus:border-brand-green/30 rounded-xl px-4 py-3 outline-none transition-all placeholder:text-stone-300"
                     placeholder="+7 (999) 000-00-00"
-                    maxLength={18}
-                    className={`w-full bg-transparent border-b px-4 py-4 focus:outline-none placeholder:text-white/30 transition-all text-lg focus:bg-white/5 rounded-t-lg
-                        ${touched.phone && !isPhoneValid ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/20 focus:border-brand-green'}
-                    `}
+                    required
                   />
-                  {touched.phone && !isPhoneValid && (
-                    <span className="absolute right-4 top-4 text-rose-500">
-                      <AlertCircle className="w-5 h-5" />
-                    </span>
-                  )}
                 </div>
-              </FadeIn>
-              <FadeIn delay={300} fullWidth>
-                <div className="relative">
-                  <label htmlFor="message" className="sr-only">
-                    Ваш вопрос
+                <div>
+                  <label htmlFor="message" className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">
+                    Сообщение
                   </label>
                   <textarea
                     id="message"
-                    rows={2}
-                    name="message"
+                    rows={4}
                     value={formData.message}
-                    onChange={handleChange}
-                    placeholder="Ваш вопрос"
-                    className="w-full bg-transparent border-b border-white/20 text-white px-4 py-4 focus:outline-none focus:border-brand-green placeholder:text-white/30 transition-all resize-none text-lg focus:bg-white/5 rounded-t-lg"
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full bg-stone-50 border-transparent focus:bg-white focus:border-brand-green/30 rounded-xl px-4 py-3 outline-none transition-all resize-none placeholder:text-stone-300"
+                    placeholder="Ваш вопрос или пожелание..."
                   />
                 </div>
-              </FadeIn>
-              <FadeIn delay={400} fullWidth>
+
                 <button
+                  type="submit"
                   disabled={status === 'loading' || status === 'success'}
-                  className={`w-full font-medium py-5 rounded-full mt-8 transition-all shadow-lg tracking-widest text-xs uppercase flex items-center justify-center gap-2
-                    ${
-                      status === 'success'
-                        ? 'bg-green-500 text-white cursor-default'
-                        : status === 'error'
-                          ? 'bg-rose-500 text-white'
-                          : 'bg-white text-brand-dark hover:bg-brand-mint hover:shadow-white/10 active:scale-95'
-                    }
-                  `}
+                  className={`w-full py-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                    status === 'success'
+                      ? 'bg-green-500 text-white cursor-default'
+                      : 'bg-brand-dark text-white hover:bg-brand-green hover:shadow-lg hover:-translate-y-0.5'
+                  }`}
                 >
-                  {status === 'loading' && <Loader2 className="w-5 h-5 animate-spin" />}
-                  {status === 'success' && (
+                  {status === 'loading' ? (
+                    'Отправка...'
+                  ) : status === 'success' ? (
+                    'Отправлено!'
+                  ) : (
                     <>
-                      <CheckCircle className="w-5 h-5" /> Отправлено
+                      Отправить <Send className="w-4 h-4" />
                     </>
                   )}
-                  {status === 'error' && (
-                    <>
-                      <AlertCircle className="w-5 h-5" /> Ошибка. Повторить?
-                    </>
-                  )}
-                  {status === 'idle' && 'Отправить'}
                 </button>
                 {status === 'error' && (
-                  <p className="mt-3 text-xs text-rose-300 text-center">
-                    {errorMessage || 'Ошибка сервера. Попробуйте позже.'}
-                  </p>
+                  <p className="text-center text-rose-500 text-sm">Ошибка отправки. Попробуйте позже.</p>
                 )}
-                <p className="text-[10px] text-white/20 text-center px-4 pt-4">
-                  Нажимая кнопку, вы соглашаетесь с условиями обработки данных
-                </p>
-              </FadeIn>
-            </form>
+              </form>
+            </FadeIn>
 
             {/* Contact Links */}
-            <FadeIn delay={500}>
-              <div className="flex flex-col sm:flex-row gap-4 mt-10 pt-8 border-t border-white/10">
-                <a
-                  href="tel:+79099468972"
-                  className="flex items-center gap-3 text-white/70 hover:text-brand-green transition-colors group"
-                >
-                  <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-brand-green/20 transition-colors">
-                    <Phone className="w-4 h-4" />
-                  </div>
-                  <span className="text-sm">+7 (909) 946-89-72</span>
-                </a>
-                <a
-                  href="https://t.me/k_sebe_dubna"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-3 text-white/70 hover:text-brand-green transition-colors group"
-                >
-                  <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-brand-green/20 transition-colors">
-                    <MessageCircle className="w-4 h-4" />
-                  </div>
-                  <span className="text-sm">Telegram</span>
-                </a>
-              </div>
-            </FadeIn>
+            <div className="mt-10 space-y-4">
+              <FadeIn delay={0.2}>
+                <p className="text-center text-stone-400 text-sm mb-6">Или свяжитесь напрямую:</p>
+                <div className="flex flex-wrap justify-center gap-4">
+                   {contacts?.phone && (
+                    <a
+                      href={`tel:${contacts.phone}`}
+                      className="flex items-center gap-3 text-stone-600 hover:text-brand-green transition-colors group bg-white border border-stone-100 px-5 py-3 rounded-xl shadow-sm hover:shadow-md"
+                    >
+                      <div className="w-8 h-8 bg-stone-100 rounded-full flex items-center justify-center group-hover:bg-brand-green/20 transition-colors text-stone-400 group-hover:text-brand-green">
+                        <Phone className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium text-sm">{contacts.phone}</span>
+                    </a>
+                   )}
+
+                   {contacts?.social_telegram && (
+                    <a
+                      href={contacts.social_telegram}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-3 text-stone-600 hover:text-brand-green transition-colors group bg-white border border-stone-100 px-5 py-3 rounded-xl shadow-sm hover:shadow-md"
+                    >
+                      <div className="w-8 h-8 bg-stone-100 rounded-full flex items-center justify-center group-hover:bg-brand-green/20 transition-colors text-stone-400 group-hover:text-brand-green">
+                        <MessageCircle className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium text-sm">Telegram</span>
+                    </a>
+                   )}
+
+                   {contacts?.email && (
+                    <a
+                      href={`mailto:${contacts.email}`}
+                      className="flex items-center gap-3 text-stone-600 hover:text-brand-green transition-colors group bg-white border border-stone-100 px-5 py-3 rounded-xl shadow-sm hover:shadow-md"
+                    >
+                      <div className="w-8 h-8 bg-stone-100 rounded-full flex items-center justify-center group-hover:bg-brand-green/20 transition-colors text-stone-400 group-hover:text-brand-green">
+                        <Mail className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium text-sm">{contacts.email}</span>
+                    </a>
+                   )}
+                </div>
+              </FadeIn>
+            </div>
           </div>
-        </div>
 
-        {/* Map & Info */}
-        <div className="flex flex-col gap-6">
-          {/* Map Card */}
-          <div className="flex-1 bg-stone-100 rounded-[3rem] overflow-hidden relative group min-h-[500px]">
-            <FadeIn className="h-full w-full">
-              {/* Яндекс.Карты iframe */}
-              <iframe
-                src="https://yandex.ru/map-widget/v1/?ll=37.121500%2C56.742200&mode=search&oid=7167334007&ol=biz&z=17"
-                className="w-full h-full border-0"
-                allowFullScreen
-                style={{ position: 'relative' }}
-                title="Яндекс.Карты - Студия К Себе"
-              />
+          {/* Map & Info */}
+          <div className="flex flex-col gap-6 h-full">
+            {/* Map Card */}
+            <div className="flex-1 bg-stone-100 rounded-[2rem] overflow-hidden relative group min-h-[400px] lg:h-full">
+              <FadeIn className="h-full w-full absolute inset-0">
+                {/* iframe */}
+                <iframe
+                  src={mapUrl}
+                  className="w-full h-full border-0"
+                  allowFullScreen
+                  title="Карта студии"
+                  loading="lazy"
+                />
 
-              {/* Затемнение при ховере */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none group-hover:from-black/40 transition-all"></div>
-
-              {/* Карточка с адресом внизу */}
-              <div className="absolute bottom-6 left-6 right-6 z-10">
-                <a
-                  href="https://yandex.ru/navi/org/k_sebe/7167334007"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block bg-white rounded-2xl p-5 shadow-2xl hover:shadow-3xl hover:scale-[1.02] transition-all group/card"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="w-10 h-10 bg-brand-green/10 rounded-full flex items-center justify-center shrink-0">
-                        <MapPin className="w-5 h-5 text-brand-green" />
+                {/* Info Card Overlay */}
+                <div className="absolute bottom-6 left-6 right-6 z-10">
+                  <div
+                    className="bg-white/90 backdrop-blur-md rounded-2xl p-5 shadow-lg border border-white/50"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="w-10 h-10 bg-brand-green/10 rounded-full flex items-center justify-center shrink-0">
+                          <MapPin className="w-5 h-5 text-brand-green" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-stone-400 uppercase tracking-wider font-bold mb-0.5">
+                            Студия К Себе
+                          </p>
+                          <p className="text-brand-text font-medium text-sm md:text-base leading-tight">
+                            {contacts?.address || "г. Дубна, ул. Станционная 5Б"}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-stone-400 uppercase tracking-wider font-bold mb-0.5">
-                          Студия К Себе
-                        </p>
-                        <p className="text-brand-text font-serif text-lg font-medium">
-                          Станционная ул., 5Б
-                        </p>
-                        <p className="text-xs text-stone-500 mt-0.5">г. Дубна, этаж 2</p>
-                      </div>
-                    </div>
-                    <div className="w-11 h-11 bg-brand-green text-white rounded-full flex items-center justify-center group-hover/card:scale-110 group-hover/card:rotate-12 transition-all shadow-md">
-                      <Navigation className="w-5 h-5" />
+                      <a
+                        href={mapUrl} // Or a direct link to Yandex Maps if possible, but mapUrl is embed
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center hover:scale-110 hover:rotate-12 transition-all shadow-md shrink-0"
+                      >
+                        <Navigation className="w-4 h-4" />
+                      </a>
                     </div>
                   </div>
-                </a>
-              </div>
-            </FadeIn>
+                </div>
+              </FadeIn>
+            </div>
           </div>
         </div>
       </div>

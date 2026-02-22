@@ -23,41 +23,37 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { dataService } from '../services/dataService';
-// import { subscriptionService } from '../services/subscriptionService'; // Временно скрыто вместе с AI-подпиской
+import { subscriptionService } from '../services/subscriptionService';
 import { uploadFile, supabase } from '../services/supabaseClient';
-import { Booking } from '../types';
-// import { Subscription, SubscriptionPlan, SubscriptionStatus } from '../types'; // Временно скрыто вместе с AI-подпиской
+import { Booking, Subscription, SubscriptionPlan, SubscriptionStatus } from '../types';
+import { Achievements } from './Achievements';
 import { AICoach } from './AICoach';
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
-// FadeIn available from './FadeIn' when needed
 import { Image } from './Image';
 import { Logo } from './Logo';
 import { Paywall } from './Paywall';
 import { VideoLibrary } from './VideoLibrary';
-
-interface Subscription {
-  plan: 'free' | 'premium' | 'vip';
-  status: 'active' | 'canceled' | 'expired';
-  current_period_end?: string;
-}
 
 interface DashboardProps {
   onBack: () => void;
   initialTab?: 'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
 }
 
-const subscriptionPlanLabels: Record<string, string> = {
+const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
+  active: 'Активна',
+  pending: 'Ожидает оплаты',
+  canceled: 'Отменена',
+  past_due: 'Проблема оплаты',
+  trialing: 'Пробный период',
+};
+
+const subscriptionPlanLabels: Record<SubscriptionPlan, string> = {
   free: 'Free',
   premium: 'Premium',
   vip: 'VIP',
 };
-const subscriptionStatusLabels: Record<string, string> = {
-  active: 'Активна',
-  pending: 'Ожидает оплаты',
-  canceled: 'Отменена',
-  expired: 'Истекла',
-};
+
 export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'overview' }) => {
   const {
     user,
@@ -72,38 +68,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     pendingPhone,
     isSupabaseConfigured,
   } = useAuth();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
-  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
-
-  const { showToast } = useToast();
-
-  useEffect(() => {
-    if (user?.id) {
-      setSubscriptionLoading(true);
-      supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-        .then(({ data }) => {
-          if (data) setSubscription(data);
-          setSubscriptionLoading(false);
-        });
-    }
-  }, [user?.id]);
-
   const [activeTab, setActiveTab] = useState<
     'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev'
   >(initialTab);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedQr, setExpandedQr] = useState<string | null>(null);
-  // Временно скрыто вместе с AI-подпиской
-  // const [subscription, setSubscription] = useState<Subscription | null>(null);
-  // const [subscriptionLoading, setSubscriptionLoading] = useState(false);
-  // const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
+
+  // Subscription State
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   // Profile Edit State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -117,9 +93,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const [loginPhone, setLoginPhone] = useState('');
   const [otpCode, setOtpCode] = useState('');
 
+  const { showToast } = useToast();
+
   const fetchBookings = useCallback(async () => {
     if (authStatus === 'authenticated' && user?.phone) {
-      // Only show loading on initial fetch if list is empty
       if (bookings.length === 0) setLoading(true);
       const allBookings = await dataService.getBookings(user);
       setBookings(allBookings.sort((a, b) => b.timestamp - a.timestamp));
@@ -127,35 +104,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   }, [authStatus, user, bookings.length]);
 
-  // Временно скрыто вместе с AI-подпиской
-  // const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
-  //   active: 'Активна',
-  //   pending: 'Ожидает оплаты',
-  //   canceled: 'Отменена',
-  //   past_due: 'Проблема оплаты',
-  //   trialing: 'Пробный период',
-  // };
-
-  // const subscriptionPlanLabels: Record<SubscriptionPlan, string> = {
-  //   free: 'Free',
-  //   premium: 'Premium',
-  //   vip: 'VIP',
-  // };
-
-  // const loadSubscription = useCallback(async () => {
-  //   if (authStatus !== 'authenticated' || !isSupabaseConfigured) {
-  //     setSubscription(null);
-  //     return;
-  //   }
-  //   setSubscriptionLoading(true);
-  //   const current = await subscriptionService.getCurrentSubscription();
-  //   setSubscription(current);
-  //   setSubscriptionLoading(false);
-  // }, [authStatus, isSupabaseConfigured]);
+  const loadSubscription = useCallback(async () => {
+    if (authStatus !== 'authenticated' || !isSupabaseConfigured) {
+      setSubscription(null);
+      return;
+    }
+    setSubscriptionLoading(true);
+    const current = await subscriptionService.getCurrentSubscription();
+    setSubscription(current);
+    setSubscriptionLoading(false);
+  }, [authStatus, isSupabaseConfigured]);
 
   // Initial Load & Real-time Subscription
   useEffect(() => {
     fetchBookings();
+    loadSubscription();
 
     if (authStatus === 'authenticated' && user?.id) {
       const channel = supabase
@@ -169,7 +132,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            // Refresh data on any change (INSERT/DELETE)
             fetchBookings();
             if (payload.eventType === 'INSERT') showToast('Новая запись добавлена!', 'success');
           }
@@ -180,26 +142,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         supabase.removeChannel(channel);
       };
     }
-  }, [authStatus, user?.id, fetchBookings, showToast]);
-
-  // Временно скрыто вместе с AI-подпиской
-  // useEffect(() => {
-  //   loadSubscription();
-  // }, [loadSubscription]);
+  }, [authStatus, user?.id, fetchBookings, loadSubscription, showToast]);
 
   const nextBooking = bookings.length > 0 ? bookings[0] : null;
-
-  const handleCancelSubscription = async () => {
-    setSubscriptionActionLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      showToast('Для отмены подписки напишите в поддержку', 'info');
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSubscriptionActionLoading(false);
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -207,49 +152,53 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     showToast('Вы вышли из системы', 'info');
   };
 
-  // Временно скрыто вместе с AI-подпиской
-  // const handleSubscribePlan = async (plan: SubscriptionPlan) => {
-  //   if (!isSupabaseConfigured) {
-  //     showToast('Подписки доступны после настройки Supabase', 'info');
-  //     return;
-  //   }
-  //   if (authStatus !== 'authenticated') {
-  //     showToast('Войдите, чтобы оформить подписку', 'info');
-  //     return;
-  //   }
-  //   setSubscriptionActionLoading(true);
-  //   try {
-  //     const result = await subscriptionService.createPayment(plan, window.location.href);
-  //     setSubscription(result.subscription);
-  //     if (result.paymentUrl) {
-  //       window.location.href = result.paymentUrl;
-  //     } else if (result.message) {
-  //       showToast(result.message, 'info');
-  //     } else {
-  //       showToast('Ссылка на оплату недоступна', 'info');
-  //     }
-  //   } catch (e) {
-  //     console.error('Subscription payment error', e);
-  //     showToast('Не удалось начать оплату подписки', 'error');
-  //   } finally {
-  //     setSubscriptionActionLoading(false);
-  //   }
-  // };
+  const handleSubscribePlan = async (plan: SubscriptionPlan) => {
+    if (!isSupabaseConfigured) {
+      showToast('Подписки доступны после настройки Supabase', 'info');
+      return;
+    }
+    if (authStatus !== 'authenticated') {
+      showToast('Войдите, чтобы оформить подписку', 'info');
+      return;
+    }
+    setSubscriptionActionLoading(true);
+    try {
+      const result = await subscriptionService.createPayment(plan, window.location.href);
+      if (result.subscription) setSubscription(result.subscription);
 
-  // const handleCancelSubscription = async () => {
-  //   setSubscriptionActionLoading(true);
-  //   try {
-  //     const success = await subscriptionService.cancelSubscription();
-  //     if (success) {
-  //       showToast('Подписка отменена', 'success');
-  //       await loadSubscription();
-  //     } else {
-  //       showToast('Не удалось отменить подписку', 'error');
-  //     }
-  //   } finally {
-  //     setSubscriptionActionLoading(false);
-  //   }
-  // };
+      if (result.paymentUrl) {
+        window.location.href = result.paymentUrl;
+      } else if (result.message) {
+        showToast(result.message, 'info');
+      } else {
+        showToast('Ссылка на оплату недоступна', 'info');
+      }
+    } catch (e) {
+      console.error('Subscription payment error', e);
+      showToast('Не удалось начать оплату подписки', 'error');
+    } finally {
+      setSubscriptionActionLoading(false);
+      setShowPaywall(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    setSubscriptionActionLoading(true);
+    try {
+      const success = await subscriptionService.cancelSubscription();
+      if (success) {
+        showToast('Подписка отменена', 'success');
+        await loadSubscription();
+      } else {
+        showToast('Не удалось отменить подписку', 'error');
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Ошибка при отмене', 'error');
+    } finally {
+      setSubscriptionActionLoading(false);
+    }
+  };
 
   const handleCancelBooking = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -257,7 +206,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
     const success = await dataService.cancelBooking(id);
     if (success) {
-      // Optimistic update, though Real-time will also catch it
       setBookings((prev) => prev.filter((b) => b.id !== id));
       showToast('Запись отменена', 'success');
     } else {
@@ -308,7 +256,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           showToast('Не удалось сохранить ссылку', 'error');
         }
       } else {
-        // Fallback to local base64 if cloud fails
         const reader = new FileReader();
         reader.onloadend = async () => {
           const base64 = reader.result as string;
@@ -339,7 +286,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const userName = user?.name || 'Гость';
   const userCity = user?.city || 'Москва';
 
-  // If in Dev mode, render full screen dev component
   if (activeTab === 'dev') {
     return <DeveloperSettings onBack={() => setActiveTab('profile')} />;
   }
@@ -411,7 +357,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               </header>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-                {/* Card 1 */}
+                {/* Stats Card */}
                 <div
                   className="bg-white p-6 rounded-[2rem] shadow-sm border border-stone-100 flex flex-col justify-between h-40 md:h-48 relative overflow-hidden group animate-in zoom-in-95 duration-500 fill-mode-backwards"
                   style={{ animationDelay: '100ms' }}
@@ -428,7 +374,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   </div>
                 </div>
 
-                {/* Card 2 */}
+                {/* Status Card */}
                 <div
                   className="bg-brand-dark p-6 rounded-[2rem] shadow-xl shadow-stone-200 flex flex-col justify-between h-40 md:h-48 text-white relative overflow-hidden animate-in zoom-in-95 duration-500 fill-mode-backwards"
                   style={{ animationDelay: '200ms' }}
@@ -438,14 +384,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                     <Trophy className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-2xl font-serif mb-1">Практик</p>
+                    <p className="text-2xl font-serif mb-1">
+                      {subscription && subscription.plan !== 'free' ? 'Премиум' : 'Практик'}
+                    </p>
                     <p className="text-xs text-white/50 font-medium uppercase tracking-wider">
                       Ваш статус
                     </p>
                   </div>
                 </div>
 
-                {/* Card 3 (Next Class) */}
+                {/* Next Class Card */}
                 <div
                   className="bg-brand-green p-6 rounded-[2rem] shadow-xl shadow-brand-green/20 flex flex-col justify-between h-40 md:h-48 text-white relative overflow-hidden cursor-pointer group hover:scale-[1.02] transition-transform animate-in zoom-in-95 duration-500 fill-mode-backwards"
                   style={{ animationDelay: '300ms' }}
@@ -548,7 +496,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
                           {/* Right: QR Stub */}
                           <div className="relative w-full md:w-32 bg-stone-50 flex items-center justify-center p-4 border-t md:border-t-0 md:border-l border-dashed border-stone-300">
-                            {/* Cutout circles */}
                             <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8F9FA] rounded-full hidden md:block"></div>
                             <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8F9FA] rounded-full hidden md:block"></div>
 
@@ -585,7 +532,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             </div>
           )}
 
-          {/* ... Other Tabs remain identical ... */}
           {activeTab === 'videos' && (
             <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
               <header className="mb-8">
@@ -735,7 +681,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 </div>
               )}
 
-              {/* Временно скрыто: AI-подписка */}
+              {/* AI Subscription Status */}
               <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -819,6 +765,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   </>
                 )}
               </div>
+
+              <Achievements />
 
               <div className="flex flex-col items-center mb-8 relative">
                 <div
@@ -943,7 +891,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         </div>
       </main>
 
-      {showPaywall && <Paywall onClose={() => setShowPaywall(false)} />}
+      {showPaywall && (
+        <Paywall
+          onClose={() => setShowPaywall(false)}
+          onSubscribe={(plan) => handleSubscribePlan(plan as SubscriptionPlan)}
+        />
+      )}
+
       {/* QR Modal */}
       {expandedQr && (
         <div
