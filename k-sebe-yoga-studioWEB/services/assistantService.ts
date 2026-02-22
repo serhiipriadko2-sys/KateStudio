@@ -1,5 +1,1 @@
-import { getKnowledgeBaseResponse, AssistantResponse } from '@ksebe/shared';
-
-export const getAssistantResponse = (message: string): AssistantResponse => {
-  return getKnowledgeBaseResponse(message);
-};
+export { getAssistantResponse } from '@ksebe/shared';

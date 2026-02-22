@@ -1,5 +1,11 @@
 name: CI
 
+# Required GitHub Secrets (Settings → Secrets and variables → Actions):
+#   VITE_SUPABASE_URL      — Supabase project URL (https://xxx.supabase.co)
+#   VITE_SUPABASE_ANON_KEY — Supabase anon/public key (safe for client)
+# Without these secrets, builds succeed but Supabase features
+# will be disabled at runtime (graceful degradation).
+
 on:
   push:
     branches: [main, develop]

@@ -55,12 +55,15 @@ const LoginScreen: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
       password,
     });
 
-    if (error) {
-      setError(error.message);
-    } else {
-      onLogin();
+    if (authError) {
+      setError(
+        authError.message.includes('Invalid login')
+          ? 'Неверный email или пароль.'
+          : 'Ошибка входа. Попробуйте позже.'
+      );
+      setLoading(false);
     }
-    setLoading(false);
+    // On success: keep loading=true — onAuthStateChange will transition the state
   };
 
   return (
@@ -110,6 +113,43 @@ const LoginScreen: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Войти'}
         </button>
       </form>
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Access Denied Screen
+   ═══════════════════════════════════════════════════════════ */
+
+const AccessDenied: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const handleLogout = async () => {
+    await supabase?.auth.signOut();
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center">
+      <div className="w-16 h-16 bg-rose-100 text-rose-500 rounded-2xl flex items-center justify-center mb-6">
+        <ShieldOff className="w-8 h-8" />
+      </div>
+      <h2 className="text-2xl font-serif text-brand-dark mb-2">Доступ запрещён</h2>
+      <p className="text-stone-500 mb-8 max-w-xs">
+        У вашего аккаунта нет прав администратора. Обратитесь к владельцу студии для получения
+        доступа.
+      </p>
+      <div className="flex gap-3">
+        <button
+          onClick={handleLogout}
+          className="px-6 py-3 bg-stone-100 text-stone-600 rounded-xl font-medium hover:bg-stone-200 transition-colors"
+        >
+          Выйти
+        </button>
+        <button
+          onClick={onClose}
+          className="px-6 py-3 bg-brand-green text-white rounded-xl font-medium hover:bg-brand-green/90 transition-colors"
+        >
+          Закрыть
+        </button>
+      </div>
     </div>
   );
 };

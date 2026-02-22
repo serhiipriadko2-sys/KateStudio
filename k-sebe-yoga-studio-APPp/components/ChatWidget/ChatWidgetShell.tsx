@@ -21,7 +21,6 @@ interface ChatWidgetProps {
 }
 
 export const ChatWidgetShell: React.FC<ChatWidgetProps> = ({ hidden = false }) => {
-  const allowClientFallback = import.meta.env.DEV;
   const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [consents, setConsents] = useState<ConsentState>(() => loadConsents());
@@ -48,7 +47,6 @@ export const ChatWidgetShell: React.FC<ChatWidgetProps> = ({ hidden = false }) =
     startLiveSession,
     stopLiveSession,
   } = useChatSession({
-    allowClientFallback,
     isOpen,
     userLocation,
   });
