@@ -13,6 +13,7 @@ import {
   MessageSquare,
   LayoutDashboard,
   HelpCircle,
+  ShieldOff,
 } from 'lucide-react';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useScrollLock } from '../hooks/useScrollLock';
@@ -31,12 +32,16 @@ import { SettingsTab } from './admin/tabs/SettingsTab';
 import { AdminTab } from './admin/types';
 
 /* ═══════════════════════════════════════════════════════════
+   Auth State Machine
+   ═══════════════════════════════════════════════════════════ */
+
+type AdminAuthState = 'checking' | 'unauthenticated' | 'not-admin' | 'admin';
+
+/* ═══════════════════════════════════════════════════════════
    Login Screen
    ═══════════════════════════════════════════════════════════ */
 
-const LoginScreen: React.FC<{
-  onLogin: () => void;
-}> = ({ onLogin }) => {
+const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,17 +53,20 @@ const LoginScreen: React.FC<{
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      setError(error.message);
-    } else {
-      onLogin();
+    if (authError) {
+      setError(
+        authError.message.includes('Invalid login')
+          ? 'Неверный email или пароль.'
+          : 'Ошибка входа. Попробуйте позже.'
+      );
+      setLoading(false);
     }
-    setLoading(false);
+    // On success: keep loading=true — onAuthStateChange will transition the state
   };
 
   return (
@@ -108,6 +116,43 @@ const LoginScreen: React.FC<{
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Войти'}
         </button>
       </form>
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Access Denied Screen
+   ═══════════════════════════════════════════════════════════ */
+
+const AccessDenied: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const handleLogout = async () => {
+    await supabase?.auth.signOut();
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center">
+      <div className="w-16 h-16 bg-rose-100 text-rose-500 rounded-2xl flex items-center justify-center mb-6">
+        <ShieldOff className="w-8 h-8" />
+      </div>
+      <h2 className="text-2xl font-serif text-brand-dark mb-2">Доступ запрещён</h2>
+      <p className="text-stone-500 mb-8 max-w-xs">
+        У вашего аккаунта нет прав администратора. Обратитесь к владельцу студии для получения
+        доступа.
+      </p>
+      <div className="flex gap-3">
+        <button
+          onClick={handleLogout}
+          className="px-6 py-3 bg-stone-100 text-stone-600 rounded-xl font-medium hover:bg-stone-200 transition-colors"
+        >
+          Выйти
+        </button>
+        <button
+          onClick={onClose}
+          className="px-6 py-3 bg-brand-green text-white rounded-xl font-medium hover:bg-brand-green/90 transition-colors"
+        >
+          Закрыть
+        </button>
+      </div>
     </div>
   );
 };
@@ -165,27 +210,46 @@ const NoSupabase = () => (
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<AdminTab | 'dashboard'>('dashboard');
-  const [session, setSession] = useState<boolean>(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [authState, setAuthState] = useState<AdminAuthState>('checking');
   const { notification, toast } = useToast();
 
   useScrollLock(isOpen);
 
   useEffect(() => {
     if (!supabase) {
-      setCheckingAuth(false);
+      setAuthState('unauthenticated');
       return;
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(!!session);
-      setCheckingAuth(false);
+    const resolveAuthState = async (userId: string | undefined): Promise<AdminAuthState> => {
+      if (!userId || !supabase) return 'unauthenticated';
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('user_id', userId)
+        .single();
+
+      return profile?.is_admin === true ? 'admin' : 'not-admin';
+    };
+
+    // Initial session check
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const state = await resolveAuthState(session?.user?.id);
+      setAuthState(state);
     });
 
+    // Listen for auth changes (login/logout)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(!!session);
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session?.user) {
+        setAuthState('unauthenticated');
+        return;
+      }
+      setAuthState('checking');
+      const state = await resolveAuthState(session.user.id);
+      setAuthState(state);
     });
 
     return () => subscription.unsubscribe();
@@ -198,8 +262,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     return <NoSupabase />;
   }
 
-  // 2. Auth Gate
-  if (checkingAuth) {
+  // 2. Auth State Machine
+  if (authState === 'checking') {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
         <Loader2 className="w-10 h-10 animate-spin text-brand-green" />
@@ -207,7 +271,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     );
   }
 
-  if (!session) {
+  if (authState === 'unauthenticated') {
     return (
       <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-stone-100 relative overflow-hidden">
@@ -217,7 +281,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           >
             <X className="w-5 h-5" />
           </button>
-          <LoginScreen onLogin={() => setSession(true)} />
+          <LoginScreen />
+        </div>
+      </div>
+    );
+  }
+
+  if (authState === 'not-admin') {
+    return (
+      <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
+        <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-stone-100 relative overflow-hidden">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <AccessDenied onClose={onClose} />
         </div>
       </div>
     );
