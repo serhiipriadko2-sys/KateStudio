@@ -94,7 +94,7 @@ export const useChatSession = ({ isOpen, userLocation }: UseChatSessionOptions) 
 
   const startLiveSession = async () => {
     if (!chatCapabilities.liveModeEnabled) {
-      setIsLiveMode(true);
+      setIsLiveMode(false);
       setIsLiveConnected(false);
       setLiveError(chatCapabilities.liveModeDisabledReason);
       return;
