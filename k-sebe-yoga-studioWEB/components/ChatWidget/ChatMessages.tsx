@@ -37,11 +37,7 @@ export const ChatMessages: React.FC<{
             )}
             {msg.generatedImageUrl && (
               <div className="w-full max-w-[240px] rounded-2xl overflow-hidden shadow-lg border border-brand-green/20 mb-1">
-                <img
-                  src={msg.generatedImageUrl}
-                  alt="Изображение от AI-ассистента Ария"
-                  className="w-full"
-                />
+                <img src={msg.generatedImageUrl} alt="AI Art" className="w-full" />
               </div>
             )}
 
