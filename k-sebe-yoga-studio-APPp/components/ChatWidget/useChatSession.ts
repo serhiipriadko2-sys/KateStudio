@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { getGeminiChatResponse, generateSpeech } from '../../services/geminiService';
+import { getAssistantResponse } from '../../services/assistantService';
+import { generateSpeech } from '../../services/geminiService';
 import type { ChatMessage } from '../../types';
+import { chatCapabilities } from './chatCapabilities';
 
 const DEFAULT_WELCOME_MSG: ChatMessage = {
   role: 'model',
@@ -8,16 +10,11 @@ const DEFAULT_WELCOME_MSG: ChatMessage = {
 };
 
 interface UseChatSessionOptions {
-  allowClientFallback: boolean;
   isOpen: boolean;
   userLocation?: { lat: number; lng: number };
 }
 
-export const useChatSession = ({
-  allowClientFallback: _allowClientFallback,
-  isOpen,
-  userLocation,
-}: UseChatSessionOptions) => {
+export const useChatSession = ({ isOpen, userLocation }: UseChatSessionOptions) => {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     try {
       const saved = sessionStorage.getItem('ksebe_chat_history');
@@ -58,7 +55,7 @@ export const useChatSession = ({
     setIsLoading(true);
 
     try {
-      const response = await getGeminiChatResponse(message, userLocation);
+      const response = await getAssistantResponse(message, userLocation);
       setMessages((prev) => [
         ...prev,
         { role: 'model', text: response.text, sources: response.sources },
@@ -96,9 +93,14 @@ export const useChatSession = ({
   };
 
   const startLiveSession = async () => {
-    setIsLiveMode(true);
-    setIsLiveConnected(false);
-    setLiveError('Live-сессия временно недоступна в non-AI режиме.');
+    if (!chatCapabilities.liveModeEnabled) {
+      setIsLiveMode(false);
+      setIsLiveConnected(false);
+      setLiveError(chatCapabilities.liveModeDisabledReason);
+      return;
+    }
+
+    setLiveError('Live-сессия включена, но runtime пока не реализован.');
   };
 
   const stopLiveSession = async () => {

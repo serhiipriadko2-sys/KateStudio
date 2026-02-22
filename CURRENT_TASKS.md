@@ -4,7 +4,7 @@
 **PRODUCTION_READINESS_AUDIT.md** и **REMEDIATION_PLAN.md**). Фокус на задачах,
 которые можно брать в работу прямо сейчас.
 
-_Обновлено: 21 февраля 2026 (после полного аудита и обновления документации)._
+_Обновлено: 21 февраля 2026 (после синхронизации conflict-resolution по PR)._
 
 ---
 
@@ -34,6 +34,9 @@ _Обновлено: 21 февраля 2026 (после полного ауди�
 
 **Примечание:** WEB-изображения заменены на локальные ассеты
 (`shared/constants/images.ts`). Остаётся APP.
+
+**Операционное примечание (repo settings):** `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`
+настраиваются вручную в GitHub Secrets (в репозиторий не коммитятся).
 
 ---
 
@@ -78,7 +81,12 @@ _Обновлено: 21 февраля 2026 (после полного ауди�
 | 17  | **Повысить test coverage до 50%+ (178 тестов)** | Все `__tests__/`                         | Ongoing   | ⏳     |
 | 18  | **Исправить nullable user_id**            | Миграция cleanup                              | 30 мин    | ⏳     |
 | 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ⏳     |
-| 19a | **APP ChatWidget: non-AI режим (без client live)** | `APP/components/ChatWidget/useChatSession.ts` | 30-60 мин | 🔄     |
+| 19a | **APP ChatWidget: non-AI режим (без client live)** | `APP/components/ChatWidget/useChatSession.ts` | 30-60 мин | ✅     |
+| 19b | **Toolchain guardrail (Vite/Vitest baseline)** | `docs/TOOLCHAIN_UPGRADE_PLAYBOOK.md` + `scripts/verify_toolchain.mjs` | 30 мин | ✅     |
+| 19c | **Снять конфликт PR (CURRENT_TASKS + useChatSession)** | `CURRENT_TASKS.md`, `APP/components/ChatWidget/useChatSession.ts` | 15 мин | ✅     |
+
+**Риск-заметка по зависимостям:** `npm audit` показывает 22 уязвимости в dev-deps
+(`minimatch`/`glob` через ESLint-цепочку); production bundle не затронут.
 
 **Total P1:** 1-2 недели **Testing Coverage:** ~20% → 50%+ **Payment
 Integration:** 30% → 90%
