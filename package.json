@@ -19,7 +19,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc --project shared/tsconfig.json --noEmit && tsc --project k-sebe-yoga-studioWEB/tsconfig.json --noEmit && tsc --project k-sebe-yoga-studio-APPp/tsconfig.json --noEmit",
     "clean": "rm -rf node_modules shared/node_modules k-sebe-yoga-studioWEB/node_modules k-sebe-yoga-studio-APPp/node_modules",
     "prepare": "husky",
     "test": "vitest",
