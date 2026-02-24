@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ksebe-studio.ru/sitemap.xml
+Sitemap: https://ksebe.yoga/sitemap.xml

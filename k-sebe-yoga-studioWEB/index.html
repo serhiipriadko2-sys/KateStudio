@@ -13,14 +13,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="К себе" />
 
-    <!-- Security Headers (meta-based for GitHub Pages) -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://static.elfsight.com https://elfsightcdn.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://*.elfsight.com https://*.cdninstagram.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.elfsight.com; frame-src 'none'; object-src 'none'; base-uri 'self';"
-    />
-    <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta http-equiv="X-DNS-Prefetch-Control" content="on" />
-
     <!-- Favicons & Icons -->
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -37,16 +29,13 @@
       property="og:description"
       content="Inside Flow, Хатха-йога, саундхилинг и массаж тибетскими чашами в Дубне. Запишись на пробное занятие!"
     />
-    <meta property="og:image" content="https://ksebe-studio.ru/og-image.jpg" />
-    <meta property="og:url" content="https://ksebe-studio.ru/" />
+    <meta property="og:image" content="/og-image.jpg" />
 
-    <!-- Font Optimization: Preconnect + Preload -->
+    <!-- Font Optimization: Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="dns-prefetch" href="https://elfsightcdn.com" />
 
-    <!-- Critical CSS Preload -->
-    <link rel="preload" href="/index.css" as="style" />
+    <!-- Tailwind CSS now via PostCSS build -->
     <link rel="stylesheet" href="/index.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap"
@@ -59,8 +48,8 @@
         "@context": "https://schema.org",
         "@type": "YogaStudio",
         "name": "К себе — Студия йоги Кати Габран",
-        "image": "https://ksebe-studio.ru/og-image.jpg",
-        "url": "https://ksebe-studio.ru",
+        "image": "/og-image.jpg",
+        "url": "https://ksebe.yoga",
         "telephone": "+79099468972",
         "email": "k.sebe.dubna@gmail.com",
         "address": {

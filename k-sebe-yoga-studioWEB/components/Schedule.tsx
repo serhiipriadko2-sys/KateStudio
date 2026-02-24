@@ -1,7 +1,7 @@
 import { BookingDetails, ClassRow, ClassSession, LoadLevel, supabase } from '@ksebe/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Info, Loader2, MapPin, Users } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { FadeIn } from './FadeIn';
 
 interface ScheduleProps {
@@ -51,23 +51,25 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
 
-  const {
-    data: classes,
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: classes, isLoading } = useQuery({
     queryKey: ['classes', activeTab, currentMonth.getMonth(), currentMonth.getFullYear()],
     queryFn: async () => {
       if (!supabase) return [];
 
-      const startOfMonth = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-01`;
-      const endOfMonth = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate()).padStart(2, '0')}`;
+      const startOfMonth = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        1
+      ).toISOString();
+      const endOfMonth = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth() + 1,
+        0
+      ).toISOString();
 
       const { data, error } = await supabase
         .from('classes')
-        .select(
-          'id,date,time,name,instructor,duration,spots_total,spots_booked,location,intensity,price,description,is_online'
-        )
+        .select('*')
         .eq('is_online', activeTab === 'online')
         .gte('date', startOfMonth)
         .lte('date', endOfMonth)
@@ -87,20 +89,6 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
         const d = new Date(c.date);
         return d.getDate() === selectedDate;
       }) || [];
-
-  const classesByDay = useMemo(() => {
-    const byDay = new Map<number, ClassRow[]>();
-    (classes || []).forEach((cls) => {
-      const day = new Date(cls.date).getDate();
-      const current = byDay.get(day);
-      if (current) {
-        current.push(cls);
-      } else {
-        byDay.set(day, [cls]);
-      }
-    });
-    return byDay;
-  }, [classes]);
 
   const daysInMonth = new Date(
     currentMonth.getFullYear(),
@@ -155,7 +143,10 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
     // Days
     for (let i = 1; i <= daysInMonth; i++) {
       // Check status for this day
-      const dayClasses = classesByDay.get(i);
+      const dayClasses = classes?.filter((c) => {
+        const d = new Date(c.date);
+        return d.getDate() === i;
+      });
 
       let statusColor = 'bg-stone-100 text-stone-400'; // Default/Empty
 
@@ -322,18 +313,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
                   </div>
                 </FadeIn>
               )}
-              {!isLoading && isError && (
-                <FadeIn delay={300}>
-                  <div className="p-12 text-center bg-rose-50 rounded-[2rem] border border-rose-100">
-                    <Info className="w-10 h-10 text-rose-300 mx-auto mb-3" />
-                    <p className="text-rose-500">
-                      Не удалось загрузить расписание. Обновите страницу.
-                    </p>
-                  </div>
-                </FadeIn>
-              )}
               {!isLoading &&
-                !isError &&
                 selectedClasses.length > 0 &&
                 selectedClasses.map((cls, idx) => {
                   const capacity = cls.spotsTotal;
@@ -414,7 +394,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
                     </FadeIn>
                   );
                 })}
-              {!isLoading && !isError && selectedClasses.length === 0 && (
+              {!isLoading && selectedClasses.length === 0 && (
                 <FadeIn delay={300}>
                   <div className="p-12 text-center bg-stone-50 rounded-[2rem] border-2 border-dashed border-stone-200">
                     <Info className="w-10 h-10 text-stone-300 mx-auto mb-3" />

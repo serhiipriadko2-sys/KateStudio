@@ -1,12 +1,5 @@
 name: Deploy to GitHub Pages
 
-# Required GitHub Secrets (Settings → Secrets and variables → Actions):
-#   VITE_SUPABASE_URL      — Supabase project URL (https://xxx.supabase.co)
-#   VITE_SUPABASE_ANON_KEY — Supabase anon/public key (safe for client)
-#
-# Setup: Repository → Settings → Secrets and variables → Actions → New repository secret
-# Values: Copy from Supabase Dashboard → Settings → API → Project URL / anon key
-
 on:
   push:
     branches: [main]

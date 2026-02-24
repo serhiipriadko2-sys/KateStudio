@@ -85,9 +85,7 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
 
       const { data, error } = await supabase
         .from('classes')
-        .select(
-          'id,date,time,name,instructor,duration,spots_total,spots_booked,location,intensity,is_online'
-        )
+        .select('*')
         .gte('date', startDate)
         .lte('date', endDate)
         .order('date', { ascending: true })
@@ -100,7 +98,8 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
 
   // --- MUTATIONS ---
   const saveMutation = useMutation({
-    mutationFn: async (payload: { id?: string; data: ClassMutationPayload }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mutationFn: async (payload: { id?: string; data: any }) => {
       if (!supabase) throw new Error('Supabase not initialized');
       if (payload.id) {
         const { error } = await supabase.from('classes').update(payload.data).eq('id', payload.id);
@@ -499,15 +498,4 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
       )}
     </div>
   );
-};
-type ClassMutationPayload = {
-  date: string;
-  time: string;
-  name: string;
-  instructor: string;
-  duration: string;
-  spots_total: number;
-  location: string;
-  intensity: 1 | 2 | 3;
-  is_online: boolean;
 };

@@ -1,7 +1,7 @@
 # Центральный индекс документации | K Sebe Ecosystem
 
 > **Единая точка входа для всей технической и стратегической документации**
-> **Обновлено:** 21 февраля 2026
+> **Обновлено:** 16 февраля 2026
 
 ---
 
@@ -127,7 +127,7 @@
 | Test Coverage | ~20%    | 70%+           |
 | Bundle (gzip) | ~300KB  | <200KB         |
 | LCP           | ~3s     | <2.5s          |
-| Tests         | 178     | 300+           |
+| Tests         | 174     | 300+           |
 
 ### Бизнес метрики
 
@@ -156,15 +156,12 @@
 - ✅ OnboardingQuiz, StreakCard, StreakCalendar
 - ✅ sitemap.xml, robots.txt
 - ✅ Security P0: CORS, Webhook, RLS, Service Role Key
-- ✅ Документация: CLAUDE.md v3.2.0, AGENTS.md v2.1.0, skills обновлены
-- ✅ Zod validation на всех 3 Edge Functions
-- ✅ Rate limiting (Deno KV) в gemini-proxy
+- ✅ Документация: CLAUDE.md, AGENTS.md, skills обновлены
 
 **Следующие:**
 
 - ⏳ .env и GitHub Secrets для production
 - ⏳ YooKassa/Stripe интеграция
-- ⏳ Test coverage 50%+ (текущее ~20%)
 - ⏳ Push notifications (FCM)
 - ⏳ Performance optimization (Lighthouse 90+)
 
@@ -172,8 +169,7 @@
 
 ## Статус обновления
 
-**Последнее обновление:** 21 февраля 2026
-**Версия документации:** 6.1.0
+**Последнее обновление:** 16 февраля 2026 **Версия документации:** 6.0.0
 **Следующий ревью:** Q2 2026
 
 ---

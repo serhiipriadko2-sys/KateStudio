@@ -1,11 +1,19 @@
-# K Sebe Yoga Studio APP
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-Мобильное PWA-приложение экосистемы студии «К себе».
+# Run and deploy your AI Studio app
+
+This contains everything you need to run your app locally.
+
+View your app in AI Studio:
+https://ai.studio/apps/drive/12aRTDeMFYVlFE3vx3mr7P4lcirm082NF
 
 ## Run Locally
 
 **Prerequisites:** Node.js
 
 1. Install dependencies: `npm install`
-2. Configure environment variables in `.env` (see [../.env.example](../.env.example))
+2. Set the `VITE_GEMINI_API_KEY` (recommended) in your `.env` (see
+   [../.env.example](../.env.example))
 3. Run the app: `npm run dev`

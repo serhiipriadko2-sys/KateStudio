@@ -56,30 +56,19 @@ async function main() {
     const userId = userData.user.id;
     console.log(`User created (ID: ${userId}). Granting admin access...`);
 
-    // 2. Set profiles.is_admin = true (primary source of truth)
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .upsert({ user_id: userId, is_admin: true }, { onConflict: 'user_id' });
-
-    if (profileError) {
-      console.error('Error setting profiles.is_admin:', profileError.message);
-      process.exit(1);
-    }
-    console.log('Set profiles.is_admin = true.');
-
-    // 3. Insert into public.admins (backwards compatibility)
+    // 2. Insert into public.admins
     const { error: dbError } = await supabase.from('admins').insert({ user_id: userId });
 
     if (dbError) {
       // If duplicate, it's fine
       if (dbError.code === '23505') {
-        console.log('User is already in admins table (OK).');
+        console.log('User is already an admin.');
       } else {
         console.error('Error adding to admins table:', dbError.message);
         process.exit(1);
       }
     } else {
-      console.log('Added to admins table (backwards compat).');
+      console.log('Successfully added to admins table.');
     }
 
     console.log('\n✅ Success! You can now log in to the Admin Panel.');
