@@ -216,10 +216,10 @@ export const Footer: React.FC<FooterProps> = ({
             >
               Оферта
             </button>
-            {onOpenAdmin && isAdmin && (
+            {onOpenAdmin && (!isAuthenticated || isAdmin) && (
               <button
                 onClick={onOpenAdmin}
-                className="opacity-30 hover:opacity-100 transition-opacity flex items-center gap-1 hover:text-white/60"
+                className="opacity-40 hover:opacity-100 active:opacity-100 touch-manipulation transition-opacity flex items-center gap-1 hover:text-white/60 active:text-white/60"
                 title="Управление студией"
                 aria-label="Открыть панель управления"
               >
