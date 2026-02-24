@@ -1,0 +1,10 @@
+export { BookingsTab } from './BookingsTab';
+export { ContactsTab } from './ContactsTab';
+export { ContentTab } from './ContentTab';
+export { DashboardTab } from './DashboardTab';
+export { FAQTab } from './FAQTab';
+export { ImagesTab } from './ImagesTab';
+export { PricingTab } from './PricingTab';
+export { ReviewsTab } from './ReviewsTab';
+export { ScheduleTab } from './ScheduleTab';
+export { SettingsTab } from './SettingsTab';

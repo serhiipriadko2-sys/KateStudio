@@ -60,8 +60,5 @@
       "eslint --fix",
       "prettier --write"
     ]
-  },
-  "overrides": {
-    "vite": "6.0.5"
   }
 }

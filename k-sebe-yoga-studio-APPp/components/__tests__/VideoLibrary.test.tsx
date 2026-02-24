@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { VideoLibrary } from '../VideoLibrary';
@@ -25,7 +25,11 @@ vi.mock('../Image', () => ({
 }));
 
 vi.mock('../Paywall', () => ({
-  Paywall: ({ onClose }: any) => <div role="dialog" aria-label="Paywall">Paywall Content <button onClick={onClose}>Close</button></div>
+  Paywall: ({ onClose }: any) => (
+    <div role="dialog" aria-label="Paywall">
+      Paywall Content <button onClick={onClose}>Close</button>
+    </div>
+  ),
 }));
 
 // Mock Toast Context
@@ -80,9 +84,7 @@ const queryClient = new QueryClient({
 });
 
 const renderWithClient = (ui: React.ReactElement) => {
-  return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
-  );
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 };
 
 describe('VideoLibrary', () => {
@@ -97,7 +99,7 @@ describe('VideoLibrary', () => {
   it('filters videos by mood', async () => {
     renderWithClient(<VideoLibrary selectedMood="Энергия" />);
     await waitFor(() => {
-        expect(screen.getByText('Утренний Flow')).toBeInTheDocument();
+      expect(screen.getByText('Утренний Flow')).toBeInTheDocument();
     });
     // "Здоровая спина" does not have "Энергия"
     expect(screen.queryByText('Здоровая спина')).not.toBeInTheDocument();

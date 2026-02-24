@@ -152,11 +152,7 @@ export const ReviewsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') 
           >
             <div className="w-12 h-12 rounded-full bg-stone-100 overflow-hidden shrink-0">
               {review.image_url ? (
-                <img
-                  src={review.image_url}
-                  alt={`Аватар ${review.name}`}
-                  className="w-full h-full object-cover"
-                />
+                <img src={review.image_url} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-stone-300 text-xs">
                   Фото

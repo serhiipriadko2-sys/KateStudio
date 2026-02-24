@@ -1,5 +1,6 @@
-import { Instagram, Send, MapPin, Terminal, User } from 'lucide-react';
+import { Instagram, Send, MapPin, Terminal, User, Phone, Mail } from 'lucide-react';
 import React from 'react';
+import { useStudioContacts } from '../hooks/useStudioContacts';
 import { Logo } from './Logo';
 
 interface FooterProps {
@@ -15,6 +16,8 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenAuth,
   isAuthenticated,
 }) => {
+  const { data: contacts } = useStudioContacts();
+
   return (
     <footer
       id="footer"
@@ -31,24 +34,48 @@ export const Footer: React.FC<FooterProps> = ({
               Гармония тела и души в каждом движении.
             </p>
             <div className="flex gap-4">
-              <a
-                href="https://instagram.com/kate_gabran"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="https://t.me/k_sebe_dubna"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Telegram"
-                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
-              >
-                <Send className="w-5 h-5" />
-              </a>
+              {contacts?.social_vk && (
+                <a
+                  href={contacts.social_vk}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="VK"
+                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
+                >
+                  <span className="font-bold text-xs">VK</span>
+                </a>
+              )}
+              {contacts?.social_telegram && (
+                <a
+                  href={contacts.social_telegram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Telegram"
+                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                </a>
+              )}
+              {contacts?.social_instagram && (
+                <a
+                  href={contacts.social_instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
+                >
+                  <Instagram className="w-4 h-4" />
+                </a>
+              )}
+              {contacts?.email && (
+                <a
+                  href={`mailto:${contacts.email}`}
+                  aria-label="Email"
+                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
+                >
+                  <Mail className="w-4 h-4" />
+                </a>
+              )}
             </div>
           </div>
 
@@ -104,41 +131,69 @@ export const Footer: React.FC<FooterProps> = ({
           <div>
             <h4 className="text-lg font-serif mb-6 text-brand-green">Контакты</h4>
             <ul className="space-y-4 text-sm text-white/70">
-              <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-brand-green shrink-0 mt-0.5" />
-                <a
-                  href="https://yandex.ru/navi/org/k_sebe/7167334007"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white"
-                >
-                  г. Дубна, Станционная ул., 5Б
-                  <br />
-                  <span className="text-white/50">этаж 2</span>
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <Send className="w-5 h-5 text-brand-green shrink-0" />
-                <a
-                  href="https://t.me/k_sebe_dubna"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white"
-                >
-                  @k_sebe_dubna
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <Instagram className="w-5 h-5 text-brand-green shrink-0" />
-                <a
-                  href="https://instagram.com/kate_gabran"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white"
-                >
-                  @kate_gabran
-                </a>
-              </li>
+              {contacts?.address && (
+                <li className="flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-brand-green shrink-0 mt-0.5" />
+                  <a
+                    href={contacts.map_url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white"
+                  >
+                    {contacts.address}
+                  </a>
+                </li>
+              )}
+              {contacts?.phone && (
+                <li className="flex items-center gap-3">
+                  <Phone className="w-5 h-5 text-brand-green shrink-0" />
+                  <a href={`tel:${contacts.phone}`} className="hover:text-white">
+                    {contacts.phone}
+                  </a>
+                </li>
+              )}
+              {contacts?.social_telegram && (
+                <li className="flex items-center gap-3">
+                  <Send className="w-5 h-5 text-brand-green shrink-0" />
+                  <a
+                    href={contacts.social_telegram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white"
+                  >
+                    Telegram
+                  </a>
+                </li>
+              )}
+              {contacts?.social_instagram && (
+                <li className="flex items-center gap-3">
+                  <Instagram className="w-5 h-5 text-brand-green shrink-0" />
+                  <a
+                    href={contacts.social_instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white"
+                  >
+                    Instagram
+                  </a>
+                </li>
+              )}
+              {contacts?.social_vk && (
+                <li className="flex items-center gap-3">
+                  {/* Since Lucide doesn't have VK, we use text or a generic icon */}
+                  <span className="w-5 h-5 flex items-center justify-center text-brand-green font-bold text-[10px] border border-brand-green rounded-full shrink-0">
+                    VK
+                  </span>
+                  <a
+                    href={contacts.social_vk}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white"
+                  >
+                    ВКонтакте
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
