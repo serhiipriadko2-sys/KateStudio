@@ -1,5 +1,4 @@
 import { Calendar, Clock, Flame, Share2, TrendingUp, Award } from 'lucide-react';
-import React from 'react';
 import type { WeeklyRecapData as WeeklyRecapType, Achievement } from '../types';
 import { cn } from '../utils';
 

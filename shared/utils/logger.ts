@@ -14,11 +14,9 @@ interface LogContext {
 
 class Logger {
   private isDevelopment: boolean;
-  private isProduction: boolean;
 
   constructor() {
     this.isDevelopment = import.meta.env?.DEV ?? false;
-    this.isProduction = import.meta.env?.PROD ?? false;
   }
 
   /**
