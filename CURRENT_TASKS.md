@@ -61,6 +61,8 @@ _Обновлено: 16 февраля 2026 (после security audit и обн
 | 18  | ✅ Добавить SUBSCRIPTION_PLANS                                   | ✅     |
 | 19  | ✅ Создать COMPREHENSIVE_UPDATE_2026.md                          | ✅     |
 | 20  | ✅ Обновить документацию (CLAUDE.md, AGENTS.md, skills, docs)    | ✅     |
+| 21  | ✅ Добавить Capacitor wrapper scaffold для APP                    | ✅     |
+| 22  | ✅ Добавить local native scaffold workflow (android/ios) для APP | ✅     |
 
 ---
 
