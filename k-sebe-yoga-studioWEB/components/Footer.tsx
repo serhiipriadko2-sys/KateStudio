@@ -1,4 +1,3 @@
-import { useIsAdmin } from '@ksebe/shared';
 import { Instagram, Send, MapPin, Terminal, User, Phone, Mail } from 'lucide-react';
 import React from 'react';
 import { useStudioContacts } from '../hooks/useStudioContacts';
@@ -17,7 +16,6 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenAuth,
   isAuthenticated,
 }) => {
-  const { isAdmin } = useIsAdmin();
   const { data: contacts } = useStudioContacts();
 
   return (
@@ -58,7 +56,7 @@ export const Footer: React.FC<FooterProps> = ({
                   <Send className="w-4 h-4" />
                 </a>
               )}
-               {contacts?.social_instagram && (
+              {contacts?.social_instagram && (
                 <a
                   href={contacts.social_instagram}
                   target="_blank"
@@ -69,7 +67,7 @@ export const Footer: React.FC<FooterProps> = ({
                   <Instagram className="w-4 h-4" />
                 </a>
               )}
-               {contacts?.email && (
+              {contacts?.email && (
                 <a
                   href={`mailto:${contacts.email}`}
                   aria-label="Email"
@@ -149,10 +147,7 @@ export const Footer: React.FC<FooterProps> = ({
               {contacts?.phone && (
                 <li className="flex items-center gap-3">
                   <Phone className="w-5 h-5 text-brand-green shrink-0" />
-                  <a
-                    href={`tel:${contacts.phone}`}
-                    className="hover:text-white"
-                  >
+                  <a href={`tel:${contacts.phone}`} className="hover:text-white">
                     {contacts.phone}
                   </a>
                 </li>
@@ -170,7 +165,7 @@ export const Footer: React.FC<FooterProps> = ({
                   </a>
                 </li>
               )}
-               {contacts?.social_instagram && (
+              {contacts?.social_instagram && (
                 <li className="flex items-center gap-3">
                   <Instagram className="w-5 h-5 text-brand-green shrink-0" />
                   <a
@@ -184,9 +179,11 @@ export const Footer: React.FC<FooterProps> = ({
                 </li>
               )}
               {contacts?.social_vk && (
-                 <li className="flex items-center gap-3">
+                <li className="flex items-center gap-3">
                   {/* Since Lucide doesn't have VK, we use text or a generic icon */}
-                  <span className="w-5 h-5 flex items-center justify-center text-brand-green font-bold text-[10px] border border-brand-green rounded-full shrink-0">VK</span>
+                  <span className="w-5 h-5 flex items-center justify-center text-brand-green font-bold text-[10px] border border-brand-green rounded-full shrink-0">
+                    VK
+                  </span>
                   <a
                     href={contacts.social_vk}
                     target="_blank"
@@ -216,7 +213,7 @@ export const Footer: React.FC<FooterProps> = ({
             >
               Оферта
             </button>
-            {onOpenAdmin && (!isAuthenticated || isAdmin) && (
+            {onOpenAdmin && (
               <button
                 onClick={onOpenAdmin}
                 className="opacity-40 hover:opacity-100 active:opacity-100 touch-manipulation transition-opacity flex items-center gap-1 hover:text-white/60 active:text-white/60"

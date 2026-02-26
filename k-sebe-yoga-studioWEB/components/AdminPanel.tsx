@@ -228,8 +228,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           </p>
           <button
             onClick={async () => {
-                await supabase?.auth.signOut();
-                // State update will trigger re-render showing login screen
+              await supabase?.auth.signOut();
+              // State update will trigger re-render showing login screen
             }}
             className="px-6 py-2 border border-stone-200 rounded-xl text-stone-600 hover:bg-stone-50 transition-colors"
           >

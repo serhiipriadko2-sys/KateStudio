@@ -36,14 +36,14 @@ async function main() {
   console.log('Checking is_admin() RPC...');
   const { data: isAdminRpc, error: rpcError } = await supabase.rpc('is_admin');
   if (rpcError) {
-      console.error('RPC Error:', rpcError.message);
+    console.error('RPC Error:', rpcError.message);
   } else {
-      console.log('is_admin() RPC result:', isAdminRpc);
-      if (isAdminRpc === true) {
-          console.log('✅ Success: User is recognized as admin via RPC.');
-      } else {
-          console.error('❌ Failure: User is NOT recognized as admin via RPC.');
-      }
+    console.log('is_admin() RPC result:', isAdminRpc);
+    if (isAdminRpc === true) {
+      console.log('✅ Success: User is recognized as admin via RPC.');
+    } else {
+      console.error('❌ Failure: User is NOT recognized as admin via RPC.');
+    }
   }
 
   // Check Profiles
@@ -55,14 +55,14 @@ async function main() {
     .single();
 
   if (profileError) {
-      console.error('Profile fetch error:', profileError.message);
+    console.error('Profile fetch error:', profileError.message);
   } else {
-      console.log('Profile record:', profile);
-      if (profile?.is_admin === true) {
-          console.log('✅ Success: User has is_admin=true in profiles.');
-      } else {
-          console.error('❌ Failure: User does NOT have is_admin=true in profiles.');
-      }
+    console.log('Profile record:', profile);
+    if (profile?.is_admin === true) {
+      console.log('✅ Success: User has is_admin=true in profiles.');
+    } else {
+      console.error('❌ Failure: User does NOT have is_admin=true in profiles.');
+    }
   }
 
   // Check Admins table
@@ -74,12 +74,12 @@ async function main() {
     .single();
 
   if (tableError) {
-      console.error('Admins table fetch error (or RLS restricted):', tableError.message);
+    console.error('Admins table fetch error (or RLS restricted):', tableError.message);
   } else {
-      console.log('Admin table record:', adminRecord);
-      if (adminRecord) {
-          console.log('✅ Success: User found in admins table.');
-      }
+    console.log('Admin table record:', adminRecord);
+    if (adminRecord) {
+      console.log('✅ Success: User found in admins table.');
+    }
   }
 }
 

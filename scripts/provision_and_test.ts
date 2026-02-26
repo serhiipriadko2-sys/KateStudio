@@ -27,7 +27,7 @@ async function main() {
   if (error) {
     console.error('Signup error:', error.message);
     if (error.message.includes('already registered')) {
-        console.log('User already exists (likely recreated). Try login.');
+      console.log('User already exists (likely recreated). Try login.');
     }
   } else {
     console.log('Signup successful:', data.user?.id);

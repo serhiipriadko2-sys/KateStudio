@@ -13,7 +13,7 @@ import {
   Phone,
   Mail,
   Globe,
-  Instagram
+  Instagram,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useStudioContacts, StudioContacts } from '../../../hooks/useStudioContacts';
@@ -108,7 +108,11 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
       if (!supabase) throw new Error('Supabase not initialized');
       const { error } = await supabase
         .from('app_settings')
-        .upsert({ key: 'studio_contacts', value: newSettings, updated_at: new Date().toISOString() });
+        .upsert({
+          key: 'studio_contacts',
+          value: newSettings,
+          updated_at: new Date().toISOString(),
+        });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -158,9 +162,7 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
       {activeSubTab === 'messages' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-stone-600">
-              Обращения ({contacts.length})
-            </h3>
+            <h3 className="text-sm font-semibold text-stone-600">Обращения ({contacts.length})</h3>
             <button
               onClick={() => refetchMessages()}
               className="p-2 hover:bg-stone-100 rounded-lg transition-colors text-stone-400"
@@ -291,11 +293,14 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
       {activeSubTab === 'settings' && (
         <div className="space-y-4">
           {isLoadingSettings || !formState ? (
-             <div className="py-12 text-center">
+            <div className="py-12 text-center">
               <Loader2 className="w-6 h-6 animate-spin text-brand-green mx-auto" />
             </div>
           ) : (
-            <form onSubmit={handleSaveSettings} className="bg-white p-6 rounded-xl border border-stone-100 space-y-6">
+            <form
+              onSubmit={handleSaveSettings}
+              className="bg-white p-6 rounded-xl border border-stone-100 space-y-6"
+            >
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-stone-700 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-brand-green" />
@@ -312,7 +317,9 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-stone-500">Ссылка на карту (Embed URL)</label>
+                    <label className="text-xs font-medium text-stone-500">
+                      Ссылка на карту (Embed URL)
+                    </label>
                     <input
                       type="text"
                       value={formState.map_url}
@@ -365,7 +372,9 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                     <input
                       type="text"
                       value={formState.social_telegram}
-                      onChange={(e) => setFormState({ ...formState, social_telegram: e.target.value })}
+                      onChange={(e) =>
+                        setFormState({ ...formState, social_telegram: e.target.value })
+                      }
                       className="w-full p-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-brand-green"
                     />
                   </div>
@@ -374,7 +383,9 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                     <input
                       type="text"
                       value={formState.social_whatsapp}
-                      onChange={(e) => setFormState({ ...formState, social_whatsapp: e.target.value })}
+                      onChange={(e) =>
+                        setFormState({ ...formState, social_whatsapp: e.target.value })
+                      }
                       className="w-full p-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-brand-green"
                     />
                   </div>
@@ -394,7 +405,9 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                     <input
                       type="text"
                       value={formState.social_instagram}
-                      onChange={(e) => setFormState({ ...formState, social_instagram: e.target.value })}
+                      onChange={(e) =>
+                        setFormState({ ...formState, social_instagram: e.target.value })
+                      }
                       className="w-full p-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-brand-green"
                     />
                   </div>
