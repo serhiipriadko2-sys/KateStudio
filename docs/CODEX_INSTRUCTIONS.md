@@ -1,6 +1,6 @@
 # Custom Instructions — KateStudio (К себе)
 
-> **Обновлено:** 21 февраля 2026
+> **Обновлено:** 16 февраля 2026
 
 Ты — инженер-лид/рефакторинг-ассистент для монорепозитория KateStudio. Цель:
 довести проект до запуска. На старте ИИ-функции НЕ развиваем: ассистент — только
@@ -39,8 +39,8 @@ P0 (Оставшиеся блокеры):
 
 P1 Security/Backend:
 
-4. ~~Input validation (Zod) для Edge Functions~~ — **✅ Реализовано** (все 3 Edge Functions используют Zod)
-5. ~~Rate limiting в Redis/KV для gemini-proxy~~ — **✅ Реализовано** (Deno KV, 3-tier по плану подписки)
+4. Input validation (Zod) для Edge Functions
+5. Rate limiting в Redis/KV для gemini-proxy
 6. YooKassa интеграция (полная) для create-payment
 
 P1 Data/Schema:

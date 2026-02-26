@@ -11,7 +11,7 @@ import {
   CheckCircle,
   XCircle,
   UserX,
-  PlayCircle
+  PlayCircle,
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { supabase } from '../../../services/supabase';
@@ -113,9 +113,7 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
         <div className="flex gap-2">
           <select
             value={filter}
-            onChange={(e) =>
-              setFilter(e.target.value as 'all' | 'purchases' | 'classes')
-            }
+            onChange={(e) => setFilter(e.target.value as 'all' | 'purchases' | 'classes')}
             className="px-2 py-1.5 text-xs rounded-lg border border-stone-200 bg-white"
           >
             <option value="all">Все</option>
@@ -185,14 +183,22 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                         </span>
                       )}
                       {status !== 'active' && (
-                        <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-                            status === 'completed' ? 'bg-green-100 text-green-600' :
-                            status === 'cancelled' ? 'bg-rose-100 text-rose-500' :
-                            'bg-stone-100 text-stone-400'
-                        }`}>
-                          {status === 'no_show' ? 'Неявка' :
-                           status === 'cancelled' ? 'Отмена' :
-                           status === 'completed' ? 'Завершено' : status}
+                        <span
+                          className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                            status === 'completed'
+                              ? 'bg-green-100 text-green-600'
+                              : status === 'cancelled'
+                                ? 'bg-rose-100 text-rose-500'
+                                : 'bg-stone-100 text-stone-400'
+                          }`}
+                        >
+                          {status === 'no_show'
+                            ? 'Неявка'
+                            : status === 'cancelled'
+                              ? 'Отмена'
+                              : status === 'completed'
+                                ? 'Завершено'
+                                : status}
                         </span>
                       )}
                     </div>
@@ -219,7 +225,9 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                         <>
                           <dt className="text-stone-400">Телефон</dt>
                           <dd className="text-stone-700 font-medium">
-                             <a href={`tel:${b.phone}`} className="hover:text-brand-green">{b.phone}</a>
+                            <a href={`tel:${b.phone}`} className="hover:text-brand-green">
+                              {b.phone}
+                            </a>
                           </dd>
                         </>
                       )}
@@ -252,37 +260,37 @@ export const BookingsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                     <div className="mt-4 pt-4 border-t border-stone-100 flex flex-wrap gap-2 justify-end">
                       {status !== 'active' && (
                         <button
-                           onClick={() => handleStatusChange(b.id, 'active')}
-                           className="px-3 py-1.5 rounded-lg border border-stone-200 text-stone-600 text-xs hover:bg-stone-50 flex items-center gap-1.5"
+                          onClick={() => handleStatusChange(b.id, 'active')}
+                          className="px-3 py-1.5 rounded-lg border border-stone-200 text-stone-600 text-xs hover:bg-stone-50 flex items-center gap-1.5"
                         >
-                            <PlayCircle className="w-3.5 h-3.5" /> Активен
+                          <PlayCircle className="w-3.5 h-3.5" /> Активен
                         </button>
                       )}
 
                       {status !== 'completed' && (
                         <button
-                           onClick={() => handleStatusChange(b.id, 'completed')}
-                           className="px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-xs hover:bg-green-100 flex items-center gap-1.5"
+                          onClick={() => handleStatusChange(b.id, 'completed')}
+                          className="px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-xs hover:bg-green-100 flex items-center gap-1.5"
                         >
-                            <CheckCircle className="w-3.5 h-3.5" /> Завершено
+                          <CheckCircle className="w-3.5 h-3.5" /> Завершено
                         </button>
                       )}
 
                       {status !== 'no_show' && !isPurchase && (
                         <button
-                           onClick={() => handleStatusChange(b.id, 'no_show')}
-                           className="px-3 py-1.5 rounded-lg border border-stone-200 text-stone-500 text-xs hover:bg-stone-50 flex items-center gap-1.5"
+                          onClick={() => handleStatusChange(b.id, 'no_show')}
+                          className="px-3 py-1.5 rounded-lg border border-stone-200 text-stone-500 text-xs hover:bg-stone-50 flex items-center gap-1.5"
                         >
-                            <UserX className="w-3.5 h-3.5" /> Неявка
+                          <UserX className="w-3.5 h-3.5" /> Неявка
                         </button>
                       )}
 
                       {status !== 'cancelled' && (
                         <button
-                           onClick={() => handleStatusChange(b.id, 'cancelled')}
-                           className="px-3 py-1.5 rounded-lg border border-rose-100 text-rose-600 text-xs hover:bg-rose-50 flex items-center gap-1.5"
+                          onClick={() => handleStatusChange(b.id, 'cancelled')}
+                          className="px-3 py-1.5 rounded-lg border border-rose-100 text-rose-600 text-xs hover:bg-rose-50 flex items-center gap-1.5"
                         >
-                            <XCircle className="w-3.5 h-3.5" /> Отмена
+                          <XCircle className="w-3.5 h-3.5" /> Отмена
                         </button>
                       )}
 

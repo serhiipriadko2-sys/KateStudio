@@ -33,7 +33,7 @@ describe('useStudioContacts', () => {
 
   it('should return default contacts on error', async () => {
     // Mock Supabase error response
-    (supabase.from as any).mockImplementation(() => ({
+    (supabase!.from as any).mockImplementation(() => ({
       select: () => ({
         eq: () => ({
           single: () => Promise.resolve({ data: null, error: { message: 'Error' } }),
@@ -64,7 +64,7 @@ describe('useStudioContacts', () => {
       social_instagram: 'http://instagram.com',
     };
 
-    (supabase.from as any).mockImplementation(() => ({
+    (supabase!.from as any).mockImplementation(() => ({
       select: () => ({
         eq: () => ({
           single: () => Promise.resolve({ data: { value: mockContacts }, error: null }),

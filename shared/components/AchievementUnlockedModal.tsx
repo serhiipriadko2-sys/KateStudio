@@ -1,5 +1,5 @@
 import { X, Share2, Trophy } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Achievement, AchievementRarity } from '../types';
 
 export interface AchievementUnlockedModalProps {

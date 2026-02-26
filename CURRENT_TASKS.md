@@ -4,7 +4,7 @@
 **PRODUCTION_READINESS_AUDIT.md** и **REMEDIATION_PLAN.md**). Фокус на задачах,
 которые можно брать в работу прямо сейчас.
 
-_Обновлено: 21 февраля 2026 (после синхронизации conflict-resolution по PR)._
+_Обновлено: 16 февраля 2026 (после security audit и обновления документации)._
 
 ---
 
@@ -34,9 +34,6 @@ _Обновлено: 21 февраля 2026 (после синхронизаци
 
 **Примечание:** WEB-изображения заменены на локальные ассеты
 (`shared/constants/images.ts`). Остаётся APP.
-
-**Операционное примечание (repo settings):** `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`
-настраиваются вручную в GitHub Secrets (в репозиторий не коммитятся).
 
 ---
 
@@ -73,22 +70,16 @@ _Обновлено: 21 февраля 2026 (после синхронизаци
 
 | #   | Задача                                    | Где менять                                    | Время     | Статус |
 | --- | ----------------------------------------- | --------------------------------------------- | --------- | ------ |
-| 10  | **Input validation (Zod)**                | `supabase/functions/gemini-proxy/index.ts`    | 2-3 часа  | ✅     |
-| 11  | **Rate limiting в Redis/KV**              | `supabase/functions/gemini-proxy/index.ts`    | 3-4 часа  | ✅     |
+| 10  | **Input validation (Zod)**                | `supabase/functions/gemini-proxy/index.ts`    | 2-3 часа  | ⏳     |
+| 11  | **Rate limiting в Redis/KV**              | `supabase/functions/gemini-proxy/index.ts`    | 3-4 часа  | ⏳     |
 | 12  | **Webhook signature verification (HMAC)** | `supabase/functions/payment-webhook/index.ts` | ✅        | ✅     |
 | 13  | **YooKassa интеграция (полная)**          | `supabase/functions/create-payment/index.ts`  | 1-2 дня   | ⏳     |
 | 14  | **Заменить 4 placeholder видео**          | `APP/components/VideoLibrary.tsx`             | 4-8 часов | ⏳     |
 | 15  | **Интегрировать расписание с Supabase**   | `APP/services/dataService.ts` + новая таблица | 1-2 дня   | ⏳     |
 | 16  | **Добавить database индексы**             | Новая миграция                                | 30 мин    | ⏳     |
-| 17  | **Повысить test coverage до 50%+ (178 тестов)** | Все `__tests__/`                         | Ongoing   | ⏳     |
+| 17  | **Повысить test coverage до 50%+**        | Все `__tests__/`                              | Ongoing   | ⏳     |
 | 18  | **Исправить nullable user_id**            | Миграция cleanup                              | 30 мин    | ⏳     |
 | 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ⏳     |
-| 19a | **APP ChatWidget: non-AI режим (без client live)** | `APP/components/ChatWidget/useChatSession.ts` | 30-60 мин | ✅     |
-| 19b | **Toolchain guardrail (Vite/Vitest baseline)** | `docs/TOOLCHAIN_UPGRADE_PLAYBOOK.md` + `scripts/verify_toolchain.mjs` | 30 мин | ✅     |
-| 19c | **Снять конфликт PR (CURRENT_TASKS + useChatSession)** | `CURRENT_TASKS.md`, `APP/components/ChatWidget/useChatSession.ts` | 15 мин | ✅     |
-
-**Риск-заметка по зависимостям:** `npm audit` показывает 22 уязвимости в dev-deps
-(`minimatch`/`glob` через ESLint-цепочку); production bundle не затронут.
 
 **Total P1:** 1-2 недели **Testing Coverage:** ~20% → 50%+ **Payment
 Integration:** 30% → 90%
@@ -147,8 +138,6 @@ Integration:** 30% → 90%
 - **[ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md)** — план действий
 - **[docs/COMPREHENSIVE_UPDATE_2026.md](./docs/COMPREHENSIVE_UPDATE_2026.md)** —
   комплексное обновление
-- **[docs/DEEP_RESEARCH_STACK_2026_02_19.md](./docs/DEEP_RESEARCH_STACK_2026_02_19.md)** —
-  глубокое исследование репозитория и roadmap доработки
 - **[docs/INDEX.md](./docs/INDEX.md)** — центральный индекс документации
 
 ---

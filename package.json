@@ -19,7 +19,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc --project shared/tsconfig.json --noEmit && tsc --project k-sebe-yoga-studioWEB/tsconfig.json --noEmit && tsc --project k-sebe-yoga-studio-APPp/tsconfig.json --noEmit",
     "clean": "rm -rf node_modules shared/node_modules k-sebe-yoga-studioWEB/node_modules k-sebe-yoga-studio-APPp/node_modules",
     "prepare": "husky",
     "test": "vitest",
@@ -27,8 +27,7 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:web": "npm run test --workspace=k-sebe-yoga-studioWEB --if-present",
-    "test:app": "npm run test --workspace=k-sebe-yoga-studio-APPp --if-present",
-    "verify:toolchain": "node scripts/verify_toolchain.mjs"
+    "test:app": "npm run test --workspace=k-sebe-yoga-studio-APPp --if-present"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -61,8 +60,5 @@
       "eslint --fix",
       "prettier --write"
     ]
-  },
-  "overrides": {
-    "vite": "6.0.5"
   }
 }

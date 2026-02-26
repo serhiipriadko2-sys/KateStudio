@@ -11,8 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "composite": true,
-    "outDir": "./dist",
+    "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "@ksebe/shared": ["./index.ts"],

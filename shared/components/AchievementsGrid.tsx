@@ -1,5 +1,4 @@
 import { Lock, Star } from 'lucide-react';
-import React from 'react';
 import type { Achievement, AchievementCategory, AchievementRarity } from '../types';
 import { cn } from '../utils';
 

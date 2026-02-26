@@ -34,7 +34,9 @@ export const Contact: React.FC = () => {
     }
   };
 
-  const mapUrl = contacts?.map_url || "https://yandex.ru/map-widget/v1/?ll=37.121500%2C56.742200&mode=search&oid=7167334007&ol=biz&z=17";
+  const mapUrl =
+    contacts?.map_url ||
+    'https://yandex.ru/map-widget/v1/?ll=37.121500%2C56.742200&mode=search&oid=7167334007&ol=biz&z=17';
 
   return (
     <section id="contacts" className="py-20 bg-white relative overflow-hidden">
@@ -45,9 +47,7 @@ export const Contact: React.FC = () => {
             <span className="text-brand-green uppercase tracking-widest text-xs font-bold mb-3 block">
               Связь
             </span>
-            <h2 className="text-3xl md:text-4xl font-serif text-brand-dark mb-6">
-              Напишите нам
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-serif text-brand-dark mb-6">Напишите нам</h2>
             <p className="text-stone-500 max-w-lg mx-auto leading-relaxed">
               Мы всегда рады ответить на ваши вопросы и помочь выбрать подходящее направление.
             </p>
@@ -58,10 +58,16 @@ export const Contact: React.FC = () => {
           {/* Form */}
           <div className="relative">
             <div className="absolute -inset-4 bg-stone-50 rounded-[2rem] -z-10 transform rotate-1"></div>
-            <FadeIn delay={0.1} className="bg-white p-8 rounded-[1.5rem] shadow-sm border border-stone-100 relative">
+            <FadeIn
+              delay={0.1}
+              className="bg-white p-8 rounded-[1.5rem] shadow-sm border border-stone-100 relative"
+            >
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2"
+                  >
                     Ваше имя
                   </label>
                   <input
@@ -75,7 +81,10 @@ export const Contact: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="phone" className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="phone"
+                    className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2"
+                  >
                     Телефон
                   </label>
                   <input
@@ -89,7 +98,10 @@ export const Contact: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">
+                  <label
+                    htmlFor="message"
+                    className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2"
+                  >
                     Сообщение
                   </label>
                   <textarea
@@ -122,7 +134,9 @@ export const Contact: React.FC = () => {
                   )}
                 </button>
                 {status === 'error' && (
-                  <p className="text-center text-rose-500 text-sm">Ошибка отправки. Попробуйте позже.</p>
+                  <p className="text-center text-rose-500 text-sm">
+                    Ошибка отправки. Попробуйте позже.
+                  </p>
                 )}
               </form>
             </FadeIn>
@@ -132,7 +146,7 @@ export const Contact: React.FC = () => {
               <FadeIn delay={0.2}>
                 <p className="text-center text-stone-400 text-sm mb-6">Или свяжитесь напрямую:</p>
                 <div className="flex flex-wrap justify-center gap-4">
-                   {contacts?.phone && (
+                  {contacts?.phone && (
                     <a
                       href={`tel:${contacts.phone}`}
                       className="flex items-center gap-3 text-stone-600 hover:text-brand-green transition-colors group bg-white border border-stone-100 px-5 py-3 rounded-xl shadow-sm hover:shadow-md"
@@ -142,9 +156,9 @@ export const Contact: React.FC = () => {
                       </div>
                       <span className="font-medium text-sm">{contacts.phone}</span>
                     </a>
-                   )}
+                  )}
 
-                   {contacts?.social_telegram && (
+                  {contacts?.social_telegram && (
                     <a
                       href={contacts.social_telegram}
                       target="_blank"
@@ -156,9 +170,9 @@ export const Contact: React.FC = () => {
                       </div>
                       <span className="font-medium text-sm">Telegram</span>
                     </a>
-                   )}
+                  )}
 
-                   {contacts?.email && (
+                  {contacts?.email && (
                     <a
                       href={`mailto:${contacts.email}`}
                       className="flex items-center gap-3 text-stone-600 hover:text-brand-green transition-colors group bg-white border border-stone-100 px-5 py-3 rounded-xl shadow-sm hover:shadow-md"
@@ -168,7 +182,7 @@ export const Contact: React.FC = () => {
                       </div>
                       <span className="font-medium text-sm">{contacts.email}</span>
                     </a>
-                   )}
+                  )}
                 </div>
               </FadeIn>
             </div>
@@ -190,9 +204,7 @@ export const Contact: React.FC = () => {
 
                 {/* Info Card Overlay */}
                 <div className="absolute bottom-6 left-6 right-6 z-10">
-                  <div
-                    className="bg-white/90 backdrop-blur-md rounded-2xl p-5 shadow-lg border border-white/50"
-                  >
+                  <div className="bg-white/90 backdrop-blur-md rounded-2xl p-5 shadow-lg border border-white/50">
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-start gap-3 flex-1">
                         <div className="w-10 h-10 bg-brand-green/10 rounded-full flex items-center justify-center shrink-0">
@@ -203,7 +215,7 @@ export const Contact: React.FC = () => {
                             Студия К Себе
                           </p>
                           <p className="text-brand-text font-medium text-sm md:text-base leading-tight">
-                            {contacts?.address || "г. Дубна, ул. Станционная 5Б"}
+                            {contacts?.address || 'г. Дубна, ул. Станционная 5Б'}
                           </p>
                         </div>
                       </div>

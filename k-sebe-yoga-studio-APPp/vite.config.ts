@@ -9,6 +9,14 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
     },
     plugins: [react() as unknown as PluginOption],
+    // define: isDev
+    //   ? {
+    //       // NOTE: This still embeds the key into the client bundle.
+    //       // For real security, move Gemini calls behind a server/edge proxy.
+    //       'process.env.API_KEY': JSON.stringify(geminiApiKey),
+    //       'process.env.GEMINI_API_KEY': JSON.stringify(geminiApiKey),
+    //     }
+    //   : {},
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
@@ -27,6 +35,10 @@ export default defineConfig(({ mode }) => {
             // Lucide icons in separate chunk
             if (id.includes('node_modules/lucide-react')) {
               return 'lucide-icons';
+            }
+            // @google/genai SDK in separate chunk if present
+            if (id.includes('node_modules/@google/generative-ai')) {
+              return 'ai-sdk';
             }
             // Supabase SDK in separate chunk
             if (id.includes('node_modules/@supabase')) {

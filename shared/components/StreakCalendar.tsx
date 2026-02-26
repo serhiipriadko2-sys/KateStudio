@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { StreakCalendarDay } from '../types';
 import { cn } from '../utils';
 

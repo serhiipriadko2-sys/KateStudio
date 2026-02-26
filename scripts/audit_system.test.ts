@@ -16,7 +16,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 describe('System Integrity Audit', () => {
-
   it('should connect to Supabase and fetch studio_contacts', async () => {
     const { data, error } = await supabase
       .from('app_settings')
@@ -31,10 +30,7 @@ describe('System Integrity Audit', () => {
   });
 
   it('should fetch videos from public.videos', async () => {
-    const { data, error } = await supabase
-      .from('videos')
-      .select('*')
-      .limit(5);
+    const { data, error } = await supabase.from('videos').select('*').limit(5);
 
     expect(error).toBeNull();
     expect(Array.isArray(data)).toBe(true);
@@ -46,13 +42,11 @@ describe('System Integrity Audit', () => {
       name: 'Audit Bot',
       phone: '+79990000000',
       message: 'System audit test message ' + new Date().toISOString(),
-      status: 'new'
+      status: 'new',
     };
 
     // Public users can INSERT but not SELECT. So we don't chain .select()
-    const { data, error } = await supabase
-      .from('contacts')
-      .insert([testContact]);
+    const { data, error } = await supabase.from('contacts').insert([testContact]);
 
     if (error) console.error('Error inserting contact:', error);
     expect(error).toBeNull();
@@ -60,15 +54,12 @@ describe('System Integrity Audit', () => {
   });
 
   it('should NOT allow public read of bookings', async () => {
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .limit(5);
+    const { data, error } = await supabase.from('bookings').select('*').limit(5);
 
     // RLS should filter this to empty for anon users
     if (!error) {
-        expect(data?.length).toBe(0);
-        console.log('Bookings read restricted correctly (0 rows).');
+      expect(data?.length).toBe(0);
+      console.log('Bookings read restricted correctly (0 rows).');
     }
   });
 });

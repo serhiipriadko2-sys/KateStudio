@@ -20,11 +20,6 @@
       "@app/*": ["./k-sebe-yoga-studio-APPp/*"]
     }
   },
-  "references": [
-    { "path": "./shared" },
-    { "path": "./k-sebe-yoga-studioWEB" },
-    { "path": "./k-sebe-yoga-studio-APPp" }
-  ],
   "include": [],
   "exclude": ["node_modules"]
 }
