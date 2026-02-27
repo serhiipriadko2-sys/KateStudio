@@ -5,7 +5,7 @@ import { useScrollLock } from '../hooks/useScrollLock';
 import { supabase } from '../services/supabase';
 import { BookingDetails } from '../types';
 
-const TELEGRAM_URL = 'https://t.me/k_sebe_dubna';
+const TELEGRAM_URL = 'https://t.me/Kate_Gabran';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -183,7 +183,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
                   </div>
                   <div className="text-left">
                     <p className="font-semibold text-sm leading-tight">Написать Кате в Telegram</p>
-                    <p className="text-white/70 text-xs">@k_sebe_dubna · ответит быстро</p>
+                    <p className="text-white/70 text-xs">@Kate_Gabran · ответит быстро</p>
                   </div>
                 </div>
                 <ArrowRight className="w-5 h-5 shrink-0 group-hover:translate-x-1 transition-transform opacity-70" />
