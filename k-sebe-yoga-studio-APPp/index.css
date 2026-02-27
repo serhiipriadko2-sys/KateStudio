@@ -114,15 +114,87 @@ html {
   background-color: rgba(87, 167, 115, 0.5);
 }
 
-/* Utility for iOS Safe Areas */
+/* ── Safe Areas (Capacitor / PWA) ────────────────────────────────────────── */
+
+/* CSS variables for safe area insets — consumed throughout the app */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+
+  /* Keyboard height — updated by native/plugins.ts Keyboard listeners */
+  --keyboard-height: 0px;
+}
+
+/* Padding utilities */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 20px);
 }
 .pt-safe {
-  padding-top: env(safe-area-inset-top, 20px);
+  padding-top: env(safe-area-inset-top, 0px);
 }
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Position utilities */
 .top-safe {
   top: env(safe-area-inset-top, 0px);
+}
+.bottom-safe {
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Margin utilities */
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+.mt-safe {
+  margin-top: env(safe-area-inset-top, 0px);
+}
+
+/* Minimum height utilities */
+.min-h-safe-bottom {
+  min-height: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Keyboard-aware layout ─────────────────────────────────────────────── */
+
+/* Shift content up when native keyboard is visible */
+.keyboard-open .keyboard-aware {
+  padding-bottom: var(--keyboard-height);
+}
+
+/* ── Platform-specific overrides ──────────────────────────────────────── */
+
+/* iOS — smooth momentum scrolling in scrollable areas */
+.is-ios .scroll-container {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* iOS — hide status bar area (Capacitor StatusBar overlaysWebView: true) */
+.is-ios body {
+  /* Status bar height accounted for via safe-area-inset-top */
+}
+
+/* Android — no rubber-band overscroll */
+.is-android {
+  overscroll-behavior: none;
+}
+
+/* Native — disable browser context menu on long press */
+.is-native * {
+  -webkit-touch-callout: none;
+}
+
+/* Native — disable text selection in UI elements (preserve in inputs) */
+.is-native .no-select {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Smooth transitions for views */
