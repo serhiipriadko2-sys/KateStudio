@@ -1,6 +1,6 @@
 /* eslint-disable */
-import { describe, it, expect, beforeAll } from 'vitest';
-import { createClient } from '@supabase/supabase-js';
+import { describe, it, expect } from 'vitest';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -8,14 +8,13 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const hasEnv = Boolean(supabaseUrl && supabaseAnonKey);
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-describe('System Integrity Audit', () => {
+// Skip the entire suite when Supabase env vars are not configured (e.g. CI)
+describe.skipIf(!hasEnv)('System Integrity Audit', () => {
+  const supabase: SupabaseClient = hasEnv
+    ? createClient(supabaseUrl!, supabaseAnonKey!)
+    : (null as unknown as SupabaseClient);
   it('should connect to Supabase and fetch studio_contacts', async () => {
     const { data, error } = await supabase
       .from('app_settings')
