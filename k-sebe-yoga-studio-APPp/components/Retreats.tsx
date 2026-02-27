@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useToast } from '../context/ToastContext';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
+import { IMAGES } from '@ksebe/shared';
 
 export const Retreats: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,7 +86,7 @@ export const Retreats: React.FC = () => {
             >
               {/* Using 'retreat-cover' simple key to try and catch legacy user upload */}
               <Image
-                src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop"
+                src={IMAGES.retreats.main}
                 alt="Yoga Retreat Altai"
                 storageKey="retreat-cover-main"
                 containerClassName="absolute inset-0 w-full h-full"
@@ -141,7 +142,7 @@ export const Retreats: React.FC = () => {
             {/* Left/Top Image Panel */}
             <div className="md:w-1/3 h-48 md:h-full relative">
               <Image
-                src="https://images.unsplash.com/photo-1518182170546-0766be6f5a56?q=80&w=800&auto=format&fit=crop"
+                src={IMAGES.retreats.sidebar}
                 alt="Altai Nature Detail"
                 storageKey="retreat-modal-sidebar"
                 containerClassName="w-full h-full"
