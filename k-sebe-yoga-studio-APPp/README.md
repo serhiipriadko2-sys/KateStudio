@@ -11,11 +11,16 @@ https://ai.studio/apps/drive/12aRTDeMFYVlFE3vx3mr7P4lcirm082NF
 
 ## Run Locally
 
-**Prerequisites:** Node.js
+**Prerequisites:** Node.js 22+
 
 1. Install dependencies: `npm install`
-2. Set the `VITE_GEMINI_API_KEY` (recommended) in your `.env` (see
-   [../.env.example](../.env.example))
+2. Copy and configure environment variables:
+   ```bash
+   cp ../.env.example .env
+   # Required: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+   # Note: Do NOT set VITE_GEMINI_API_KEY — all AI calls go through the
+   # Supabase Edge Function proxy (supabase/functions/gemini-proxy)
+   ```
 3. Run the app: `npm run dev`
 
 ## Mobile build (Capacitor wrapper)

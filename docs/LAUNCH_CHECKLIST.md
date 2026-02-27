@@ -1,6 +1,6 @@
 # Launch Checklist & Gap Analysis
 
-**Status:** Draft / Analysis Phase **Date:** Jan 2026
+**Status:** In Progress | **Updated:** 27 февраля 2026
 
 ## 1. Schema Gap (Tables used in code vs. Migrations)
 
@@ -22,29 +22,58 @@ don't exist.
 
 ## 2. Security Blockers (P0)
 
-| Component                            | Issue                                                                                                                                         | Remediation                                                                                        |
-| :----------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| **Edge Function: `payment-webhook`** | **Optional Secret:** The code checks `if (secret) { ... }`, meaning if `PAYMENT_WEBHOOK_SECRET` is unset, the endpoint accepts _any_ request. | Enforce secret presence. Return 500/401 if missing.                                                |
-| **Edge Function: `create-payment`**  | **Anon Fallback:** `getSupabaseClient` falls back to `anonKey` if `serviceRoleKey` is missing.                                                | Remove fallback. Fail hard if service role is missing for backend ops.                             |
-| **All Edge Functions**               | **CORS `*`:** Allows any origin.                                                                                                              | Restrict to `https://ksebe-studio.ru`, `app.ksebe-studio.ru` (and localhost for dev).              |
-| **RLS: `subscriptions`**             | **Unsafe Update:** Previous analysis suggests users can update their own subscription status.                                                 | Verify and remove `update` policy for authenticated users. Only Service Role should update status. |
+All P0 security blockers are **resolved** as of February 2026. See
+[Security Report](./SECURITY_REPORT_2026_02_11.md) for details.
+
+| Component                            | Issue                                      | Status                                                                              |
+| :----------------------------------- | :----------------------------------------- | :---------------------------------------------------------------------------------- |
+| **Edge Function: `payment-webhook`** | Webhook secret was optional                | ✅ **Resolved** — HMAC verification, 401 if secret missing                          |
+| **Edge Function: `create-payment`**  | Anon fallback if serviceRoleKey missing    | ✅ **Resolved** — Fails hard without Service Role Key                               |
+| **All Edge Functions**               | CORS `*` allowed any origin                | ✅ **Resolved** — Restricted to `ksebe-studio.ru`, `app.ksebe-studio.ru`, localhost |
+| **RLS: `subscriptions`**             | Users could update own subscription status | ✅ **Resolved** — Update policy removed, Service Role only                          |
+| **Gemini API key in client**         | `VITE_GEMINI_API_KEY` fallback in browser  | ✅ **Resolved** — All AI calls via Edge Function proxy                              |
+
+**Security Score:** 85/100 (was 55)
 
 ## 3. Content & Assets (P1)
 
-| Asset Type                | Issue                                           | Location/Count                                                                                                                                                                                                                                                                                             |
-| :------------------------ | :---------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Unsplash Placeholders** | Hardcoded Unsplash URLs found in UI components. | `k-sebe-yoga-studio-APPp/App.tsx`<br>`k-sebe-yoga-studio-APPp/components/Blog.tsx`<br>`k-sebe-yoga-studio-APPp/components/Reviews.tsx`<br>`k-sebe-yoga-studio-APPp/components/VideoLibrary.tsx`<br>`k-sebe-yoga-studio-APPp/components/Dashboard.tsx`<br>`k-sebe-yoga-studio-APPp/components/Retreats.tsx` |
+| Asset Type             | Issue                            | Location                                                                                                                                                          | Status                     |
+| :--------------------- | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------- |
+| **Unsplash in APP**    | Hardcoded Unsplash URLs          | `APP/components/Blog.tsx`<br>`APP/components/Reviews.tsx`<br>`APP/components/VideoLibrary.tsx`<br>`APP/components/Dashboard.tsx`<br>`APP/components/Retreats.tsx` | 🔄 In Progress             |
+| **WEB Images**         | Were using Unsplash placeholders | `shared/constants/images.ts`                                                                                                                                      | ✅ Resolved — local assets |
+| **Placeholder Videos** | 4 placeholder video URLs in APP  | `APP/components/VideoLibrary.tsx`                                                                                                                                 | ⏳ Pending                 |
 
 ## 4. Deployment & Infrastructure
 
-- **Firebase Deploy:** Workflow likely needs `VITE_SUPABASE_URL` and
-  `VITE_SUPABASE_ANON_KEY` injected.
-- **Web 404:** Ensure `public/404.html` handles client-side routing correctly
-  for `ksebe-studio.ru`.
+| Item                     | Status | Notes                                                               |
+| :----------------------- | :----- | :------------------------------------------------------------------ |
+| `.env` files             | ⏳     | Create from `.env.example` for local dev; inject in CI              |
+| GitHub Secrets           | ⏳     | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, Firebase credentials |
+| Firebase deploy workflow | ⏳     | Needs env vars injected in `firebase-deploy.yml`                    |
+| Web 404 handling         | ✅     | `public/404.html` handles client-side routing for `ksebe-studio.ru` |
+| Capacitor mobile build   | ✅     | `npm run build:mobile` (Android), `npm run build:mobile:ios` (iOS)  |
+| CI (lint/typecheck/test) | ✅     | All green: 0 errors, 208/208 tests pass                             |
 
-## 5. Next Steps (Immediate)
+## 5. Native / Mobile
 
-1.  **Fix Schema:** Generate missing migrations.
-2.  **Lock down Functions:** Update `payment-webhook` and `create-payment`.
-3.  **Local "KB":** Create `shared/constants/kb.ts` or similar for the non-AI
-    assistant.
+| Item                     | Status | Notes                                                        |
+| :----------------------- | :----- | :----------------------------------------------------------- |
+| Capacitor scaffold       | ✅     | `native/`, `capacitor.config.ts`, all plugins wired up       |
+| Platform CSS classes     | ✅     | `is-ios`, `is-android`, `is-native` set via `initNative()`   |
+| Safe area insets         | ✅     | `.pt-safe`, `.pb-safe` etc. defined in `index.css`           |
+| StatusBar / SplashScreen | ✅     | Brand green StatusBar, fade-out SplashScreen                 |
+| Haptic feedback          | ✅     | App.tsx nav + BookingModal (submit, success, error)          |
+| Android back button      | ✅     | Minimize app if no history (default Capacitor behaviour)     |
+| Android Studio project   | ⏳     | `npm run cap:add:android` → generated locally, not committed |
+| Xcode project            | ⏳     | `npm run cap:add:ios` → requires macOS + CocoaPods           |
+
+## 6. Next Steps (Priority Order)
+
+1. **[P0]** Create `.env` files and configure GitHub Secrets
+2. **[P1]** Generate missing DB migrations (`contacts`, `classes`)
+3. **[P1]** Add Zod input validation to Edge Functions
+4. **[P1]** Complete YooKassa payment integration
+5. **[P1]** Replace APP placeholder images and videos
+6. **[P2]** Sentry logging and monitoring
+7. **[P2]** Push notifications (Firebase Cloud Messaging)
+8. **[P3]** Performance optimization (Lighthouse 90+)

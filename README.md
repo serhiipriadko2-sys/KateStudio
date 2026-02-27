@@ -3,17 +3,23 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![TypeScript](https://img.shields.io/badge/typescript-100%25-blue.svg)
+![Tests](https://img.shields.io/badge/tests-208%20passing-brightgreen.svg)
+![Production Readiness](https://img.shields.io/badge/production--readiness-76%2F100-yellow.svg)
 
 **"К себе" (To Yourself)** is a comprehensive digital ecosystem for the K Sebe
 Yoga Studio (Dubna, Russia).
 
 ## 📚 Documentation
 
-- **[AGENTS.md](./AGENTS.md)**: **MUST READ**. Primary guidelines for AI agents
-  and developers.
-- **[CLAUDE.md](./CLAUDE.md)**: Quick reference context for assistants.
-- **[Architecture](./docs/ARCHITECTURE.md)**: High-level system design.
-- **[Skills](./skills/registry.json)**: Automated agent capabilities.
+| Document                                               | Purpose                                         |
+| ------------------------------------------------------ | ----------------------------------------------- |
+| [AGENTS.md](./AGENTS.md)                               | **MUST READ** — AI agent guidelines             |
+| [CLAUDE.md](./CLAUDE.md)                               | Instructions for Claude Code / Copilot / Cursor |
+| [CURRENT_TASKS.md](./CURRENT_TASKS.md)                 | Active sprint tasks and priorities              |
+| [CHANGELOG.md](./CHANGELOG.md)                         | Version history                                 |
+| [docs/INDEX.md](./docs/INDEX.md)                       | Central documentation index                     |
+| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)         | System architecture                             |
+| [docs/LAUNCH_CHECKLIST.md](./docs/LAUNCH_CHECKLIST.md) | Pre-launch gap analysis                         |
 
 ## 📂 Repository Structure
 
@@ -21,48 +27,73 @@ This is a **Monorepo** managed with npm workspaces:
 
 - `shared/` (`@ksebe/shared`): Reusable UI, hooks, and logic.
 - `k-sebe-yoga-studioWEB/`: Marketing site & Admin Panel.
-- `k-sebe-yoga-studio-APPp/`: Mobile PWA for students.
-- `supabase/`: Backend (Edge Functions, Database).
+- `k-sebe-yoga-studio-APPp/`: Mobile PWA + Capacitor native wrapper
+  (Android/iOS).
+- `supabase/`: Backend (Edge Functions, Database migrations).
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js >= 18
-- npm >= 9
-- Supabase CLI
+- Node.js >= 22
+- npm >= 10
+- Supabase CLI (for Edge Functions)
 
 ### Installation
 
 ```bash
 npm install
-cp .env.example .env
+cp .env.example .env  # fill in your Supabase credentials
 ```
 
 ### Development
 
 ```bash
-# Web Workspace
-npm run dev:web
-
-# App Workspace
-npm run dev:app
+npm run dev:web    # Landing page / WEB
+npm run dev:app    # Mobile PWA / APP
 ```
 
-### Testing
+### Testing & Quality
 
 ```bash
-npm run test:run      # Run all tests (Vitest)
-npm run typecheck     # Verify TypeScript
+npm run test:run       # Run all tests (Vitest) — 208 passing
+npm run typecheck      # TypeScript strict check (0 errors)
+npm run lint           # ESLint (0 errors)
+npm run format:check   # Prettier check
+npm run build:web      # Build WEB
+npm run build:app      # Build APP
 ```
 
-## 🔐 Security & AI
+## 📱 Mobile Build (Capacitor)
 
-- **AI**: Powered by Gemini via Supabase Edge Functions (`gemini-proxy`).
-- **Auth**: Supabase Auth with RLS.
-- **Payments**: Edge Functions integration.
+The APP workspace includes a full Capacitor wrapper for native Android/iOS
+builds.
 
-**Note**: Never commit `.env` files or expose API keys in client-side code.
+```bash
+cd k-sebe-yoga-studio-APPp
+
+# First time setup
+npm run cap:add:android        # Generate Android project (local only)
+npm run cap:add:ios            # Generate iOS project (macOS + CocoaPods)
+
+# Daily workflow
+npm run build:mobile           # Build + sync Android (auto-adds if missing)
+npm run build:mobile:ios       # Build + sync iOS
+npm run cap:open:android       # Open Android Studio
+npm run cap:open:ios           # Open Xcode
+```
+
+> Native projects (`android/`, `ios/`) are generated locally and not committed.
+
+## 🔐 Security
+
+- **AI**: Powered by Gemini via Supabase Edge Functions (`gemini-proxy`). All AI
+  calls go through the proxy — never expose `GEMINI_API_KEY` client-side.
+- **Auth**: Supabase Auth with OTP + RLS policies.
+- **Payments**: HMAC-verified webhook + create-payment Edge Functions.
+- **CORS**: Restricted to `ksebe-studio.ru`, `app.ksebe-studio.ru`, localhost.
+
+**Never commit `.env` files or expose API keys in client-side code.**
 
 ## 📄 License
 

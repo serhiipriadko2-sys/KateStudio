@@ -4,7 +4,7 @@
 **PRODUCTION_READINESS_AUDIT.md** и **REMEDIATION_PLAN.md**). Фокус на задачах,
 которые можно брать в работу прямо сейчас.
 
-_Обновлено: 16 февраля 2026 (после security audit и обновления документации)._
+_Обновлено: 27 февраля 2026 (Capacitor wrapper + интеграция хаптики)._
 
 ---
 
@@ -39,30 +39,35 @@ _Обновлено: 16 февраля 2026 (после security audit и обн
 
 ## Завершённые задачи (Sprint: Полировка экосистемы)
 
-| #   | Задача                                                           | Статус |
-| --- | ---------------------------------------------------------------- | ------ |
-| 1   | ✅ Создать Edge Function-прокси для Gemini API с rate limiting   | ✅     |
-| 2   | ✅ Добавить вебхуки оплаты: `create-payment` и `payment-webhook` | ✅     |
-| 3   | ✅ Сгенерировать PWA-иконки 72–512px                             | ✅     |
-| 4   | ✅ Добавить `og-image.jpg` для соцсетей                          | ✅     |
-| 5   | ✅ Рефакторинг ChatWidget: разбить на подкомпоненты и хук        | ✅     |
-| 6   | ✅ Добавить `.env.example` в APP                                 | ✅     |
-| 7   | ✅ Добавить `robots.txt` в APP                                   | ✅     |
-| 8   | ✅ Добавить `sitemap.xml` в APP                                  | ✅     |
-| 9   | ✅ Обновить sitemap.xml с датой 2026                             | ✅     |
-| 10  | ✅ Исправить `any` типы в shared/utils                           | ✅     |
-| 11  | ✅ Исправить неиспользуемые переменные                           | ✅     |
-| 12  | ✅ Исправить a11y предупреждения                                 | ✅     |
-| 13  | ✅ Экранирование кавычек в JSX                                   | ✅     |
-| 14  | ✅ Обновить типы для геймификации                                | ✅     |
-| 15  | ✅ Добавить константы достижений                                 | ✅     |
-| 16  | ✅ Добавить INSIDE_FLOW info                                     | ✅     |
-| 17  | ✅ Добавить ARIA_CONFIG                                          | ✅     |
-| 18  | ✅ Добавить SUBSCRIPTION_PLANS                                   | ✅     |
-| 19  | ✅ Создать COMPREHENSIVE_UPDATE_2026.md                          | ✅     |
-| 20  | ✅ Обновить документацию (CLAUDE.md, AGENTS.md, skills, docs)    | ✅     |
-| 21  | ✅ Добавить Capacitor wrapper scaffold для APP                   | ✅     |
-| 22  | ✅ Добавить local native scaffold workflow (android/ios) для APP | ✅     |
+| #   | Задача                                                             | Статус |
+| --- | ------------------------------------------------------------------ | ------ |
+| 1   | ✅ Создать Edge Function-прокси для Gemini API с rate limiting     | ✅     |
+| 2   | ✅ Добавить вебхуки оплаты: `create-payment` и `payment-webhook`   | ✅     |
+| 3   | ✅ Сгенерировать PWA-иконки 72–512px                               | ✅     |
+| 4   | ✅ Добавить `og-image.jpg` для соцсетей                            | ✅     |
+| 5   | ✅ Рефакторинг ChatWidget: разбить на подкомпоненты и хук          | ✅     |
+| 6   | ✅ Добавить `.env.example` в APP                                   | ✅     |
+| 7   | ✅ Добавить `robots.txt` в APP                                     | ✅     |
+| 8   | ✅ Добавить `sitemap.xml` в APP                                    | ✅     |
+| 9   | ✅ Обновить sitemap.xml с датой 2026                               | ✅     |
+| 10  | ✅ Исправить `any` типы в shared/utils                             | ✅     |
+| 11  | ✅ Исправить неиспользуемые переменные                             | ✅     |
+| 12  | ✅ Исправить a11y предупреждения                                   | ✅     |
+| 13  | ✅ Экранирование кавычек в JSX                                     | ✅     |
+| 14  | ✅ Обновить типы для геймификации                                  | ✅     |
+| 15  | ✅ Добавить константы достижений                                   | ✅     |
+| 16  | ✅ Добавить INSIDE_FLOW info                                       | ✅     |
+| 17  | ✅ Добавить ARIA_CONFIG                                            | ✅     |
+| 18  | ✅ Добавить SUBSCRIPTION_PLANS                                     | ✅     |
+| 19  | ✅ Создать COMPREHENSIVE_UPDATE_2026.md                            | ✅     |
+| 20  | ✅ Обновить документацию (CLAUDE.md, AGENTS.md, skills, docs)      | ✅     |
+| 21  | ✅ Добавить Capacitor wrapper scaffold для APP                     | ✅     |
+| 22  | ✅ Добавить local native scaffold workflow (android/ios) для APP   | ✅     |
+| 23  | ✅ Интегрировать хаптику в нативные взаимодействия APP             | ✅     |
+| 24  | ✅ WEB: заменить прямую запись кнопкой связи + Telegram CTA        | ✅     |
+| 25  | ✅ WEB: исправить Telegram-ссылку на @Kate_Gabran                  | ✅     |
+| 26  | ✅ CI fix: согласовать версии Capacitor-плагинов (^7.0.0)          | ✅     |
+| 27  | ✅ Prettier: форматирование всего репозитория (format:check green) | ✅     |
 
 ---
 
@@ -81,24 +86,25 @@ _Обновлено: 16 февраля 2026 (после security audit и обн
 | 18  | **Исправить nullable user_id**            | Миграция cleanup                              | 30 мин    | ⏳     |
 | 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ⏳     |
 
-**Total P1:** 1-2 недели **Testing Coverage:** ~20% → 50%+ **Payment
+**Total P1:** 1-2 недели | **Testing Coverage:** ~25% → 50%+ | **Payment
 Integration:** 30% → 90%
 
 ## 🟢 Средний приоритет (P2) — После запуска, но скоро
 
-| #   | Задача                               | Где менять                                  | Время    | Статус |
-| --- | ------------------------------------ | ------------------------------------------- | -------- | ------ |
-| 20  | Убрать default exports (8 файлов)    | shared/                                     | 1-2 часа | ⏳     |
-| 21  | Вынести хардкод в константы          | Blog, Pricing, Marquee, Breathwork          | 2-3 часа | ⏳     |
-| 22  | Оптимизировать изображения (WebP)    | Все public/images/                          | 1 день   | ⏳     |
-| 23  | Реализовать Achievements UI          | `shared/components/`                        | 1-2 дня  | ⏳     |
-| 24  | Добавить Veo/Image Edit в Edge proxy | `supabase/functions/gemini-proxy/`          | 1 день   | ⏳     |
-| 25  | Раскомментировать Subscription UI    | `APP/components/Dashboard.tsx`              | 2 часа   | ⏳     |
-| 26  | Newsletter интеграция (Mailchimp)    | `WEB/components/Footer.tsx` + Edge Function | 1 день   | ⏳     |
-| 27  | "Все статьи" функционал или убрать   | `WEB/components/Blog.tsx`                   | 3-4 часа | ⏳     |
-| 28  | Logging & Monitoring (Sentry)        | WEB/APP                                     | 1 день   | ⏳     |
-| 29  | Error recovery & cron jobs           | Supabase Edge Functions                     | 1-2 дня  | ⏳     |
-| 30  | Database types generation            | `shared/types/database.types.ts`            | 1 час    | ⏳     |
+| #   | Задача                                        | Где менять                                  | Время    | Статус |
+| --- | --------------------------------------------- | ------------------------------------------- | -------- | ------ |
+| 20  | Убрать default exports (8 файлов)             | shared/                                     | 1-2 часа | ⏳     |
+| 21  | Вынести хардкод в константы                   | Blog, Pricing, Marquee, Breathwork          | 2-3 часа | ⏳     |
+| 22  | Оптимизировать изображения (WebP)             | Все public/images/                          | 1 день   | ⏳     |
+| 23  | Реализовать Achievements UI                   | `shared/components/`                        | 1-2 дня  | ⏳     |
+| 24  | Добавить Veo/Image Edit в Edge proxy          | `supabase/functions/gemini-proxy/`          | 1 день   | ⏳     |
+| 25  | Раскомментировать Subscription UI             | `APP/components/Dashboard.tsx`              | 2 часа   | ⏳     |
+| 26  | Newsletter интеграция (Mailchimp)             | `WEB/components/Footer.tsx` + Edge Function | 1 день   | ⏳     |
+| 27  | "Все статьи" функционал или убрать            | `WEB/components/Blog.tsx`                   | 3-4 часа | ⏳     |
+| 28  | Logging & Monitoring (Sentry)                 | WEB/APP                                     | 1 день   | ⏳     |
+| 29  | Error recovery & cron jobs                    | Supabase Edge Functions                     | 1-2 дня  | ⏳     |
+| 30  | Database types generation                     | `shared/types/database.types.ts`            | 1 час    | ⏳     |
+| 31  | Push Notifications (Firebase Cloud Messaging) | `APP/`, Edge Function                       | 2-3 дня  | ⏳     |
 
 **Total P2:** 2-4 недели
 
@@ -106,7 +112,6 @@ Integration:** 30% → 90%
 
 | #   | Задача                                    | Где менять           | Статус |
 | --- | ----------------------------------------- | -------------------- | ------ |
-| 31  | Push Notifications (Firebase)             | APP                  | ⏳     |
 | 32  | DailyRecommendation компонент             | `shared/components/` | ⏳     |
 | 33  | PersonalProgram 7-day programs            | APP                  | ⏳     |
 | 34  | StreakCalendar visualization              | `shared/components/` | ⏳     |
@@ -144,25 +149,39 @@ Integration:** 30% → 90%
 
 ## PRODUCTION READINESS
 
-**Текущая оценка: 75/100** (было 68, security P0 устранены)
+**Текущая оценка: 76/100** (было 75, +Capacitor native wrapper завершён)
 
-| Метрика     | Текущее    | После P1   | Цель       |
-| ----------- | ---------- | ---------- | ---------- |
-| Security    | 85/100     | 90/100     | 95/100     |
-| Testing     | 25/100     | 50/100     | 70/100     |
-| Content     | 80/100     | 100/100    | 100/100    |
-| Payment     | 30/100     | 90/100     | 100/100    |
-| **OVERALL** | **75/100** | **85/100** | **90/100** |
+| Метрика       | Текущее    | После P1   | Цель       |
+| ------------- | ---------- | ---------- | ---------- |
+| Security      | 85/100     | 90/100     | 95/100     |
+| Testing       | 25/100     | 50/100     | 70/100     |
+| Content       | 80/100     | 100/100    | 100/100    |
+| Payment       | 30/100     | 90/100     | 100/100    |
+| Mobile/Native | 60/100     | 80/100     | 90/100     |
+| **OVERALL**   | **76/100** | **86/100** | **90/100** |
 
 ---
 
 ## TIMELINE
 
 - **Done (P0 Security):** Webhook, RLS, CORS, API key, Service Role Key
+- **Done (Native):** Capacitor scaffold, native plugins, haptics, Android
+  lifecycle
+- **Done (WEB):** Contact form UX, Telegram CTA, Telegram link fix
 - **Week 1 (P0 remaining):** .env, GitHub Secrets, APP images
-- **Week 2-3 (P1):** Backend + Features
+- **Week 2-3 (P1):** Backend + Features (Zod, YooKassa, DB migrations)
 - **Week 4-6 (P2):** Polish + Optimization
 - **Week 7+ (P3):** Advanced Features (ongoing)
+
+---
+
+## Тесты
+
+| Метрика       | Текущее | Цель |
+| ------------- | ------- | ---- |
+| Tests passing | 208     | 300+ |
+| Test suites   | 36      | 50+  |
+| Coverage      | ~25%    | 70%+ |
 
 ---
 

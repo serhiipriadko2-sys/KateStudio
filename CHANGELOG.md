@@ -8,6 +8,60 @@ and this project adheres to
 
 ## [Unreleased]
 
+---
+
+## [2.1.0] - 2026-02-27
+
+### Added
+
+- **Native/Capacitor**: Full Capacitor wrapper scaffold for Android/iOS builds
+  - `k-sebe-yoga-studio-APPp/native/platform.ts` — platform detection utilities
+    (`isNative`, `isIOS`, `isAndroid`, `isWeb`, `getPlatform`, `hasNotch`,
+    `applyPlatformClasses`)
+  - `k-sebe-yoga-studio-APPp/native/plugins.ts` — native plugin initializers:
+    StatusBar, SplashScreen, Keyboard, App lifecycle, Network, Haptics
+  - `k-sebe-yoga-studio-APPp/native/index.ts` — `initNative()` / `nativeReady()`
+    entry points; Android back button, app resume/pause CustomEvents
+  - `k-sebe-yoga-studio-APPp/hooks/useNative.ts` — React hook exposing platform
+    info, network status, and haptic feedback utilities
+  - `k-sebe-yoga-studio-APPp/capacitor.config.ts` — SplashScreen & StatusBar
+    config
+- **Capacitor plugins** added to `package.json`: `@capacitor/app`,
+  `@capacitor/haptics`, `@capacitor/keyboard`, `@capacitor/network`,
+  `@capacitor/splash-screen`, `@capacitor/status-bar`
+- **CSS safe-area utilities** in `index.css`: `.pt-safe`, `.pb-safe`,
+  `.pl-safe`, `.pr-safe`, `.top-safe`, `.bottom-safe`, `.mb-safe`, `.mt-safe`,
+  `.min-h-safe-bottom`, `--keyboard-height`, keyboard-aware layout, platform
+  class overrides (`is-ios`, `is-android`)
+- **Haptic feedback** integrated into key app interactions:
+  - `App.tsx`: tab navigation (`hapticLight`), IntroSplash hold start
+    (`hapticLight`), completion (`hapticSuccess`)
+  - `BookingModal`: submit (`hapticLight`), success (`hapticSuccess`), errors
+    (`hapticError`), close button (`hapticLight`)
+- **Android/iOS build scripts** in `package.json`: `build:mobile`,
+  `build:mobile:ios`, `cap:sync`, `cap:add:*`, `cap:open:*`
+
+### Changed
+
+- **WEB `BookingModal`**: Replaced direct booking form with Telegram CTA
+  pointing to `@Kate_Gabran` — reduces friction, aligns with studio workflow
+- **WEB**: Telegram link updated from channel to personal `@Kate_Gabran`
+- **APP `index.tsx`**: `initNative()` runs synchronously pre-render;
+  `nativeReady()` called in `requestAnimationFrame` to hide splash after first
+  paint
+
+### Fixed
+
+- **CI**: Capacitor plugin versions corrected from `^7.4.3` (non-existent) to
+  `^7.0.0` — `npm ci` now resolves across all workspaces
+- **TypeScript**: Removed 4 invalid fields from `capacitor.config.ts` that
+  caused type errors (`handleApplicationNotifications`, `captureInput`,
+  `animation`, string literals where enums required)
+- **Prettier**: Auto-formatted 12 files with accumulated style drift
+- **ESLint**: Fixed `import/order` warnings in all new native files
+
+---
+
 ## [2.0.0] - 2026-02-16
 
 ### Added
@@ -158,5 +212,11 @@ and this project adheres to
 - **Security** for vulnerability fixes
 
 [Unreleased]:
-  https://github.com/serhiipriadko2-sys/KateStudio/compare/v1.0.0...HEAD
+  https://github.com/serhiipriadko2-sys/KateStudio/compare/v2.1.0...HEAD
+[2.1.0]:
+  https://github.com/serhiipriadko2-sys/KateStudio/compare/v2.0.0...v2.1.0
+[2.0.0]:
+  https://github.com/serhiipriadko2-sys/KateStudio/compare/v1.1.0...v2.0.0
+[1.1.0]:
+  https://github.com/serhiipriadko2-sys/KateStudio/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/serhiipriadko2-sys/KateStudio/releases/tag/v1.0.0
