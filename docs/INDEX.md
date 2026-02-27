@@ -1,7 +1,7 @@
 # Центральный индекс документации | K Sebe Ecosystem
 
 > **Единая точка входа для всей технической и стратегической документации**
-> **Обновлено:** 16 февраля 2026
+> **Обновлено:** 27 февраля 2026 | **Версия:** 7.0.0
 
 ---
 
@@ -34,11 +34,11 @@
 
 ## Security и Production Readiness
 
-- [**SECURITY_REPORT_2026_02_11.md**](./SECURITY_REPORT_2026_02_11.md) — **NEW**
-  Аудит безопасности (февраль 2026): все P0 блокеры устранены
+- [**SECURITY_REPORT_2026_02_11.md**](./SECURITY_REPORT_2026_02_11.md) —
+  **АКТУАЛЬНО** Аудит безопасности (февраль 2026): все P0 блокеры устранены
 
-- [**COMPREHENSIVE_AUDIT_FEB_2026.md**](./COMPREHENSIVE_AUDIT_FEB_2026.md) —
-  **NEW** Полный аудит экосистемы (февраль 2026)
+- [**COMPREHENSIVE_AUDIT_FEB_2026.md**](./COMPREHENSIVE_AUDIT_FEB_2026.md)
+  Полный аудит экосистемы (февраль 2026)
 
 - [**SECURITY_MODEL.md**](./SECURITY_MODEL.md) Модель безопасности и RLS
   политики
@@ -99,10 +99,10 @@
 
 ## AI-агенты
 
-- [**CLAUDE.md**](../CLAUDE.md) — **ОБНОВЛЕНО Февраль 2026** Основные инструкции
-  для AI-агентов (Claude Code, Copilot, Cursor)
+- [**CLAUDE.md**](../CLAUDE.md) — **ОБНОВЛЕНО Фев 2026** Основные инструкции для
+  AI-агентов (Claude Code, Copilot, Cursor)
 
-- [**AGENTS.md**](../AGENTS.md) — **ОБНОВЛЕНО Февраль 2026** Мульти-агентная
+- [**AGENTS.md**](../AGENTS.md) — **ОБНОВЛЕНО Фев 2026** Мульти-агентная
   архитектура (Claude Code, Jules, Codex)
 
 - [**skills/registry.json**](../skills/registry.json) Реестр навыков Jules (4
@@ -115,6 +115,12 @@
 - [**shared/README.md**](../shared/README.md) Документация shared-библиотеки
   (@ksebe/shared)
 
+- [**k-sebe-yoga-studio-APPp/README.md**](../k-sebe-yoga-studio-APPp/README.md)
+  APP: запуск, мобильная сборка (Capacitor), Android/iOS workflow
+
+- [**k-sebe-yoga-studioWEB/CACHE_STRATEGY.md**](../k-sebe-yoga-studioWEB/CACHE_STRATEGY.md)
+  Стратегия кеширования WEB
+
 ---
 
 ## Метрики и KPIs 2026
@@ -124,10 +130,11 @@
 | Метрика       | Текущее | Q4 2026 Target |
 | ------------- | ------- | -------------- |
 | Lighthouse    | ~75     | 90+            |
-| Test Coverage | ~20%    | 70%+           |
+| Test Coverage | ~25%    | 70%+           |
 | Bundle (gzip) | ~300KB  | <200KB         |
 | LCP           | ~3s     | <2.5s          |
-| Tests         | 174     | 300+           |
+| Tests passing | 208     | 300+           |
+| Test suites   | 36      | 50+            |
 
 ### Бизнес метрики
 
@@ -143,25 +150,30 @@
 
 ## Текущий статус
 
-**Тесты:** 174 tests passing across 27 suites **TypeScript:** 100% compliance
-(strict mode) **Lint:** 0 errors, ~35 warnings **Production Readiness:** 75/100
+**Тесты:** 208 passing / 36 suites | **TypeScript:** 100% strict | **Lint:** 0
+errors | **Format:** чистый | **Production Readiness:** 76/100
 
-**Завершено:**
+**Завершено (по состоянию на 27 февраля 2026):**
 
 - ✅ Edge Function gemini-proxy (rate limiting, auth)
-- ✅ Payment webhook + create-payment
-- ✅ Рефакторинг ChatWidget
+- ✅ Payment webhook + create-payment (HMAC verification)
+- ✅ Рефакторинг ChatWidget (ChatInput, ChatMessages, AudioVisualizer)
 - ✅ PWA иконки и og-image
 - ✅ Supabase Auth (OTP) + RLS
-- ✅ OnboardingQuiz, StreakCard, StreakCalendar
-- ✅ sitemap.xml, robots.txt
-- ✅ Security P0: CORS, Webhook, RLS, Service Role Key
+- ✅ OnboardingQuiz, StreakCard, StreakCalendar, AchievementsGrid
+- ✅ sitemap.xml, robots.txt, .env.example
+- ✅ Security P0: CORS, Webhook, RLS, Service Role Key, API key fallback
 - ✅ Документация: CLAUDE.md, AGENTS.md, skills обновлены
+- ✅ **Capacitor native wrapper** (native/, useNative hook, haptics)
+- ✅ **WEB**: контактная форма + Telegram CTA вместо прямой записи
+- ✅ CI: format:check, typecheck, lint — всё зелёное
 
 **Следующие:**
 
 - ⏳ .env и GitHub Secrets для production
 - ⏳ YooKassa/Stripe интеграция
+- ⏳ Zod validation для Edge Functions
+- ⏳ Database migrations (contacts, classes)
 - ⏳ Push notifications (FCM)
 - ⏳ Performance optimization (Lighthouse 90+)
 
@@ -169,8 +181,8 @@
 
 ## Статус обновления
 
-**Последнее обновление:** 16 февраля 2026 **Версия документации:** 6.0.0
-**Следующий ревью:** Q2 2026
+**Последнее обновление:** 27 февраля 2026 | **Версия документации:** 7.0.0 |
+**Следующий ревью:** март 2026
 
 ---
 

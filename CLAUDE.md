@@ -1,6 +1,6 @@
 # CLAUDE.md - AI Agent Instructions
 
-> **Last updated:** February 16, 2026 | **Version:** 3.0.0
+> **Last updated:** February 27, 2026 | **Version:** 3.1.0
 
 This file provides context and instructions for AI assistants (Claude Code,
 GitHub Copilot, Cursor, Codex, etc.) working with the KateStudio codebase.
@@ -31,7 +31,10 @@ KateStudio/
 │   ├── constants/              # Brand, pricing, achievements, KB
 │   └── styles/                 # Tailwind preset with brand tokens
 ├── k-sebe-yoga-studioWEB/      # Landing page / Marketing site
-├── k-sebe-yoga-studio-APPp/    # Mobile-first PWA application
+├── k-sebe-yoga-studio-APPp/    # Mobile-first PWA + Capacitor native wrapper
+│   ├── native/                 # Capacitor plugin init (platform, plugins, index)
+│   ├── hooks/useNative.ts      # React hook for haptics, network, platform
+│   └── capacitor.config.ts     # Capacitor configuration
 ├── supabase/                   # Edge Functions + migrations
 │   ├── functions/
 │   │   ├── gemini-proxy/       # AI proxy with rate limiting
@@ -57,11 +60,12 @@ KateStudio/
 
 ### Current Status (February 2026)
 
-- **Tests**: 174 passing across 27 suites (~20% coverage)
-- **TypeScript**: 100% compliance (strict mode, `tsc -b` passes)
-- **Lint**: 0 errors, ~35 warnings (mostly a11y)
+- **Tests**: 208 passing across 36 suites (~25% coverage)
+- **TypeScript**: 100% compliance (strict mode, 0 errors across all workspaces)
+- **Lint**: 0 errors, 0 warnings
+- **Format**: 100% Prettier-clean
 - **Build**: Both WEB and APP build successfully
-- **Production Readiness**: 68/100 (security resolved, payments pending)
+- **Production Readiness**: 76/100 (security ✅, Capacitor ✅, payments pending)
 
 ## Key Conventions
 
@@ -93,18 +97,22 @@ KateStudio/
 
 ## Important Files
 
-| File                          | Purpose                                  |
-| ----------------------------- | ---------------------------------------- |
-| `shared/types/index.ts`       | All TypeScript interfaces                |
-| `shared/constants/index.ts`   | Brand constants, API endpoints           |
-| `shared/constants/images.ts`  | Centralized asset management             |
-| `shared/utils/index.ts`       | Utility functions (cn, formatDate, etc.) |
-| `shared/services/supabase.ts` | Supabase client configuration            |
-| `.env.example`                | Required environment variables           |
-| `CURRENT_TASKS.md`            | Active priorities and task tracking      |
-| `docs/CODEX_INSTRUCTIONS.md`  | Development protocol for AI agents       |
-| `docs/LAUNCH_CHECKLIST.md`    | Pre-launch gap analysis                  |
-| `skills/registry.json`        | Agent skill registry                     |
+| File                                         | Purpose                                       |
+| -------------------------------------------- | --------------------------------------------- |
+| `shared/types/index.ts`                      | All TypeScript interfaces                     |
+| `shared/constants/index.ts`                  | Brand constants, API endpoints                |
+| `shared/constants/images.ts`                 | Centralized asset management                  |
+| `shared/utils/index.ts`                      | Utility functions (cn, formatDate, etc.)      |
+| `shared/services/supabase.ts`                | Supabase client configuration                 |
+| `.env.example`                               | Required environment variables                |
+| `CURRENT_TASKS.md`                           | Active priorities and task tracking           |
+| `CHANGELOG.md`                               | Version history (semver)                      |
+| `docs/INDEX.md`                              | Central documentation index                   |
+| `docs/CODEX_INSTRUCTIONS.md`                 | Development protocol for AI agents            |
+| `docs/LAUNCH_CHECKLIST.md`                   | Pre-launch gap analysis                       |
+| `skills/registry.json`                       | Agent skill registry                          |
+| `k-sebe-yoga-studio-APPp/native/`            | Capacitor native wrapper (platform + plugins) |
+| `k-sebe-yoga-studio-APPp/hooks/useNative.ts` | React hook for native features                |
 
 ## Common Tasks
 
@@ -136,6 +144,37 @@ const { data, error } = await supabase
   .select('*')
   .eq('user_id', user.id);
 ```
+
+### Working with Native/Capacitor (APP only)
+
+```typescript
+// Platform detection — import from ./native (NOT from @capacitor/core directly)
+import { isNative, isIOS, isAndroid, getPlatform } from './native';
+
+// Haptic feedback — safe on web (no-op when not native)
+import { hapticLight, hapticSuccess, hapticError } from './native';
+void hapticLight(); // light tap — for nav, button presses
+void hapticSuccess(); // success pulse — for completed actions
+void hapticError(); // error buzz — for failures
+
+// React hook — network status + haptics in one hook
+import { useNative } from './hooks/useNative';
+const { isOnline, isNative, haptic } = useNative();
+haptic.light();
+
+// Building for Android/iOS
+// npm run build:mobile        — build + sync Android (auto-adds if missing)
+// npm run build:mobile:ios    — build + sync iOS
+// npm run cap:open:android    — open Android Studio
+// npm run cap:open:ios        — open Xcode
+```
+
+**Rules:**
+
+- Never import from `@capacitor/*` directly in components — always use
+  `./native`
+- All haptic calls must be `void hapticFn()` (returns Promise)
+- Native projects (`android/`, `ios/`) are generated locally, not committed
 
 ### Working with Gemini AI (via Edge Function Proxy)
 
@@ -255,6 +294,8 @@ npm run format:check  # Prettier check
 | CORS restrictions                   | ✅ Resolved                |
 | API key fallback removal            | ✅ Resolved                |
 | Service Role Key enforcement        | ✅ Resolved                |
+| Capacitor native wrapper            | ✅ Done (2.1.0)            |
+| CI fully green                      | ✅ Done (2.1.0)            |
 | Replace Unsplash placeholder images | 🔄 WEB done, APP remaining |
 | Configure production .env           | ⏳ Pending                 |
 | Set GitHub Secrets                  | ⏳ Pending                 |
@@ -263,8 +304,8 @@ npm run format:check  # Prettier check
 
 - Input validation with Zod for Edge Functions
 - YooKassa payment integration (full)
-- Database migrations for missing tables (contacts, classes)
-- Increase test coverage to 50%+
+- Database migrations for missing tables (`contacts`, `classes`)
+- Increase test coverage to 50%+ (currently ~25%)
 - Replace placeholder videos in APP
 
 ### P2 Medium Priority
