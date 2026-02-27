@@ -4,7 +4,7 @@ import { useChatSession } from '../k-sebe-yoga-studioWEB/components/ChatWidget/u
 
 // Mock assistant service
 vi.mock('../k-sebe-yoga-studioWEB/services/assistantService', () => ({
-  getAssistantResponse: vi.fn((text) => ({ text: `Echo: ${text}` }))
+  getAssistantResponse: vi.fn((text) => ({ text: `Echo: ${text}` })),
 }));
 
 describe('useChatSession', () => {

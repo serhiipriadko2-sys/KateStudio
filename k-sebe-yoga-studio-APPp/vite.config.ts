@@ -32,6 +32,10 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
               return 'react-vendor';
             }
+            // Capacitor core + plugins in separate chunk
+            if (id.includes('node_modules/@capacitor/')) {
+              return 'capacitor';
+            }
             // Lucide icons in separate chunk
             if (id.includes('node_modules/lucide-react')) {
               return 'lucide-icons';

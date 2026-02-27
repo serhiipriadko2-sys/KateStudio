@@ -36,8 +36,8 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
       return;
     }
     if (!video.video_url) {
-        showToast('Видео временно недоступно', 'error');
-        return;
+      showToast('Видео временно недоступно', 'error');
+      return;
     }
     setIsVideoLoading(true);
     setActiveVideo(video);
@@ -50,9 +50,9 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
 
   if (isLoading) {
     return (
-        <div className="flex justify-center items-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
-        </div>
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
+      </div>
     );
   }
 
@@ -170,8 +170,9 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ selectedMood }) => {
               Оформите подписку, чтобы получить неограниченный доступ к библиотеке.
             </p>
             <button
-                onClick={() => setShowPaywall(true)}
-                className="w-full py-4 bg-brand-green text-white rounded-xl text-xs uppercase font-bold tracking-wider hover:bg-brand-green/90 transition-all shadow-lg shadow-brand-green/20 hover:scale-[1.02] active:scale-95">
+              onClick={() => setShowPaywall(true)}
+              className="w-full py-4 bg-brand-green text-white rounded-xl text-xs uppercase font-bold tracking-wider hover:bg-brand-green/90 transition-all shadow-lg shadow-brand-green/20 hover:scale-[1.02] active:scale-95"
+            >
               Подписаться
             </button>
           </div>

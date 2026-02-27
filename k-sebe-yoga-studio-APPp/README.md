@@ -20,8 +20,8 @@ https://ai.studio/apps/drive/12aRTDeMFYVlFE3vx3mr7P4lcirm082NF
 
 ## Mobile build (Capacitor wrapper)
 
-Capacitor добавляет нативную оболочку над текущим React/Vite APP,
-чтобы собирать Android/iOS приложение без полного переписывания.
+Capacitor добавляет нативную оболочку над текущим React/Vite APP, чтобы собирать
+Android/iOS приложение без полного переписывания.
 
 ### One-time setup
 

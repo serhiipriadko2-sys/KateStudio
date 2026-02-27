@@ -61,7 +61,6 @@ export interface ContactRow {
   status?: 'new' | 'read' | 'processed' | 'spam';
 }
 
-
 export interface FAQItem {
   id: string;
   question: string;
@@ -70,7 +69,6 @@ export interface FAQItem {
   order_index: number;
   created_at: string;
 }
-
 
 export interface AdminTabProps {
   toast: (message: string, type?: 'success' | 'error') => void;
