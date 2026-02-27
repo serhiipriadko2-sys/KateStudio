@@ -9,12 +9,7 @@
  */
 
 import { applyPlatformClasses, isNative } from './platform';
-import {
-  hideSplashScreen,
-  initAppLifecycle,
-  initKeyboard,
-  initStatusBar,
-} from './plugins';
+import { hideSplashScreen, initAppLifecycle, initKeyboard, initStatusBar } from './plugins';
 
 let keyboardCleanup: (() => void) | null = null;
 let lifecycleCleanup: (() => void) | null = null;

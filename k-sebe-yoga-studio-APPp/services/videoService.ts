@@ -24,5 +24,5 @@ export const videoService = {
     }
 
     return data || [];
-  }
+  },
 };

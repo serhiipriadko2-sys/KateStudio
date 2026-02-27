@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
@@ -24,7 +23,7 @@ root.render(
         <App />
       </ToastProvider>
     </AuthProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );
 
 // ── 3. Hide native splash screen after first paint ─────────────────────────

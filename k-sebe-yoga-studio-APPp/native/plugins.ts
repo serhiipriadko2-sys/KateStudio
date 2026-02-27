@@ -9,7 +9,6 @@ import { Keyboard, KeyboardResize } from '@capacitor/keyboard';
 import { Network } from '@capacitor/network';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar, Style } from '@capacitor/status-bar';
-
 import { isAndroid, isIOS, isNative } from './platform';
 
 // ─── Status Bar ────────────────────────────────────────────────────────────
@@ -63,10 +62,7 @@ export const initKeyboard = (): (() => void) => {
 
   // Push body up when keyboard opens so inputs aren't hidden
   const showListener = Keyboard.addListener('keyboardWillShow', (info) => {
-    document.documentElement.style.setProperty(
-      '--keyboard-height',
-      `${info.keyboardHeight}px`,
-    );
+    document.documentElement.style.setProperty('--keyboard-height', `${info.keyboardHeight}px`);
     document.body.classList.add('keyboard-open');
   });
 
@@ -145,7 +141,7 @@ export const getNetworkStatus = async (): Promise<{
  * Returns a cleanup function.
  */
 export const onNetworkChange = (
-  callback: (connected: boolean, type: string) => void,
+  callback: (connected: boolean, type: string) => void
 ): (() => void) => {
   if (!isNative()) {
     const handler = () => callback(navigator.onLine, 'unknown');

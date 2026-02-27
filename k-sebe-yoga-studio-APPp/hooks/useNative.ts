@@ -9,7 +9,6 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-
 import {
   getPlatform,
   getNetworkStatus,

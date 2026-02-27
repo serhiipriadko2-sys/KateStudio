@@ -38,7 +38,9 @@ export const FAQTab: React.FC<AdminTabProps> = ({ toast }) => {
 
       const nextOrder = (maxOrder?.order_index ?? 0) + 1;
 
-      const { error } = await supabase.from('faq_items').insert([{ ...newItem, order_index: nextOrder }]);
+      const { error } = await supabase
+        .from('faq_items')
+        .insert([{ ...newItem, order_index: nextOrder }]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -122,7 +124,10 @@ export const FAQTab: React.FC<AdminTabProps> = ({ toast }) => {
       </div>
 
       {(isCreating || editingId) && (
-        <form onSubmit={handleSubmit} className="bg-stone-50 p-6 rounded-2xl border border-stone-200 space-y-4 animate-in fade-in slide-in-from-top-2">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-stone-50 p-6 rounded-2xl border border-stone-200 space-y-4 animate-in fade-in slide-in-from-top-2"
+        >
           <div className="grid gap-4">
             <div>
               <label className="block text-xs font-medium text-stone-500 mb-1">Вопрос</label>
@@ -144,7 +149,9 @@ export const FAQTab: React.FC<AdminTabProps> = ({ toast }) => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-stone-500 mb-1">Категория (опционально)</label>
+              <label className="block text-xs font-medium text-stone-500 mb-1">
+                Категория (опционально)
+              </label>
               <input
                 type="text"
                 value={formData.category || ''}
@@ -168,7 +175,7 @@ export const FAQTab: React.FC<AdminTabProps> = ({ toast }) => {
               disabled={createMutation.isPending || updateMutation.isPending}
               className="px-4 py-2 bg-brand-green text-white rounded-xl text-sm font-medium hover:bg-brand-green/90 flex items-center gap-2"
             >
-              {(createMutation.isPending || updateMutation.isPending) ? (
+              {createMutation.isPending || updateMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Save className="w-4 h-4" />

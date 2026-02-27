@@ -106,13 +106,11 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
   const saveSettingsMutation = useMutation({
     mutationFn: async (newSettings: StudioContacts) => {
       if (!supabase) throw new Error('Supabase not initialized');
-      const { error } = await supabase
-        .from('app_settings')
-        .upsert({
-          key: 'studio_contacts',
-          value: newSettings,
-          updated_at: new Date().toISOString(),
-        });
+      const { error } = await supabase.from('app_settings').upsert({
+        key: 'studio_contacts',
+        value: newSettings,
+        updated_at: new Date().toISOString(),
+      });
       if (error) throw error;
     },
     onSuccess: () => {

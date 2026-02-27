@@ -37,9 +37,7 @@ export const Paywall: React.FC<PaywallProps> = ({ onClose, onSubscribe }) => {
           <div className="inline-block px-4 py-1.5 rounded-full bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-widest mb-6">
             Premium Access
           </div>
-          <h2 className="text-3xl font-serif text-brand-text mb-3">
-            Открой полный потенциал
-          </h2>
+          <h2 className="text-3xl font-serif text-brand-text mb-3">Открой полный потенциал</h2>
           <p className="text-stone-500 text-sm leading-relaxed max-w-xs mx-auto">
             Получи доступ к эксклюзивным практикам, AI-анализу и персональным рекомендациям.
           </p>
@@ -55,7 +53,9 @@ export const Paywall: React.FC<PaywallProps> = ({ onClose, onSubscribe }) => {
           >
             <div className="flex justify-between items-center mb-2">
               <span className="text-lg font-serif font-bold text-brand-text">Premium</span>
-              <span className="text-lg font-bold text-brand-green">990 ₽ <span className="text-xs font-normal text-stone-500">/ мес</span></span>
+              <span className="text-lg font-bold text-brand-green">
+                990 ₽ <span className="text-xs font-normal text-stone-500">/ мес</span>
+              </span>
             </div>
             <ul className="space-y-2 mb-4">
               <li className="flex items-center gap-2 text-sm text-stone-600">
@@ -75,7 +75,9 @@ export const Paywall: React.FC<PaywallProps> = ({ onClose, onSubscribe }) => {
               {loadingPlan === 'premium' && <Loader2 className="w-4 h-4 animate-spin" />}
               Попробовать бесплатно
             </button>
-            <p className="text-[10px] text-center text-stone-400 mt-2">7 дней бесплатно, затем 990 ₽/мес</p>
+            <p className="text-[10px] text-center text-stone-400 mt-2">
+              7 дней бесплатно, затем 990 ₽/мес
+            </p>
           </div>
 
           <div
@@ -87,7 +89,9 @@ export const Paywall: React.FC<PaywallProps> = ({ onClose, onSubscribe }) => {
           >
             <div className="flex justify-between items-center mb-2">
               <span className="text-lg font-serif font-bold text-brand-text">VIP</span>
-              <span className="text-lg font-bold text-brand-text">2,990 ₽ <span className="text-xs font-normal text-stone-500">/ мес</span></span>
+              <span className="text-lg font-bold text-brand-text">
+                2,990 ₽ <span className="text-xs font-normal text-stone-500">/ мес</span>
+              </span>
             </div>
             <ul className="space-y-2 mb-4">
               <li className="flex items-center gap-2 text-sm text-stone-600">
@@ -108,7 +112,10 @@ export const Paywall: React.FC<PaywallProps> = ({ onClose, onSubscribe }) => {
         </div>
 
         <div className="p-6 bg-stone-50 text-center">
-          <button onClick={onClose} className="text-xs text-stone-400 hover:text-stone-600 underline">
+          <button
+            onClick={onClose}
+            className="text-xs text-stone-400 hover:text-stone-600 underline"
+          >
             Восстановить покупки
           </button>
         </div>
