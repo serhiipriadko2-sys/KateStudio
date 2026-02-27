@@ -1,6 +1,7 @@
 import { X, Check, CalendarPlus, ArrowRight, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { hapticError, hapticLight, hapticSuccess } from '../native';
 import { dataService } from '../services/dataService';
 import { ClassSession } from '../types';
 
@@ -51,9 +52,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (authStatus !== 'authenticated' || !user) {
+      void hapticError();
       setError('Для бронирования нужно войти в аккаунт (подтвердить телефон).');
       return;
     }
+    void hapticLight();
     setIsLoading(true);
     setError(null);
 
@@ -65,12 +68,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         const cached = await dataService.getUser();
         if (cached) setUser(cached);
 
+        void hapticSuccess();
         setIsSubmitted(true);
         if (onSuccess) onSuccess();
       } else {
+        void hapticError();
         setError('Не удалось записаться. Проверьте, что вы вошли в аккаунт.');
       }
     } catch (e) {
+      void hapticError();
       console.error(e);
       setError('Ошибка соединения. Проверьте интернет.');
     } finally {
@@ -106,7 +112,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         role="document"
       >
         <button
-          onClick={onClose}
+          onClick={() => {
+            void hapticLight();
+            onClose();
+          }}
           className="absolute top-6 right-6 p-2 rounded-full bg-stone-50 hover:bg-stone-100 transition-colors z-10"
         >
           <X className="w-5 h-5 text-stone-500" />
