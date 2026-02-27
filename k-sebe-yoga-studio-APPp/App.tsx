@@ -36,6 +36,7 @@ import { StreakCard } from './components/StreakCard';
 import { WeeklyRecapCard } from './components/WeeklyRecapCard';
 import { useAuth } from './context/AuthContext';
 import { usePWAUpdate } from './hooks/usePWAUpdate';
+import { hapticLight, hapticSuccess } from './native';
 import { retentionService } from './services/retentionService';
 import { isSupabaseConfigured, supabase } from './services/supabaseClient';
 
@@ -101,6 +102,7 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
 
     setIsSparking(true);
     startShake();
+    void hapticLight();
 
     let current = progress;
     timerRef.current = setInterval(() => {
@@ -146,6 +148,7 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
     setIsSparking(false);
     stopShake();
     setIsIgnited(true);
+    void hapticSuccess();
     setTimeout(() => {
       setShowWelcome(true);
       setTimeout(() => {
@@ -294,6 +297,7 @@ export default function App() {
   };
 
   const handleTabChange = (tab: Tab) => {
+    void hapticLight();
     setActiveTab(tab);
     if (mainRef.current) {
       mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
