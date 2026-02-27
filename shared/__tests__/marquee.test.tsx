@@ -109,6 +109,34 @@ describe('Marquee (Breathing Strip)', () => {
     );
   });
 
+  it('falls back to timer-based phase switching when Web Animations API is unavailable', () => {
+    vi.useFakeTimers();
+    const originalAnimate = Element.prototype.animate;
+    Object.defineProperty(Element.prototype, 'animate', {
+      value: undefined,
+      configurable: true,
+    });
+
+    render(<Marquee inhaleWords={['Огонь']} words={['Тишина']} duration={2} />);
+
+    const tracks = document.querySelectorAll('.breath-track') as NodeListOf<HTMLElement>;
+    expect(tracks[0].style.opacity).toBe('1');
+    expect(tracks[1].style.opacity).toBe('0');
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(tracks[0].style.opacity).toBe('0');
+    expect(tracks[1].style.opacity).toBe('1');
+
+    vi.useRealTimers();
+    Object.defineProperty(Element.prototype, 'animate', {
+      value: originalAnimate,
+      configurable: true,
+    });
+  });
+
   it('does not animate when prefers-reduced-motion is enabled', () => {
     (window.matchMedia as ReturnType<typeof vi.fn>).mockImplementation((query: string) => ({
       matches: query === '(prefers-reduced-motion: reduce)',

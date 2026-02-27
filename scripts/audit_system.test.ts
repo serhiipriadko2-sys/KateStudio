@@ -9,16 +9,17 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
-}
+const hasSupabaseEnv = Boolean(supabaseUrl && supabaseAnonKey);
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const describeAudit = hasSupabaseEnv ? describe : describe.skip;
 
-describe('System Integrity Audit', () => {
+const supabase = hasSupabaseEnv
+  ? createClient(supabaseUrl as string, supabaseAnonKey as string)
+  : null;
 
+describeAudit('System Integrity Audit', () => {
   it('should connect to Supabase and fetch studio_contacts', async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from('app_settings')
       .select('value')
       .eq('key', 'studio_contacts')
@@ -31,10 +32,7 @@ describe('System Integrity Audit', () => {
   });
 
   it('should fetch videos from public.videos', async () => {
-    const { data, error } = await supabase
-      .from('videos')
-      .select('*')
-      .limit(5);
+    const { data, error } = await supabase!.from('videos').select('*').limit(5);
 
     expect(error).toBeNull();
     expect(Array.isArray(data)).toBe(true);
@@ -46,13 +44,11 @@ describe('System Integrity Audit', () => {
       name: 'Audit Bot',
       phone: '+79990000000',
       message: 'System audit test message ' + new Date().toISOString(),
-      status: 'new'
+      status: 'new',
     };
 
     // Public users can INSERT but not SELECT. So we don't chain .select()
-    const { data, error } = await supabase
-      .from('contacts')
-      .insert([testContact]);
+    const { data, error } = await supabase!.from('contacts').insert([testContact]);
 
     if (error) console.error('Error inserting contact:', error);
     expect(error).toBeNull();
@@ -60,15 +56,12 @@ describe('System Integrity Audit', () => {
   });
 
   it('should NOT allow public read of bookings', async () => {
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .limit(5);
+    const { data, error } = await supabase!.from('bookings').select('*').limit(5);
 
     // RLS should filter this to empty for anon users
     if (!error) {
-        expect(data?.length).toBe(0);
-        console.log('Bookings read restricted correctly (0 rows).');
+      expect(data?.length).toBe(0);
+      console.log('Bookings read restricted correctly (0 rows).');
     }
   });
 });

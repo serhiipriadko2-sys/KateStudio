@@ -18,6 +18,8 @@ export default [
       '**/dist/**',
       '**/build/**',
       '**/node_modules/**',
+      '**/android/**',
+      '**/ios/**',
       '**/*.config.js',
       '**/*.config.cjs',
     ],

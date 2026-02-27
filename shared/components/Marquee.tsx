@@ -206,13 +206,30 @@ export const Marquee: React.FC<MarqueeConfig> = ({
   const phaseDurationMs = (duration / 2) * 1000;
 
   /*
-   * Container-level breathing via Web Animations API.
-   * Gentle vertical float; words add staggered CSS transitions on top.
-   * Dots run their own CSS heartbeat keyframe animation.
+   * Breathing phase scheduler.
+   * Uses Web Animations API when available; falls back to timer-based phase switching.
    */
   useEffect(() => {
+    if (prefersReducedMotion()) return;
+
     const el = breathRef.current;
-    if (!el || prefersReducedMotion()) return;
+    if (!el) return;
+
+    if (typeof el.animate !== 'function') {
+      const fallbackTimer = window.setInterval(() => {
+        setPhase((prev) => {
+          const next = prev === 'inhale' ? 'exhale' : 'inhale';
+          if (next === 'inhale') {
+            setCycleCount((count) => count + 1);
+          }
+          return next;
+        });
+      }, phaseDurationMs);
+
+      return () => {
+        window.clearInterval(fallbackTimer);
+      };
+    }
 
     let cancelled = false;
     let currentPhase: 'inhale' | 'exhale' = 'inhale';

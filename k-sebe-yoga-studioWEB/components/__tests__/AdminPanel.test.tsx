@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { AdminPanel } from '../AdminPanel';
 /* ─── Supabase Mock ──────────────────────────── */
 
 const mockGetSession = vi.fn();
@@ -78,8 +79,6 @@ vi.mock('../admin/tabs/FAQTab', () => ({
 vi.mock('../admin/tabs/SettingsTab', () => ({
   SettingsTab: () => <div>Settings</div>,
 }));
-
-import { AdminPanel } from '../AdminPanel';
 
 /* ─── Helpers ────────────────────────────────── */
 
