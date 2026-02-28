@@ -1,9 +1,9 @@
+import { IMAGES } from '@ksebe/shared';
 import { ArrowRight, Calendar, MapPin, X, Mountain, Coffee, Sun, Moon, Camera } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '../context/ToastContext';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
-import { IMAGES } from '@ksebe/shared';
 
 export const Retreats: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
