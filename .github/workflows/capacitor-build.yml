@@ -49,7 +49,7 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: web-dist
           path: k-sebe-yoga-studio-APPp/dist/
@@ -114,7 +114,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-${{ inputs.build_type }}-apk
           path: |
@@ -177,7 +177,7 @@ jobs:
 
       - name: Upload iOS build
         if: inputs.build_type == 'debug'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ios-debug-app
           path: k-sebe-yoga-studio-APPp/ios/App/build/Build/Products/Debug-iphonesimulator/*.app
