@@ -46,17 +46,3 @@ if (typeof window !== 'undefined') {
     value: () => {},
   });
 }
-
-// Suppress console errors in tests (optional)
-// const originalError = console.error;
-// beforeAll(() => {
-//   console.error = (...args) => {
-//     if (typeof args[0] === 'string' && args[0].includes('Warning:')) {
-//       return;
-//     }
-//     originalError.call(console, ...args);
-//   };
-// });
-// afterAll(() => {
-//   console.error = originalError;
-// });

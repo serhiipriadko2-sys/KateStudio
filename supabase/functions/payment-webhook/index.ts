@@ -12,11 +12,6 @@ function getSupabaseAdmin() {
   });
 }
 
-// const allowedOrigins = [
-// 'https://yookassa.ru',
-// 'https://api.yookassa.ru',
-// ];
-
 Deno.serve(async (req) => {
   // YooKassa webhook security check (basic example, ideally verify IP range or signature)
   const userAgent = req.headers.get('user-agent') || '';
@@ -55,8 +50,6 @@ Deno.serve(async (req) => {
             console.error('Failed to update subscription:', error);
             return new Response('Database error', { status: 500 });
           }
-
-          // console.log(`Subscription activated for user ${userId} (Plan: ${planId})`);
         }
       }
     }
