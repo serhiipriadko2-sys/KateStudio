@@ -630,11 +630,11 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
                 activeColor:
                   'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-200',
               },
-            ].map((item, i) => {
+            ].map((item) => {
               const isActive = selectedMood === item.title;
               return (
                 <div
-                  key={i}
+                  key={item.title}
                   role="button"
                   tabIndex={0}
                   aria-pressed={isActive}

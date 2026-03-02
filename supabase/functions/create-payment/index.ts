@@ -13,8 +13,9 @@ type CreatePaymentRequest = z.infer<typeof CreatePaymentRequestSchema>;
 const allowedOrigins = [
   'https://ksebe-studio.ru',
   'https://app.ksebe-studio.ru',
-  'http://localhost:3000',
-  'http://localhost:5173',
+  ...(Deno.env.get('ENVIRONMENT') !== 'production'
+    ? ['http://localhost:3000', 'http://localhost:5173']
+    : []),
 ];
 
 function getCorsHeaders(req: Request) {

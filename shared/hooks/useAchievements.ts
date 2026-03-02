@@ -281,5 +281,3 @@ export function useAchievements(options: UseAchievementsOptions = {}): UseAchiev
     isLoading,
   };
 }
-
-export default useAchievements;

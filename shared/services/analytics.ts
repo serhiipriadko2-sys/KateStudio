@@ -6,6 +6,12 @@ import { isSupabaseConfigured, supabase } from './supabase';
  * Handles event tracking and performance monitoring
  */
 
+declare global {
+  interface Window {
+    __analytics_initialized?: boolean;
+  }
+}
+
 const SESSION_KEY = 'analytics_session_id';
 
 const getSessionId = (): string => {
@@ -56,10 +62,8 @@ export const analytics = {
     if (typeof window === 'undefined') return;
 
     // Only init once
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((window as any).__analytics_initialized) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).__analytics_initialized = true;
+    if (window.__analytics_initialized) return;
+    window.__analytics_initialized = true;
 
     reportWebVitals('/api/analytics', (metric: WebVitalMetric) => {
       sendEvent('web_vital', {

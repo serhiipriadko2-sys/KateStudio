@@ -211,7 +211,7 @@ const ArticleEditor: React.FC<{
 
   const handleSubmit = () => {
     if (!draft.title) return alert('Введите заголовок');
-    onSave(draft as any /* eslint-disable-line @typescript-eslint/no-explicit-any */);
+    onSave(draft as Omit<DBArticle, 'id'>);
   };
 
   return (
