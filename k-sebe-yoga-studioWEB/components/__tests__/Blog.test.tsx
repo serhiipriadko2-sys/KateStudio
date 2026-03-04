@@ -1,11 +1,7 @@
+import { Blog } from '@ksebe/shared';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
-import { Blog } from '../Blog';
-
-vi.mock('../Image', () => ({
-  Image: ({ alt, src }: { alt?: string; src?: string }) => <img alt={alt} src={src} />,
-}));
+import { describe, expect, it } from 'vitest';
 
 describe('Blog', () => {
   it('opens and closes the article modal', async () => {

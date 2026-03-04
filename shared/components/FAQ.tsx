@@ -2,12 +2,21 @@ import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import { FadeIn } from './FadeIn';
 
+export interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+export interface FAQProps {
+  data?: FAQItem[];
+}
+
 interface FAQItemProps {
   question: string;
   answer: string;
 }
 
-const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
+const FAQEntry: React.FC<FAQItemProps> = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="border-b border-brand-green/10 py-6 last:border-0">
@@ -37,7 +46,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
   );
 };
 
-const faqData = [
+export const defaultFAQData: FAQItem[] = [
   {
     question: 'С чего начать, если я никогда не занималась?',
     answer:
@@ -60,7 +69,7 @@ const faqData = [
   },
 ];
 
-export const FAQ: React.FC = () => {
+export const FAQ: React.FC<FAQProps> = ({ data = defaultFAQData }) => {
   return (
     <section className="py-24 px-6 max-w-3xl mx-auto scroll-mt-20">
       <FadeIn>
@@ -69,9 +78,9 @@ export const FAQ: React.FC = () => {
         </h2>
       </FadeIn>
       <div className="space-y-2">
-        {faqData.map((item, idx) => (
+        {data.map((item, idx) => (
           <FadeIn key={idx} delay={(idx + 1) * 100} direction="up">
-            <FAQItem question={item.question} answer={item.answer} />
+            <FAQEntry question={item.question} answer={item.answer} />
           </FadeIn>
         ))}
       </div>
