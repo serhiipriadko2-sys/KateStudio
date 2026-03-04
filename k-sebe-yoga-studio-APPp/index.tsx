@@ -1,10 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { initNative, nativeReady } from './native';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // ── 1. Initialize native wrapper synchronously before React renders ─────────
 // Applies platform CSS classes and configures keyboard / lifecycle listeners.
@@ -19,13 +28,15 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <AuthProvider>
-        <ToastProvider>
-          <App />
-        </ToastProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>
+        <AuthProvider>
+          <ToastProvider>
+            <App />
+          </ToastProvider>
+        </AuthProvider>
+      </ErrorBoundary>
+    </QueryClientProvider>
   </React.StrictMode>
 );
 
