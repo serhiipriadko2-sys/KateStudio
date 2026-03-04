@@ -1,7 +1,7 @@
+import { isSupabaseConfigured, supabase } from '@ksebe/shared';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
 import { retentionService } from '../services/retentionService';
-import { isSupabaseConfigured, supabase } from '../services/supabaseClient';
 import { UserProfile } from '../types';
 
 interface AuthContextType {

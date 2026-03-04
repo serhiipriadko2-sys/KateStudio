@@ -1,3 +1,4 @@
+import { supabase, isSupabaseConfigured } from '@ksebe/shared';
 import {
   X,
   User,
@@ -16,7 +17,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAuth, WebUserProfile } from '../context/AuthContext';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../hooks/useScrollLock';
-import { supabase } from '../services/supabase';
 
 interface UserCabinetProps {
   isOpen: boolean;
@@ -54,9 +54,9 @@ export const UserCabinet: React.FC<UserCabinetProps> = ({ isOpen, onClose }) => 
 
   // Load bookings when tab switches
   useEffect(() => {
-    if (!isOpen || activeTab !== 'bookings' || !user || !supabase) return;
+    if (!isOpen || activeTab !== 'bookings' || !user || !isSupabaseConfigured) return;
 
-    const sb = supabase; // capture non-null reference
+    const sb = supabase; // reference to singleton
     let isMounted = true;
     const loadBookings = async () => {
       setBookingsLoading(true);

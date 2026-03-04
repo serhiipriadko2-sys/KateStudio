@@ -1,7 +1,6 @@
-import { Paywall } from '@ksebe/shared';
+import { isSupabaseConfigured, Paywall, supabase } from '@ksebe/shared';
 import React, { useEffect, useState } from 'react';
 import { subscriptionService } from '../services/subscriptionService';
-import { isSupabaseConfigured, supabase } from '../services/supabase';
 import type { Subscription, SubscriptionPlan, SubscriptionStatus } from '../types';
 
 interface SubscriptionProfileProps {

@@ -1,7 +1,7 @@
+import { supabase } from '@ksebe/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Upload, Trash2, Loader2, Image as ImageIcon, Copy } from 'lucide-react';
 import React, { useState } from 'react';
-import { supabase } from '../../../services/supabase';
 
 const IMAGE_REGISTRY = [
   { key: 'hero-main-bg', label: 'Главная: Герой (Фон)' },

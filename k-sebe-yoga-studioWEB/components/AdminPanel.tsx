@@ -1,4 +1,4 @@
-import { useIsAdmin } from '@ksebe/shared';
+import { isSupabaseConfigured, supabase, useIsAdmin } from '@ksebe/shared';
 import {
   AlertCircle,
   BookOpen,
@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useScrollLock } from '../hooks/useScrollLock';
-import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { AdminQueryProvider } from './admin/AdminQueryProvider';
 import {
   BookingsTab,

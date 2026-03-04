@@ -1,6 +1,6 @@
+import { supabase } from '@ksebe/shared';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { gamificationService } from '../gamificationService';
-import { supabase } from '../supabaseClient';
 
 // Mock Supabase
 const mockSelect = vi.fn();
@@ -20,7 +20,7 @@ const createChain = () => {
   return chain;
 };
 
-vi.mock('../supabaseClient', () => ({
+vi.mock('@ksebe/shared', () => ({
   supabase: {
     from: vi.fn(),
   },

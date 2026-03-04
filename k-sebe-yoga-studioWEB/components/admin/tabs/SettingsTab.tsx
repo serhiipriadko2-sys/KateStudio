@@ -1,7 +1,7 @@
+import { supabase } from '@ksebe/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Save, RotateCcw, Loader2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../../services/supabase';
 import { ThemeColors, loadTheme, applyTheme, resetTheme } from '../../../services/theme';
 
 const COLOR_FIELDS: { label: string; variable: keyof ThemeColors }[] = [

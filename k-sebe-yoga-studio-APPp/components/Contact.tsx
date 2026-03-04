@@ -1,3 +1,4 @@
+import { supabase } from '@ksebe/shared';
 import {
   Phone,
   MapPin,
@@ -8,7 +9,6 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { supabase } from '../services/supabaseClient';
 import { FadeIn } from './FadeIn';
 
 export const Contact: React.FC = () => {

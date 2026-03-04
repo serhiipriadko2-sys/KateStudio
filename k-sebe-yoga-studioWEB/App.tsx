@@ -1,4 +1,12 @@
-import { analytics, ScrollProgress, BackToTop, CookieBanner, Marquee } from '@ksebe/shared';
+import {
+  analytics,
+  isSupabaseConfigured,
+  supabase,
+  ScrollProgress,
+  BackToTop,
+  CookieBanner,
+  Marquee,
+} from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { About } from './components/About';
@@ -26,7 +34,6 @@ import { SEO } from './components/SEO';
 import { UserCabinet } from './components/UserCabinet';
 import { useAuth } from './context/AuthContext';
 import { registerServiceWorker } from './services/serviceWorker';
-import { isSupabaseConfigured, supabase } from './services/supabase';
 import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { BookingDetails } from './types';
 

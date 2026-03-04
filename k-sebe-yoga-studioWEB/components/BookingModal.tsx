@@ -1,8 +1,8 @@
+import { supabase } from '@ksebe/shared';
 import { X, Check, Send, ArrowRight, AlertCircle, Loader2, MessageCircle } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../hooks/useScrollLock';
-import { supabase } from '../services/supabase';
 import { BookingDetails } from '../types';
 
 const TELEGRAM_URL = 'https://t.me/Kate_Gabran';

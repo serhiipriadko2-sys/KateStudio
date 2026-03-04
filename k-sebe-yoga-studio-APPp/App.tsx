@@ -1,6 +1,13 @@
 // FadeIn available from '@ksebe/shared' when needed
-import { analytics, UpdateBanner, OfflineBanner, IMAGES } from '@ksebe/shared';
-import { useOnlineStatus } from '@ksebe/shared';
+import {
+  analytics,
+  isSupabaseConfigured,
+  supabase,
+  UpdateBanner,
+  OfflineBanner,
+  IMAGES,
+  useOnlineStatus,
+} from '@ksebe/shared';
 import {
   Home,
   Calendar,
@@ -38,7 +45,6 @@ import { useAuth } from './context/AuthContext';
 import { usePWAUpdate } from './hooks/usePWAUpdate';
 import { hapticLight, hapticSuccess } from './native';
 import { retentionService } from './services/retentionService';
-import { isSupabaseConfigured, supabase } from './services/supabaseClient';
 
 // Lazy load heavy components for better initial bundle size
 const AICoach = lazy(() => import('./components/AICoach').then((m) => ({ default: m.AICoach })));

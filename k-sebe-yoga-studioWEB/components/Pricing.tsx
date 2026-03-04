@@ -1,6 +1,6 @@
+import { isSupabaseConfigured, supabase } from '@ksebe/shared';
 import { Check, Star, ArrowRight } from 'lucide-react';
 import React, { useMemo, useState, useEffect } from 'react';
-import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { FadeIn } from './FadeIn';
 
 interface PricingProps {

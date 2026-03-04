@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import { IMAGES } from '@ksebe/shared';
+import { IMAGES, supabase, uploadFile } from '@ksebe/shared';
 import {
   LogOut,
   LayoutDashboard,
@@ -24,7 +24,6 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { dataService } from '../services/dataService';
 import { subscriptionService } from '../services/subscriptionService';
-import { uploadFile, supabase } from '../services/supabaseClient';
 import { Booking, Subscription, SubscriptionPlan, SubscriptionStatus } from '../types';
 import { Achievements } from './Achievements';
 import { AICoach } from './AICoach';

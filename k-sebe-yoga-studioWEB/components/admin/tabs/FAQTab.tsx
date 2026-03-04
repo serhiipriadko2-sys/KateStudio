@@ -1,7 +1,7 @@
+import { supabase } from '@ksebe/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit2, Trash2, Save, Loader2 } from 'lucide-react';
 import React, { useState } from 'react';
-import { supabase } from '../../../services/supabase';
 import { AdminTabProps, FAQItem } from '../types';
 
 export const FAQTab: React.FC<AdminTabProps> = ({ toast }) => {

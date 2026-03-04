@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from '@ksebe/shared';
 
 const PRACTICE_DAYS_KEY = 'ksebe_practice_days';
 const PRACTICE_COMPLETIONS_KEY = 'ksebe_practice_completions';

@@ -1,6 +1,6 @@
+import { isSupabaseConfigured, supabase } from '@ksebe/shared';
 import { Booking, ClassSession, UserProfile } from '../types';
 import { cacheAdapter, CachedBooking } from './localCache';
-import { isSupabaseConfigured, supabase } from './supabaseClient';
 
 export const DATA_SOURCES = {
   userProfile: 'supabase',

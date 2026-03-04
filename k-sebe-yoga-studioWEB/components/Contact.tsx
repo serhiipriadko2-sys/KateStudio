@@ -1,7 +1,7 @@
+import { supabase } from '@ksebe/shared';
 import { Mail, MapPin, Phone, Send, Navigation, MessageCircle } from 'lucide-react';
 import React, { useState } from 'react';
 import { useStudioContacts } from '../hooks/useStudioContacts';
-import { supabase } from '../services/supabase';
 import { FadeIn } from './FadeIn';
 
 export const Contact: React.FC = () => {
