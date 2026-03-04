@@ -17,6 +17,7 @@ import {
   Zap,
 } from 'lucide-react';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Skeleton } from './Skeleton';
 
 // Types for AI Analysis result
 export interface AsanaAnalysis {
@@ -59,6 +60,12 @@ interface ImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'sr
   enableAnalysis?: boolean;
   /** Optional services for cloud features */
   services?: ImageServices;
+  /**
+   * Controls when the browser loads the image.
+   * Defaults to 'lazy' for below-the-fold images.
+   * Pass 'eager' for above-the-fold (hero) images.
+   */
+  loading?: 'lazy' | 'eager';
 }
 
 // Helper to find data from old localStorage key formats
@@ -85,6 +92,7 @@ export const Image: React.FC<ImageProps> = ({
   showControlsLabel = false,
   enableAnalysis = false,
   services,
+  loading = 'lazy',
   ...props
 }) => {
   // --- STATE ---
@@ -334,14 +342,14 @@ export const Image: React.FC<ImageProps> = ({
 
   return (
     <div className={`relative overflow-hidden bg-stone-100 group ${containerClassName}`}>
-      {/* Loading shimmer */}
+      {/* Loading skeleton */}
       {!isLoaded && !hasError && (
-        <div className="absolute inset-0 bg-stone-200 z-10 pointer-events-none">
-          <div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"
-            style={{ transform: 'skewX(-20deg)' }}
-          />
-        </div>
+        <Skeleton
+          variant="rectangular"
+          width="100%"
+          height="100%"
+          className="absolute inset-0 z-10 pointer-events-none"
+        />
       )}
 
       {/* Error state */}
@@ -359,9 +367,10 @@ export const Image: React.FC<ImageProps> = ({
         <img
           src={currentSrc}
           alt={alt}
-          className={`transition-all duration-700 ${isLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'} ${className}`}
+          className={`transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
           onLoad={() => setIsLoaded(true)}
           onError={handleError}
+          loading={loading}
           {...props}
         />
       )}
