@@ -22,6 +22,7 @@ export { About } from './About';
 export { Hero } from './Hero';
 export { Breathwork } from './Breathwork';
 export { Blog } from './Blog';
+export { FAQ, defaultFAQData } from './FAQ';
 export { Pricing } from './Pricing';
 
 // Gamification & AI Components (2026)
@@ -38,6 +39,7 @@ export { NotificationPreferences } from './NotificationPreferences';
 export type { ImageServices } from './Image';
 export type { MarqueeConfig } from './Marquee';
 export type { PaywallPlanId, PaywallStatus } from './Paywall';
+export type { FAQItem, FAQProps } from './FAQ';
 export type { DailyRecommendationProps } from './DailyRecommendation';
 export type { AchievementUnlockedModalProps } from './AchievementUnlockedModal';
 export type { AchievementsGridProps } from './AchievementsGrid';

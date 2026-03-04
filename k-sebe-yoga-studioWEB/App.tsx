@@ -6,6 +6,7 @@ import {
   BackToTop,
   CookieBanner,
   Marquee,
+  FAQ,
 } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff, User } from 'lucide-react';
 import React, { lazy, Suspense, useState, useEffect } from 'react';
@@ -15,7 +16,6 @@ import { BookingModal } from './components/BookingModal';
 import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
 import { Directions } from './components/Directions';
-import { FAQ } from './components/FAQ';
 import { FirstVisit } from './components/FirstVisit';
 import { Footer } from './components/Footer';
 import { Gallery } from './components/Gallery';
