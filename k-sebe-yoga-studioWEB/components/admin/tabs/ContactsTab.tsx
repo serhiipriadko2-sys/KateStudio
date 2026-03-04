@@ -1,3 +1,4 @@
+import { supabase } from '@ksebe/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   MessageSquare,
@@ -17,7 +18,6 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useStudioContacts, StudioContacts } from '../../../hooks/useStudioContacts';
-import { supabase } from '../../../services/supabase';
 import { ContactRow } from '../types';
 
 const formatCreatedAt = (iso: string) =>

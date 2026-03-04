@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
+import { isSupabaseConfigured, supabase } from '@ksebe/shared';
 import DOMPurify from 'dompurify';
 import { BookOpen, X, Clock, Calendar as CalendarIcon, User, Share2, Check } from 'lucide-react';
 import React, { useRef, useState, useEffect } from 'react';
 import { useContentData } from '../hooks/useContentData';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../hooks/useScrollLock';
-import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
 

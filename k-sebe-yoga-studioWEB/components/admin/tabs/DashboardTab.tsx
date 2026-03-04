@@ -1,3 +1,4 @@
+import { supabase } from '@ksebe/shared';
 import { useQuery } from '@tanstack/react-query';
 import {
   ClipboardList,
@@ -8,7 +9,6 @@ import {
   Globe,
 } from 'lucide-react';
 import React from 'react';
-import { supabase } from '../../../services/supabase';
 
 export const DashboardTab: React.FC = () => {
   // Fetch Stats

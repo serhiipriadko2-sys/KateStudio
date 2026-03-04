@@ -3,11 +3,32 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Dashboard } from '../Dashboard';
 
 // Mock dependencies
-vi.mock('@ksebe/shared', () => ({
-  IMAGES: {
-    reviews: { avatars: ['/mock-avatar.jpg'] },
-  },
-}));
+vi.mock('@ksebe/shared', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@ksebe/shared')>();
+  return {
+    ...actual,
+    IMAGES: {
+      reviews: { avatars: ['/mock-avatar.jpg'] },
+    },
+    uploadFile: vi.fn(),
+    supabase: {
+      channel: () => ({
+        on: () => ({
+          subscribe: () => ({}),
+        }),
+      }),
+      removeChannel: vi.fn(),
+      from: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      auth: {
+        getSession: vi.fn().mockResolvedValue({ data: { session: { user: { id: 'test-id' } } } }),
+      },
+    },
+  };
+});
 
 // Mock services
 const mockGetBookings = vi.fn().mockResolvedValue([]);
@@ -17,26 +38,6 @@ vi.mock('../../services/dataService', () => ({
   dataService: {
     getBookings: () => mockGetBookings(),
     updateUserProfile: () => mockUpdateUserProfile(),
-  },
-}));
-
-vi.mock('../../services/supabaseClient', () => ({
-  uploadFile: vi.fn(),
-  supabase: {
-    channel: () => ({
-      on: () => ({
-        subscribe: () => ({}),
-      }),
-    }),
-    removeChannel: vi.fn(),
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue({ data: null, error: null }),
-    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-    auth: {
-      getSession: vi.fn().mockResolvedValue({ data: { session: { user: { id: 'test-id' } } } }),
-    },
   },
 }));
 

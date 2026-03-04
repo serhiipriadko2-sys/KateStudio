@@ -1,5 +1,5 @@
+import { isSupabaseConfigured, supabase } from '@ksebe/shared';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { isSupabaseConfigured, supabase } from '../services/supabase';
 
 export interface WebUserProfile {
   id: string;

@@ -1,3 +1,4 @@
+import { supabase } from '@ksebe/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ClipboardList,
@@ -14,7 +15,6 @@ import {
   PlayCircle,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { supabase } from '../../../services/supabase';
 import { BookingRow } from '../types';
 
 const formatCreatedAt = (iso: string) =>

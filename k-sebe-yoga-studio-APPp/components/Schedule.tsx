@@ -1,3 +1,4 @@
+import { supabase } from '@ksebe/shared';
 import {
   MapPin,
   ChevronRight,
@@ -11,7 +12,6 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { dataService } from '../services/dataService';
-import { supabase } from '../services/supabaseClient';
 import { ClassSession } from '../types';
 import { BookingModal } from './BookingModal';
 import { FadeIn } from './FadeIn';

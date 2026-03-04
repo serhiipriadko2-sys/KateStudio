@@ -1,3 +1,4 @@
+import { supabase } from '@ksebe/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CalendarDays,
@@ -13,7 +14,6 @@ import {
   Save,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { supabase } from '../../../services/supabase';
 import { ClassRow, ClassFormData } from '../types';
 
 const EMPTY_CLASS: ClassFormData = {

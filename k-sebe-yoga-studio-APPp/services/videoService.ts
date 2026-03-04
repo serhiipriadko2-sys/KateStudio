@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from '@ksebe/shared';
 
 export interface Video {
   id: string;

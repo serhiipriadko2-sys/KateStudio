@@ -4,7 +4,7 @@ import { UserCabinet } from '../UserCabinet';
 
 /* ─── Mock Supabase ────────────────────────────── */
 
-vi.mock('../../services/supabase', () => ({
+vi.mock('@ksebe/shared', () => ({
   supabase: null,
   isSupabaseConfigured: false,
 }));

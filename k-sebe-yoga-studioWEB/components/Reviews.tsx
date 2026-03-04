@@ -1,7 +1,6 @@
-import { IMAGES } from '@ksebe/shared';
+import { IMAGES, isSupabaseConfigured, supabase } from '@ksebe/shared';
 import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
 import React, { useRef, useState, useEffect } from 'react';
-import { isSupabaseConfigured, supabase } from '../services/supabase';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
 

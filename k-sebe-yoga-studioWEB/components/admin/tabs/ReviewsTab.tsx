@@ -1,7 +1,7 @@
+import { supabase } from '@ksebe/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, Save, X, Star } from 'lucide-react';
 import React, { useState } from 'react';
-import { supabase } from '../../../services/supabase';
 
 interface DBReview {
   id: string;

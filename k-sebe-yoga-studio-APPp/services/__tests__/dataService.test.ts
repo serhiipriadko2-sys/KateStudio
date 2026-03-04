@@ -1,9 +1,9 @@
+import { supabase } from '@ksebe/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Mock } from 'vitest';
 import { dataService } from '../dataService';
-import { supabase } from '../supabaseClient';
 
-vi.mock('../supabaseClient', () => ({
+vi.mock('@ksebe/shared', () => ({
   supabase: {
     from: vi.fn(),
     auth: {
