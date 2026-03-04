@@ -5,7 +5,7 @@ import { Logo } from './Logo';
 
 export const Hero: React.FC = () => {
   return (
-    <section className="relative h-screen min-h-[600px] flex flex-col justify-end pb-24 px-6 md:px-12 overflow-hidden">
+    <section className="relative h-screen min-h-[600px] flex flex-col justify-end pb-24 px-6 md:px-12 overflow-hidden bg-brand-dark">
       <div className="absolute inset-0 z-0">
         <Image
           src={`${import.meta.env.BASE_URL}images/hero/hero-bg.jpg`}
