@@ -50,11 +50,14 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          # Set base path for custom domain (/ for ksebe-studio.ru)
-          VITE_BASE_PATH: /
+          # Set base path for GitHub Pages (/<repo-name>/ for github.io deployment)
+          VITE_BASE_PATH: /KateStudio/
 
       - name: Copy CNAME to dist
-        run: cp k-sebe-yoga-studioWEB/public/CNAME k-sebe-yoga-studioWEB/dist/CNAME
+        run: |
+          if [ -f k-sebe-yoga-studioWEB/public/CNAME ]; then
+            cp k-sebe-yoga-studioWEB/public/CNAME k-sebe-yoga-studioWEB/dist/CNAME
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
