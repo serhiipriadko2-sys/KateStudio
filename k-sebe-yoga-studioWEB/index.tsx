@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 
@@ -24,13 +25,15 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <HelmetProvider>
-            <App />
-          </HelmetProvider>
-        </QueryClientProvider>
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <HelmetProvider>
+              <App />
+            </HelmetProvider>
+          </QueryClientProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </ErrorBoundary>
   </React.StrictMode>
 );

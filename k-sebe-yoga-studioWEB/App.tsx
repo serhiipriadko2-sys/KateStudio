@@ -8,9 +8,9 @@ import {
   Marquee,
 } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff, User } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { About } from './components/About';
-import { AdminPanel } from './components/AdminPanel';
 import { BookingModal } from './components/BookingModal';
 import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
@@ -21,7 +21,6 @@ import { Footer } from './components/Footer';
 import { Gallery } from './components/Gallery';
 import { Hero } from './components/Hero';
 import { InstagramFeed } from './components/InstagramFeed';
-import { LegalModals } from './components/LegalModals';
 import { LoginModal } from './components/LoginModal';
 import { Logo } from './components/Logo';
 import { Philosophy } from './components/Philosophy';
@@ -31,11 +30,20 @@ import { Pricing } from './components/Pricing';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
 import { SEO } from './components/SEO';
-import { UserCabinet } from './components/UserCabinet';
 import { useAuth } from './context/AuthContext';
 import { registerServiceWorker } from './services/serviceWorker';
 import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { BookingDetails } from './types';
+
+const AdminPanel = lazy(() =>
+  import('./components/AdminPanel').then((m) => ({ default: m.AdminPanel }))
+);
+const UserCabinet = lazy(() =>
+  import('./components/UserCabinet').then((m) => ({ default: m.UserCabinet }))
+);
+const LegalModals = lazy(() =>
+  import('./components/LegalModals').then((m) => ({ default: m.LegalModals }))
+);
 
 function App() {
   useEffect(() => {
@@ -43,11 +51,10 @@ function App() {
     analytics.pageView(window.location.pathname);
   }, []);
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isCabinetOpen, setIsCabinetOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'offer' | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOffline, setIsOffline] = useState(
@@ -170,18 +177,17 @@ function App() {
         (e.key === 'Y' || e.key === 'y' || e.key === 'H' || e.key === 'h')
       ) {
         e.preventDefault();
-        setIsAdminOpen((prev) => !prev);
+        navigate('/admin');
       }
       if (e.key === 'Escape') {
         if (isMenuOpen) setIsMenuOpen(false);
         if (bookingModalData.isOpen) closeBooking();
         if (isLoginOpen) setIsLoginOpen(false);
-        if (isCabinetOpen) setIsCabinetOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMenuOpen, bookingModalData.isOpen, isLoginOpen, isCabinetOpen]);
+  }, [isMenuOpen, bookingModalData.isOpen, isLoginOpen, navigate]);
 
   // Lock body scroll when menu is open or loading
   useEffect(() => {
@@ -257,7 +263,7 @@ function App() {
           <div className="flex items-center gap-2 z-50 pointer-events-auto">
             {/* User / Login Button */}
             <button
-              onClick={() => (isAuthenticated ? setIsCabinetOpen(true) : setIsLoginOpen(true))}
+              onClick={() => (isAuthenticated ? navigate('/cabinet') : setIsLoginOpen(true))}
               aria-label={isAuthenticated ? 'Личный кабинет' : 'Войти'}
               className={`
                 p-2.5 rounded-full transition-all shadow-sm hover:shadow-md
@@ -396,7 +402,7 @@ function App() {
               <button
                 onClick={() => {
                   toggleMenu();
-                  if (isAuthenticated) setIsCabinetOpen(true);
+                  if (isAuthenticated) navigate('/cabinet');
                   else setIsLoginOpen(true);
                 }}
                 className="text-3xl md:text-5xl font-serif text-brand-green hover:text-brand-dark hover:scale-105 transition-all duration-300 focus:outline-none focus:text-brand-dark"
@@ -463,9 +469,9 @@ function App() {
           <FAQ />
           <Contact />
           <Footer
-            onOpenAdmin={() => setIsAdminOpen(true)}
+            onOpenAdmin={() => navigate('/admin')}
             onOpenLegal={(type) => setLegalModalType(type)}
-            onOpenAuth={() => (isAuthenticated ? setIsCabinetOpen(true) : setIsLoginOpen(true))}
+            onOpenAuth={() => (isAuthenticated ? navigate('/cabinet') : setIsLoginOpen(true))}
             isAuthenticated={isAuthenticated}
           />
         </main>
@@ -483,11 +489,33 @@ function App() {
 
         {/* Auth Modals */}
         <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-        <UserCabinet isOpen={isCabinetOpen} onClose={() => setIsCabinetOpen(false)} />
 
-        {/* Other Modals */}
-        <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
-        <LegalModals type={legalModalType} onClose={() => setLegalModalType(null)} />
+        {/* Route-based panels (lazy loaded) */}
+        <Routes>
+          <Route
+            path="/admin"
+            element={
+              <Suspense fallback={null}>
+                <AdminPanel isOpen={true} onClose={() => navigate('/')} />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/cabinet"
+            element={
+              <Suspense fallback={null}>
+                <UserCabinet isOpen={true} onClose={() => navigate('/')} />
+              </Suspense>
+            }
+          />
+        </Routes>
+
+        {/* Legal Modals (lazy loaded) */}
+        {legalModalType && (
+          <Suspense fallback={null}>
+            <LegalModals type={legalModalType} onClose={() => setLegalModalType(null)} />
+          </Suspense>
+        )}
       </div>
     </>
   );
