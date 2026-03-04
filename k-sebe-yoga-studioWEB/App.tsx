@@ -9,7 +9,7 @@ import {
   FAQ,
 } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff, User } from 'lucide-react';
-import React, { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { About } from './components/About';
 import { BookingModal } from './components/BookingModal';
