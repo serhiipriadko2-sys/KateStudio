@@ -15,8 +15,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function main() {
-  const email = 'serhiipriadko2@gmail.com';
-  const password = '54294pix';
+  const email = process.env.TEST_ADMIN_EMAIL;
+  const password = process.env.TEST_ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    throw new Error('Missing TEST_ADMIN_EMAIL or TEST_ADMIN_PASSWORD environment variables');
+  }
 
   console.log('Logging in to verify access...');
   const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
