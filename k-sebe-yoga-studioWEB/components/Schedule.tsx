@@ -1,7 +1,7 @@
 import { BookingDetails, ClassRow, ClassSession, LoadLevel, supabase } from '@ksebe/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Info, Loader2, MapPin, Users } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { FadeIn } from './FadeIn';
 
 interface ScheduleProps {
@@ -133,7 +133,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
     );
   };
 
-  const renderCalendar = () => {
+  const calendarDays = useMemo(() => {
     const days = [];
     // Empty cells
     for (let i = 0; i < startOffset; i++) {
@@ -189,7 +189,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
       );
     }
     return days;
-  };
+  }, [classes, selectedDate, currentMonth, daysInMonth, startOffset]);
 
   return (
     <section id="schedule" className="py-24 bg-white relative overflow-hidden">
@@ -274,7 +274,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ onBook, isDemo }) => {
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-7 gap-2">{renderCalendar()}</div>
+              <div className="grid grid-cols-7 gap-2">{calendarDays}</div>
 
               {/* Legend */}
               <div className="flex items-center justify-center gap-4 mt-6 text-[10px] text-stone-400">
