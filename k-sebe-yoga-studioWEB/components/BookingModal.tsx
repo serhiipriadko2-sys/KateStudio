@@ -28,8 +28,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
 
   if (!isOpen) return null;
 
-  const isPurchase = !!(details.price && !details.date);
-
   const validate = () => {
     const newErrors: Record<string, boolean> = {};
     if (!name.trim()) newErrors.name = true;
@@ -118,8 +116,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
               <h3 className="text-2xl font-serif text-brand-text mb-1">Заявка отправлена!</h3>
               <p className="text-stone-500 text-sm leading-relaxed">
                 Катя свяжется с вами в ближайшее время и отправит ссылку на приложение для записи.
-                Или напишите ей напрямую в Telegram — так ещё быстрее.
               </p>
+            </div>
+
+            <div className="w-full bg-[#229ED9]/10 rounded-xl p-4 text-sm text-stone-600 leading-relaxed">
+              <p>А пока — напишите Кате в Telegram для быстрого ответа.</p>
             </div>
 
             <a
@@ -129,7 +130,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
               className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-[#229ED9] text-white rounded-2xl font-medium hover:bg-[#1a8bbf] transition-colors text-sm"
             >
               <Send className="w-4 h-4" />
-              Получить ссылку в Telegram
+              Написать Кате в Telegram
             </a>
 
             <button
@@ -144,7 +145,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
             <div className="p-7 pb-4">
               {/* Service label */}
               <span className="text-xs font-bold uppercase tracking-widest text-stone-400">
-                {isPurchase ? 'Приобрести' : 'Записаться'}
+                Свяжитесь с нами
               </span>
               <h3
                 id="booking-modal-title"
@@ -170,8 +171,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
 
               <div className="mt-4 bg-stone-50 rounded-xl p-4 text-sm text-stone-500 leading-relaxed border border-stone-100">
                 <p>
-                  Запись на занятия и покупка абонементов доступны в нашем приложении. Напишите
-                  Кате, чтобы получить ссылку на скачивание.
+                  Напишите Кате в Telegram — она расскажет подробности и даст ссылку на приложение
+                  для записи.
                 </p>
               </div>
             </div>
@@ -189,8 +190,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
                     <Send className="w-4 h-4" />
                   </div>
                   <div className="text-left">
-                    <p className="font-semibold text-sm leading-tight">Получить ссылку на App</p>
-                    <p className="text-white/70 text-xs">Написать Кате (@Kate_Gabran)</p>
+                    <p className="font-semibold text-sm leading-tight">Написать Кате в Telegram</p>
+                    <p className="text-white/70 text-xs">Написать @Kate_Gabran</p>
                   </div>
                 </div>
                 <ArrowRight className="w-5 h-5 shrink-0 group-hover:translate-x-1 transition-transform opacity-70" />
@@ -253,10 +254,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, det
                 ) : (
                   <>
                     <MessageCircle className="w-4 h-4" />
-                    <span>Отправить заявку</span>
+                    <span>Оставить заявку</span>
                   </>
                 )}
               </button>
+
+              <p className="text-center text-xs text-stone-500 leading-relaxed">
+                Мы свяжемся с вами в ближайшее время
+              </p>
 
               <p className="text-center text-xs text-stone-400 leading-relaxed">
                 Нажимая кнопку, вы соглашаетесь с{' '}
