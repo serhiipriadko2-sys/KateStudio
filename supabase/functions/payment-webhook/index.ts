@@ -12,11 +12,28 @@ function getSupabaseAdmin() {
   });
 }
 
+function timingSafeEqual(a: string, b: string): boolean {
+  const aBytes = new TextEncoder().encode(a);
+  const bBytes = new TextEncoder().encode(b);
+  const maxLen = Math.max(aBytes.length, bBytes.length);
+  let result = aBytes.length ^ bBytes.length;
+  for (let i = 0; i < maxLen; i++) {
+    result |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
+  }
+  return result === 0;
+}
+
 Deno.serve(async (req) => {
-  // YooKassa webhook security check (basic example, ideally verify IP range or signature)
-  const userAgent = req.headers.get('user-agent') || '';
-  if (!userAgent.includes('YooKassa') && !userAgent.includes('Yandex.Money')) {
-    // Optional: add stricter validation here
+  const secret = Deno.env.get('PAYMENT_WEBHOOK_SECRET');
+  if (!secret) {
+    console.error('PAYMENT_WEBHOOK_SECRET is not set — rejecting all webhooks');
+    return new Response(JSON.stringify({ error: 'Server misconfiguration' }), { status: 500 });
+  }
+
+  const signature = req.headers.get('x-webhook-signature');
+  if (!signature || !timingSafeEqual(signature, secret)) {
+    console.warn('Invalid or missing webhook signature');
+    return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 401 });
   }
 
   if (req.method !== 'POST') {
@@ -43,7 +60,7 @@ Deno.serve(async (req) => {
             status: 'active',
             updated_at: new Date().toISOString(),
             // Calculate expiration date based on plan (e.g., +1 month)
-            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
           });
 
           if (error) {
