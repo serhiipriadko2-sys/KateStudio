@@ -27,7 +27,11 @@ export default defineConfig({
         branches: 20,
         statements: 30,
       },
-      include: ['shared/**/*.{ts,tsx}'],
+      include: [
+        'shared/**/*.{ts,tsx}',
+        'k-sebe-yoga-studioWEB/**/*.{ts,tsx}',
+        'k-sebe-yoga-studio-APPp/**/*.{ts,tsx}',
+      ],
       exclude: [
         '**/node_modules/**',
         '**/dist/**',
@@ -36,6 +40,9 @@ export default defineConfig({
         '**/index.ts',
         '**/__tests__/**',
         'shared/styles/**',
+        'k-sebe-yoga-studioWEB/src/**',
+        'k-sebe-yoga-studio-APPp/src/**',
+        'k-sebe-yoga-studio-APPp/native/**',
       ],
     },
     css: {
