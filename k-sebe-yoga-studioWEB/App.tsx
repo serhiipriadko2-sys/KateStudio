@@ -8,7 +8,7 @@ import {
   Marquee,
   FAQ,
 } from '@ksebe/shared';
-import { Menu, X, Instagram, Send, RefreshCcw, WifiOff, User } from 'lucide-react';
+import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { About } from './components/About';
@@ -21,7 +21,6 @@ import { Footer } from './components/Footer';
 import { Gallery } from './components/Gallery';
 import { Hero } from './components/Hero';
 import { InstagramFeed } from './components/InstagramFeed';
-import { LoginModal } from './components/LoginModal';
 import { Logo } from './components/Logo';
 import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
@@ -30,16 +29,12 @@ import { Pricing } from './components/Pricing';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
 import { SEO } from './components/SEO';
-import { useAuth } from './context/AuthContext';
 import { registerServiceWorker } from './services/serviceWorker';
 import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { BookingDetails } from './types';
 
 const AdminPanel = lazy(() =>
   import('./components/AdminPanel').then((m) => ({ default: m.AdminPanel }))
-);
-const UserCabinet = lazy(() =>
-  import('./components/UserCabinet').then((m) => ({ default: m.UserCabinet }))
 );
 const LegalModals = lazy(() =>
   import('./components/LegalModals').then((m) => ({ default: m.LegalModals }))
@@ -50,11 +45,9 @@ function App() {
     analytics.initWebVitals();
     analytics.pageView(window.location.pathname);
   }, []);
-  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [legalModalType, setLegalModalType] = useState<'privacy' | 'offer' | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOffline, setIsOffline] = useState(
@@ -182,12 +175,11 @@ function App() {
       if (e.key === 'Escape') {
         if (isMenuOpen) setIsMenuOpen(false);
         if (bookingModalData.isOpen) closeBooking();
-        if (isLoginOpen) setIsLoginOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMenuOpen, bookingModalData.isOpen, isLoginOpen, navigate]);
+  }, [isMenuOpen, bookingModalData.isOpen, navigate]);
 
   // Lock body scroll when menu is open or loading
   useEffect(() => {
@@ -261,34 +253,6 @@ function App() {
           </button>
 
           <div className="flex items-center gap-2 z-50 pointer-events-auto">
-            {/* User / Login Button */}
-            <button
-              onClick={() => (isAuthenticated ? navigate('/cabinet') : setIsLoginOpen(true))}
-              aria-label={isAuthenticated ? 'Личный кабинет' : 'Войти'}
-              className={`
-                p-2.5 rounded-full transition-all shadow-sm hover:shadow-md
-                ${
-                  isScrolled
-                    ? 'bg-stone-100 hover:bg-stone-200 border border-stone-200'
-                    : 'bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20'
-                }
-              `}
-            >
-              {isAuthenticated && user?.avatar ? (
-                <img src={user.avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
-              ) : (
-                <User
-                  className={`w-5 h-5 transition-colors ${
-                    isAuthenticated
-                      ? 'text-brand-green'
-                      : isScrolled
-                        ? 'text-stone-500'
-                        : 'text-white/70'
-                  }`}
-                />
-              )}
-            </button>
-
             {/* Menu Button */}
             <button
               onClick={toggleMenu}
@@ -398,22 +362,6 @@ function App() {
                   {item}
                 </a>
               ))}
-              {/* Auth link in menu */}
-              <button
-                onClick={() => {
-                  toggleMenu();
-                  if (isAuthenticated) navigate('/cabinet');
-                  else setIsLoginOpen(true);
-                }}
-                className="text-3xl md:text-5xl font-serif text-brand-green hover:text-brand-dark hover:scale-105 transition-all duration-300 focus:outline-none focus:text-brand-dark"
-                style={{
-                  animation: 'fade-in-up 0.5s ease-out 0.8s forwards',
-                  opacity: 0,
-                  transform: 'translateY(20px)',
-                }}
-              >
-                {isAuthenticated ? 'Личный кабинет' : 'Войти'}
-              </button>
             </nav>
 
             <div
@@ -471,8 +419,6 @@ function App() {
           <Footer
             onOpenAdmin={() => navigate('/admin')}
             onOpenLegal={(type) => setLegalModalType(type)}
-            onOpenAuth={() => (isAuthenticated ? navigate('/cabinet') : setIsLoginOpen(true))}
-            isAuthenticated={isAuthenticated}
           />
         </main>
 
@@ -487,9 +433,6 @@ function App() {
           details={bookingModalData.details}
         />
 
-        {/* Auth Modals */}
-        <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-
         {/* Route-based panels (lazy loaded) */}
         <Routes>
           <Route
@@ -497,14 +440,6 @@ function App() {
             element={
               <Suspense fallback={null}>
                 <AdminPanel isOpen={true} onClose={() => navigate('/')} />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/cabinet"
-            element={
-              <Suspense fallback={null}>
-                <UserCabinet isOpen={true} onClose={() => navigate('/')} />
               </Suspense>
             }
           />

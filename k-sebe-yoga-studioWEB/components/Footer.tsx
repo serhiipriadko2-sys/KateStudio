@@ -1,4 +1,4 @@
-import { Instagram, Send, MapPin, Terminal, User, Phone, Mail } from 'lucide-react';
+import { Instagram, Send, MapPin, Terminal, Phone, Mail } from 'lucide-react';
 import React from 'react';
 import { useStudioContacts } from '../hooks/useStudioContacts';
 import { Logo } from './Logo';
@@ -6,16 +6,9 @@ import { Logo } from './Logo';
 interface FooterProps {
   onOpenAdmin?: () => void;
   onOpenLegal?: (type: 'privacy' | 'offer') => void;
-  onOpenAuth?: () => void;
-  isAuthenticated?: boolean;
 }
 
-export const Footer: React.FC<FooterProps> = ({
-  onOpenAdmin,
-  onOpenLegal,
-  onOpenAuth,
-  isAuthenticated,
-}) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
   const { data: contacts } = useStudioContacts();
 
   return (
@@ -113,17 +106,6 @@ export const Footer: React.FC<FooterProps> = ({
                   Блог
                 </a>
               </li>
-              {onOpenAuth && (
-                <li>
-                  <button
-                    onClick={onOpenAuth}
-                    className="hover:text-white transition-colors flex items-center gap-2"
-                  >
-                    <User className="w-4 h-4" />
-                    {isAuthenticated ? 'Личный кабинет' : 'Войти'}
-                  </button>
-                </li>
-              )}
             </ul>
           </div>
 
