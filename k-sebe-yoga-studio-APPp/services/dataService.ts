@@ -31,6 +31,12 @@ const pseudoRandom = (seed: number) => {
   return x - Math.floor(x);
 };
 
+// In-memory cache: key = "YYYY-MM-type" → array of ClassSessions for the whole month
+const monthCache = new Map<string, ClassSession[]>();
+
+const getMonthCacheKey = (year: number, month: number, type: 'offline' | 'online') =>
+  `${year}-${String(month + 1).padStart(2, '0')}-${type}`;
+
 export const dataService = {
   // --- Auth & User ---
 
@@ -118,11 +124,19 @@ export const dataService = {
   },
 
   // --- Schedule ---
-  getClassesForDate: async (date: Date, type: 'offline' | 'online'): Promise<ClassSession[]> => {
-    const dateStr = date.toISOString().split('T')[0];
-    const daySeed = date.getFullYear() * 1000 + (date.getMonth() + 1) * 100 + date.getDate();
 
-    // 1. Generate Base Schedule Templates
+  // Fetches all classes for a whole month in one batch and caches the result.
+  // Subsequent calls for the same month+type are served from the in-memory cache.
+  getClassesForMonth: async (
+    year: number,
+    month: number,
+    type: 'offline' | 'online'
+  ): Promise<ClassSession[]> => {
+    const cacheKey = getMonthCacheKey(year, month, type);
+    if (monthCache.has(cacheKey)) {
+      return monthCache.get(cacheKey)!;
+    }
+
     const templates =
       type === 'offline'
         ? [
@@ -184,24 +198,34 @@ export const dataService = {
             },
           ];
 
-    // 2. Filter randomly to create variety
-    const todaysClasses = templates.filter((_, i) => pseudoRandom(daySeed + i) > 0.3);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const allClassIds: string[] = [];
 
-    // 3. Prepare IDs
-    const classesWithIds = todaysClasses.map((tmpl, idx) => ({
-      ...tmpl,
-      id: `${dateStr}-${type}-${idx}`,
-    }));
+    // Pre-generate class IDs for every day so we can batch-fetch bookings once
+    const monthClassEntries: Array<{
+      dateStr: string;
+      daySeed: number;
+      template: (typeof templates)[number];
+      id: string;
+    }> = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const daySeed = year * 1000 + (month + 1) * 100 + day;
+      const todaysClasses = templates.filter((_, i) => pseudoRandom(daySeed + i) > 0.3);
+      todaysClasses.forEach((template, idx) => {
+        const id = `${dateStr}-${type}-${idx}`;
+        allClassIds.push(id);
+        monthClassEntries.push({ dateStr, daySeed, template, id });
+      });
+    }
 
-    const classIds = classesWithIds.map((c) => c.id);
+    // Batch-fetch all booking counts for the entire month in one query
     const bookingCounts: Record<string, number> = {};
-
-    // 4. Try Fetch real booking counts from Supabase
     try {
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('class_id')
-        .in('class_id', classIds);
+        .in('class_id', allClassIds);
 
       if (error) throw error;
 
@@ -214,26 +238,41 @@ export const dataService = {
       // Silent fail for offline mode
     }
 
-    // 5. Map final objects
-    return classesWithIds.map((tmpl, idx) => {
-      const initialBooked = Math.floor(pseudoRandom(daySeed + idx * 10) * (tmpl.spots / 3)); // Some fake initial load
-      const realBookings = bookingCounts[tmpl.id] || 0;
+    const sessions: ClassSession[] = monthClassEntries.map(
+      ({ dateStr, daySeed, template, id }, idx) => {
+        const initialBooked = Math.floor(pseudoRandom(daySeed + idx * 10) * (template.spots / 3));
+        const realBookings = bookingCounts[id] || 0;
+        return {
+          id,
+          dateStr,
+          time: template.time,
+          name: template.name,
+          instructor: 'Катя Габран',
+          duration: template.duration,
+          spotsTotal: template.spots,
+          spotsBooked: Math.min(initialBooked + realBookings, template.spots),
+          location: template.loc,
+          intensity: template.int as 1 | 2 | 3,
+          price: template.price,
+          isOnline: type === 'online',
+        };
+      }
+    );
 
-      return {
-        id: tmpl.id,
-        dateStr,
-        time: tmpl.time,
-        name: tmpl.name,
-        instructor: 'Катя Габран',
-        duration: tmpl.duration,
-        spotsTotal: tmpl.spots,
-        spotsBooked: Math.min(initialBooked + realBookings, tmpl.spots),
-        location: tmpl.loc,
-        intensity: tmpl.int as 1 | 2 | 3,
-        price: tmpl.price,
-        isOnline: type === 'online',
-      };
-    });
+    monthCache.set(cacheKey, sessions);
+    return sessions;
+  },
+
+  // Delegates to getClassesForMonth and filters by the requested day.
+  // Backward-compatible — callers are unchanged.
+  getClassesForDate: async (date: Date, type: 'offline' | 'online'): Promise<ClassSession[]> => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    const monthSessions = await dataService.getClassesForMonth(year, month, type);
+    return monthSessions.filter((s) => s.dateStr === dateStr);
   },
 
   // --- Booking ---

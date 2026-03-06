@@ -2,12 +2,22 @@ import { describe, it, expect, vi } from 'vitest';
 import { dataService } from '../k-sebe-yoga-studio-APPp/services/dataService';
 
 // Mock Supabase
-vi.mock('../k-sebe-yoga-studio-APPp/services/supabaseClient', () => ({
+vi.mock('@ksebe/shared', () => ({
   isSupabaseConfigured: false,
   supabase: {
     auth: {
       getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
     },
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        in: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    }),
+    channel: vi.fn().mockReturnValue({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
+    }),
+    removeChannel: vi.fn(),
   },
 }));
 

@@ -9,7 +9,7 @@ import {
   FAQ,
 } from '@ksebe/shared';
 import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { About } from './components/About';
 import { BookingModal } from './components/BookingModal';
@@ -56,6 +56,7 @@ function App() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [waitingForRefresh, setWaitingForRefresh] = useState(false);
+  const scrollRAF = useRef<number>(0);
 
   // Global Booking State
   const [bookingModalData, setBookingModalData] = useState<{
@@ -155,10 +156,17 @@ function App() {
   // Scroll Listener for Smart Header
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      if (scrollRAF.current) return;
+      scrollRAF.current = requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 50);
+        scrollRAF.current = 0;
+      });
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollRAF.current) cancelAnimationFrame(scrollRAF.current);
+    };
   }, []);
 
   // Keyboard shortcut to toggle Admin Panel (Ctrl + Shift + Y)

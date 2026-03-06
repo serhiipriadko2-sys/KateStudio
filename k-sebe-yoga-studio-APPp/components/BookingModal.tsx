@@ -1,3 +1,4 @@
+import { useScrollLock } from '@ksebe/shared';
 import { X, Check, CalendarPlus, ArrowRight, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -27,6 +28,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
 
+  // Lock Body Scroll when open
+  useScrollLock(isOpen);
+
   // Auto-fill if user is logged in
   useEffect(() => {
     if (user) {
@@ -34,18 +38,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       setPhone(user.phone);
     }
   }, [user, isOpen]);
-
-  // Lock Body Scroll when open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
