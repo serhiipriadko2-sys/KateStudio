@@ -85,16 +85,8 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
                   Цены
                 </a>
               </li>
-              <li>
-                <a href="#retreats" className="hover:text-white transition-colors">
-                  Ретриты
-                </a>
-              </li>
-              <li>
-                <a href="#blog" className="hover:text-white transition-colors">
-                  Блог
-                </a>
-              </li>
+              {/* Ретриты — временно скрыто */}
+              {/* Блог — временно скрыто */}
             </ul>
           </div>
 
