@@ -36,7 +36,7 @@ export { OnboardingQuiz } from './OnboardingQuiz';
 export { NotificationPreferences } from './NotificationPreferences';
 
 // Types
-export type { ImageServices } from './Image';
+export type { ImageServices, AsanaAnalysis } from './Image';
 export type { MarqueeConfig } from './Marquee';
 export type { PaywallPlanId, PaywallStatus } from './Paywall';
 export type { FAQItem, FAQProps } from './FAQ';
