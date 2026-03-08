@@ -23,7 +23,11 @@ function timingSafeEqual(a: string, b: string): boolean {
   return result === 0;
 }
 
-async function verifyHmacSignature(body: string, secret: string, signature: string): Promise<boolean> {
+async function verifyHmacSignature(
+  body: string,
+  secret: string,
+  signature: string
+): Promise<boolean> {
   // Reject early if signature is missing or not a valid hex string (must be hex chars, even length)
   if (!signature || signature.length % 2 !== 0 || !/^[0-9a-fA-F]+$/.test(signature)) return false;
   const encoder = new TextEncoder();

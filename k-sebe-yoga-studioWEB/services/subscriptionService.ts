@@ -1,5 +1,5 @@
-import type { Subscription, SubscriptionPlan } from '../types';
 import { supabase } from '@ksebe/shared';
+import type { Subscription, SubscriptionPlan } from '../types';
 
 const getSupabaseFunctionUrl = (path: string): string | null => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;

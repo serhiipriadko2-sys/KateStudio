@@ -73,4 +73,3 @@ describe('useStudioContacts', () => {
     expect(result.current.data).toEqual(mockContacts);
   });
 });
-

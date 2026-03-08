@@ -6,11 +6,13 @@ import { Retreats } from '../components/Retreats';
 import { Reviews } from '../components/Reviews';
 
 // Mock IntersectionObserver if not already mocked in setup (it is, but just in case of environment issues)
-window.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: () => null,
-  unobserve: () => null,
-  disconnect: () => null,
-}));
+window.IntersectionObserver = vi.fn().mockImplementation(function () {
+  return {
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  };
+});
 
 describe('Landing Page Components', () => {
   it('renders Reviews with correct images', () => {
