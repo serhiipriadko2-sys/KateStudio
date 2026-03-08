@@ -1,0 +1,67 @@
+skill: 'migration'
+version: '1.0.0'
+description: 'Controls Supabase migration quality: naming conventions, destructive operation detection, RLS enforcement, and rollback plan requirements.'
+trigger:
+  event: 'push'
+  files:
+    - 'supabase/migrations/**'
+
+rules:
+  naming_convention:
+    description: 'Migration files must follow the timestamp-based naming convention'
+    pattern: '^\d{14}_[a-z0-9_]+\.sql$'
+    example: '20260301120000_add_bookings_table.sql'
+    severity: 'error'
+    message: 'Migration filename must match YYYYMMDDHHMMSS_description.sql'
+  destructive_operations:
+    description: 'Destructive SQL operations require an explicit migration note'
+    forbidden_without_note:
+      - keyword: 'DROP TABLE'
+        note_pattern: '-- migration-note:'
+        severity: 'error'
+        message: 'DROP TABLE requires an explicit "-- migration-note:" comment explaining the reason'
+      - keyword: 'DROP COLUMN'
+        note_pattern: '-- migration-note:'
+        severity: 'error'
+        message: 'DROP COLUMN requires an explicit "-- migration-note:" comment explaining the reason'
+      - keyword: 'TRUNCATE'
+        note_pattern: '-- migration-note:'
+        severity: 'error'
+        message: 'TRUNCATE requires an explicit "-- migration-note:" comment explaining the reason'
+  rls_enforcement:
+    description: 'Every new table must have Row Level Security enabled in the same migration'
+    rule: 'CREATE TABLE implies ALTER TABLE ... ENABLE ROW LEVEL SECURITY'
+    severity: 'error'
+    message: 'New table detected without RLS; add ALTER TABLE <table> ENABLE ROW LEVEL SECURITY'
+  migration_order:
+    description: 'New migrations must not conflict with existing ones (unique timestamps)'
+    check: 'unique_timestamp_prefix'
+    severity: 'error'
+    message: 'Migration timestamp conflicts with an existing migration file'
+  rollback_plan:
+    description: 'Each migration should include a rollback comment or a corresponding down-file'
+    required_comment: '-- rollback:'
+    fallback: 'down migration file in supabase/migrations/'
+    severity: 'warning'
+    message: 'Migration is missing a rollback plan; add "-- rollback: <instructions>" comment'
+
+actions:
+  - type: 'lint_sql'
+    files: 'supabase/migrations/*.sql'
+  - type: 'validate_naming'
+    rules_ref: 'naming_convention'
+    paths: ['supabase/migrations/']
+  - type: 'detect_destructive_ops'
+    rules_ref: 'destructive_operations'
+    paths: ['supabase/migrations/']
+  - type: 'check_rls_coverage'
+    rules_ref: 'rls_enforcement'
+    paths: ['supabase/migrations/']
+  - type: 'check_migration_conflicts'
+    rules_ref: 'migration_order'
+  - type: 'report'
+    format: 'markdown'
+    output: 'MIGRATION_REPORT.md'
+  - type: 'notify'
+    channel: 'github_comment'
+    on_failure: 'block_merge'

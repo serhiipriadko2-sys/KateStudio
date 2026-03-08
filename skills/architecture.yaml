@@ -1,0 +1,65 @@
+skill: 'architecture'
+version: '1.0.0'
+description: 'Validates monorepo architectural invariants: circular imports, layer violations, and ADR requirements for shared library changes.'
+trigger:
+  event: 'pull_request'
+  files:
+    - 'shared/**'
+    - 'supabase/**'
+    - '**/*.ts'
+    - '**/*.tsx'
+  ignore:
+    - '**/node_modules/**'
+    - '**/*.test.ts'
+    - '**/*.test.tsx'
+    - '**/dist/**'
+
+rules:
+  layer_boundaries:
+    - rule: 'no_circular_imports'
+      description: 'Circular imports between workspaces are forbidden'
+      severity: 'error'
+      workspaces:
+        - 'shared/'
+        - 'k-sebe-yoga-studioWEB/'
+        - 'k-sebe-yoga-studio-APPp/'
+        - 'supabase/functions/'
+    - rule: 'ui_layer_only'
+      description: 'Business logic must not reside in app layers (UI-only)'
+      severity: 'warning'
+      paths: ['k-sebe-yoga-studioWEB/src/', 'k-sebe-yoga-studio-APPp/src/']
+      forbidden_imports:
+        - 'supabase/functions/'
+    - rule: 'no_shared_in_edge_functions'
+      description: 'supabase/functions/ must not import from shared/'
+      severity: 'error'
+      source: 'supabase/functions/'
+      forbidden_import: '@ksebe/shared'
+    - rule: 'side_effects_in_engine_only'
+      description: 'Side effects (subscriptions, timers, global mutations) are allowed only in engine-layer modules'
+      severity: 'warning'
+      allowed_paths: ['shared/services/', 'supabase/functions/']
+  adr_requirement:
+    description: 'Architectural Decision Records are required for changes to the shared library (@ksebe/shared)'
+    trigger_paths: ['shared/']
+    adr_directory: 'docs/'
+    severity: 'warning'
+    message: 'Changes to shared/ require an ADR entry in docs/ describing the rationale'
+
+actions:
+  - type: 'analyze_code'
+    analysis: 'circular_dependency_detection'
+    paths:
+      - 'shared/'
+      - 'k-sebe-yoga-studioWEB/'
+      - 'k-sebe-yoga-studio-APPp/'
+      - 'supabase/functions/'
+  - type: 'analyze_code'
+    analysis: 'layer_violation_detection'
+    rules_ref: 'layer_boundaries'
+  - type: 'report'
+    format: 'markdown'
+    output: 'ARCHITECTURE_REPORT.md'
+  - type: 'notify'
+    channel: 'github_comment'
+    on_failure: 'request_changes'

@@ -1,0 +1,80 @@
+skill: 'code_review'
+version: '1.0.0'
+description: 'Automated code review checklist enforcing DRY, TypeScript strictness, error handling, and PR description requirements.'
+trigger:
+  event: 'pull_request'
+  files:
+    - '**/*.ts'
+    - '**/*.tsx'
+    - '**/*.js'
+  ignore:
+    - '**/node_modules/**'
+    - '**/dist/**'
+    - '**/*.test.ts'
+    - '**/*.test.tsx'
+    - '**/*.d.ts'
+
+rules:
+  dry_violations:
+    description: 'Duplicated code blocks longer than 10 lines are not allowed'
+    max_duplicate_lines: 10
+    severity: 'warning'
+  typescript_strictness:
+    forbidden:
+      - pattern: 'as any'
+        severity: 'error'
+        message: 'Use of "as any" is forbidden; use proper TypeScript types'
+      - pattern: ': any'
+        severity: 'error'
+        message: 'Explicit "any" type annotation is forbidden; use strict types'
+      - pattern: '@ts-ignore'
+        severity: 'warning'
+        message: 'Prefer @ts-expect-error with a comment over @ts-ignore'
+  console_usage:
+    forbidden:
+      - pattern: 'console\.log'
+        severity: 'error'
+        message: 'console.log is not allowed in production code; use the logger utility'
+    allowed: ['console.warn', 'console.error']
+    allowed_paths: ['shared/utils/logger.ts', 'scripts/']
+  error_handling:
+    description: 'Bare catch blocks without error processing are not allowed'
+    forbidden_patterns:
+      - pattern: 'catch\s*\([^)]*\)\s*\{\s*\}'
+        severity: 'error'
+        message: 'Empty catch block detected; handle or log the error'
+      - pattern: 'catch\s*\([^)]*\)\s*\{[^}]*\/\/'
+        severity: 'warning'
+        message: 'Catch block contains only a comment; ensure proper error handling'
+  hardcoded_values:
+    forbidden_patterns:
+      - pattern: 'https?://[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}'
+        exclude_files: ['*.md', '*.yaml', '*.json', '*.example']
+        severity: 'warning'
+        message: 'Hardcoded URL detected; use constants or environment variables'
+      - pattern: 'process\.env\.[A-Z_]+'
+        context: 'client_code'
+        severity: 'warning'
+        message: 'Use import.meta.env for Vite client-side environment variables'
+  pr_description:
+    require_title: true
+    require_body: true
+    min_body_length: 20
+    severity: 'error'
+    message: 'PR must have a descriptive title and body explaining the changes'
+
+actions:
+  - type: 'run_command'
+    command: 'npm run lint'
+    fix_command: 'npm run lint:fix'
+  - type: 'run_command'
+    command: 'npm run typecheck'
+  - type: 'analyze_code'
+    analysis: 'complexity_check'
+    max_cyclomatic_complexity: 15
+  - type: 'report'
+    format: 'markdown'
+    output: 'CODE_REVIEW_REPORT.md'
+  - type: 'notify'
+    channel: 'github_comment'
+    on_failure: 'request_changes'
