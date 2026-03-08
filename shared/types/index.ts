@@ -104,7 +104,6 @@ export interface ProfileRow {
   name: string | null;
   city: string | null;
   avatar: string | null;
-  is_admin: boolean;
   created_at: string;
 }
 

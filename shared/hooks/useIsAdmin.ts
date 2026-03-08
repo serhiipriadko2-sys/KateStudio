@@ -1,7 +1,7 @@
 /**
  * useIsAdmin Hook
  * Checks if the current authenticated user has admin privileges
- * via Supabase Auth + profiles.is_admin flag
+ * via Supabase Auth + is_admin() RPC (backed by public.admins table)
  */
 
 import type { User } from '@supabase/supabase-js';
@@ -44,22 +44,18 @@ export const useIsAdmin = (): UseIsAdminReturn => {
 
         setUser(currentUser);
 
-        // 2. Fetch user profile from profiles table
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('user_id', currentUser.id)
-          .single();
+        // 2. Check admin status via RPC (backed by public.admins table)
+        const { data: adminResult, error: rpcError } = await supabase.rpc('is_admin');
 
-        if (profileError || !profile) {
-          console.warn('[useIsAdmin] Profile not found or error:', profileError);
+        if (rpcError) {
+          console.warn('[useIsAdmin] RPC error:', rpcError);
           setIsAdmin(false);
           setIsLoading(false);
           return;
         }
 
-        // 3. Set admin status based on profile flag
-        setIsAdmin(profile.is_admin === true);
+        // 3. Set admin status based on RPC boolean result
+        setIsAdmin(adminResult === true);
       } catch (err) {
         console.error('[useIsAdmin] Unexpected error:', err);
         setIsAdmin(false);
