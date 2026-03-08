@@ -1,0 +1,62 @@
+skill: 'git_workflow'
+version: '1.0.0'
+description: 'Enforces git discipline: branch naming conventions, Conventional Commits, and branch protection rules.'
+trigger:
+  event: 'push'
+  branches_ignore: ['main', 'develop']
+
+rules:
+  branch_naming:
+    description: 'Branch names must follow the allowed prefixes'
+    allowed_prefixes:
+      - 'feat/'
+      - 'fix/'
+      - 'chore/'
+      - 'refactor/'
+      - 'docs/'
+      - 'claude/'
+      - 'test/'
+      - 'hotfix/'
+    severity: 'error'
+    message: 'Branch name must start with one of: feat/, fix/, chore/, refactor/, docs/, claude/, test/, hotfix/'
+  commit_messages:
+    description: 'Commit messages must follow Conventional Commits specification'
+    convention: 'conventional_commits'
+    allowed_types:
+      - 'feat'
+      - 'fix'
+      - 'chore'
+      - 'refactor'
+      - 'docs'
+      - 'test'
+      - 'ci'
+      - 'perf'
+      - 'style'
+      - 'revert'
+    format: '^(feat|fix|chore|refactor|docs|test|ci|perf|style|revert)(\(.+\))?: .{1,100}'
+    severity: 'error'
+    message: 'Commit message must follow Conventional Commits: type(scope): description'
+  branch_protection:
+    protected_branches: ['main', 'develop']
+    rules:
+      - rule: 'no_direct_push'
+        severity: 'error'
+        message: 'Direct push to main or develop is forbidden; open a Pull Request'
+      - rule: 'pr_required_for_main'
+        severity: 'error'
+        message: 'All changes to main must go through a reviewed Pull Request'
+      - rule: 'squash_merge_preferred'
+        severity: 'warning'
+        message: 'Prefer squash merge to keep main history clean'
+
+actions:
+  - type: 'validate_branch_name'
+    rules_ref: 'branch_naming'
+  - type: 'lint_commit_messages'
+    rules_ref: 'commit_messages'
+    scope: 'all_commits_in_pr'
+  - type: 'check_branch_protection'
+    rules_ref: 'branch_protection'
+  - type: 'notify'
+    channel: 'github_comment'
+    on_failure: 'block_merge'

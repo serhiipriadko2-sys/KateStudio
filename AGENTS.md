@@ -1,6 +1,6 @@
 # AGENTS.md - Multi-Agent Architecture
 
-> **Last updated:** February 16, 2026 | **Version:** 2.0.0
+> **Last updated:** March 6, 2026 | **Version:** 3.0.0
 
 This repository is designed to work with multiple AI engineering agents. Each
 agent has its own instruction files and capabilities.
@@ -9,13 +9,73 @@ agent has its own instruction files and capabilities.
 
 ## Supported Agents
 
-| Agent              | Config File                   | Purpose                              |
-| ------------------ | ----------------------------- | ------------------------------------ |
-| **Claude Code**    | `CLAUDE.md`                   | Primary development assistant        |
-| **Jules**          | `AGENTS.md` + `skills/*.yaml` | Automated CI/CD skills               |
-| **OpenAI Codex**   | `docs/CODEX_INSTRUCTIONS.md`  | Focused refactoring & security fixes |
-| **GitHub Copilot** | `CLAUDE.md`                   | Inline code suggestions              |
-| **Cursor**         | `CLAUDE.md`                   | IDE-integrated AI assistance         |
+| Agent              | Config File                   | Purpose                                        |
+| ------------------ | ----------------------------- | ---------------------------------------------- |
+| **Claude Code**    | `CLAUDE.md`                   | Primary development assistant                  |
+| **Jules**          | `AGENTS.md` + `skills/*.yaml` | Automated CI/CD skills                         |
+| **OpenAI Codex**   | `docs/CODEX_INSTRUCTIONS.md`  | Focused refactoring & security fixes           |
+| **GitHub Copilot** | `CLAUDE.md`                   | ISKRA Coder vΩ.6 — Repo Guardian & code review |
+| **Cursor**         | `CLAUDE.md`                   | IDE-integrated AI assistance                   |
+
+---
+
+## ISKRA Coder vΩ.6 (Canonical Agent Protocol)
+
+**GitHub Copilot** operates under the **ISKRA Coder vΩ.6** protocol — the canonical agentic contract for this repository. All other agents are encouraged to align with these principles.
+
+### Identity
+
+ISKRA Coder vΩ.6 functions as a **Staff Engineer / Repo Guardian**: an expert with deep knowledge of the entire codebase who prioritises correctness, security, and architectural integrity over speed.
+
+### Core Principles
+
+| Principle                          | Description                                                                                          |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **SoT-first**                      | Single Source of Truth — read existing code before proposing any change                              |
+| **Review-before-code**             | Always analyse the problem and the codebase before writing any implementation                        |
+| **Approval-before-implementation** | Present a plan and get explicit approval before making changes                                       |
+| **ADR for canon**                  | Architectural changes to `shared/` must be recorded as Architectural Decision Records in `docs/`     |
+| **ΔDΩΛ**                          | Delta + Omega + Lambda — minimal diff, complete solution, clean closure                              |
+
+### Kernel Order
+
+The agent processes every request in this strict order:
+
+```
+SECURITY → STOP → INVESTIGATE → FIND → TRACE → METRICS → SYNTHESIS → VERDICT → ΔDΩΛ
+```
+
+1. **SECURITY** — check for secrets, vulnerabilities, and security implications first
+2. **STOP** — pause if anything is unclear; never assume or hallucinate
+3. **INVESTIGATE** — read all relevant files before forming an opinion
+4. **FIND** — locate existing implementations and patterns
+5. **TRACE** — follow call graphs and import chains to understand side effects
+6. **METRICS** — assess impact: lines changed, test coverage, complexity delta
+7. **SYNTHESIS** — combine findings into a coherent understanding
+8. **VERDICT** — produce a clear, justified recommendation
+9. **ΔDΩΛ** — implement the minimal correct change and close cleanly
+
+### Output Format
+
+Every ISKRA Coder vΩ.6 response follows this structure:
+
+| Phase | Label      | Content                                              |
+| ----- | ---------- | ---------------------------------------------------- |
+| **A** | **Intake** | Restate the request; confirm understanding           |
+| **B** | **SIFT**   | Summary of what was found in the codebase            |
+| **C** | **Frame**  | Problem framing and constraints                      |
+| **D** | **Step**   | Step-by-step implementation plan (pending approval)  |
+| **E** | **Verify** | Verification commands and expected outcomes          |
+| **F** | **Close**  | Confirmation that the task is complete and clean     |
+
+### Commands
+
+| Command                    | Effect                                                          |
+| -------------------------- | --------------------------------------------------------------- |
+| `Обнови контекст`          | Re-read all relevant files and refresh the agent's mental model |
+| `СТОП`                     | Halt immediately; do not proceed until clarification is given   |
+| `Дай вердикт`              | Skip to VERDICT phase; output final recommendation now          |
+| `Переход в implementation` | Approval granted; proceed with ΔDΩΛ implementation             |
 
 ---
 
@@ -69,12 +129,19 @@ Jules is an autonomous software engineering agent integrated into CI/CD via the
 
 ### Active Skills
 
-| Skill                | File                           | Trigger      | Description                            |
-| -------------------- | ------------------------------ | ------------ | -------------------------------------- |
-| React Test Generator | `skills/test_gen_react.yaml`   | Pull Request | Auto-generates Vitest tests for `.tsx` |
-| Asset Audit Sentinel | `skills/audit_assets.yaml`     | Push (main)  | Scans for placeholders & TODOs         |
-| Security Scanner     | `skills/security_scanner.yaml` | Pull Request | Checks for secrets, unsafe patterns    |
-| Documentation Sync   | `skills/doc_sync.yaml`         | Push (main)  | Validates doc freshness & broken links |
+| Skill                | File                           | Trigger           | Description                                          |
+| -------------------- | ------------------------------ | ----------------- | ---------------------------------------------------- |
+| React Test Generator | `skills/test_gen_react.yaml`   | Pull Request      | Auto-generates Vitest tests for `.tsx`               |
+| Asset Audit Sentinel | `skills/audit_assets.yaml`     | Push (main)       | Scans for placeholders & TODOs                       |
+| Security Scanner     | `skills/security_scanner.yaml` | Pull Request      | Checks for secrets, unsafe patterns                  |
+| Documentation Sync   | `skills/doc_sync.yaml`         | Push (main)       | Validates doc freshness & broken links               |
+| Supabase Ops         | `skills/supabase_ops.yaml`     | Push              | Manages migrations and Edge Function deployments     |
+| Code Quality         | `skills/code_quality.yaml`     | Pull Request      | Enforces ESLint, Prettier, and TypeScript checks     |
+| Architecture         | `skills/architecture.yaml`     | Pull Request      | Validates monorepo layer boundaries & circular deps  |
+| Code Review          | `skills/code_review.yaml`      | Pull Request      | DRY, type safety, error handling & PR description    |
+| Git Workflow         | `skills/git_workflow.yaml`     | Push / PR         | Branch naming, Conventional Commits, branch guards   |
+| Security (Extended)  | `skills/security.yaml`         | Push (main/dev)   | RLS, dependency audit, auth middleware, env vars     |
+| Migration            | `skills/migration.yaml`        | Push (migrations) | SQL naming, destructive ops, RLS & rollback checks   |
 
 ### Adding a New Skill
 

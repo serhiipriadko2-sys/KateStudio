@@ -1,0 +1,68 @@
+skill: 'security'
+version: '1.0.0'
+description: 'Extended security checks: RLS policies, Edge Function JWT enforcement, dependency audit, auth middleware, and environment variable validation. Complements security_scanner.yaml.'
+trigger:
+  event: 'push'
+  branches: ['main', 'develop']
+
+rules:
+  rls_policies:
+    description: 'Every Supabase table must have Row Level Security enabled'
+    scan_paths: ['supabase/migrations/']
+    pattern: 'CREATE TABLE'
+    required_follow_up: 'ALTER TABLE .+ ENABLE ROW LEVEL SECURITY'
+    severity: 'error'
+    message: 'Each new table must have RLS enabled via ALTER TABLE ... ENABLE ROW LEVEL SECURITY'
+  edge_functions:
+    description: 'Edge Functions must not disable JWT verification in production without explicit flag'
+    forbidden_patterns:
+      - pattern: '--no-verify-jwt'
+        severity: 'warning'
+        message: 'Using --no-verify-jwt in production is risky; ensure this is intentional and documented'
+    scan_paths: ['supabase/functions/']
+  dependency_audit:
+    description: 'npm packages must not have high or critical severity vulnerabilities'
+    command: 'npm audit --audit-level=high'
+    severity: 'error'
+    fail_on: ['high', 'critical']
+    message: 'High or critical npm vulnerabilities detected; run npm audit fix'
+  auth_middleware:
+    description: 'Protected routes must apply authentication middleware'
+    scan_paths:
+      - 'supabase/functions/'
+      - 'k-sebe-yoga-studio-APPp/src/'
+    patterns:
+      - pattern: 'supabase\.auth\.getUser'
+        required_before_data_access: true
+    severity: 'warning'
+    message: 'Ensure authentication is verified before accessing protected data'
+  env_vars:
+    description: 'VITE_* environment variables must not contain server-side secrets'
+    forbidden_patterns:
+      - pattern: 'VITE_SUPABASE_SERVICE_ROLE'
+        severity: 'error'
+        message: 'Service Role Key must never be exposed as a VITE_ variable'
+      - pattern: 'VITE_GEMINI_API_KEY'
+        severity: 'error'
+        message: 'Gemini API key must go through the Edge Function proxy, not VITE_ vars'
+      - pattern: 'VITE_.*SECRET'
+        severity: 'error'
+        message: 'Secrets must not be exposed as VITE_ environment variables'
+    scan_files: ['.env', '.env.local', '.env.production', '.env.example']
+
+actions:
+  - type: 'run_command'
+    command: 'npm audit --audit-level=high'
+    on_failure: 'warn'
+  - type: 'scan_files'
+    paths: ['supabase/migrations/', 'supabase/functions/']
+    rules_ref: 'rls_policies'
+  - type: 'scan_files'
+    paths: ['.env', '.env.local', '.env.production']
+    rules_ref: 'env_vars'
+  - type: 'report'
+    format: 'markdown'
+    output: 'SECURITY_EXTENDED_REPORT.md'
+  - type: 'notify'
+    channel: 'github_comment'
+    on_failure: 'block_merge'
