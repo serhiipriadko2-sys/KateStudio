@@ -50,8 +50,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          # Set base path for GitHub Pages (/<repo-name>/ for github.io deployment)
-          VITE_BASE_PATH: /KateStudio/
+          # Custom domain ksebe-studio.ru served from root (CNAME configured)
+          VITE_BASE_PATH: /
 
       - name: Copy CNAME to dist
         run: |
