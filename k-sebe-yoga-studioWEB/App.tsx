@@ -8,7 +8,7 @@ import {
   Marquee,
   FAQ,
 } from '@ksebe/shared';
-import { Menu, X, Instagram, Send, RefreshCcw, WifiOff } from 'lucide-react';
+import { Menu, X, Send, RefreshCcw, WifiOff } from 'lucide-react';
 import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { About } from './components/About';
@@ -352,13 +352,12 @@ function App() {
                 'Галерея',
                 'Стоимость',
                 'Расписание',
-                'Instagram',
                 'Отзывы',
                 'Контакты',
               ].map((item, i) => (
                 <a
                   key={item}
-                  href={`#${item === 'Обо мне' ? 'about' : item === 'Направления' ? 'directions' : item === 'Галерея' ? 'gallery' : item === 'Стоимость' ? 'pricing' : item === 'Расписание' ? 'schedule' : item === 'Instagram' ? 'instagram' : item === 'Отзывы' ? 'reviews' : 'contact'}`}
+                  href={`#${item === 'Обо мне' ? 'about' : item === 'Направления' ? 'directions' : item === 'Галерея' ? 'gallery' : item === 'Стоимость' ? 'pricing' : item === 'Расписание' ? 'schedule' : item === 'Отзывы' ? 'reviews' : 'contact'}`}
                   onClick={toggleMenu}
                   className="text-3xl md:text-5xl font-serif text-stone-800 hover:text-brand-green hover:scale-105 transition-all duration-300 focus:outline-none focus:text-brand-green"
                   style={{
@@ -376,15 +375,6 @@ function App() {
               className="absolute bottom-12 flex gap-6"
               style={{ animation: 'fade-in 0.5s ease-out 0.8s forwards', opacity: 0 }}
             >
-              <a
-                href="https://instagram.com/kate_gabran"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="bg-brand-mint/50 p-4 rounded-full hover:bg-brand-mint transition-colors"
-              >
-                <Instagram className="w-6 h-6 text-brand-green" />
-              </a>
               <a
                 href="https://t.me/k_sebe_dubna"
                 target="_blank"
