@@ -168,6 +168,28 @@ export const retentionService = {
     );
   },
 
+  async hasCompletedOnboarding(userId: string): Promise<boolean> {
+    // First check localStorage (fast path)
+    if (localStorage.getItem(ONBOARDING_COMPLETE_KEY) === 'true') return true;
+    // Then check Supabase (cross-device)
+    try {
+      const authUserId = await getAuthenticatedUserId(userId);
+      if (!authUserId) return false;
+      const { data } = await supabase
+        .from('user_preferences')
+        .select('onboarding')
+        .eq('user_id', authUserId)
+        .single();
+      if (data?.onboarding) {
+        localStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
+        return true;
+      }
+    } catch {
+      // ignore — show onboarding if unsure
+    }
+    return false;
+  },
+
   async fetchRemotePracticeDays(userId: string, kind: 'streak' | 'completion' = 'streak') {
     const authUserId = await getAuthenticatedUserId(userId);
     if (!authUserId) throw new Error('AUTH_REQUIRED');

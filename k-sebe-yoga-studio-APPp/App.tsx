@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { About } from './components/About';
+import { AuthScreen } from './components/AuthScreen';
 import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
 import { Directions } from './components/Directions';
@@ -238,15 +239,13 @@ export default function App() {
     analytics.initWebVitals();
     analytics.pageView(window.location.pathname);
   }, []);
-  const { authStatus, user } = useAuth();
+  const { authStatus, user, isAuthenticated, isInitializing } = useAuth();
   const isOnline = useOnlineStatus();
   const { updateAvailable, updating, triggerUpdate, dismissUpdate } = usePWAUpdate();
   const [introFinished, setIntroFinished] = useState(() => {
     return localStorage.getItem('ksebe_intro_complete') === 'true';
   });
-  const [onboardingOpen, setOnboardingOpen] = useState(() => {
-    return localStorage.getItem('ksebe_onboarding_complete') !== 'true';
-  });
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [scrolled, setScrolled] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
@@ -298,6 +297,19 @@ export default function App() {
     retentionService.bootstrapForUser(user.id).catch(() => {});
   }, [authStatus, user?.id]);
 
+  // After auth resolves, check if onboarding has been completed (localStorage + Supabase).
+  // Show it at most once, across all devices.
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return;
+    retentionService.hasCompletedOnboarding(user.id).then((done) => {
+      if (!done) setOnboardingOpen(true);
+    }).catch(() => {
+      if (localStorage.getItem('ksebe_onboarding_complete') !== 'true') {
+        setOnboardingOpen(true);
+      }
+    });
+  }, [isAuthenticated, user?.id]);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrolled(e.currentTarget.scrollTop > 20);
   };
@@ -320,6 +332,20 @@ export default function App() {
 
   if (!introFinished) {
     return <IntroSplash onComplete={handleIntroComplete} />;
+  }
+
+  // Waiting for Supabase to resolve the initial session
+  if (isInitializing) {
+    return (
+      <div className="fixed inset-0 bg-[#0F2820] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-brand-mint animate-spin" />
+      </div>
+    );
+  }
+
+  // Auth gate — every user must be logged in to access the app
+  if (!isAuthenticated) {
+    return <AuthScreen />;
   }
 
   if (activeTab === 'profile') {

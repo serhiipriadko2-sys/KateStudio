@@ -1,4 +1,4 @@
-import { Instagram, Send, MapPin, Terminal, Phone, Mail } from 'lucide-react';
+import { Send, MapPin, Terminal, Phone, Mail } from 'lucide-react';
 import React from 'react';
 import { useStudioContacts } from '../hooks/useStudioContacts';
 import { Logo } from './Logo';
@@ -47,17 +47,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
                   className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
                 >
                   <Send className="w-4 h-4" />
-                </a>
-              )}
-              {contacts?.social_instagram && (
-                <a
-                  href={contacts.social_instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Instagram"
-                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
-                >
-                  <Instagram className="w-4 h-4" />
                 </a>
               )}
               {contacts?.email && (
@@ -144,19 +133,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
                     className="hover:text-white"
                   >
                     Telegram
-                  </a>
-                </li>
-              )}
-              {contacts?.social_instagram && (
-                <li className="flex items-center gap-3">
-                  <Instagram className="w-5 h-5 text-brand-green shrink-0" />
-                  <a
-                    href={contacts.social_instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-white"
-                  >
-                    Instagram
                   </a>
                 </li>
               )}

@@ -12,6 +12,7 @@ interface AuthContextType {
   cancelOtp: () => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isInitializing: boolean;
   setUser: (user: UserProfile) => void; // Exposed to allow manual updates without API calls
   authError: string | null;
   authLoading: boolean;
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [authStatus, setAuthStatus] = useState<AuthContextType['authStatus']>('anonymous');
+  const [isInitializing, setIsInitializing] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [pendingPhone, setPendingPhone] = useState('');
@@ -41,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (!isSupabaseConfigured) {
       setAuthStatus('anonymous');
+      setIsInitializing(false);
       return () => {
         isMounted = false;
       };
@@ -50,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return;
       setAuthStatus(data.session ? 'authenticated' : 'anonymous');
+      setIsInitializing(false);
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -194,6 +198,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         cancelOtp,
         logout,
         isAuthenticated: authStatus === 'authenticated' && !!user,
+        isInitializing,
         setUser,
         authError,
         authLoading,
