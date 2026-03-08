@@ -48,6 +48,11 @@ async function fetchProfile(userId: string): Promise<WebUserProfile | null> {
 
     if (insertError || !newProfile) return null;
 
+    const { data: adminResult, error: rpcError1 } = await supabase.rpc('is_admin');
+    if (rpcError1) {
+      console.warn('[AuthContext] is_admin RPC error:', rpcError1);
+    }
+
     return {
       id: userId,
       email,
@@ -55,12 +60,17 @@ async function fetchProfile(userId: string): Promise<WebUserProfile | null> {
       phone: newProfile.phone,
       city: newProfile.city,
       avatar: newProfile.avatar,
-      isAdmin: newProfile.is_admin ?? false,
+      isAdmin: adminResult === true,
       createdAt: newProfile.created_at,
     };
   }
 
   if (error || !data) return null;
+
+  const { data: adminResult, error: rpcError2 } = await supabase.rpc('is_admin');
+  if (rpcError2) {
+    console.warn('[AuthContext] is_admin RPC error:', rpcError2);
+  }
 
   return {
     id: userId,
@@ -69,7 +79,7 @@ async function fetchProfile(userId: string): Promise<WebUserProfile | null> {
     phone: data.phone,
     city: data.city,
     avatar: data.avatar,
-    isAdmin: data.is_admin ?? false,
+    isAdmin: adminResult === true,
     createdAt: data.created_at,
   };
 }
