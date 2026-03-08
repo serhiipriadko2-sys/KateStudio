@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase';
-import { DBUserProgress } from '../types';
 
 export interface UseGamificationReturn {
   currentStreak: number;
@@ -11,8 +10,6 @@ export interface UseGamificationReturn {
   addXP: (amount: number) => void;
   isLoading: boolean;
 }
-
-const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 4500];
 
 export function useGamification(userId?: string): UseGamificationReturn {
   const [currentStreak, setCurrentStreak] = useState(0);
@@ -70,8 +67,14 @@ export function useGamification(userId?: string): UseGamificationReturn {
             })
           );
         } else {
-          // Initialize if not exists
-          await supabase.from('user_progress').insert({ user_id: userId });
+          // Initialize a fresh row with default values
+          await supabase.from('user_progress').insert({
+            user_id: userId,
+            total_xp: 0,
+            level: 1,
+            current_streak: 0,
+            max_streak: 0,
+          });
         }
       } catch {
         // Silent fail
@@ -83,90 +86,79 @@ export function useGamification(userId?: string): UseGamificationReturn {
     fetchProgress();
   }, [userId]);
 
-  const syncToCloud = useCallback(
-    async (updates: Partial<DBUserProgress>) => {
-      if (!userId) return;
-      try {
-        await supabase
-          .from('user_progress')
-          .update({ ...updates, updated_at: new Date().toISOString() })
-          .eq('user_id', userId);
-      } catch {
-        // Ignore
-      }
-    },
-    [userId]
-  );
+  // updateStreak: delegates to the server-side RPC so calculations cannot be
+  // tampered with on the client.
+  const updateStreak = useCallback(async () => {
+    if (!userId) return;
 
-  const updateStreak = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const lastActivity = localStorage.getItem('ksebe_last_activity');
+    try {
+      const { data, error } = await supabase.rpc('process_practice_completion');
+      if (error) throw error;
 
-    if (lastActivity === today) return; // Already updated today
+      const result = data as {
+        total_xp: number;
+        level: number;
+        current_streak: number;
+        max_streak: number;
+      };
 
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-
-    let newStreak = currentStreak;
-    if (lastActivity === yesterday) {
-      newStreak += 1;
-    } else {
-      newStreak = 1; // Reset or start
-    }
-
-    const newMax = Math.max(newStreak, maxStreak);
-
-    setCurrentStreak(newStreak);
-    setMaxStreak(newMax);
-    localStorage.setItem('ksebe_last_activity', today);
-    localStorage.setItem(
-      'ksebe_user_progress',
-      JSON.stringify({
-        currentStreak: newStreak,
-        maxStreak: newMax,
-        totalXP,
-        level,
-      })
-    );
-
-    syncToCloud({
-      current_streak: newStreak,
-      max_streak: newMax,
-      last_activity_date: today,
-    });
-  }, [currentStreak, maxStreak, totalXP, level, syncToCloud]);
-
-  const addXP = useCallback(
-    (amount: number) => {
-      const newXP = totalXP + amount;
-
-      // Calculate new level
-      let newLevel = level;
-      for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-        if (newXP >= LEVEL_THRESHOLDS[i]) {
-          newLevel = i + 1;
-          break;
-        }
-      }
-
-      setTotalXP(newXP);
-      setLevel(newLevel);
+      setCurrentStreak(result.current_streak);
+      setMaxStreak(result.max_streak);
+      setTotalXP(result.total_xp);
+      setLevel(result.level);
 
       localStorage.setItem(
         'ksebe_user_progress',
         JSON.stringify({
-          currentStreak,
-          maxStreak,
-          totalXP: newXP,
-          level: newLevel,
+          currentStreak: result.current_streak,
+          maxStreak: result.max_streak,
+          totalXP: result.total_xp,
+          level: result.level,
         })
       );
+    } catch (err) {
+      // Silent fail — optimistic local state is kept as-is
+      console.error('Failed to update streak via RPC:', err);
+    }
+  }, [userId]);
 
-      syncToCloud({
-        total_xp: newXP,
-        level: newLevel,
-      });
+  // addXP: also delegates to the RPC. The `amount` parameter is kept for
+  // API compatibility but the actual XP increment (+10) is enforced server-side.
+  const addXP = useCallback(
+    async (_amount: number) => {
+      if (!userId) return;
+
+      try {
+        const { data, error } = await supabase.rpc('process_practice_completion');
+        if (error) throw error;
+
+        const result = data as {
+          total_xp: number;
+          level: number;
+          current_streak: number;
+          max_streak: number;
+        };
+
+        setTotalXP(result.total_xp);
+        setLevel(result.level);
+        setCurrentStreak(result.current_streak);
+        setMaxStreak(result.max_streak);
+
+        localStorage.setItem(
+          'ksebe_user_progress',
+          JSON.stringify({
+            currentStreak: result.current_streak,
+            maxStreak: result.max_streak,
+            totalXP: result.total_xp,
+            level: result.level,
+          })
+        );
+      } catch (err) {
+        // Silent fail
+        console.error('Failed to add XP via RPC:', err);
+      }
     },
-    [totalXP, level, currentStreak, maxStreak, syncToCloud]
+    [userId]
   );
 
   return {
