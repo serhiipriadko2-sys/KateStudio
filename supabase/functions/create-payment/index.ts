@@ -36,6 +36,26 @@ function json(data: unknown, init: ResponseInit = {}, headers: HeadersInit = {})
   return new Response(JSON.stringify(data), { ...init, headers: responseHeaders });
 }
 
+// Custom app protocols that are always allowed as returnUrl schemes
+const ALLOWED_RETURN_PROTOCOLS = ['ksebe:', 'capacitor:'];
+
+// Hostnames from ALLOWED_ORIGINS env var, parsed once at module load
+const allowedReturnHosts = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+function isAllowedReturnUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (ALLOWED_RETURN_PROTOCOLS.includes(parsed.protocol)) return true;
+    if (parsed.hostname === 'localhost') return true;
+    return allowedReturnHosts.includes(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
 function getBearerToken(req: Request): string | null {
   const auth = req.headers.get('authorization');
   if (!auth) return null;
@@ -133,6 +153,10 @@ Deno.serve(async (req) => {
       { status: 400 },
       cors
     );
+  }
+
+  if (payload.returnUrl !== undefined && !isAllowedReturnUrl(payload.returnUrl)) {
+    return json({ error: 'Invalid returnUrl' }, { status: 400 }, cors);
   }
 
   const token = getBearerToken(req);

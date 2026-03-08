@@ -44,15 +44,24 @@ const ProxyRequestSchema = z.discriminatedUnion('op', [
     aspectRatio: z.string().optional(),
   }),
   z.object({ op: z.literal('generatePersonalProgram'), request: z.string().min(1).max(3000) }),
-  z.object({ op: z.literal('transcribeDiaryEntry'), audioBase64: z.string().min(1) }),
-  z.object({ op: z.literal('analyzeYogaVideo'), base64Video: z.string().min(1) }),
+  z.object({
+    op: z.literal('transcribeDiaryEntry'),
+    audioBase64: z.string().min(1).max(10_000_000, 'Payload too large'),
+  }),
+  z.object({
+    op: z.literal('analyzeYogaVideo'),
+    base64Video: z.string().min(1).max(10_000_000, 'Payload too large'),
+  }),
   z.object({
     op: z.literal('analyzeMedia'),
-    fileBase64: z.string().min(1),
+    fileBase64: z.string().min(1).max(10_000_000, 'Payload too large'),
     mimeType: z.string().regex(/^(image|video)\//),
     userPrompt: z.string().min(1).max(1000),
   }),
-  z.object({ op: z.literal('analyzeImageContent'), base64Image: z.string().min(1) }),
+  z.object({
+    op: z.literal('analyzeImageContent'),
+    base64Image: z.string().min(1).max(10_000_000, 'Payload too large'),
+  }),
 ]);
 
 type ProxyRequest = z.infer<typeof ProxyRequestSchema>;

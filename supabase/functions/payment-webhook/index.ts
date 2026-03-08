@@ -23,15 +23,36 @@ function timingSafeEqual(a: string, b: string): boolean {
   return result === 0;
 }
 
+async function verifyHmacSignature(body: string, secret: string, signature: string): Promise<boolean> {
+  // Reject early if signature is missing or not a valid hex string (must be hex chars, even length)
+  if (!signature || signature.length % 2 !== 0 || !/^[0-9a-fA-F]+$/.test(signature)) return false;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  const computedHex = Array.from(new Uint8Array(signatureBytes))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  return timingSafeEqual(computedHex, signature.toLowerCase());
+}
+
 Deno.serve(async (req) => {
-  const secret = Deno.env.get('PAYMENT_WEBHOOK_SECRET');
+  const secret = Deno.env.get('YOO_WEBHOOK_SECRET');
   if (!secret) {
-    console.error('PAYMENT_WEBHOOK_SECRET is not set — rejecting all webhooks');
+    console.error('YOO_WEBHOOK_SECRET is not set — rejecting all webhooks');
     return new Response(JSON.stringify({ error: 'Server misconfiguration' }), { status: 500 });
   }
 
-  const signature = req.headers.get('x-webhook-signature');
-  if (!signature || !timingSafeEqual(signature, secret)) {
+  const rawBody = await req.text();
+
+  const signature =
+    req.headers.get('x-webhook-signature') ?? req.headers.get('x-yookassa-signature');
+  if (!signature || !(await verifyHmacSignature(rawBody, secret, signature))) {
     console.warn('Invalid or missing webhook signature');
     return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 401 });
   }
@@ -41,14 +62,21 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const event = await req.json();
+    const event = JSON.parse(rawBody) as {
+      type?: string;
+      object?: {
+        status?: string;
+        paid?: boolean;
+        metadata?: { user_id?: string; plan_id?: string };
+      };
+    };
 
     if (event.type === 'notification') {
       const payment = event.object;
 
-      if (payment.status === 'succeeded' && payment.paid === true) {
-        const userId = payment.metadata.user_id;
-        const planId = payment.metadata.plan_id;
+      if (payment?.status === 'succeeded' && payment.paid === true) {
+        const userId = payment.metadata?.user_id;
+        const planId = payment.metadata?.plan_id;
 
         if (userId && planId) {
           const supabase = getSupabaseAdmin();
