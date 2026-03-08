@@ -344,6 +344,7 @@ full multi-agent architecture.
 | File                         | Agent Target        |
 | ---------------------------- | ------------------- |
 | `CLAUDE.md`                  | Claude Code, Claude |
+| `ISKRA_CODER.md`             | Claude Code, Copilot, Cursor (Искра-Кодер vΩ.6) |
 | `AGENTS.md`                  | All AI agents       |
 | `docs/CODEX_INSTRUCTIONS.md` | OpenAI Codex        |
 | `skills/*.yaml`              | Jules agent skills  |
