@@ -21,7 +21,6 @@ export interface UserStats {
   streak_days: number;
 }
 
-
 export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'first_steps',
