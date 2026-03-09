@@ -18,4 +18,3 @@ export const useScrollLock = (isLocked: boolean) => {
   }, [isLocked]);
 };
 
-export default useScrollLock;

@@ -227,4 +227,3 @@ export function StreakCalendar({
   );
 }
 
-export default StreakCalendar;

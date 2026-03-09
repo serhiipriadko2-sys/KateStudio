@@ -168,4 +168,3 @@ export function AchievementUnlockedModal({
   );
 }
 
-export default AchievementUnlockedModal;

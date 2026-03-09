@@ -294,4 +294,3 @@ export function OnboardingQuiz({ onComplete, onSkip, className = '' }: Onboardin
   );
 }
 
-export default OnboardingQuiz;

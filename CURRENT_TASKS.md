@@ -75,16 +75,16 @@ _Обновлено: 27 февраля 2026 (Capacitor wrapper + интегра�
 
 | #   | Задача                                    | Где менять                                    | Время     | Статус |
 | --- | ----------------------------------------- | --------------------------------------------- | --------- | ------ |
-| 10  | **Input validation (Zod)**                | `supabase/functions/gemini-proxy/index.ts`    | 2-3 часа  | ⏳     |
-| 11  | **Rate limiting в Redis/KV**              | `supabase/functions/gemini-proxy/index.ts`    | 3-4 часа  | ⏳     |
+| 10  | **Input validation (Zod)**                | `supabase/functions/gemini-proxy/index.ts`    | 2-3 часа  | ✅     |
+| 11  | **Rate limiting в Redis/KV**              | `supabase/functions/gemini-proxy/index.ts`    | 3-4 часа  | ✅     |
 | 12  | **Webhook signature verification (HMAC)** | `supabase/functions/payment-webhook/index.ts` | ✅        | ✅     |
-| 13  | **YooKassa интеграция (полная)**          | `supabase/functions/create-payment/index.ts`  | 1-2 дня   | ⏳     |
+| 13  | **YooKassa интеграция (полная)**          | `supabase/functions/create-payment/index.ts`  | 1-2 дня   | 🔄     |
 | 14  | **Заменить 4 placeholder видео**          | `APP/components/VideoLibrary.tsx`             | 4-8 часов | ⏳     |
-| 15  | **Интегрировать расписание с Supabase**   | `APP/services/dataService.ts` + новая таблица | 1-2 дня   | ⏳     |
-| 16  | **Добавить database индексы**             | Новая миграция                                | 30 мин    | ⏳     |
-| 17  | **Повысить test coverage до 50%+**        | Все `__tests__/`                              | Ongoing   | ⏳     |
-| 18  | **Исправить nullable user_id**            | Миграция cleanup                              | 30 мин    | ⏳     |
-| 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ⏳     |
+| 15  | **Интегрировать расписание с Supabase**   | `APP/services/dataService.ts` + новая таблица | 1-2 дня   | ✅     |
+| 16  | **Добавить database индексы**             | Новая миграция                                | 30 мин    | ✅     |
+| 17  | **Повысить test coverage до 50%+**        | Все `__tests__/`                              | Ongoing   | 🔄     |
+| 18  | **Исправить nullable user_id**            | Миграция cleanup                              | 30 мин    | ✅     |
+| 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ✅     |
 
 **Total P1:** 1-2 недели | **Testing Coverage:** ~25% → 50%+ | **Payment
 Integration:** 30% → 90%
@@ -94,7 +94,7 @@ Integration:** 30% → 90%
 | #   | Задача                                        | Где менять                                  | Время    | Статус |
 | --- | --------------------------------------------- | ------------------------------------------- | -------- | ------ |
 | 20  | Убрать default exports (8 файлов)             | shared/                                     | 1-2 часа | ⏳     |
-| 21  | Вынести хардкод в константы                   | Blog, Pricing, Marquee, Breathwork          | 2-3 часа | ⏳     |
+| 21  | Вынести хардкод в константы                   | Blog, Pricing, Marquee, Breathwork          | 2-3 часа | ✅     |
 | 22  | Оптимизировать изображения (WebP)             | Все public/images/                          | 1 день   | ⏳     |
 | 23  | Реализовать Achievements UI                   | `shared/components/`                        | 1-2 дня  | ⏳     |
 | 24  | Добавить Veo/Image Edit в Edge proxy          | `supabase/functions/gemini-proxy/`          | 1 день   | ⏳     |
@@ -103,7 +103,7 @@ Integration:** 30% → 90%
 | 27  | "Все статьи" функционал или убрать            | `WEB/components/Blog.tsx`                   | 3-4 часа | ⏳     |
 | 28  | Logging & Monitoring (Sentry)                 | WEB/APP                                     | 1 день   | ⏳     |
 | 29  | Error recovery & cron jobs                    | Supabase Edge Functions                     | 1-2 дня  | ⏳     |
-| 30  | Database types generation                     | `shared/types/database.types.ts`            | 1 час    | ⏳     |
+| 30  | Database types generation                     | `shared/types/database.types.ts`            | 1 час    | ✅     |
 | 31  | Push Notifications (Firebase Cloud Messaging) | `APP/`, Edge Function                       | 2-3 дня  | ⏳     |
 
 **Total P2:** 2-4 недели

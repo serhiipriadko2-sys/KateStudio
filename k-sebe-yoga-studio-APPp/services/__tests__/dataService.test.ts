@@ -94,6 +94,189 @@ describe('dataService', () => {
     });
   });
 
+  describe('getClassesForMonth', () => {
+    // Clear in-memory month cache between tests
+    beforeEach(() => {
+      // Access the module-level monthCache through the service by calling with a unique month
+      // We use different year/month per test to avoid cache collisions
+    });
+
+    it('returns classes from Supabase when data is available', async () => {
+      const mockRows = [
+        {
+          id: 'uuid-class-1',
+          date: '2030-01-15',
+          time: '09:00',
+          name: 'Inside Flow',
+          instructor: 'Катя Габран',
+          duration: '60 мин',
+          spots_total: 12,
+          spots_booked: 0,
+          location: 'Станционная ул., 5Б',
+          intensity: 3,
+          price: 700,
+          is_online: false,
+        },
+      ];
+
+      (supabase.from as Mock).mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            gte: vi.fn().mockReturnValue({
+              lte: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue({ data: mockRows, error: null }),
+                }),
+              }),
+            }),
+          }),
+          in: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      });
+
+      const result = await dataService.getClassesForMonth(2030, 0, 'offline');
+
+      expect(result.length).toBeGreaterThan(0);
+      expect(result[0].id).toBe('uuid-class-1');
+      expect(result[0].name).toBe('Inside Flow');
+      expect(result[0].spotsTotal).toBe(12);
+      expect(result[0].isOnline).toBe(false);
+    });
+
+    it('applies defaults when DB fields are null', async () => {
+      const mockRows = [
+        {
+          id: 'uuid-class-2',
+          date: '2030-02-10',
+          time: '18:00',
+          name: 'Хатха',
+          instructor: null,
+          duration: null,
+          spots_total: null,
+          spots_booked: null,
+          location: null,
+          intensity: null,
+          price: null,
+          is_online: null,
+        },
+      ];
+
+      (supabase.from as Mock).mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            gte: vi.fn().mockReturnValue({
+              lte: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue({ data: mockRows, error: null }),
+                }),
+              }),
+            }),
+          }),
+          in: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      });
+
+      const result = await dataService.getClassesForMonth(2030, 1, 'offline');
+      const cls = result[0];
+
+      expect(cls.instructor).toBe('Катя Габран');
+      expect(cls.duration).toBe('60 мин');
+      expect(cls.spotsTotal).toBe(12);
+      expect(cls.location).toBe('Станционная ул., 5Б');
+      expect(cls.intensity).toBe(2);
+      expect(cls.price).toBe(700);
+      expect(cls.isOnline).toBe(false);
+    });
+
+    it('adds booking counts to spotsBooked', async () => {
+      const mockRows = [
+        {
+          id: 'uuid-class-3',
+          date: '2030-03-05',
+          time: '09:00',
+          name: 'Flow',
+          instructor: null,
+          duration: null,
+          spots_total: 10,
+          spots_booked: 2,
+          location: null,
+          intensity: 2,
+          price: 700,
+          is_online: false,
+        },
+      ];
+
+      (supabase.from as Mock).mockReturnValue({
+        select: vi.fn().mockImplementation(() => ({
+          eq: vi.fn().mockReturnValue({
+            gte: vi.fn().mockReturnValue({
+              lte: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue({ data: mockRows, error: null }),
+                }),
+              }),
+            }),
+          }),
+          in: vi.fn().mockResolvedValue({
+            data: [
+              { class_id: 'uuid-class-3' },
+              { class_id: 'uuid-class-3' },
+              { class_id: 'uuid-class-3' },
+            ],
+            error: null,
+          }),
+        })),
+      });
+
+      const result = await dataService.getClassesForMonth(2030, 2, 'offline');
+      // spots_booked(2) + 3 real bookings = 5
+      expect(result[0].spotsBooked).toBe(5);
+    });
+
+    it('falls back to mock data when Supabase returns empty array', async () => {
+      (supabase.from as Mock).mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            gte: vi.fn().mockReturnValue({
+              lte: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue({ data: [], error: null }),
+                }),
+              }),
+            }),
+          }),
+          in: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      });
+
+      const result = await dataService.getClassesForMonth(2030, 3, 'offline');
+      // Mock data should generate some classes
+      expect(result.length).toBeGreaterThan(0);
+      // Mock IDs have a date-based format, not UUID
+      expect(result[0].id).toMatch(/^\d{4}-\d{2}-\d{2}-offline-\d/);
+    });
+
+    it('falls back to mock data when Supabase throws', async () => {
+      (supabase.from as Mock).mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            gte: vi.fn().mockReturnValue({
+              lte: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  order: vi.fn().mockRejectedValue(new Error('Network error')),
+                }),
+              }),
+            }),
+          }),
+          in: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      });
+
+      const result = await dataService.getClassesForMonth(2030, 4, 'offline');
+      expect(result.length).toBeGreaterThan(0);
+    });
+  });
+
   it('returns false for duplicate bookings', async () => {
     const registerSpy = vi.spyOn(dataService, 'registerUser').mockResolvedValue({
       id: '11111111-1111-4111-8111-111111111111',

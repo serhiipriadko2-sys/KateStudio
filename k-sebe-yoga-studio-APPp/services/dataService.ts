@@ -5,7 +5,7 @@ import { cacheAdapter, CachedBooking } from './localCache';
 export const DATA_SOURCES = {
   userProfile: 'supabase',
   bookings: 'supabase',
-  classSchedule: 'local-generated',
+  classSchedule: 'supabase-with-mock-fallback',
   cachedUser: 'local-cache',
   cachedBookings: 'local-cache',
   pendingBookings: 'local-cache',
@@ -126,6 +126,7 @@ export const dataService = {
   // --- Schedule ---
 
   // Fetches all classes for a whole month in one batch and caches the result.
+  // Primary: Supabase `classes` table. Fallback: locally-generated mock data.
   // Subsequent calls for the same month+type are served from the in-memory cache.
   getClassesForMonth: async (
     year: number,
@@ -137,6 +138,81 @@ export const dataService = {
       return monthCache.get(cacheKey)!;
     }
 
+    // --- Primary: fetch from Supabase ---
+    if (isSupabaseConfigured) {
+      try {
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const startDate = `${year}-${pad(month + 1)}-01`;
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        const endDate = `${year}-${pad(month + 1)}-${pad(lastDay)}`;
+
+        const { data: rows, error } = await supabase
+          .from('classes')
+          .select('*')
+          .eq('is_online', type === 'online')
+          .gte('date', startDate)
+          .lte('date', endDate)
+          .order('date', { ascending: true })
+          .order('time', { ascending: true });
+
+        if (!error && rows && rows.length > 0) {
+          // Batch-fetch booking counts for all classes in the month
+          const classIds = rows.map((r: { id: string }) => r.id);
+          const bookingCounts: Record<string, number> = {};
+          const { data: bookings } = await supabase
+            .from('bookings')
+            .select('class_id')
+            .in('class_id', classIds);
+          if (bookings) {
+            bookings.forEach((b: { class_id: string }) => {
+              bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
+            });
+          }
+
+          const sessions: ClassSession[] = rows.map(
+            (row: {
+              id: string;
+              date: string;
+              time: string;
+              name: string;
+              instructor: string | null;
+              duration: string | null;
+              spots_total: number | null;
+              spots_booked: number | null;
+              location: string | null;
+              intensity: number | null;
+              price: number | null;
+              is_online: boolean | null;
+            }) => {
+              const spotsTotal = row.spots_total ?? 12;
+              const bookedBase = row.spots_booked ?? 0;
+              const bookedReal = bookingCounts[row.id] ?? 0;
+              return {
+                id: row.id,
+                dateStr: row.date,
+                time: row.time,
+                name: row.name,
+                instructor: row.instructor ?? 'Катя Габран',
+                duration: row.duration ?? '60 мин',
+                spotsTotal,
+                spotsBooked: Math.min(bookedBase + bookedReal, spotsTotal),
+                location: row.location ?? 'Станционная ул., 5Б',
+                intensity: (row.intensity ?? 2) as 1 | 2 | 3,
+                price: row.price ?? 700,
+                isOnline: row.is_online ?? false,
+              };
+            }
+          );
+
+          monthCache.set(cacheKey, sessions);
+          return sessions;
+        }
+      } catch {
+        // Fall through to mock data
+      }
+    }
+
+    // --- Fallback: locally-generated mock data ---
     const templates =
       type === 'offline'
         ? [
@@ -200,8 +276,6 @@ export const dataService = {
 
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const allClassIds: string[] = [];
-
-    // Pre-generate class IDs for every day so we can batch-fetch bookings once
     const monthClassEntries: Array<{
       dateStr: string;
       daySeed: number;
@@ -219,16 +293,13 @@ export const dataService = {
       });
     }
 
-    // Batch-fetch all booking counts for the entire month in one query
     const bookingCounts: Record<string, number> = {};
     try {
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('class_id')
         .in('class_id', allClassIds);
-
       if (error) throw error;
-
       if (bookings) {
         bookings.forEach((b: { class_id: string }) => {
           bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;

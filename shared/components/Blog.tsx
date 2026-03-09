@@ -14,86 +14,25 @@ import {
   Check,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { IMAGES } from '../constants';
+import { DEFAULT_BLOG_ARTICLES } from '../constants';
 import { BlogArticle } from '../types';
 import { FadeIn } from './FadeIn';
 
-// Default articles data
-const defaultArticles: BlogArticle[] = [
-  {
-    id: 1,
-    category: 'Практика',
-    title: 'Как начать медитировать: 5 простых шагов',
-    excerpt:
-      'Медитация — это не отсутствие мыслей, а умение их наблюдать. Рассказываем, как сделать первые шаги к осознанности без стресса.',
-    image: IMAGES.blog.articles[0],
-    date: '12 Авг',
-    author: 'Катя Габран',
-    readTime: '3 мин',
-    content: `
-      <p>Многие думают, что медитация — это сидеть в позе лотоса и ни о чем не думать. На самом деле, это тренировка ума возвращаться в настоящий момент.</p>
-      <h3>1. Найдите удобное место</h3>
-      <p>Вам не нужна специальная комната. Достаточно тихого уголка и подушки. Главное — прямая спина.</p>
-      <h3>2. Начните с дыхания</h3>
-      <p>Просто наблюдайте за тем, как воздух входит и выходит. Не пытайтесь его контролировать.</p>
-      <h3>3. Не ругайте себя за мысли</h3>
-      <p>Мысли будут приходить. Это нормально. Как только заметите, что отвлеклись — мягко верните внимание к дыханию.</p>
-      <p>Начните с 5 минут в день. Это эффективнее, чем час раз в месяц.</p>
-    `,
-  },
-  {
-    id: 2,
-    category: 'Здоровье',
-    title: 'Питание и Йога: что есть до и после?',
-    excerpt:
-      'Легкость в теле — залог успешной практики. Разбираем идеальный рацион для утренних и вечерних занятий.',
-    image: IMAGES.blog.articles[1],
-    date: '08 Авг',
-    author: 'Катя Габран',
-    readTime: '4 мин',
-    content: `
-      <p>Йога на полный желудок — это испытание. Но и на голодный желудок заниматься сложно из-за слабости.</p>
-      <h3>До практики (за 1.5-2 часа)</h3>
-      <p>Идеально подойдут легкие углеводы: банан, овсянка на воде, смузи. Избегайте тяжелой, жирной пищи.</p>
-      <h3>После практики</h3>
-      <p>В течение 30 минут после шавасаны лучше выпить травяной чай или воду. Через час можно полноценно поесть: белок + овощи.</p>
-      <p>Слушайте свое тело — оно лучший нутрициолог.</p>
-    `,
-  },
-  {
-    id: 3,
-    category: 'Философия',
-    title: 'Inside Flow: Танец твоего сердца',
-    excerpt:
-      'Почему эта практика покоряет мир? Сочетание современной музыки, ритма и традиционных асан в одном потоке.',
-    image: IMAGES.blog.articles[2],
-    date: '01 Авг',
-    author: 'Катя Габран',
-    readTime: '5 мин',
-    content: `
-      <p>Inside Flow — это эволюция виньяса-йоги. Здесь мы движемся в такт современной музыке.</p>
-      <h3>Музыка как проводник</h3>
-      <p>Каждое движение синхронизировано с битом. Это помогает отключить "мыслемешалку" и полностью отдаться потоку.</p>
-      <h3>История в движении</h3>
-      <p>Каждая последовательность (флоу) рассказывает историю. Мы проживаем эмоции через тело.</p>
-      <p>Это практика для тех, кто любит динамику, музыку и хочет почувствовать йогу по-новому.</p>
-    `,
-  },
-];
 
 interface BlogProps {
   articles?: BlogArticle[];
   className?: string;
   onArticleClick?: (article: BlogArticle) => void;
-  showAllLink?: boolean;
+  /** Callback for the "Все статьи" button. If not provided, the button is hidden. */
+  onShowAll?: () => void;
   compact?: boolean;
 }
 
 export const Blog: React.FC<BlogProps> = ({
-  articles = defaultArticles,
+  articles = DEFAULT_BLOG_ARTICLES,
   className = '',
   onArticleClick,
-  showAllLink = true,
+  onShowAll,
   compact = false,
 }) => {
   const [selectedArticle, setSelectedArticle] = useState<BlogArticle | null>(null);
@@ -169,9 +108,12 @@ export const Blog: React.FC<BlogProps> = ({
           <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Полезное</h2>
         </FadeIn>
 
-        {showAllLink && (
+        {onShowAll && (
           <FadeIn delay={200} direction="left">
-            <button className="flex items-center gap-2 text-brand-text hover:text-brand-green transition-colors group">
+            <button
+              onClick={onShowAll}
+              className="flex items-center gap-2 text-brand-text hover:text-brand-green transition-colors group"
+            >
               <span className="text-sm font-medium uppercase tracking-wider">Все статьи</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -340,4 +282,3 @@ export const Blog: React.FC<BlogProps> = ({
   );
 };
 
-export default Blog;

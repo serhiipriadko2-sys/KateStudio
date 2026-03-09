@@ -45,6 +45,19 @@ async function verifyHmacSignature(
   return timingSafeEqual(computedHex, signature.toLowerCase());
 }
 
+type YooKassaPayment = {
+  id?: string;
+  status?: string;
+  paid?: boolean;
+  metadata?: { user_id?: string; plan_id?: string };
+  refund_id?: string;
+};
+
+type WebhookEvent = {
+  type?: string;
+  object?: YooKassaPayment;
+};
+
 Deno.serve(async (req) => {
   const secret = Deno.env.get('YOO_WEBHOOK_SECRET');
   if (!secret) {
@@ -66,41 +79,62 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const event = JSON.parse(rawBody) as {
-      type?: string;
-      object?: {
-        status?: string;
-        paid?: boolean;
-        metadata?: { user_id?: string; plan_id?: string };
-      };
-    };
+    const event = JSON.parse(rawBody) as WebhookEvent;
 
-    if (event.type === 'notification') {
-      const payment = event.object;
+    if (event.type !== 'notification' || !event.object) {
+      return new Response('OK', { status: 200 });
+    }
 
-      if (payment?.status === 'succeeded' && payment.paid === true) {
-        const userId = payment.metadata?.user_id;
-        const planId = payment.metadata?.plan_id;
+    const payment = event.object;
+    const userId = payment.metadata?.user_id;
+    const planId = payment.metadata?.plan_id;
 
-        if (userId && planId) {
-          const supabase = getSupabaseAdmin();
+    if (!userId) {
+      console.warn('Webhook missing user_id in metadata');
+      return new Response('OK', { status: 200 });
+    }
 
-          // Update subscription status to active
-          const { error } = await supabase.from('subscriptions').upsert({
-            user_id: userId,
-            plan: planId,
-            status: 'active',
-            updated_at: new Date().toISOString(),
-            // Calculate expiration date based on plan (e.g., +1 month)
-            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          });
+    const supabase = getSupabaseAdmin();
 
-          if (error) {
-            console.error('Failed to update subscription:', error);
-            return new Response('Database error', { status: 500 });
-          }
-        }
+    // --- Payment succeeded: activate subscription ---
+    if (payment.status === 'succeeded' && payment.paid === true && planId) {
+      const { error } = await supabase.from('subscriptions').upsert(
+        {
+          user_id: userId,
+          plan: planId,
+          status: 'active',
+          provider: 'yookassa',
+          provider_subscription_id: payment.id,
+          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' }
+      );
+
+      if (error) {
+        console.error('Failed to activate subscription:', error);
+        return new Response('Database error', { status: 500 });
       }
+
+      console.log(`Subscription activated: user=${userId} plan=${planId}`);
+    }
+
+    // --- Payment canceled: mark subscription as canceled ---
+    if (payment.status === 'canceled') {
+      const { error } = await supabase
+        .from('subscriptions')
+        .update({
+          status: 'canceled',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Failed to cancel subscription:', error);
+        return new Response('Database error', { status: 500 });
+      }
+
+      console.log(`Subscription canceled: user=${userId}`);
     }
 
     return new Response('OK', { status: 200 });

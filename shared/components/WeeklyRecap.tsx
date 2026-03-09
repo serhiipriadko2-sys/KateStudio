@@ -170,4 +170,3 @@ export function WeeklyRecap({
   );
 }
 
-export default WeeklyRecap;

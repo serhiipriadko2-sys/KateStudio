@@ -5,112 +5,9 @@
  */
 import { Check, Star, ArrowRight } from 'lucide-react';
 import React from 'react';
+import { PRICING_DATA } from '../constants';
 import { PriceOption } from '../types';
 import { FadeIn } from './FadeIn';
-
-// Yoga subscriptions
-const yogaSubscriptions: PriceOption[] = [
-  {
-    title: 'Разовое',
-    price: '700 ₽',
-    description: 'Для знакомства со студией',
-    features: ['1 посещение любой практики', 'Срок действия: 7 дней'],
-    isPopular: false,
-  },
-  {
-    title: '4 занятия',
-    price: '2 500 ₽',
-    description: 'Срок 1 месяц с первого посещения',
-    features: ['625 ₽ за занятие', '4 посещения', 'Экономия 300 ₽', 'Срок действия: 30 дней'],
-    isPopular: false,
-  },
-  {
-    title: '9 занятий',
-    price: '5 000 ₽',
-    description: 'Срок 1 месяц с первого посещения',
-    features: ['556 ₽ за занятие', '9 посещений', 'Экономия 1 300 ₽', 'Срок действия: 30 дней'],
-    isPopular: true,
-  },
-];
-
-// Personal training
-const personalTraining: PriceOption[] = [
-  {
-    title: 'Персональная (1 чел)',
-    price: '1 800 ₽',
-    description: 'Индивидуальный подход',
-    features: ['Удобное время', 'Индивидуальный подход', '1 человек'],
-    isPopular: false,
-    isDark: true,
-  },
-  {
-    title: 'Персональная (2 чел)',
-    price: '2 500 ₽',
-    description: 'Занятие для двоих',
-    features: ['Удобное время', 'Индивидуальный подход', '2 человека'],
-    isPopular: false,
-    isDark: true,
-  },
-];
-
-// Sound Healing
-const soundHealing: PriceOption[] = [
-  {
-    title: 'Групповая сессия',
-    price: '1 500 ₽',
-    description: 'Саундхилинг в группе',
-    features: ['Глубокая релаксация', 'Снятие стресса и тревожности', 'Гармонизация энергии'],
-    isPopular: false,
-  },
-  {
-    title: 'Индивидуальная',
-    price: 'от 3 000 ₽',
-    description: 'Персональная сессия',
-    features: [
-      'Чаши — 3 000 ₽',
-      'Гонг + чаши — 3 500 ₽',
-      'Индивидуальный подход',
-      'Глубокое исцеление',
-    ],
-    isPopular: true,
-  },
-  {
-    title: 'Парная',
-    price: 'от 3 500 ₽',
-    description: 'Сессия для двоих',
-    features: ['Чаши — 3 500 ₽', 'Гонг + чаши — 4 000 ₽', '2 человека', 'Совместное погружение'],
-    isPopular: false,
-  },
-];
-
-// Tibetan Bowl Massage
-const tibetanMassage: PriceOption[] = [
-  {
-    title: 'Индивидуальный',
-    price: '3 500 ₽',
-    description: 'Массаж тибетскими чашами',
-    features: [
-      'Глубокое расслабление',
-      'Снятие мышечных зажимов',
-      'Улучшение сна',
-      'Энергетический баланс',
-    ],
-    isPopular: false,
-  },
-  {
-    title: 'Для двоих',
-    price: '6 000 ₽',
-    description: 'Массаж для пары',
-    features: [
-      'Совместное расслабление',
-      'Гармонизация энергии',
-      'Улучшение кровообращения',
-      'Медитативное погружение',
-    ],
-    isPopular: false,
-    isDark: true,
-  },
-];
 
 interface PricingCardProps {
   option: PriceOption;
@@ -289,7 +186,7 @@ export const Pricing: React.FC<PricingProps> = ({
       <PricingSectionInner
         title="Йога-абонементы"
         subtitle="Групповые занятия"
-        options={yogaSubscriptions}
+        options={PRICING_DATA.yoga}
         onSelect={handleSelect}
         columns={3}
       />
@@ -297,7 +194,7 @@ export const Pricing: React.FC<PricingProps> = ({
       <PricingSectionInner
         title="Персональные тренировки"
         subtitle="Индивидуальный подход"
-        options={personalTraining}
+        options={PRICING_DATA.personal}
         onSelect={handleSelect}
         columns={2}
       />
@@ -305,7 +202,7 @@ export const Pricing: React.FC<PricingProps> = ({
       <PricingSectionInner
         title="Саундхилинг"
         subtitle="Звукотерапия тибетскими чашами и гонгом"
-        options={soundHealing}
+        options={PRICING_DATA.soundHealing}
         onSelect={handleSelect}
         columns={3}
       />
@@ -313,7 +210,7 @@ export const Pricing: React.FC<PricingProps> = ({
       <PricingSectionInner
         title="Массаж тибетскими чашами"
         subtitle="Глубокое расслабление через вибрации и звук"
-        options={tibetanMassage}
+        options={PRICING_DATA.tibetanMassage}
         onSelect={handleSelect}
         columns={2}
       />
@@ -321,4 +218,3 @@ export const Pricing: React.FC<PricingProps> = ({
   );
 };
 
-export default Pricing;

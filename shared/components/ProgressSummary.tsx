@@ -174,4 +174,3 @@ export function ProgressSummary({
   );
 }
 
-export default ProgressSummary;

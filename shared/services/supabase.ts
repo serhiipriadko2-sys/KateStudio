@@ -101,4 +101,3 @@ export const queryTable = async <T>(
   }
 };
 
-export default supabase;

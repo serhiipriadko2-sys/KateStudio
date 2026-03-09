@@ -129,4 +129,3 @@ export function DailyRecommendation({
   );
 }
 
-export default DailyRecommendation;
