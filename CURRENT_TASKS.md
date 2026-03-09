@@ -96,7 +96,7 @@ Integration:** 30% → 90%
 | 20  | Убрать default exports (8 файлов)             | shared/                                     | 1-2 часа | ⏳     |
 | 21  | Вынести хардкод в константы                   | Blog, Pricing, Marquee, Breathwork          | 2-3 часа | ✅     |
 | 22  | Оптимизировать изображения (WebP)             | Все public/images/                          | 1 день   | 🔄     |
-| 23  | Реализовать Achievements UI                   | `shared/components/`                        | 1-2 дня  | ⏳     |
+| 23  | Реализовать Achievements UI                   | `shared/components/`                        | 1-2 дня  | ✅     |
 | 24  | Добавить Veo/Image Edit в Edge proxy          | `supabase/functions/gemini-proxy/`          | 1 день   | ⏳     |
 | 25  | Раскомментировать Subscription UI             | `APP/components/Dashboard.tsx`              | 2 часа   | ⏳     |
 | 26  | Newsletter интеграция (Mailchimp)             | `WEB/components/Footer.tsx` + Edge Function | 1 день   | ⏳     |
