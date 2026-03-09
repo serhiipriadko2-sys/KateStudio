@@ -155,4 +155,3 @@ function AchievementCard({ achievement, showProgress, onClick }: AchievementCard
   );
 }
 
-export default AchievementsGrid;

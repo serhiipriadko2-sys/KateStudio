@@ -192,4 +192,3 @@ export const Paywall: React.FC<PaywallProps> = ({
   );
 };
 
-export default Paywall;

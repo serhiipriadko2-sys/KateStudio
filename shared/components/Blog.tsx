@@ -85,7 +85,8 @@ interface BlogProps {
   articles?: BlogArticle[];
   className?: string;
   onArticleClick?: (article: BlogArticle) => void;
-  showAllLink?: boolean;
+  /** Callback for the "Все статьи" button. If not provided, the button is hidden. */
+  onShowAll?: () => void;
   compact?: boolean;
 }
 
@@ -93,7 +94,7 @@ export const Blog: React.FC<BlogProps> = ({
   articles = defaultArticles,
   className = '',
   onArticleClick,
-  showAllLink = true,
+  onShowAll,
   compact = false,
 }) => {
   const [selectedArticle, setSelectedArticle] = useState<BlogArticle | null>(null);
@@ -169,9 +170,12 @@ export const Blog: React.FC<BlogProps> = ({
           <h2 className="text-4xl md:text-6xl font-serif text-brand-text/90">Полезное</h2>
         </FadeIn>
 
-        {showAllLink && (
+        {onShowAll && (
           <FadeIn delay={200} direction="left">
-            <button className="flex items-center gap-2 text-brand-text hover:text-brand-green transition-colors group">
+            <button
+              onClick={onShowAll}
+              className="flex items-center gap-2 text-brand-text hover:text-brand-green transition-colors group"
+            >
               <span className="text-sm font-medium uppercase tracking-wider">Все статьи</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -340,4 +344,3 @@ export const Blog: React.FC<BlogProps> = ({
   );
 };
 
-export default Blog;

@@ -321,4 +321,3 @@ export const Pricing: React.FC<PricingProps> = ({
   );
 };
 
-export default Pricing;
