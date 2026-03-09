@@ -1,3 +1,4 @@
+import { monitoring } from '@ksebe/shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -6,6 +7,13 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { initNative, nativeReady } from './native';
+
+// Initialize monitoring before React renders (no-op if VITE_SENTRY_DSN is not set)
+void monitoring.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN as string | undefined,
+  environment: import.meta.env.MODE,
+  release: import.meta.env.VITE_APP_VERSION as string | undefined,
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {

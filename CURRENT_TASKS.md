@@ -101,7 +101,7 @@ Integration:** 30% → 90%
 | 25  | Раскомментировать Subscription UI             | `APP/components/Dashboard.tsx`              | 2 часа   | ⏳     |
 | 26  | Newsletter интеграция (Mailchimp)             | `WEB/components/Footer.tsx` + Edge Function | 1 день   | ✅     |
 | 27  | "Все статьи" функционал или убрать            | `WEB/components/Blog.tsx`                   | 3-4 часа | ⏳     |
-| 28  | Logging & Monitoring (Sentry)                 | WEB/APP                                     | 1 день   | ⏳     |
+| 28  | Logging & Monitoring (Sentry)                 | WEB/APP                                     | 1 день   | ✅     |
 | 29  | Error recovery & cron jobs                    | Supabase Edge Functions                     | 1-2 дня  | ⏳     |
 | 30  | Database types generation                     | `shared/types/database.types.ts`            | 1 час    | ✅     |
 | 31  | Push Notifications (Firebase Cloud Messaging) | `APP/`, Edge Function                       | 2-3 дня  | ⏳     |
