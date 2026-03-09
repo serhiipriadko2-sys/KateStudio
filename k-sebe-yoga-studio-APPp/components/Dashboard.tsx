@@ -1,5 +1,13 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import { IMAGES, supabase, uploadFile } from '@ksebe/shared';
+import {
+  IMAGES,
+  supabase,
+  uploadFile,
+  DailyRecommendation,
+  StreakCalendar,
+  useGamification,
+} from '@ksebe/shared';
+import type { DailyRecommendationData as DailyRecommendationType, StreakCalendarDay } from '@ksebe/shared';
 import {
   LogOut,
   LayoutDashboard,
@@ -92,6 +100,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const [loginPhone, setLoginPhone] = useState('');
   const [otpCode, setOtpCode] = useState('');
 
+  // Daily recommendation
+  const [dailyRec, setDailyRec] = useState<DailyRecommendationType | null>(null);
+  const [dailyRecLoading, setDailyRecLoading] = useState(false);
+
+  // Streak calendar practice data
+  const [practiceData, setPracticeData] = useState<Record<string, StreakCalendarDay>>({});
+  const { currentStreak, isLoading: gamificationLoading } = useGamification(user?.id);
+
   const { showToast } = useToast();
 
   const fetchBookings = useCallback(async () => {
@@ -142,6 +158,71 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       };
     }
   }, [authStatus, user?.id, fetchBookings, loadSubscription, showToast]);
+
+  // Load daily recommendation (client-side generation, no AI call needed for basic version)
+  useEffect(() => {
+    if (authStatus !== 'authenticated') return;
+    setDailyRecLoading(true);
+    const cacheKey = `ksebe_daily_rec_${new Date().toDateString()}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        setDailyRec(JSON.parse(cached) as DailyRecommendationType);
+        setDailyRecLoading(false);
+        return;
+      } catch { /* regenerate */ }
+    }
+
+    const practices: Array<DailyRecommendationType> = [
+      {
+        practiceId: 'inside-flow-1',
+        title: 'Утренний Inside Flow',
+        duration: 30,
+        type: 'inside-flow',
+        reason: 'Идеально для начала дня — активирует энергию и улучшает настрой',
+        matchScore: 92,
+        musicMood: 'Uplifting',
+        generatedAt: new Date().toISOString(),
+      },
+      {
+        practiceId: 'hatha-1',
+        title: 'Хатха для гибкости',
+        duration: 45,
+        type: 'hatha',
+        reason: 'Мягкое восстановление, помогает расслабить напряжение в теле',
+        matchScore: 88,
+        musicMood: 'Serene',
+        generatedAt: new Date().toISOString(),
+      },
+      {
+        practiceId: 'meditation-1',
+        title: 'Медитация перед сном',
+        duration: 15,
+        type: 'meditation',
+        reason: 'Успокаивает ум и готовит к глубокому отдыху',
+        matchScore: 85,
+        musicMood: 'Calm',
+        generatedAt: new Date().toISOString(),
+      },
+    ];
+    const rec = practices[new Date().getDay() % practices.length];
+    localStorage.setItem(cacheKey, JSON.stringify(rec));
+    setDailyRec(rec);
+    setDailyRecLoading(false);
+  }, [authStatus]);
+
+  // Load practice data for StreakCalendar from bookings
+  useEffect(() => {
+    if (bookings.length === 0) return;
+    const data: Record<string, StreakCalendarDay> = {};
+    bookings.forEach((b) => {
+      const d = new Date(b.date || b.created_at || '');
+      if (isNaN(d.getTime())) return;
+      const key = d.toISOString().slice(0, 10);
+      data[key] = { practiced: true, duration: 60, type: b.class_type || 'hatha' };
+    });
+    setPracticeData(data);
+  }, [bookings]);
 
   const nextBooking = bookings.length > 0 ? bookings[0] : null;
 
@@ -430,6 +511,32 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   </div>
                 </div>
               </div>
+
+              {/* Daily Recommendation */}
+              {authStatus === 'authenticated' && (
+                <div
+                  className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-600"
+                  style={{ animationDelay: '350ms' }}
+                >
+                  <DailyRecommendation
+                    recommendation={dailyRec}
+                    isLoading={dailyRecLoading}
+                    onStart={(id) => {
+                      setActiveTab('videos');
+                      showToast(`Открываем практику…`, 'success');
+                    }}
+                    onRefresh={() => {
+                      localStorage.removeItem(
+                        `ksebe_daily_rec_${new Date().toDateString()}`
+                      );
+                      setDailyRec(null);
+                      setDailyRecLoading(true);
+                      // retrigger effect by toggling a transient key
+                      setTimeout(() => setDailyRecLoading(false), 800);
+                    }}
+                  />
+                </div>
+              )}
 
               {/* Booking History / Tickets */}
               <div
@@ -766,6 +873,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               </div>
 
               <Achievements />
+
+              {/* Streak Calendar */}
+              <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
+                <StreakCalendar
+                  practiceData={practiceData}
+                  currentStreak={gamificationLoading ? 0 : currentStreak}
+                />
+              </div>
 
               <div className="flex flex-col items-center mb-8 relative">
                 <div

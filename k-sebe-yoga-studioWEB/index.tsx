@@ -4,7 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter } from 'react-router-dom';
-import App from './App';
+import { App } from './App';
 import { AuthProvider } from './context/AuthContext';
 
 // Initialize monitoring before React renders

@@ -2,14 +2,18 @@ import { Blog, BlogArticle, isSupabaseConfigured, supabase } from '@ksebe/shared
 import React, { useState, useEffect } from 'react';
 import { useContentData } from '../hooks/useContentData';
 
+const PREVIEW_COUNT = 3;
+
 /**
  * BlogContainer for WEB
  * Fetches articles from Supabase and renders the shared Blog component.
  * Falls back to default content data when Supabase is not configured.
+ * Supports inline "Все статьи" expansion.
  */
 export const BlogContainer: React.FC = () => {
   const { articles: defaultArticles } = useContentData();
   const [articles, setArticles] = useState<BlogArticle[]>(defaultArticles);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return;
@@ -45,5 +49,13 @@ export const BlogContainer: React.FC = () => {
     fetchArticles();
   }, [defaultArticles]);
 
-  return <Blog articles={articles} />;
+  const visibleArticles = showAll ? articles : articles.slice(0, PREVIEW_COUNT);
+  const hasMore = articles.length > PREVIEW_COUNT;
+
+  return (
+    <Blog
+      articles={visibleArticles}
+      onShowAll={hasMore && !showAll ? () => setShowAll(true) : undefined}
+    />
+  );
 };

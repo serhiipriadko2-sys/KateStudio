@@ -27,6 +27,7 @@ import { Preloader } from './components/Preloader';
 import { Pricing } from './components/Pricing';
 // Retreats component available from './components/Retreats' when needed
 import { Reviews } from './components/Reviews';
+import { SubscriptionProfile } from './components/SubscriptionProfile';
 import { Schedule } from './components/Schedule';
 import { SEO } from './components/SEO';
 import { registerServiceWorker } from './services/serviceWorker';
@@ -401,12 +402,11 @@ function App() {
           <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
           <Gallery />
           <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-          {/* Временно скрыто: AI-подписка */}
-          {/* <SubscriptionProfile
+          <SubscriptionProfile
             onRequestPlan={(plan) =>
               openBooking({ type: `AI Подписка: ${plan.toUpperCase()}`, price: 'от 990 ₽/мес' })
             }
-          /> */}
+          />
           {/* Retreats temporarily hidden - no upcoming retreat info */}
           {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
           <Schedule onBook={(details) => openBooking(details)} />
@@ -454,4 +454,4 @@ function App() {
   );
 }
 
-export default App;
+export { App };

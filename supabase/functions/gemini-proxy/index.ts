@@ -62,6 +62,27 @@ const ProxyRequestSchema = z.discriminatedUnion('op', [
     op: z.literal('analyzeImageContent'),
     base64Image: z.string().min(1).max(10_000_000, 'Payload too large'),
   }),
+  // ── Image Edit (Imagen 3 edit capability) ──────────────────────────────────
+  z.object({
+    op: z.literal('editYogaImage'),
+    /** Base64-encoded source image (JPEG/PNG) */
+    base64Image: z.string().min(1).max(10_000_000, 'Payload too large'),
+    mimeType: z.string().regex(/^image\//),
+    /** Natural-language edit instruction */
+    editPrompt: z.string().min(1).max(1000),
+  }),
+  // ── Veo video generation ───────────────────────────────────────────────────
+  z.object({
+    op: z.literal('generateYogaVideo'),
+    prompt: z.string().min(1).max(1000),
+    aspectRatio: z.enum(['16:9', '9:16', '1:1']).optional(),
+    durationSec: z.number().int().min(2).max(8).optional(),
+  }),
+  z.object({
+    op: z.literal('checkVideoOperation'),
+    /** Operation name returned by generateYogaVideo */
+    operationName: z.string().min(1).max(500),
+  }),
 ]);
 
 type ProxyRequest = z.infer<typeof ProxyRequestSchema>;
@@ -178,7 +199,11 @@ function getOpCost(op: ProxyRequest['op']): 'cheap' | 'medium' | 'expensive' {
     case 'analyzeYogaVideo':
     case 'analyzeMedia':
     case 'analyzeImageContent':
+    case 'editYogaImage':
+    case 'generateYogaVideo':
       return 'expensive';
+    case 'checkVideoOperation':
+      return 'cheap';
     default:
       return 'expensive';
   }
@@ -618,6 +643,122 @@ Deno.serve(async (req) => {
           }
         }
         return json({ result: 'Не удалось распознать образ.' }, {}, cors);
+      }
+
+      case 'editYogaImage': {
+        // Uses Gemini 2.0 Flash multimodal output to edit images
+        const cleanBase64 = body.base64Image.includes(',')
+          ? body.base64Image.split(',')[1] || ''
+          : body.base64Image;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.0-flash-exp',
+          contents: {
+            parts: [
+              { inlineData: { mimeType: body.mimeType, data: cleanBase64 } },
+              {
+                text: `Edit this yoga/wellness image according to this instruction: "${body.editPrompt}".
+Output ONLY the edited image. Preserve the yoga/wellness aesthetic, soft lighting, and calm atmosphere.`,
+              },
+            ],
+          },
+          config: { responseModalities: [Modality.IMAGE, Modality.TEXT] },
+        });
+
+        for (const part of response.candidates?.[0]?.content?.parts ?? []) {
+          if (part.inlineData?.data) {
+            const mime = part.inlineData.mimeType ?? 'image/png';
+            return json({ dataUrl: `data:${mime};base64,${part.inlineData.data}` }, {}, cors);
+          }
+        }
+        return json({ dataUrl: null, message: 'Image generation returned no image.' }, {}, cors);
+      }
+
+      case 'generateYogaVideo': {
+        // Veo video generation via REST API (async, returns operationName for polling)
+        const aspectRatio = body.aspectRatio ?? '16:9';
+        const durationSec = body.durationSec ?? 5;
+
+        const veoRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/veo-3.0-generate-preview:generateContent`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey,
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    {
+                      text: `Yoga studio atmosphere, Inside Flow yoga, cinematic slow motion: ${body.prompt}.
+Calm, meditative, beautiful lighting. No text or watermarks.`,
+                    },
+                  ],
+                },
+              ],
+              generationConfig: {
+                responseModalities: ['VIDEO'],
+                videoGenerationConfig: {
+                  durationSeconds: durationSec,
+                  aspectRatio,
+                },
+              },
+            }),
+          },
+        );
+
+        if (!veoRes.ok) {
+          const errBody = await veoRes.json().catch(() => ({}));
+          console.error('gemini-proxy veo error', veoRes.status, errBody);
+          return json({ error: 'Video generation failed', details: errBody }, { status: 502 }, cors);
+        }
+
+        const veoData = await veoRes.json();
+        // Veo returns an Operation object: { name: "operations/...", done: false }
+        const operationName: string | undefined = veoData.name;
+        const done: boolean = veoData.done ?? false;
+
+        if (done) {
+          // Rare: synchronously completed
+          const videoUri: string | undefined =
+            veoData.response?.candidates?.[0]?.content?.parts?.[0]?.fileData?.fileUri;
+          return json({ done: true, videoUri: videoUri ?? null }, {}, cors);
+        }
+
+        if (!operationName) {
+          return json({ error: 'No operation name in Veo response' }, { status: 502 }, cors);
+        }
+
+        return json({ done: false, operationName }, {}, cors);
+      }
+
+      case 'checkVideoOperation': {
+        // Poll a Veo long-running operation for completion
+        const pollRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/${body.operationName}`,
+          {
+            headers: { 'x-goog-api-key': apiKey },
+          },
+        );
+
+        if (!pollRes.ok) {
+          return json({ error: 'Failed to check operation', status: pollRes.status }, { status: 502 }, cors);
+        }
+
+        const opData = await pollRes.json();
+        const done: boolean = opData.done ?? false;
+
+        if (!done) {
+          return json({ done: false, operationName: body.operationName }, {}, cors);
+        }
+
+        // Extract video URI from completed operation
+        const videoUri: string | undefined =
+          opData.response?.candidates?.[0]?.content?.parts?.[0]?.fileData?.fileUri;
+
+        return json({ done: true, videoUri: videoUri ?? null }, {}, cors);
       }
 
       default: {
