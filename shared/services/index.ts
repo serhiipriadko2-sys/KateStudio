@@ -12,3 +12,5 @@ export {
   uploadImage,
 } from './imageStorage';
 export { analytics } from './analytics';
+export { monitoring } from './monitoring';
+export type { MonitoringInitOptions } from './monitoring';

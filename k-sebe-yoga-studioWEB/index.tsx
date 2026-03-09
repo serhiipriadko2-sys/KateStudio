@@ -1,4 +1,4 @@
-import { ErrorBoundary } from '@ksebe/shared';
+import { ErrorBoundary, monitoring } from '@ksebe/shared';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -6,6 +6,13 @@ import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
+
+// Initialize monitoring before React renders
+void monitoring.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN as string | undefined,
+  environment: import.meta.env.MODE,
+  release: import.meta.env.VITE_APP_VERSION as string | undefined,
+});
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

@@ -3,6 +3,9 @@
  * Export all shared components from single entry point
  */
 
+export { OptimizedImage } from './OptimizedImage';
+export type { OptimizedImageProps } from './OptimizedImage';
+
 // UI Components
 export { FadeIn } from './FadeIn';
 export { Logo } from './Logo';

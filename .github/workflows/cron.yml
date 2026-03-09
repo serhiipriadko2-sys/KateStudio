@@ -1,0 +1,56 @@
+name: Daily Maintenance Cron
+
+# Runs daily at 03:00 UTC (06:00 Moscow time)
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  # Allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      tasks:
+        description: 'Tasks to run (comma-separated): expire_subscriptions,recover_payments,cleanup_analytics'
+        required: false
+        default: 'expire_subscriptions,recover_payments,cleanup_analytics'
+
+jobs:
+  maintenance:
+    name: Run maintenance tasks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Invoke cron-maintenance Edge Function
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          # Build tasks JSON array from input (workflow_dispatch) or use all defaults
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.tasks }}" ]; then
+            # Convert comma-separated string to JSON array
+            TASKS_JSON=$(echo '${{ inputs.tasks }}' | jq -R 'split(",")')
+            BODY=$(echo "{}" | jq --argjson t "$TASKS_JSON" '{tasks: $t}')
+          else
+            BODY='{"tasks":["expire_subscriptions","recover_payments","cleanup_analytics"]}'
+          fi
+
+          echo "Invoking cron-maintenance with body: $BODY"
+
+          RESPONSE=$(curl -sf \
+            --max-time 60 \
+            -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d "$BODY" \
+            "${SUPABASE_URL}/functions/v1/cron-maintenance")
+
+          echo "Response: $RESPONSE"
+
+          # Fail the workflow if the function returned ok:false
+          OK=$(echo "$RESPONSE" | jq -r '.ok // false')
+          if [ "$OK" != "true" ]; then
+            echo "::error::Maintenance job reported errors. See response above."
+            exit 1
+          fi
+
+          echo "✅ Maintenance completed successfully"
+          echo "$RESPONSE" | jq '.'

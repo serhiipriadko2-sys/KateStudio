@@ -1,102 +1,145 @@
-import { Flame, Footprints, Lock, Star, Trophy } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Star, TrendingUp, Award } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  AchievementsGrid,
+  AchievementUnlockedModal,
+  useAchievements,
+  useGamification,
+} from '@ksebe/shared';
+import type { Achievement, AchievementCategory } from '@ksebe/shared';
 import { useAuth } from '../context/AuthContext';
-import { ACHIEVEMENTS, gamificationService, UserProgress } from '../services/gamificationService';
 
-const iconMap: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
-  Footprints,
-  Flame,
-  Trophy,
-  Star,
-};
+const CATEGORY_TABS: { id: AchievementCategory | 'all'; label: string }[] = [
+  { id: 'all', label: 'Все' },
+  { id: 'streak', label: 'Серии' },
+  { id: 'practice', label: 'Практика' },
+  { id: 'ai', label: 'AI' },
+  { id: 'milestone', label: 'Вехи' },
+];
+
+const XP_PER_LEVEL = 100;
 
 export const Achievements: React.FC = () => {
   const { user } = useAuth();
-  const [progress, setProgress] = useState<UserProgress | null>(null);
-  const [unlockedIds, setUnlockedIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<AchievementCategory | 'all'>('all');
+  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
 
-  useEffect(() => {
-    if (!user?.id) return;
+  const { level, totalXP, currentStreak, isLoading: progressLoading } = useGamification(user?.id);
 
-    const load = async () => {
-      try {
-        const [prog, unlocked] = await Promise.all([
-          gamificationService.getUserProgress(user.id),
-          gamificationService.getUnlockedAchievements(user.id),
-        ]);
-        setProgress(prog);
-        setUnlockedIds(unlocked);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [user?.id]);
+  const {
+    achievements,
+    unlockedCount,
+    totalCount,
+    overallProgress,
+    isLoading: achievementsLoading,
+  } = useAchievements({ userId: user?.id });
 
-  if (loading) {
-    return <div className="p-6 text-center text-stone-400 text-sm">Загрузка достижений...</div>;
+  const xpInLevel = totalXP % XP_PER_LEVEL;
+  const xpPercent = Math.min(100, Math.max(0, xpInLevel));
+
+  if (progressLoading || achievementsLoading) {
+    return (
+      <div className="p-6 text-center text-stone-400 text-sm animate-pulse">
+        Загрузка достижений...
+      </div>
+    );
   }
 
-  if (!progress) return null;
-
-  const currentLevel = progress.level;
-  const xpInCurrentLevel = progress.total_xp % 100; // Assuming 100 XP per level
-  const progressPercent = Math.min(100, Math.max(0, xpInCurrentLevel));
-
   return (
-    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-xl font-serif text-brand-text">Мой Прогресс</h3>
-          <p className="text-sm text-stone-400">Уровень {currentLevel}</p>
+    <div className="space-y-4">
+      {/* Progress Header Card */}
+      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100">
+        {/* Level & XP row */}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-xl font-serif text-brand-text">Мой Прогресс</h3>
+            <p className="text-sm text-stone-400">Уровень {level}</p>
+          </div>
+          <div className="text-right">
+            <span className="text-2xl font-serif text-brand-green">{totalXP}</span>
+            <span className="text-xs text-stone-400 uppercase ml-1">XP</span>
+          </div>
         </div>
-        <div className="text-right">
-          <span className="text-2xl font-serif text-brand-green">{progress.total_xp}</span>
-          <span className="text-xs text-stone-400 uppercase ml-1">XP</span>
+
+        {/* Level Progress Bar */}
+        <div className="relative h-2 bg-stone-100 rounded-full overflow-hidden mb-2">
+          <div
+            className="absolute top-0 left-0 h-full bg-brand-green transition-all duration-1000 ease-out rounded-full"
+            style={{ width: `${xpPercent}%` }}
+          />
+        </div>
+        <p className="text-xs text-stone-400 mb-4">
+          {xpInLevel} / {XP_PER_LEVEL} XP до уровня {level + 1}
+        </p>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-brand-mint/30 rounded-2xl p-3 text-center">
+            <TrendingUp className="w-5 h-5 text-brand-green mx-auto mb-1" />
+            <span className="block text-lg font-serif text-brand-text">{currentStreak}</span>
+            <span className="block text-[10px] text-stone-400 uppercase tracking-wide">Серия</span>
+          </div>
+          <div className="bg-brand-mint/30 rounded-2xl p-3 text-center">
+            <Award className="w-5 h-5 text-brand-green mx-auto mb-1" />
+            <span className="block text-lg font-serif text-brand-text">{unlockedCount}</span>
+            <span className="block text-[10px] text-stone-400 uppercase tracking-wide">
+              Открыто
+            </span>
+          </div>
+          <div className="bg-brand-mint/30 rounded-2xl p-3 text-center">
+            <Star className="w-5 h-5 text-brand-green mx-auto mb-1" />
+            <span className="block text-lg font-serif text-brand-text">
+              {Math.round(overallProgress)}%
+            </span>
+            <span className="block text-[10px] text-stone-400 uppercase tracking-wide">
+              Прогресс
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Level Progress Bar */}
-      <div className="relative h-2 bg-stone-100 rounded-full overflow-hidden mb-8">
-        <div
-          className="absolute top-0 left-0 h-full bg-brand-green transition-all duration-1000 ease-out rounded-full"
-          style={{ width: `${progressPercent}%` }}
+      {/* Achievements Card */}
+      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-serif text-brand-text">Достижения</h3>
+          <span className="text-sm text-stone-400">
+            {unlockedCount} / {totalCount}
+          </span>
+        </div>
+
+        {/* Category Tabs */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar">
+          {CATEGORY_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-brand-green text-white'
+                  : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Grid */}
+        <AchievementsGrid
+          achievements={achievements}
+          filterCategory={activeTab === 'all' ? undefined : activeTab}
+          onSelect={setSelectedAchievement}
+          showProgress
+          showLocked
         />
       </div>
 
-      {/* Achievements Grid */}
-      <div className="grid grid-cols-4 gap-4">
-        {ACHIEVEMENTS.map((ach) => {
-          const isUnlocked = unlockedIds.includes(ach.id);
-          const Icon = iconMap[ach.icon] || Star;
-
-          return (
-            <div key={ach.id} className="flex flex-col items-center text-center gap-2 group">
-              <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ${
-                  isUnlocked
-                    ? 'bg-brand-mint text-brand-green shadow-lg shadow-brand-green/20 scale-100'
-                    : 'bg-stone-50 text-stone-300 scale-95 grayscale'
-                }`}
-              >
-                {isUnlocked ? <Icon className="w-6 h-6" /> : <Lock className="w-5 h-5" />}
-              </div>
-              <div className="space-y-0.5">
-                <p
-                  className={`text-[10px] font-bold uppercase tracking-wide leading-tight ${
-                    isUnlocked ? 'text-brand-text' : 'text-stone-300'
-                  }`}
-                >
-                  {ach.title}
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Detail Modal */}
+      <AchievementUnlockedModal
+        achievement={selectedAchievement}
+        isOpen={selectedAchievement !== null}
+        onClose={() => setSelectedAchievement(null)}
+      />
     </div>
   );
 };
