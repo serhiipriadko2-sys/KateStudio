@@ -39,7 +39,8 @@
     "github.copilot",
 
     // Docker
-    "ms-azuretools.vscode-docker"
+    "ms-azuretools.vscode-docker",
+    "supabase.vscode-supabase-extension"
   ],
   "unwantedRecommendations": []
 }

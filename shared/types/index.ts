@@ -60,6 +60,7 @@ export interface BookingRow {
   class_type: string | null;
   class_date: string | null;
   class_time: string | null;
+  class_uuid: string | null;
   date: string | null;
   time: string | null;
   created_at: string;
@@ -75,16 +76,16 @@ export interface ClassRow {
   name: string;
   date: string;
   time: string;
-  duration: number;
+  duration: string;
   instructor: string;
   spots_total: number;
   spots_booked: number;
-  price: number;
-  type: string;
+  price: number | null;
   description: string | null;
+  type: string;
   image: string | null;
   location: string;
-  intensity: string;
+  intensity: number | null;
 }
 
 /** Row shape from `contacts` table */
@@ -94,11 +95,12 @@ export interface ContactRow {
   phone: string | null;
   message: string | null;
   created_at: string;
+  status: 'new' | 'in_progress' | 'done' | 'spam' | null;
+  ip_address: string | null;
 }
 
 /** Row shape from `profiles` table */
 export interface ProfileRow {
-  id: string;
   user_id: string;
   phone: string | null;
   name: string | null;
@@ -463,7 +465,7 @@ export interface ProgressTracking {
 // ============================================
 
 export type SubscriptionPlan = 'free' | 'premium' | 'vip';
-export type SubscriptionStatus = 'active' | 'cancelled' | 'past_due' | 'trialing';
+export type SubscriptionStatus = 'active' | 'pending' | 'canceled' | 'past_due' | 'trialing';
 
 export interface Subscription {
   id: string;

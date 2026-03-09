@@ -21,7 +21,7 @@
  */
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
 
 type ServiceAccount = {
   type: string;
@@ -63,13 +63,13 @@ async function getAccessToken(sa: ServiceAccount): Promise<string> {
     keyDer.buffer,
     { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
     false,
-    ['sign'],
+    ['sign']
   );
 
   const signatureBuffer = await crypto.subtle.sign(
     'RSASSA-PKCS1-v1_5',
     privateKey,
-    new TextEncoder().encode(signingInput),
+    new TextEncoder().encode(signingInput)
   );
 
   const sig = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)))
@@ -104,7 +104,7 @@ async function sendFcmMessage(
   accessToken: string,
   token: string,
   notification: { title: string; body: string; image?: string },
-  data?: Record<string, string>,
+  data?: Record<string, string>
 ): Promise<{ success: boolean; error?: string }> {
   const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
 
@@ -226,16 +226,19 @@ serve(async (req: Request) => {
         accessToken,
         row.token,
         { title: body.title, body: body.body, image: body.imageUrl },
-        body.data,
+        body.data
       );
 
       // Remove stale tokens automatically
-      if (!result.success && (result.error === 'UNREGISTERED' || result.error === 'INVALID_ARGUMENT')) {
+      if (
+        !result.success &&
+        (result.error === 'UNREGISTERED' || result.error === 'INVALID_ARGUMENT')
+      ) {
         await admin.from('user_push_tokens').delete().eq('id', row.id);
       }
 
       return { tokenId: row.id, platform: row.platform, ...result };
-    }),
+    })
   );
 
   const sent = results.filter((r) => r.success).length;

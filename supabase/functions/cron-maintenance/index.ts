@@ -23,7 +23,7 @@
  */
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
 
 const CORS_HEADERS = { 'Content-Type': 'application/json' };
 
@@ -90,11 +90,14 @@ async function recoverPayments(): Promise<{ recovered: number; failed: number }>
           headers: {
             Authorization: `Basic ${btoa(`${shopId}:${secretKey}`)}`,
           },
-        },
+        }
       );
 
       if (!res.ok) {
-        console.error(`cron: YooKassa fetch failed for ${sub.provider_subscription_id}`, res.status);
+        console.error(
+          `cron: YooKassa fetch failed for ${sub.provider_subscription_id}`,
+          res.status
+        );
         continue;
       }
 
@@ -170,7 +173,9 @@ serve(async (req: Request) => {
     if (Array.isArray(body.tasks) && body.tasks.length > 0) {
       tasks = body.tasks as string[];
     }
-  } catch { /* use defaults */ }
+  } catch {
+    /* use defaults */
+  }
 
   const results: Record<string, unknown> = {};
   const errors: Record<string, string> = {};

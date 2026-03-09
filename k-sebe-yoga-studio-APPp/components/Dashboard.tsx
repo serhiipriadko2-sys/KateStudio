@@ -7,7 +7,10 @@ import {
   StreakCalendar,
   useGamification,
 } from '@ksebe/shared';
-import type { DailyRecommendationData as DailyRecommendationType, StreakCalendarDay } from '@ksebe/shared';
+import type {
+  DailyRecommendationData as DailyRecommendationType,
+  StreakCalendarDay,
+} from '@ksebe/shared';
 import {
   LogOut,
   LayoutDashboard,
@@ -170,7 +173,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         setDailyRec(JSON.parse(cached) as DailyRecommendationType);
         setDailyRecLoading(false);
         return;
-      } catch { /* regenerate */ }
+      } catch {
+        /* regenerate */
+      }
     }
 
     const practices: Array<DailyRecommendationType> = [
@@ -521,14 +526,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   <DailyRecommendation
                     recommendation={dailyRec}
                     isLoading={dailyRecLoading}
-                    onStart={(id) => {
+                    onStart={(_id) => {
                       setActiveTab('videos');
                       showToast(`Открываем практику…`, 'success');
                     }}
                     onRefresh={() => {
-                      localStorage.removeItem(
-                        `ksebe_daily_rec_${new Date().toDateString()}`
-                      );
+                      localStorage.removeItem(`ksebe_daily_rec_${new Date().toDateString()}`);
                       setDailyRec(null);
                       setDailyRecLoading(true);
                       // retrigger effect by toggling a transient key

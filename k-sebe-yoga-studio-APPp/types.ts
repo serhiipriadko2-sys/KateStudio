@@ -46,6 +46,8 @@ export interface Booking {
   time: string;
   location: string;
   timestamp: number;
+  created_at?: string;
+  class_type?: string;
 }
 
 export interface ClassSession {
