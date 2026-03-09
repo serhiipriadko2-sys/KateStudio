@@ -228,5 +228,3 @@ export const Breathwork: React.FC<BreathworkProps> = ({
     </div>
   );
 };
-
-export default Breathwork;

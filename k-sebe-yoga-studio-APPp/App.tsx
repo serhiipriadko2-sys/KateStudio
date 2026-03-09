@@ -234,7 +234,7 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
   );
 };
 
-export default function App() {
+export function App() {
   useEffect(() => {
     analytics.initWebVitals();
     analytics.pageView(window.location.pathname);
