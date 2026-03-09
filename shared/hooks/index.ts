@@ -24,3 +24,7 @@ export type { UseAchievementsOptions, UseAchievementsReturn } from './useAchieve
 export { useIsAdmin } from './useIsAdmin';
 export type { UseIsAdminReturn } from './useIsAdmin';
 export * from './useGamification';
+
+// Push Notifications (2026)
+export { usePushNotifications } from './usePushNotifications';
+export type { UsePushNotificationsReturn, FirebaseConfig } from './usePushNotifications';

@@ -104,7 +104,7 @@ Integration:** 30% → 90%
 | 28  | Logging & Monitoring (Sentry)                 | WEB/APP                                     | 1 день   | ✅     |
 | 29  | Error recovery & cron jobs                    | Supabase Edge Functions                     | 1-2 дня  | ✅     |
 | 30  | Database types generation                     | `shared/types/database.types.ts`            | 1 час    | ✅     |
-| 31  | Push Notifications (Firebase Cloud Messaging) | `APP/`, Edge Function                       | 2-3 дня  | ⏳     |
+| 31  | Push Notifications (Firebase Cloud Messaging) | `APP/`, Edge Function                       | 2-3 дня  | ✅     |
 
 **Total P2:** 2-4 недели
 
@@ -112,9 +112,9 @@ Integration:** 30% → 90%
 
 | #   | Задача                                    | Где менять           | Статус |
 | --- | ----------------------------------------- | -------------------- | ------ |
-| 32  | DailyRecommendation компонент             | `shared/components/` | ⏳     |
+| 32  | DailyRecommendation компонент             | `shared/components/`                        | ✅     |
 | 33  | PersonalProgram 7-day programs            | APP                  | ⏳     |
-| 34  | StreakCalendar visualization              | `shared/components/` | ⏳     |
+| 34  | StreakCalendar visualization              | `shared/components/`                        | ✅     |
 | 35  | Активировать Retreats секцию              | `WEB/App.tsx`        | ⏳     |
 | 36  | Активировать AI Subscription              | `WEB/App.tsx`        | ⏳     |
 | 37  | i18n поддержка                            | WEB/APP              | ⏳     |

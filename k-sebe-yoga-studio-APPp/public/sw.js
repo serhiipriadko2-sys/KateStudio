@@ -160,3 +160,54 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
+// ── Push Notifications (FCM) ─────────────────────────────────────────────────
+
+// Show notification when a push arrives (background)
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { notification: { title: 'К себе', body: event.data.text() } };
+  }
+
+  const { title, body, image, icon, data } = payload.notification ?? payload;
+
+  event.waitUntil(
+    self.registration.showNotification(title || 'К себе', {
+      body: body || '',
+      icon: icon || '/icons/icon-192x192.png',
+      badge: '/icons/icon-96x96.png',
+      image: image || undefined,
+      data: data || {},
+      vibrate: [200, 100, 200],
+      tag: 'ksebe-notification',
+      renotify: true,
+    })
+  );
+});
+
+// Handle notification click — open / focus the app
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetUrl = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        // Focus an existing window if available
+        for (const client of clientList) {
+          if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // Otherwise open a new window
+        return self.clients.openWindow(targetUrl);
+      })
+  );
+});

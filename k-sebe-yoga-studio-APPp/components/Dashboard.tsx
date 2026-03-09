@@ -874,6 +874,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
               <Achievements />
 
+              {/* Streak Calendar */}
+              <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
+                <StreakCalendar
+                  practiceData={practiceData}
+                  currentStreak={gamificationLoading ? 0 : currentStreak}
+                />
+              </div>
+
               <div className="flex flex-col items-center mb-8 relative">
                 <div
                   role={isEditingProfile ? 'button' : undefined}
