@@ -60,20 +60,33 @@ export const subscriptionService = {
   },
 
   async cancelSubscription(): Promise<boolean> {
+    const url = getSupabaseFunctionUrl('cancel-subscription');
+    if (!url) return false;
+
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
     const session = await supabase.auth.getSession();
-    const userId = session.data.session?.user?.id;
-    if (!userId) return false;
+    const token = session.data.session?.access_token;
+    if (!anonKey || !token) return false;
 
-    const { error } = await supabase
-      .from('subscriptions')
-      .update({ status: 'canceled', updated_at: new Date().toISOString() })
-      .eq('user_id', userId);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          apikey: anonKey,
+          authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (error) {
-      console.warn('Failed to cancel subscription', error);
+      if (!response.ok) {
+        console.warn('Failed to cancel subscription', await response.text());
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      console.warn('Cancel subscription error', e);
       return false;
     }
-
-    return true;
   },
 };

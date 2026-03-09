@@ -76,14 +76,14 @@ function getSupabaseClient(token?: string) {
   });
 }
 
-const PLANS: Record<PlanId, { amount: string; currency: string; description: string }> = {
-  free: { amount: '0.00', currency: 'RUB', description: 'Basic Access' },
-  premium: { amount: '499.00', currency: 'RUB', description: 'Premium Access (Monthly)' },
-  vip: { amount: '1999.00', currency: 'RUB', description: 'VIP Access + Personal Plan' },
+// Canonical prices — must match shared/constants/index.ts SUBSCRIPTION_PLANS
+const PAID_PLANS: Record<'premium' | 'vip', { amount: string; currency: string; description: string }> = {
+  premium: { amount: '990.00', currency: 'RUB', description: 'Премиум (ежемесячно)' },
+  vip: { amount: '2990.00', currency: 'RUB', description: 'VIP + персональные занятия' },
 };
 
 async function createYookassaPayment(
-  planId: PlanId,
+  planId: 'premium' | 'vip',
   userId: string,
   returnUrl: string,
   metadata: Record<string, string>
@@ -95,7 +95,7 @@ async function createYookassaPayment(
     throw new Error('YooKassa credentials missing');
   }
 
-  const plan = PLANS[planId];
+  const plan = PAID_PLANS[planId];
   const idempotencyKey = crypto.randomUUID();
 
   const body = {
@@ -108,7 +108,7 @@ async function createYookassaPayment(
       type: 'redirect',
       return_url: returnUrl,
     },
-    description: `Subscription: ${plan.description}`,
+    description: `Подписка: ${plan.description}`,
     metadata: {
       user_id: userId,
       plan_id: planId,
@@ -173,28 +173,67 @@ Deno.serve(async (req) => {
       return json({ error: 'Invalid user session' }, { status: 401 }, cors);
     }
 
-    // Upsert subscription status to 'pending'
-    const { error: dbError } = await supabase.from('subscriptions').upsert({
-      user_id: user.id,
-      plan: payload.plan,
-      status: 'pending',
-      updated_at: new Date().toISOString(),
-    });
+    // --- Free plan: no payment needed, activate immediately ---
+    if (payload.plan === 'free') {
+      const { data: subscription, error: dbError } = await supabase
+        .from('subscriptions')
+        .upsert(
+          {
+            user_id: user.id,
+            plan: 'free',
+            status: 'active',
+            provider: 'none',
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id' }
+        )
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        return json({ error: 'Failed to update subscription' }, { status: 500 }, cors);
+      }
+
+      return json(
+        { paymentUrl: null, paymentId: null, status: 'active', subscription },
+        {},
+        cors
+      );
+    }
+
+    // --- Paid plans: initiate YooKassa payment ---
+    const { error: dbError } = await supabase.from('subscriptions').upsert(
+      {
+        user_id: user.id,
+        plan: payload.plan,
+        status: 'pending',
+        provider: 'yookassa',
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' }
+    );
 
     if (dbError) {
       console.error('Database error:', dbError);
       return json({ error: 'Failed to initialize subscription' }, { status: 500 }, cors);
     }
 
-    // Call YooKassa API
     const defaultReturnUrl = payload.returnUrl || 'https://app.ksebe-studio.ru/profile';
     const payment = await createYookassaPayment(payload.plan, user.id, defaultReturnUrl, {});
+
+    // Save the provider payment ID so webhook can correlate later
+    await supabase
+      .from('subscriptions')
+      .update({ provider_subscription_id: payment.id })
+      .eq('user_id', user.id);
 
     return json(
       {
         paymentUrl: payment.confirmation.confirmation_url,
         paymentId: payment.id,
         status: payment.status,
+        subscription: null, // will be updated by webhook after payment succeeds
       },
       {},
       cors
