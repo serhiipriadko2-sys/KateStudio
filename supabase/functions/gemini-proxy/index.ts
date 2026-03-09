@@ -188,17 +188,23 @@ async function rateLimit(
   key: string,
   opts: { limit: number; windowMs: number }
 ): Promise<{ ok: true } | { ok: false; retryAfterSeconds: number }> {
-  const now = Date.now();
   const kvKey = [...RATE_LIMIT_PREFIX, key] as const;
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
+    const now = Date.now();
     const existing = await kv.get<RateBucket>(kvKey);
     const bucket = existing.value;
 
     if (!bucket || now >= bucket.resetAt) {
       const resetAt = now + opts.windowMs;
-      await kv.set(kvKey, { count: 1, resetAt }, { expireIn: opts.windowMs });
-      return { ok: true };
+      const commit = await kv
+        .atomic()
+        .check(existing)
+        .set(kvKey, { count: 1, resetAt }, { expireIn: opts.windowMs })
+        .commit();
+
+      if (commit.ok) return { ok: true };
+      continue;
     }
 
     if (bucket.count >= opts.limit) {
