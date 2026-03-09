@@ -4,6 +4,7 @@
  */
 import { Play, Pause, RefreshCw, Wind } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
+import { BREATHWORK_PRESETS } from '../constants';
 import { BreathPhase, BreathworkConfig } from '../types';
 
 interface BreathworkProps {
@@ -13,10 +14,10 @@ interface BreathworkProps {
 }
 
 const DEFAULT_CONFIG: BreathworkConfig = {
-  inhaleDuration: 4000,
-  holdFullDuration: 4000,
-  exhaleDuration: 4000,
-  holdEmptyDuration: 4000,
+  inhaleDuration: BREATHWORK_PRESETS.square.inhale,
+  holdFullDuration: BREATHWORK_PRESETS.square.holdFull,
+  exhaleDuration: BREATHWORK_PRESETS.square.exhale,
+  holdEmptyDuration: BREATHWORK_PRESETS.square.holdEmpty,
 };
 
 export const Breathwork: React.FC<BreathworkProps> = ({

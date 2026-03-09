@@ -540,3 +540,5 @@ export interface PushNotification {
   sentAt: string;
   readAt?: string;
 }
+
+export * from './database.types';
