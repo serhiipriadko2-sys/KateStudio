@@ -14,8 +14,7 @@
  */
 import React from 'react';
 
-export interface OptimizedImageProps
-  extends React.ImgHTMLAttributes<HTMLImageElement> {
+export interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   alt: string;
   /** Override WebP path if it doesn't follow the default naming convention */

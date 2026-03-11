@@ -80,7 +80,7 @@ async function main() {
         const dstBytes = statSync(webpPath).size;
         const saving = (((srcBytes - dstBytes) / srcBytes) * 100).toFixed(1);
         console.log(
-          `  ✅  ${relSrc}  ${(srcBytes / 1024).toFixed(0)} KB → ${(dstBytes / 1024).toFixed(0)} KB  (-${saving}%)`,
+          `  ✅  ${relSrc}  ${(srcBytes / 1024).toFixed(0)} KB → ${(dstBytes / 1024).toFixed(0)} KB  (-${saving}%)`
         );
         converted++;
       } catch (err) {

@@ -1,6 +1,6 @@
+import { supabase } from '@ksebe/shared';
 import { Send, MapPin, Terminal, Phone, Mail, ArrowRight, CheckCircle } from 'lucide-react';
 import React, { useState } from 'react';
-import { supabase } from '@ksebe/shared';
 import { useStudioContacts } from '../hooks/useStudioContacts';
 import { Logo } from './Logo';
 
@@ -86,9 +86,7 @@ function NewsletterForm() {
         )}
         <span className="hidden sm:inline">Подписаться</span>
       </button>
-      {state === 'error' && (
-        <p className="absolute mt-11 text-xs text-red-400">{errorMsg}</p>
-      )}
+      {state === 'error' && <p className="absolute mt-11 text-xs text-red-400">{errorMsg}</p>}
     </form>
   );
 }

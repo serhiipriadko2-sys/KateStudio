@@ -9,21 +9,21 @@ agent has its own instruction files and capabilities.
 
 ## Supported Agents
 
-| Agent              | Config File                   | Purpose                                        |
-| ------------------ | ----------------------------- | ---------------------------------------------- |
+| Agent              | Config File                    | Purpose                                          |
+| ------------------ | ------------------------------ | ------------------------------------------------ |
 | **Claude Code**    | `CLAUDE.md` + `ISKRA_CODER.md` | Primary development assistant (Искра-Кодер vΩ.6) |
-| **Jules**          | `AGENTS.md` + `skills/*.yaml` | Automated CI/CD skills                         |
-| **OpenAI Codex**   | `docs/CODEX_INSTRUCTIONS.md`  | Focused refactoring & security fixes           |
-| **GitHub Copilot** | `ISKRA_CODER.md`              | ISKRA Coder vΩ.6 — Repo Guardian & code review |
-| **Cursor**         | `CLAUDE.md` + `ISKRA_CODER.md` | IDE-integrated AI assistance                   |
+| **Jules**          | `AGENTS.md` + `skills/*.yaml`  | Automated CI/CD skills                           |
+| **OpenAI Codex**   | `docs/CODEX_INSTRUCTIONS.md`   | Focused refactoring & security fixes             |
+| **GitHub Copilot** | `ISKRA_CODER.md`               | ISKRA Coder vΩ.6 — Repo Guardian & code review   |
+| **Cursor**         | `CLAUDE.md` + `ISKRA_CODER.md` | IDE-integrated AI assistance                     |
 
 ---
 
 ## ISKRA Coder vΩ.6 (Canonical Agent Protocol)
 
-**Claude Code** and **GitHub Copilot** operate under the **ISKRA Coder vΩ.6** protocol — the
-canonical agentic contract for this repository. All other agents are encouraged
-to align with these principles.
+**Claude Code** and **GitHub Copilot** operate under the **ISKRA Coder vΩ.6**
+protocol — the canonical agentic contract for this repository. All other agents
+are encouraged to align with these principles.
 
 Full protocol: [`ISKRA_CODER.md`](./ISKRA_CODER.md)
 

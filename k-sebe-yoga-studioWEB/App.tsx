@@ -27,9 +27,9 @@ import { Preloader } from './components/Preloader';
 import { Pricing } from './components/Pricing';
 // Retreats component available from './components/Retreats' when needed
 import { Reviews } from './components/Reviews';
-import { SubscriptionProfile } from './components/SubscriptionProfile';
 import { Schedule } from './components/Schedule';
 import { SEO } from './components/SEO';
+import { SubscriptionProfile } from './components/SubscriptionProfile';
 import { registerServiceWorker } from './services/serviceWorker';
 import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { BookingDetails } from './types';

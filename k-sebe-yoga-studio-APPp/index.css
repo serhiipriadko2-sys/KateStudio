@@ -1,5 +1,15 @@
 @import 'tailwindcss';
 
+/* Theme variables for runtime theming */
+:root {
+  --brand-green: #57a773;
+  --brand-mint: #d4eadd;
+  --brand-dark: #1a1a1a;
+  --brand-text: #333333;
+  --brand-light: #f9f9f9;
+  --brand-yellow: #fceeb5;
+}
+
 /* Tailwind v4 theme configuration */
 @theme {
   --color-brand-green: #57a773;

@@ -706,13 +706,17 @@ Calm, meditative, beautiful lighting. No text or watermarks.`,
                 },
               },
             }),
-          },
+          }
         );
 
         if (!veoRes.ok) {
           const errBody = await veoRes.json().catch(() => ({}));
           console.error('gemini-proxy veo error', veoRes.status, errBody);
-          return json({ error: 'Video generation failed', details: errBody }, { status: 502 }, cors);
+          return json(
+            { error: 'Video generation failed', details: errBody },
+            { status: 502 },
+            cors
+          );
         }
 
         const veoData = await veoRes.json();
@@ -740,11 +744,15 @@ Calm, meditative, beautiful lighting. No text or watermarks.`,
           `https://generativelanguage.googleapis.com/v1beta/${body.operationName}`,
           {
             headers: { 'x-goog-api-key': apiKey },
-          },
+          }
         );
 
         if (!pollRes.ok) {
-          return json({ error: 'Failed to check operation', status: pollRes.status }, { status: 502 }, cors);
+          return json(
+            { error: 'Failed to check operation', status: pollRes.status },
+            { status: 502 },
+            cors
+          );
         }
 
         const opData = await pollRes.json();

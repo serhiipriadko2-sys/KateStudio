@@ -80,29 +80,25 @@ async function saveTokenToSupabase(userId: string, token: string): Promise<void>
       user_agent: navigator.userAgent.slice(0, 255),
       updated_at: new Date().toISOString(),
     },
-    { onConflict: 'user_id,token', ignoreDuplicates: false },
+    { onConflict: 'user_id,token', ignoreDuplicates: false }
   );
 }
 
 async function deleteTokenFromSupabase(userId: string, token: string): Promise<void> {
   if (!supabase) return;
-  await supabase
-    .from('user_push_tokens')
-    .delete()
-    .eq('user_id', userId)
-    .eq('token', token);
+  await supabase.from('user_push_tokens').delete().eq('user_id', userId).eq('token', token);
 }
 
 const LOCAL_KEY = 'ksebe_fcm_token';
 
 export function usePushNotifications(
   userId?: string,
-  firebaseConfig?: FirebaseConfig,
+  firebaseConfig?: FirebaseConfig
 ): UsePushNotificationsReturn {
   const supported = isSupported();
 
   const [permission, setPermission] = useState<NotificationPermission>(
-    supported ? (Notification.permission as NotificationPermission) : 'unsupported',
+    supported ? (Notification.permission as NotificationPermission) : 'unsupported'
   );
   const [isSubscribed, setIsSubscribed] = useState(() => {
     return !!localStorage.getItem(LOCAL_KEY);

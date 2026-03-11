@@ -1,5 +1,3 @@
-import { Star, TrendingUp, Award } from 'lucide-react';
-import React, { useState } from 'react';
 import {
   AchievementsGrid,
   AchievementUnlockedModal,
@@ -7,6 +5,8 @@ import {
   useGamification,
 } from '@ksebe/shared';
 import type { Achievement, AchievementCategory } from '@ksebe/shared';
+import { Star, TrendingUp, Award } from 'lucide-react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const CATEGORY_TABS: { id: AchievementCategory | 'all'; label: string }[] = [

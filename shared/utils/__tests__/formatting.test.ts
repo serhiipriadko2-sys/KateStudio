@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  formatTime,
-  formatPhone,
-  parsePhone,
-  getInitials,
-  clamp,
-  lerp,
-} from '../index';
+import { formatTime, formatPhone, parsePhone, getInitials, clamp, lerp } from '../index';
 
 describe('formatTime', () => {
   it('formats a Date object to HH:MM', () => {

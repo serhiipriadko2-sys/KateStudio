@@ -154,4 +154,3 @@ function AchievementCard({ achievement, showProgress, onClick }: AchievementCard
     </button>
   );
 }
-

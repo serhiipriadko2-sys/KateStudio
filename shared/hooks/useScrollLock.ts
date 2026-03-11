@@ -17,4 +17,3 @@ export const useScrollLock = (isLocked: boolean) => {
     }
   }, [isLocked]);
 };
-

@@ -7,6 +7,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { initNative, nativeReady } from './native';
+import './index.css';
 
 // Initialize monitoring before React renders (no-op if VITE_SENTRY_DSN is not set)
 void monitoring.init({

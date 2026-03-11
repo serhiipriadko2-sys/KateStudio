@@ -18,7 +18,6 @@ import { DEFAULT_BLOG_ARTICLES } from '../constants';
 import { BlogArticle } from '../types';
 import { FadeIn } from './FadeIn';
 
-
 interface BlogProps {
   articles?: BlogArticle[];
   className?: string;
@@ -281,4 +280,3 @@ export const Blog: React.FC<BlogProps> = ({
     </section>
   );
 };
-

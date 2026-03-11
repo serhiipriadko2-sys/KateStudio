@@ -77,7 +77,10 @@ function getSupabaseClient(token?: string) {
 }
 
 // Canonical prices — must match shared/constants/index.ts SUBSCRIPTION_PLANS
-const PAID_PLANS: Record<'premium' | 'vip', { amount: string; currency: string; description: string }> = {
+const PAID_PLANS: Record<
+  'premium' | 'vip',
+  { amount: string; currency: string; description: string }
+> = {
   premium: { amount: '990.00', currency: 'RUB', description: 'Премиум (ежемесячно)' },
   vip: { amount: '2990.00', currency: 'RUB', description: 'VIP + персональные занятия' },
 };
@@ -195,11 +198,7 @@ Deno.serve(async (req) => {
         return json({ error: 'Failed to update subscription' }, { status: 500 }, cors);
       }
 
-      return json(
-        { paymentUrl: null, paymentId: null, status: 'active', subscription },
-        {},
-        cors
-      );
+      return json({ paymentUrl: null, paymentId: null, status: 'active', subscription }, {}, cors);
     }
 
     // --- Paid plans: initiate YooKassa payment ---

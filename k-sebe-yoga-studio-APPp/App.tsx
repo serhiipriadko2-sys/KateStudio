@@ -301,13 +301,16 @@ export function App() {
   // Show it at most once, across all devices.
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
-    retentionService.hasCompletedOnboarding(user.id).then((done) => {
-      if (!done) setOnboardingOpen(true);
-    }).catch(() => {
-      if (localStorage.getItem('ksebe_onboarding_complete') !== 'true') {
-        setOnboardingOpen(true);
-      }
-    });
+    retentionService
+      .hasCompletedOnboarding(user.id)
+      .then((done) => {
+        if (!done) setOnboardingOpen(true);
+      })
+      .catch(() => {
+        if (localStorage.getItem('ksebe_onboarding_complete') !== 'true') {
+          setOnboardingOpen(true);
+        }
+      });
   }, [isAuthenticated, user?.id]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {

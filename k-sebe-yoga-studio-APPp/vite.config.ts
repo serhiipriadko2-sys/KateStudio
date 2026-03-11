@@ -49,10 +49,16 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 1000,
       // Enable minification with esbuild (built-in, faster than terser)
       minify: 'esbuild',
+      // Fix for Vite 7 HTML inline CSS proxy issue
+      cssCodeSplit: true,
     },
     esbuild: {
       // Drop console and debugger statements in production
       drop: mode === 'production' ? ['console', 'debugger'] : [],
+    },
+    css: {
+      // Ensure CSS is properly handled
+      devSourcemap: mode !== 'production',
     },
   };
 });

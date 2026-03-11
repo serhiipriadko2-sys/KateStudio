@@ -1,6 +1,5 @@
 import { Activity, Brain, X, Zap } from 'lucide-react';
 import React from 'react';
-
 import type { AsanaAnalysis } from './types';
 
 interface AsanaAnalysisCardProps {

@@ -191,4 +191,3 @@ export const Paywall: React.FC<PaywallProps> = ({
     </section>
   );
 };
-

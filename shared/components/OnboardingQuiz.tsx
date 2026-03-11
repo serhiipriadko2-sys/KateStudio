@@ -293,4 +293,3 @@ export function OnboardingQuiz({ onComplete, onSkip, className = '' }: Onboardin
     </div>
   );
 }
-

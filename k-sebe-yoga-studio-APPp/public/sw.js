@@ -197,17 +197,15 @@ self.addEventListener('notificationclick', (event) => {
   const targetUrl = event.notification.data?.url || '/';
 
   event.waitUntil(
-    self.clients
-      .matchAll({ type: 'window', includeUncontrolled: true })
-      .then((clientList) => {
-        // Focus an existing window if available
-        for (const client of clientList) {
-          if (client.url.startsWith(self.location.origin) && 'focus' in client) {
-            return client.focus();
-          }
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Focus an existing window if available
+      for (const client of clientList) {
+        if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+          return client.focus();
         }
-        // Otherwise open a new window
-        return self.clients.openWindow(targetUrl);
-      })
+      }
+      // Otherwise open a new window
+      return self.clients.openWindow(targetUrl);
+    })
   );
 });

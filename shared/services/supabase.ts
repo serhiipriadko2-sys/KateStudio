@@ -100,4 +100,3 @@ export const queryTable = async <T>(
     return null;
   }
 };
-

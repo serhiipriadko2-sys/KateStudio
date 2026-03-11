@@ -76,9 +76,7 @@ serve(async (req: Request) => {
   const payload = {
     email_address: email,
     status: 'subscribed',
-    ...(firstName || lastName
-      ? { merge_fields: { FNAME: firstName, LNAME: lastName } }
-      : {}),
+    ...(firstName || lastName ? { merge_fields: { FNAME: firstName, LNAME: lastName } } : {}),
     tags: ['ksebe-website'],
   };
 

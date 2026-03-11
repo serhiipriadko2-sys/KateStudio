@@ -112,9 +112,9 @@ Integration:** 30% → 90%
 
 | #   | Задача                                    | Где менять           | Статус |
 | --- | ----------------------------------------- | -------------------- | ------ |
-| 32  | DailyRecommendation компонент             | `shared/components/`                        | ✅     |
+| 32  | DailyRecommendation компонент             | `shared/components/` | ✅     |
 | 33  | PersonalProgram 7-day programs            | APP                  | ⏳     |
-| 34  | StreakCalendar visualization              | `shared/components/`                        | ✅     |
+| 34  | StreakCalendar visualization              | `shared/components/` | ✅     |
 | 35  | Активировать Retreats секцию              | `WEB/App.tsx`        | ⏳     |
 | 36  | Активировать AI Subscription              | `WEB/App.tsx`        | ⏳     |
 | 37  | i18n поддержка                            | WEB/APP              | ⏳     |
