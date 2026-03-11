@@ -10,6 +10,7 @@ interface AuthContextType {
   requestOtp: (name: string, phone: string) => Promise<void>;
   verifyOtp: (code: string) => Promise<void>;
   cancelOtp: () => void;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isInitializing: boolean;
@@ -65,8 +66,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const phone = session.user?.phone || cached?.phone || pendingPhone;
         const name = cached?.name || pendingName || 'Пользователь';
 
-        if (sessionUserId && phone) {
-          const profile = await dataService.registerUser(name, phone, sessionUserId);
+        if (sessionUserId) {
+          const identifier = phone || session.user?.email || '';
+          const profile = await dataService.registerUser(name, identifier, sessionUserId);
           setUser(profile);
         } else if (cached) {
           setUser(cached);
@@ -172,6 +174,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signInWithEmail = async (email: string, password: string) => {
+    setAuthError(null);
+    setAuthLoading(true);
+    try {
+      if (!isSupabaseConfigured) throw new Error('CONFIG_MISSING');
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) throw error;
+      // onAuthStateChange handles setUser
+    } catch (e) {
+      setAuthError('Неверный email или пароль. Попробуйте ещё раз.');
+      throw e;
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const cancelOtp = () => {
     setAuthError(null);
     setPendingPhone('');
@@ -196,6 +214,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         requestOtp,
         verifyOtp,
         cancelOtp,
+        signInWithEmail,
         logout,
         isAuthenticated: authStatus === 'authenticated' && !!user,
         isInitializing,
