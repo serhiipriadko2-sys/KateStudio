@@ -14,7 +14,13 @@ export default defineConfig({
       'k-sebe-yoga-studio-APPp/**/*.{test,spec}.{ts,tsx}',
       'scripts/**/*.{test,spec}.{ts,tsx}',
     ],
-    exclude: ['**/node_modules/**', '**/dist/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', 'scripts/audit_system.test.ts'],
+    // Override Supabase env vars so Supabase client uses placeholder URL in tests.
+    // This lets MSW intercept all Supabase HTTP calls (handlers use placeholder.supabase.co).
+    env: {
+      VITE_SUPABASE_URL: 'https://placeholder.supabase.co',
+      VITE_SUPABASE_ANON_KEY: 'test-anon-key',
+    },
     coverage: {
       // Keep coverage off by default for fast/green CI on `vitest run`.
       // Use `npm run test:coverage` (which passes `--coverage`) when you want coverage reports.

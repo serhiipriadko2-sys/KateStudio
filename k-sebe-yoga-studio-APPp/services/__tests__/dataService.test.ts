@@ -277,6 +277,140 @@ describe('dataService', () => {
     });
   });
 
+  describe('updateUserProfile', () => {
+    const user = {
+      id: '11111111-1111-4111-8111-111111111111',
+      name: 'Обновлённое имя',
+      phone: '+79990001122',
+      city: 'СПб',
+      isRegistered: true,
+      createdAt: '2024-01-01T00:00:00.000Z',
+    };
+
+    it('updates profile and returns true on success', async () => {
+      (supabase.from as Mock).mockReturnValue({
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      });
+
+      const result = await dataService.updateUserProfile(user);
+      expect(result).toBe(true);
+    });
+
+    it('returns true even when Supabase fails (local cache fallback)', async () => {
+      (supabase.from as Mock).mockReturnValue({
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: new Error('db fail') }),
+      });
+
+      const result = await dataService.updateUserProfile(user);
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('cancelBooking', () => {
+    it('returns true when Supabase deletes successfully', async () => {
+      (supabase.from as Mock).mockReturnValue({
+        delete: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      });
+
+      const result = await dataService.cancelBooking('booking-uuid');
+      expect(result).toBe(true);
+    });
+
+    it('returns false when Supabase fails', async () => {
+      (supabase.from as Mock).mockReturnValue({
+        delete: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({ error: new Error('not found') }),
+      });
+
+      const result = await dataService.cancelBooking('bad-id');
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('getClassesForDate', () => {
+    it('filters classes for the requested day', async () => {
+      const mockRows = [
+        {
+          id: 'uuid-d1',
+          date: '2030-06-15',
+          time: '10:00',
+          name: 'Flow',
+          instructor: null,
+          duration: null,
+          spots_total: 10,
+          spots_booked: 0,
+          location: null,
+          intensity: 2,
+          price: 700,
+          is_online: false,
+        },
+        {
+          id: 'uuid-d2',
+          date: '2030-06-16',
+          time: '18:00',
+          name: 'Yin',
+          instructor: null,
+          duration: null,
+          spots_total: 10,
+          spots_booked: 0,
+          location: null,
+          intensity: 1,
+          price: 700,
+          is_online: false,
+        },
+      ];
+
+      (supabase.from as Mock).mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            gte: vi.fn().mockReturnValue({
+              lte: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue({ data: mockRows, error: null }),
+                }),
+              }),
+            }),
+          }),
+          in: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      });
+
+      const result = await dataService.getClassesForDate(new Date('2030-06-15'), 'offline');
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('uuid-d1');
+    });
+  });
+
+  describe('stripCachedBooking', () => {
+    it('removes phone and status from cached booking', () => {
+      const cached = {
+        id: 'b1',
+        classId: 'c1',
+        className: 'Flow',
+        date: '2026-01-01',
+        time: '10:00',
+        location: 'Studio',
+        timestamp: 12345,
+        phone: '+79001234567',
+        status: 'synced' as const,
+      };
+
+      const stripped = dataService.stripCachedBooking(cached);
+      expect(stripped).not.toHaveProperty('phone');
+      expect(stripped).not.toHaveProperty('status');
+      expect(stripped.id).toBe('b1');
+    });
+  });
+
+  describe('logout', () => {
+    it('clears the cache without throwing', () => {
+      expect(() => dataService.logout()).not.toThrow();
+    });
+  });
+
   it('returns false for duplicate bookings', async () => {
     const registerSpy = vi.spyOn(dataService, 'registerUser').mockResolvedValue({
       id: '11111111-1111-4111-8111-111111111111',

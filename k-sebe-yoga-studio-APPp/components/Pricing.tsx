@@ -1,4 +1,4 @@
-import { Check, Star, ArrowRight } from 'lucide-react';
+import { ArrowRight, Check, Star } from 'lucide-react';
 import React from 'react';
 import { useToast } from '../context/ToastContext';
 import { FadeIn } from './FadeIn';
