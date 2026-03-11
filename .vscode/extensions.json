@@ -40,7 +40,8 @@
 
     // Docker
     "ms-azuretools.vscode-docker",
-    "supabase.vscode-supabase-extension"
+    "supabase.vscode-supabase-extension",
+    "qwenlm.qwen-code-vscode-ide-companion"
   ],
   "unwantedRecommendations": []
 }
