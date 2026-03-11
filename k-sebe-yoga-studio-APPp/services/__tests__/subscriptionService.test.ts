@@ -67,7 +67,7 @@ describe('subscriptionService', () => {
     it('throws when session is missing', async () => {
       mockNoSession();
       await expect(
-        subscriptionService.createPayment({ id: 'premium' } as Parameters<
+        subscriptionService.createPayment({ id: 'premium' } as unknown as Parameters<
           typeof subscriptionService.createPayment
         >[0])
       ).rejects.toThrow('Authentication required');
@@ -81,9 +81,9 @@ describe('subscriptionService', () => {
         json: vi.fn().mockResolvedValue(payload),
       });
 
-      const result = await subscriptionService.createPayment({ id: 'premium' } as Parameters<
-        typeof subscriptionService.createPayment
-      >[0]);
+      const result = await subscriptionService.createPayment({
+        id: 'premium',
+      } as unknown as Parameters<typeof subscriptionService.createPayment>[0]);
       expect(result).toEqual(payload);
       expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining('/functions/v1/create-payment'),
@@ -100,7 +100,7 @@ describe('subscriptionService', () => {
       });
 
       await expect(
-        subscriptionService.createPayment({ id: 'premium' } as Parameters<
+        subscriptionService.createPayment({ id: 'premium' } as unknown as Parameters<
           typeof subscriptionService.createPayment
         >[0])
       ).rejects.toThrow('Server error');

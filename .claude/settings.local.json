@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm run typecheck)",
       "Bash(node_modules/supabase/bin/supabase.exe secrets list)",
-      "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(32\\).toString\\(''hex''\\)\\)\")"
+      "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(32\\).toString\\(''hex''\\)\\)\")",
+      "Bash(npm run:*)"
     ]
   }
 }

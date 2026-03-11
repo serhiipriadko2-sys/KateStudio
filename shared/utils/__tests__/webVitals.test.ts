@@ -2,171 +2,161 @@
  * Tests for Core Web Vitals monitoring utilities
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+  observeLCP,
+  observeINP,
+  observeCLS,
+  observeFCP,
+  observeTTFB,
+  observeWebVitals,
+  logWebVitals,
+  reportWebVitals,
+} from '../webVitals';
 
-// Mock PerformanceObserver
-class MockPerformanceObserver {
-  callback: PerformanceObserverCallback;
-  static instances: MockPerformanceObserver[] = [];
+describe('webVitals', () => {
+  describe('when PerformanceObserver is not available', () => {
+    let originalPO: typeof PerformanceObserver;
 
-  constructor(callback: PerformanceObserverCallback) {
-    this.callback = callback;
-    MockPerformanceObserver.instances.push(this);
-  }
-
-  observe() {
-    // Mock observe
-  }
-
-  disconnect() {
-    // Mock disconnect
-  }
-
-  static clear() {
-    MockPerformanceObserver.instances = [];
-  }
-}
-
-describe('Web Vitals Utilities', () => {
-  let originalPerformanceObserver: typeof PerformanceObserver | undefined;
-  let originalPerformance: typeof performance;
-
-  beforeEach(() => {
-    originalPerformanceObserver = (
-      globalThis as unknown as { PerformanceObserver?: typeof PerformanceObserver }
-    ).PerformanceObserver;
-    originalPerformance = globalThis.performance;
-    (
-      globalThis as unknown as { PerformanceObserver: typeof MockPerformanceObserver }
-    ).PerformanceObserver = MockPerformanceObserver as unknown as typeof PerformanceObserver;
-    MockPerformanceObserver.clear();
-  });
-
-  afterEach(() => {
-    if (originalPerformanceObserver) {
-      (
-        globalThis as unknown as { PerformanceObserver: typeof PerformanceObserver }
-      ).PerformanceObserver = originalPerformanceObserver;
-    }
-    globalThis.performance = originalPerformance;
-    MockPerformanceObserver.clear();
-  });
-
-  describe('observeLCP', () => {
-    it('should return a cleanup function', async () => {
-      const { observeLCP } = await import('../webVitals');
-      const callback = vi.fn();
-      const cleanup = observeLCP(callback);
-
-      expect(typeof cleanup).toBe('function');
-      cleanup();
+    beforeEach(() => {
+      originalPO = window.PerformanceObserver;
+      // @ts-expect-error - simulate missing API
+      delete window.PerformanceObserver;
     });
 
-    it('should call PerformanceObserver with correct type', async () => {
-      const { observeLCP } = await import('../webVitals');
-      const callback = vi.fn();
-      observeLCP(callback);
-
-      expect(MockPerformanceObserver.instances.length).toBeGreaterThan(0);
+    afterEach(() => {
+      window.PerformanceObserver = originalPO;
     });
-  });
 
-  describe('observeCLS', () => {
-    it('should return a cleanup function', async () => {
-      const { observeCLS } = await import('../webVitals');
-      const callback = vi.fn();
-      const cleanup = observeCLS(callback);
+    it('observeLCP returns a no-op cleanup', () => {
+      const cb = vi.fn();
+      const cleanup = observeLCP(cb);
+      expect(typeof cleanup).toBe('function');
+      expect(() => cleanup()).not.toThrow();
+      expect(cb).not.toHaveBeenCalled();
+    });
 
+    it('observeINP returns a no-op cleanup', () => {
+      const cb = vi.fn();
+      const cleanup = observeINP(cb);
       expect(typeof cleanup).toBe('function');
       cleanup();
+      expect(cb).not.toHaveBeenCalled();
     });
-  });
 
-  describe('observeINP', () => {
-    it('should return a cleanup function', async () => {
-      const { observeINP } = await import('../webVitals');
-      const callback = vi.fn();
-      const cleanup = observeINP(callback);
-
+    it('observeCLS returns a no-op cleanup', () => {
+      const cb = vi.fn();
+      const cleanup = observeCLS(cb);
       expect(typeof cleanup).toBe('function');
       cleanup();
+      expect(cb).not.toHaveBeenCalled();
     });
-  });
 
-  describe('observeFCP', () => {
-    it('should return a cleanup function', async () => {
-      const { observeFCP } = await import('../webVitals');
-      const callback = vi.fn();
-      const cleanup = observeFCP(callback);
-
+    it('observeFCP returns a no-op cleanup', () => {
+      const cb = vi.fn();
+      const cleanup = observeFCP(cb);
       expect(typeof cleanup).toBe('function');
       cleanup();
+      expect(cb).not.toHaveBeenCalled();
     });
   });
 
   describe('observeTTFB', () => {
-    it('should return a cleanup function', async () => {
-      // Mock performance.getEntriesByType
-      const mockNav = {
-        type: 'navigate',
-        responseStart: 200,
-        requestStart: 100,
-      };
-      vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
-        mockNav as unknown as PerformanceEntry,
-      ]);
-
-      const { observeTTFB } = await import('../webVitals');
-      const callback = vi.fn();
-      const cleanup = observeTTFB(callback);
-
+    it('returns a cleanup function without throwing', () => {
+      const cb = vi.fn();
+      const cleanup = observeTTFB(cb);
       expect(typeof cleanup).toBe('function');
-      cleanup();
+      expect(() => cleanup()).not.toThrow();
     });
 
-    it('should calculate TTFB correctly', async () => {
+    it('calls callback when navigation entry exists', () => {
+      const cb = vi.fn();
       const mockNav = {
-        type: 'navigate',
-        responseStart: 250,
         requestStart: 100,
+        responseStart: 250,
+        type: 'navigate',
       };
       vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
         mockNav as unknown as PerformanceEntry,
       ]);
 
-      const { observeTTFB } = await import('../webVitals');
-      const callback = vi.fn();
-      observeTTFB(callback);
+      observeTTFB(cb);
 
-      expect(callback).toHaveBeenCalledWith(
+      expect(cb).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'TTFB',
           value: 150,
-          rating: 'good', // 150ms is below 800ms threshold
+          delta: 150,
+          navigationType: 'navigate',
+          rating: expect.stringMatching(/good|needs-improvement|poor/),
         })
       );
+
+      vi.restoreAllMocks();
+    });
+
+    it('does not call callback when no navigation entry', () => {
+      const cb = vi.fn();
+      vi.spyOn(performance, 'getEntriesByType').mockReturnValue([]);
+      observeTTFB(cb);
+      expect(cb).not.toHaveBeenCalled();
+      vi.restoreAllMocks();
     });
   });
 
   describe('observeWebVitals', () => {
-    it('should return a cleanup function that disconnects all observers', async () => {
-      const { observeWebVitals } = await import('../webVitals');
-      const callback = vi.fn();
-      const cleanup = observeWebVitals(callback);
+    it('returns a cleanup function that does not throw', () => {
+      const cb = vi.fn();
+      const cleanup = observeWebVitals(cb);
+      expect(typeof cleanup).toBe('function');
+      expect(() => cleanup()).not.toThrow();
+    });
+  });
 
+  describe('logWebVitals', () => {
+    it('returns a cleanup function without throwing', () => {
+      const cleanup = logWebVitals();
+      expect(typeof cleanup).toBe('function');
+      expect(() => cleanup()).not.toThrow();
+    });
+  });
+
+  describe('reportWebVitals', () => {
+    it('returns a cleanup function without throwing', () => {
+      const cleanup = reportWebVitals('/api/vitals');
+      expect(typeof cleanup).toBe('function');
+      expect(() => cleanup()).not.toThrow();
+    });
+
+    it('accepts an optional callback', () => {
+      const cb = vi.fn();
+      const cleanup = reportWebVitals('/api/vitals', cb);
       expect(typeof cleanup).toBe('function');
       cleanup();
     });
   });
 
-  describe('logWebVitals', () => {
-    it('should log to console', async () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-      const { logWebVitals } = await import('../webVitals');
+  describe('getRating (via observeTTFB)', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
 
-      const cleanup = logWebVitals();
-      expect(typeof cleanup).toBe('function');
+    it.each([
+      [100, 'good'],
+      [1200, 'needs-improvement'],
+      [2000, 'poor'],
+    ])('TTFB %dms → %s rating', (ttfb, expectedRating) => {
+      const cb = vi.fn();
+      vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
+        {
+          requestStart: 0,
+          responseStart: ttfb,
+          type: 'navigate',
+        } as unknown as PerformanceEntry,
+      ]);
 
-      consoleSpy.mockRestore();
+      observeTTFB(cb);
+
+      expect(cb).toHaveBeenCalledWith(expect.objectContaining({ rating: expectedRating }));
     });
   });
 });

@@ -36,6 +36,8 @@ export interface ImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElemen
   fallbackSrc?: string;
   /** Show text labels on control buttons */
   showControlsLabel?: boolean;
+  /** Show admin upload/edit controls. Default: false. Enable only in admin panel. */
+  enableAdminControls?: boolean;
   /** Enable AI analysis button (requires analyzeImage service) */
   enableAnalysis?: boolean;
   /** Optional services for cloud features */

@@ -22,6 +22,7 @@ export default [
       '**/ios/**',
       '**/*.config.js',
       '**/*.config.cjs',
+      'scripts/**/*.mjs',
     ],
   },
   {
