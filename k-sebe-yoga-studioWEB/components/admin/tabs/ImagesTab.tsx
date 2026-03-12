@@ -1,6 +1,8 @@
 import { supabase } from '@ksebe/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Upload, Trash2, Loader2, Image as ImageIcon, Copy } from 'lucide-react';
+import { Upload, Trash2, Loader2, Image as ImageIcon, Copy, X } from 'lucide-react';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 import React, { useState } from 'react';
 
 const IMAGE_REGISTRY = [
@@ -70,8 +72,34 @@ export const ImagesTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') =
     onError: (err) => toast(`Ошибка: ${err.message}`, 'error'),
   });
 
+  const deleteFromStorageMutation = useMutation({
+    mutationFn: async (fileName: string) => {
+      if (!supabase) return;
+      const { error } = await supabase.storage.from('images').remove([fileName]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['storage', 'images'] });
+      toast('Файл удалён');
+    },
+    onError: (err) => toast(`Ошибка удаления: ${err.message}`, 'error'),
+  });
+
+  const handleDeleteFile = (fileName: string) => {
+    if (!confirm(`Удалить файл «${fileName}» из хранилища?`)) return;
+    deleteFromStorageMutation.mutate(fileName);
+  };
+
   const handleUpload = async (key: string, file: File) => {
     if (!supabase) return;
+    if (file.size > MAX_FILE_SIZE) {
+      toast('Файл слишком большой (макс 5MB)', 'error');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      toast('Разрешены только изображения', 'error');
+      return;
+    }
     setUploadingKey(key);
 
     try {
