@@ -278,6 +278,13 @@ const ProfileTab: React.FC<{
   onLogout,
 }) => (
   <div className="space-y-4 pt-4">
+    {authError && (
+      <div className="text-sm text-rose-500 flex items-center gap-2 bg-rose-50 px-4 py-3 rounded-xl">
+        <AlertCircle className="w-4 h-4 shrink-0" />
+        {authError}
+      </div>
+    )}
+
     {isEditing ? (
       <>
         <EditField
@@ -299,13 +306,6 @@ const ProfileTab: React.FC<{
           onChange={(v) => onEditChange({ ...editData, city: v })}
           placeholder="Город"
         />
-
-        {authError && (
-          <div className="text-sm text-rose-500 flex items-center gap-2 bg-rose-50 px-4 py-3 rounded-xl">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            {authError}
-          </div>
-        )}
 
         <div className="flex gap-3 pt-2">
           <button

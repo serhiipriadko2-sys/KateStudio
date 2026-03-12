@@ -29,8 +29,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 async function fetchProfile(userId: string): Promise<WebUserProfile | null> {
   if (!supabase) return null;
 
-  const { data: session } = await supabase.auth.getUser();
-  const email = session.user?.email ?? '';
+  const { data: session, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !session.user) {
+    console.warn('[AuthContext] getUser error:', userError?.message || 'No user');
+    return null;
+  }
+
+  const email = session.user.email ?? '';
+  // Normalize email: remove +tag and dots for cleaner default name
+  const normalizedEmail = email.replace(/[.+]/g, '');
 
   const { data, error } = await supabase
     .from('profiles')
@@ -42,7 +50,7 @@ async function fetchProfile(userId: string): Promise<WebUserProfile | null> {
     // Profile not found — create one
     const { data: newProfile, error: insertError } = await supabase
       .from('profiles')
-      .insert({ user_id: userId, name: email.split('@')[0] })
+      .insert({ user_id: userId, name: normalizedEmail.split('@')[0] })
       .select()
       .single();
 

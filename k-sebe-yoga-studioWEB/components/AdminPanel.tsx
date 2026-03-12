@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { AdminQueryProvider } from './admin/AdminQueryProvider';
 import {
@@ -36,31 +37,30 @@ import { AdminTab } from './admin/types';
    Login Screen (Embedded)
    ═══════════════════════════════════════════════════════════ */
 
-const LoginScreen: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
+const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const { signIn, authError } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) return;
 
     setLoading(true);
-    setError(null);
+    setLocalError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      onLogin();
+    try {
+      await signIn(email.trim(), password);
+    } catch {
+      setLocalError('Неверный email или пароль');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
+  const errorMessage = authError || localError;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center">
@@ -94,10 +94,10 @@ const LoginScreen: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
           />
         </div>
 
-        {error && (
+        {errorMessage && (
           <div className="p-3 bg-rose-50 text-rose-600 text-sm rounded-xl border border-rose-100 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
-            {error}
+            {errorMessage}
           </div>
         )}
 
@@ -200,8 +200,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           >
             <X className="w-5 h-5" />
           </button>
-          {/* onLogin is handled by auth state listener in useIsAdmin */}
-          <LoginScreen onLogin={() => {}} />
+          <LoginScreen />
         </div>
       </div>
     );
