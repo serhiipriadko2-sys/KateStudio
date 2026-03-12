@@ -39,6 +39,11 @@ jobs:
           echo "SUPABASE_URL set: ${{ secrets.VITE_SUPABASE_URL != '' }}"
           echo "SUPABASE_KEY set: ${{ secrets.VITE_SUPABASE_ANON_KEY != '' }}"
 
+      - name: Debug CNAME
+        run: |
+          echo "CNAME file exists in public: $(test -f k-sebe-yoga-studioWEB/public/CNAME && echo 'YES' || echo 'NO')"
+          cat k-sebe-yoga-studioWEB/public/CNAME 2>/dev/null || echo "No CNAME file"
+
       - name: Install dependencies
         run: npm ci
 
@@ -53,10 +58,22 @@ jobs:
           # Custom domain ksebe-studio.ru served from root (CNAME configured)
           VITE_BASE_PATH: /
 
+      - name: Debug build output
+        run: |
+          echo "=== Dist directory contents ==="
+          ls -la k-sebe-yoga-studioWEB/dist/ || echo "Directory not found"
+          echo "=== CNAME file check ==="
+          cat k-sebe-yoga-studioWEB/dist/CNAME 2>/dev/null || echo "No CNAME in dist"
+
       - name: Copy CNAME to dist
         run: |
-          if [ -f k-sebe-yoga-studioWEB/public/CNAME ]; then
+          if [ -f k-sebe-yoga-studioWEB/public/CNAME ] && [ ! -f k-sebe-yoga-studioWEB/dist/CNAME ]; then
+            echo "Copying CNAME from public to dist"
             cp k-sebe-yoga-studioWEB/public/CNAME k-sebe-yoga-studioWEB/dist/CNAME
+          elif [ -f k-sebe-yoga-studioWEB/dist/CNAME ]; then
+            echo "CNAME already exists in dist"
+          else
+            echo "Warning: No CNAME file found"
           fi
 
       - name: Upload artifact
