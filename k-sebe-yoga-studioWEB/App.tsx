@@ -13,7 +13,8 @@ import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { About } from './components/About';
 import { BookingModal } from './components/BookingModal';
-import { ChatWidget } from './components/ChatWidget';
+// ChatWidget hidden — re-enable after launch
+// import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
 import { Directions } from './components/Directions';
 import { FirstVisit } from './components/FirstVisit';
@@ -421,7 +422,8 @@ function App() {
         </main>
 
         <BackToTop />
-        <ChatWidget />
+        {/* ChatWidget hidden — re-enable after launch */}
+        {/* <ChatWidget /> */}
         <CookieBanner />
 
         {/* Global Booking Modal */}

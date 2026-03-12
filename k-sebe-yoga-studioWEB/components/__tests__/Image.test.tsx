@@ -12,7 +12,7 @@ vi.mock('../../../shared/services', () => ({
 }));
 
 describe('Image', () => {
-  it('renders an image and controls when storageKey is provided', async () => {
+  it('renders an image without admin controls (controls hidden from public UI)', async () => {
     render(
       <Image src="https://example.com/default.jpg" alt="Тестовое изображение" storageKey="hero" />
     );
@@ -20,7 +20,8 @@ describe('Image', () => {
     const image = await screen.findByAltText('Тестовое изображение');
     expect(image).toHaveAttribute('src', 'https://example.com/default.jpg');
 
-    expect(screen.getByTitle('Загрузить файл')).toBeInTheDocument();
-    expect(screen.getByTitle('Вставить ссылку')).toBeInTheDocument();
+    // ImageAdminControls are hidden from public UI — managed via AdminPanel
+    expect(screen.queryByTitle('Загрузить файл')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Вставить ссылку')).not.toBeInTheDocument();
   });
 });

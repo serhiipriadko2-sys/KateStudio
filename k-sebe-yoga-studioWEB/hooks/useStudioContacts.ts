@@ -13,13 +13,13 @@ export interface StudioContacts {
 }
 
 const DEFAULT_CONTACTS: StudioContacts = {
-  phone: '+7 (916) 123-45-67',
-  email: 'info@k-sebe.yoga',
+  phone: '+7 (909) 946-89-72',
+  email: '',
   address: 'г. Дубна, ул. Станционная 5Б, 2 этаж',
-  map_url: 'https://yandex.ru/map-widget/v1/?um=constructor%3A...',
-  social_vk: 'https://vk.com/k_sebe_yoga',
-  social_telegram: 'https://t.me/k_sebe_yoga',
-  social_whatsapp: 'https://wa.me/79161234567',
+  map_url: 'https://yandex.ru/navi/org/k_sebe/7167334007',
+  social_vk: '',
+  social_telegram: 'https://t.me/k_sebe_dubna',
+  social_whatsapp: '',
   social_instagram: 'https://instagram.com/kate_gabran',
 };
 

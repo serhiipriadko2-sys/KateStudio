@@ -27,7 +27,7 @@ describe('Shared Image', () => {
     });
   });
 
-  it('runs analysis when enabled', async () => {
+  it('analysis button is hidden (ImageAdminControls removed from public UI)', () => {
     const analyzeImage = vi.fn().mockResolvedValue('ok');
 
     render(
@@ -40,10 +40,7 @@ describe('Shared Image', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('Анатомический разбор'));
-
-    await waitFor(() => {
-      expect(analyzeImage).toHaveBeenCalledWith('data:image/png;base64,abc');
-    });
+    // ImageAdminControls are hidden from public UI — managed via AdminPanel
+    expect(screen.queryByTitle('Анатомический разбор')).not.toBeInTheDocument();
   });
 });

@@ -11,7 +11,7 @@ import {
 import {
   Home,
   Calendar,
-  Sparkles,
+  // Sparkles, // AI tab hidden — re-enable after launch
   MapPin,
   User,
   Bell,
@@ -27,7 +27,8 @@ import {
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { About } from './components/About';
 import { AuthScreen } from './components/AuthScreen';
-import { ChatWidget } from './components/ChatWidget';
+// ChatWidget hidden — re-enable after launch
+// import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
 import { Directions } from './components/Directions';
 import { Footer } from './components/Footer';
@@ -48,7 +49,8 @@ import { hapticLight, hapticSuccess } from './native';
 import { retentionService } from './services/retentionService';
 
 // Lazy load heavy components for better initial bundle size
-const AICoach = lazy(() => import('./components/AICoach').then((m) => ({ default: m.AICoach })));
+// AICoach hidden — re-enable after launch
+// const AICoach = lazy(() => import('./components/AICoach').then((m) => ({ default: m.AICoach })));
 const Dashboard = lazy(() =>
   import('./components/Dashboard').then((m) => ({ default: m.Dashboard }))
 );
@@ -432,13 +434,14 @@ export function App() {
           </div>
         )}
 
-        {activeTab === 'ai' && (
+        {/* AI tab hidden — re-enable after successful launch */}
+        {/* {activeTab === 'ai' && (
           <div className="pt-24 px-4 h-full flex flex-col view-transition">
             <Suspense fallback={<LoadingFallback />}>
               <AICoach />
             </Suspense>
           </div>
-        )}
+        )} */}
 
         {activeTab === 'studio' && <StudioView />}
       </main>
@@ -458,14 +461,15 @@ export function App() {
             label="Расписание"
           />
 
-          <div className="relative -top-6">
+          {/* AI nav button hidden — re-enable after launch */}
+          {/* <div className="relative -top-6">
             <button
               onClick={() => handleTabChange('ai')}
               className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-transform duration-300 ${activeTab === 'ai' ? 'bg-brand-dark scale-110 text-brand-yellow' : 'bg-brand-green text-white hover:scale-105'}`}
             >
               <Sparkles className={`w-8 h-8 ${activeTab === 'ai' ? 'animate-pulse' : ''}`} />
             </button>
-          </div>
+          </div> */}
 
           <NavButton
             active={activeTab === 'studio'}
@@ -482,7 +486,8 @@ export function App() {
         </div>
       </nav>
 
-      <ChatWidget hidden={activeTab === 'ai'} />
+      {/* ChatWidget hidden — re-enable after launch */}
+      {/* <ChatWidget hidden={activeTab === 'ai'} /> */}
 
       {/* PWA Update & Offline Banners */}
       <UpdateBanner
@@ -606,18 +611,19 @@ const HomeView = ({ setActiveTab }: { setActiveTab: (t: Tab) => void }) => {
                 >
                   Расписание
                 </button>
-                <button
+                {/* AI quick-launch button hidden — re-enable after launch */}
+                {/* <button
                   onClick={() => setActiveTab('ai')}
                   className="w-14 h-14 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl flex items-center justify-center hover:bg-white/30 transition-colors shadow-lg"
                 >
                   <Sparkles className="w-6 h-6" />
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
         </div>
 
-        <StreakCard onOpenRecommended={() => setActiveTab('ai')} />
+        <StreakCard onOpenRecommended={() => setActiveTab('schedule')} />
         <WeeklyRecapCard />
 
         <div className="mt-12 mb-6">

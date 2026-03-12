@@ -39,7 +39,7 @@ describe('useStudioContacts', () => {
 
     expect(result.current.data).toBeDefined();
     // On error the hook must fall back to the default contacts
-    expect(result.current.data?.phone).toBe('+7 (916) 123-45-67');
+    expect(result.current.data?.phone).toBe('+7 (909) 946-89-72');
   });
 
   it('should return dynamic contacts if available', async () => {
