@@ -35,14 +35,15 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { dataService } from '../services/dataService';
 import { subscriptionService } from '../services/subscriptionService';
-import { Booking, Subscription, SubscriptionPlan, SubscriptionStatus } from '../types';
+import { Booking, Subscription } from '../types';
 import { Achievements } from './Achievements';
 import { AICoach } from './AICoach';
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
 import { Image } from './Image';
 import { Logo } from './Logo';
-import { Paywall } from './Paywall';
+// Paywall hidden — re-enable after launch
+// import { Paywall } from './Paywall';
 import { VideoLibrary } from './VideoLibrary';
 
 interface DashboardProps {
@@ -50,19 +51,9 @@ interface DashboardProps {
   initialTab?: 'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
 }
 
-const subscriptionStatusLabels: Record<SubscriptionStatus, string> = {
-  active: 'Активна',
-  pending: 'Ожидает оплаты',
-  canceled: 'Отменена',
-  past_due: 'Проблема оплаты',
-  trialing: 'Пробный период',
-};
-
-const subscriptionPlanLabels: Record<SubscriptionPlan, string> = {
-  free: 'Free',
-  premium: 'Premium',
-  vip: 'VIP',
-};
+// Subscription labels hidden — re-enable after launch
+// const subscriptionStatusLabels: Record<SubscriptionStatus, string> = { ... };
+// const subscriptionPlanLabels: Record<SubscriptionPlan, string> = { ... };
 
 export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'overview' }) => {
   const {
@@ -85,11 +76,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const [loading, setLoading] = useState(false);
   const [expandedQr, setExpandedQr] = useState<string | null>(null);
 
-  // Subscription State
+  // Subscription State (hidden — re-enable after launch)
   const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
-  const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
+  const [_subscriptionLoading, setSubscriptionLoading] = useState(false);
+  // subscriptionActionLoading, showPaywall — hidden, re-enable after launch
+  // const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
+  // const [showPaywall, setShowPaywall] = useState(false);
 
   // Profile Edit State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -237,53 +229,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     showToast('Вы вышли из системы', 'info');
   };
 
-  const handleSubscribePlan = async (plan: SubscriptionPlan) => {
-    if (!isSupabaseConfigured) {
-      showToast('Подписки доступны после настройки Supabase', 'info');
-      return;
-    }
-    if (authStatus !== 'authenticated') {
-      showToast('Войдите, чтобы оформить подписку', 'info');
-      return;
-    }
-    setSubscriptionActionLoading(true);
-    try {
-      const result = await subscriptionService.createPayment(plan, window.location.href);
-      if (result.subscription) setSubscription(result.subscription);
+  // handleSubscribePlan hidden — re-enable after launch
+  // const handleSubscribePlan = async (plan: SubscriptionPlan) => { ... };
 
-      if (result.paymentUrl) {
-        window.location.href = result.paymentUrl;
-      } else if (result.message) {
-        showToast(result.message, 'info');
-      } else {
-        showToast('Ссылка на оплату недоступна', 'info');
-      }
-    } catch (e) {
-      console.error('Subscription payment error', e);
-      showToast('Не удалось начать оплату подписки', 'error');
-    } finally {
-      setSubscriptionActionLoading(false);
-      setShowPaywall(false);
-    }
-  };
-
-  const handleCancelSubscription = async () => {
-    setSubscriptionActionLoading(true);
-    try {
-      const success = await subscriptionService.cancelSubscription();
-      if (success) {
-        showToast('Подписка отменена', 'success');
-        await loadSubscription();
-      } else {
-        showToast('Не удалось отменить подписку', 'error');
-      }
-    } catch (e) {
-      console.error(e);
-      showToast('Ошибка при отмене', 'error');
-    } finally {
-      setSubscriptionActionLoading(false);
-    }
-  };
+  // handleCancelSubscription hidden — re-enable after launch
+  // const handleCancelSubscription = async () => { ... };
 
   const handleCancelBooking = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -790,90 +740,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 </div>
               )}
 
-              {/* AI Subscription Status */}
-              <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-serif text-brand-text">AI-подписка</h3>
-                    <p className="text-sm text-stone-400">Управляйте лимитами и тарифами.</p>
-                  </div>
-                  {subscription && (
-                    <span className="text-xs uppercase tracking-[0.2em] text-brand-green">
-                      {subscriptionPlanLabels[subscription.plan]}
-                    </span>
-                  )}
-                </div>
-
-                {!isSupabaseConfigured && (
-                  <p className="text-sm text-stone-400">
-                    Настройте Supabase, чтобы подключить подписку и управлять лимитами AI.
-                  </p>
-                )}
-
-                {isSupabaseConfigured && authStatus !== 'authenticated' && (
-                  <p className="text-sm text-stone-400">
-                    Войдите, чтобы увидеть текущую подписку и управлять тарифом.
-                  </p>
-                )}
-
-                {isSupabaseConfigured && authStatus === 'authenticated' && (
-                  <>
-                    {subscriptionLoading ? (
-                      <div className="flex items-center gap-2 text-sm text-stone-400">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Загружаем статус подписки…
-                      </div>
-                    ) : (
-                      <div className="mb-4 rounded-2xl bg-stone-50 p-4 text-sm text-stone-600">
-                        <div className="flex items-center justify-between">
-                          <span>Тариф:</span>
-                          <span className="font-medium">
-                            {subscription ? subscriptionPlanLabels[subscription.plan] : 'Free'}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between mt-1">
-                          <span>Статус:</span>
-                          <span className="font-medium">
-                            {subscription
-                              ? subscriptionStatusLabels[subscription.status]
-                              : 'Базовый'}
-                          </span>
-                        </div>
-                        {subscription?.current_period_end && (
-                          <div className="flex items-center justify-between mt-1">
-                            <span>Оплачено до:</span>
-                            <span className="font-medium">
-                              {new Date(subscription.current_period_end).toLocaleDateString(
-                                'ru-RU'
-                              )}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {subscription?.plan !== 'vip' && (
-                      <button
-                        onClick={() => setShowPaywall(true)}
-                        className="w-full py-3 bg-brand-green text-white rounded-xl font-bold uppercase tracking-wider hover:bg-brand-green/90 transition-colors shadow-lg shadow-brand-green/20"
-                      >
-                        {subscription ? 'Улучшить план' : 'Оформить подписку'}
-                      </button>
-                    )}
-
-                    {subscription?.status === 'active' && subscription.plan !== 'free' && (
-                      <button
-                        type="button"
-                        onClick={handleCancelSubscription}
-                        disabled={subscriptionActionLoading}
-                        className="mt-6 w-full py-3 rounded-xl text-sm font-medium text-rose-500 bg-rose-50 hover:bg-rose-100 transition-colors disabled:opacity-70"
-                      >
-                        Отменить подписку
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
+              {/* AI Subscription hidden — re-enable after launch */}
+              {/* <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6"> ... AI Subscription block ... </div> */}
 
               <Achievements />
 
@@ -1008,12 +876,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         </div>
       </main>
 
-      {showPaywall && (
+      {/* Paywall hidden — re-enable after launch */}
+      {/* {showPaywall && (
         <Paywall
           onClose={() => setShowPaywall(false)}
           onSubscribe={(plan) => handleSubscribePlan(plan as SubscriptionPlan)}
         />
-      )}
+      )} */}
 
       {/* QR Modal */}
       {expandedQr && (
