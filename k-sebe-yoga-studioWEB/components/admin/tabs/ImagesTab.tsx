@@ -112,6 +112,24 @@ export const ImagesTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') =
     localStorage.removeItem(`ksebe-img-${key}`);
   };
 
+  const deleteFromStorageMutation = useMutation({
+    mutationFn: async (fileName: string) => {
+      if (!supabase) return;
+      const { error } = await supabase.storage.from('images').remove([fileName]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['storage', 'images'] });
+      toast('Файл удалён');
+    },
+    onError: (err) => toast(`Ошибка удаления: ${err.message}`, 'error'),
+  });
+
+  const handleDeleteFile = (fileName: string) => {
+    if (!confirm(`Удалить файл «${fileName}» из хранилища?`)) return;
+    deleteFromStorageMutation.mutate(fileName);
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast('Ссылка скопирована');
@@ -229,6 +247,13 @@ export const ImagesTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') =
                         title="Копировать URL"
                       >
                         <Copy className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteFile(file.name)}
+                        className="p-2 bg-white rounded-full text-stone-700 hover:text-rose-500"
+                        title="Удалить файл"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
