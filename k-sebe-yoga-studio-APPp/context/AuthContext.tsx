@@ -148,7 +148,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       // onAuthStateChange handles setUser and setAuthStatus
     } catch (e) {
-      setAuthError('Неверный логин или пароль. Попробуйте ещё раз.');
+      const msg =
+        e instanceof Error && e.message === 'CONFIG_MISSING'
+          ? 'Приложение не настроено. Обратитесь к администратору.'
+          : 'Неверный логин или пароль. Попробуйте ещё раз.';
+      setAuthError(msg);
       throw e;
     } finally {
       setAuthLoading(false);
