@@ -27,6 +27,7 @@ import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
 import { Pricing } from './components/Pricing';
 // Retreats component available from './components/Retreats' when needed
+import { ResetPasswordModal } from './components/ResetPasswordModal';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
 import { SEO } from './components/SEO';
@@ -59,6 +60,9 @@ function App() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [waitingForRefresh, setWaitingForRefresh] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(() =>
+    window.location.hash.includes('type=recovery')
+  );
   const scrollRAF = useRef<number>(0);
 
   // Global Booking State
@@ -446,6 +450,9 @@ function App() {
             }
           />
         </Routes>
+
+        {/* Password Reset Modal (triggered by Supabase recovery link) */}
+        {showResetPassword && <ResetPasswordModal onClose={() => setShowResetPassword(false)} />}
 
         {/* Legal Modals (lazy loaded) */}
         {legalModalType && (
