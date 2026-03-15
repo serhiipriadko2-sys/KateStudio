@@ -1,0 +1,26 @@
+[
+  {
+    "file": "ISKRA_CODER.md",
+    "bytes": 23361,
+    "sha256": "411c5ad9813a6f0fa0dc83069b4008b90633187e81a2c08f95fc660cc404fa10",
+    "lines": 615
+  },
+  {
+    "file": "CLAUDE.md",
+    "bytes": 8781,
+    "sha256": "5c8df4f548a8b4cabe22ee4d7d5760a30b0b8d34db054c43d57b75412bc4fa9e",
+    "lines": 256
+  },
+  {
+    "file": "AGENTS.md",
+    "bytes": 6310,
+    "sha256": "43bbd2a62106cdcfd39daa6df7470bf2613c8233418bcfdbc8e7a74758d1610c",
+    "lines": 166
+  },
+  {
+    "file": "QWEN.md",
+    "bytes": 5077,
+    "sha256": "b1cdf19c761cd9df9dee61e752d51ace0a69ede6df5b7746b58307d8e748f9b4",
+    "lines": 185
+  }
+]

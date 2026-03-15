@@ -1,445 +1,255 @@
-# CLAUDE.md - AI Agent Instructions
+# CLAUDE.md — KateStudio AI Agent Instructions
 
-> **Last updated:** March 15, 2026 | **Version:** 3.2.0
+> **Last updated:** 2026-03-15 | **Version:** 3.3.0
+> **Audience:** Claude Code / Claude / Cursor / Copilot-style IDE agents
+> **Address:** Семён
 
-This file provides context and instructions for AI assistants (Claude Code,
-GitHub Copilot, Cursor, Codex, etc.) working with the KateStudio codebase.
+Этот файл — **Claude-specific overlay** для работы с KateStudio.
+Канонический инженерный протокол находится в **[ISKRA_CODER.md](./ISKRA_CODER.md)**.
 
-## Project Overview
-
-**K Sebe Yoga Studio** ("К себе" - "To Yourself") is an InsideFlow yoga
-ecosystem created for Katya Gabran's yoga studio. The project consists of two
-main applications sharing a common library.
-
-### Architecture
-
-```
-KateStudio/
-├── .github/                    # CI/CD workflows, templates, dependabot
-│   ├── workflows/
-│   │   ├── ci.yml              # Lint, typecheck, test, build
-│   │   ├── deploy-pages.yml    # GitHub Pages deployment (WEB)
-│   │   └── firebase-deploy.yml # Firebase deployment (APP)
-│   ├── ISSUE_TEMPLATE/
-│   └── PULL_REQUEST_TEMPLATE.md
-├── shared/                     # Shared library (@ksebe/shared)
-│   ├── components/             # 10+ reusable React components
-│   ├── hooks/                  # Custom React hooks (5+)
-│   ├── services/               # Supabase client, image storage
-│   ├── types/                  # 25+ TypeScript interfaces
-│   ├── utils/                  # 28 utility functions
-│   ├── constants/              # Brand, pricing, achievements, KB
-│   └── styles/                 # Tailwind preset with brand tokens
-├── k-sebe-yoga-studioWEB/      # Landing page / Marketing site
-├── k-sebe-yoga-studio-APPp/    # Mobile-first PWA + Capacitor native wrapper
-│   ├── native/                 # Capacitor plugin init (platform, plugins, index)
-│   ├── hooks/useNative.ts      # React hook for haptics, network, platform
-│   └── capacitor.config.ts     # Capacitor configuration
-├── supabase/                   # Edge Functions + migrations
-│   ├── functions/
-│   │   ├── gemini-proxy/       # AI proxy with rate limiting
-│   │   ├── create-payment/     # Payment initiation
-│   │   └── payment-webhook/    # Payment confirmation
-│   └── migrations/             # Database schema + RLS
-├── skills/                     # Agent skill definitions (YAML)
-├── scripts/                    # Build & automation scripts
-├── docs/                       # Technical documentation (18 files)
-└── raw_assets/                 # Original/unoptimized assets
-```
-
-### Tech Stack
-
-- **Frontend**: React 19.2, TypeScript 5.7, Vite 6.2
-- **Styling**: Tailwind CSS with custom preset
-- **Backend**: Supabase (Auth, Database, Storage, Edge Functions)
-- **AI**: Google Gemini API via Edge Function proxy
-- **Testing**: Vitest 2.1 + React Testing Library
-- **Package Management**: npm workspaces (monorepo)
-- **CI/CD**: GitHub Actions (Node.js 22)
-- **Deployment**: GitHub Pages (WEB), Firebase Hosting (APP)
-
-### Current Status (February 2026)
-
-- **Tests**: 208 passing across 36 suites (~25% coverage)
-- **TypeScript**: 100% compliance (strict mode, 0 errors across all workspaces)
-- **Lint**: 0 errors, 0 warnings
-- **Format**: 100% Prettier-clean
-- **Build**: Both WEB and APP build successfully
-- **Production Readiness**: 76/100 (security ✅, Capacitor ✅, payments pending)
-
-## Agent Execution Rules
-
-> These rules apply to all AI agents working on this codebase.
-> Based on best practices by Boris Cherny (Claude Code creator) + project-specific lessons.
-
-### 1. Workflow Orchestration
-
-- **Plan first**: Enter plan mode for any non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, STOP and re-plan — don't keep pushing
-- Write detailed specs upfront to reduce ambiguity
-- Use plan mode for verification steps, not just building
-
-### 2. Subagent Strategy
-
-- Use subagents to keep the main context window clean
-- Offload research, exploration, and parallel analysis to subagents
-- For complex problems, throw more compute at it via subagents
-- One task per subagent for focused execution
-
-### 3. Self-Improvement Loop
-
-- After ANY correction from the user: update `tasks/lessons.md` with the pattern
-- Write rules that prevent the same mistake from recurring
-- Review lessons at session start for relevant context
-- Each correction captured = fewer future mistakes
-
-### 4. Think 2-3 Steps Ahead — Verify Before Done
-
-Before considering a task complete, the agent **must**:
-
-1. **Predict downstream effects** — ask "what breaks or fails next because of this change?"
-2. **Verify the full flow** — run `typecheck`, `lint`, and `test:run` after every change
-3. **Test the user-facing scenario** — consider actual runtime path, not just compile-time correctness (e.g. auth event timing, network errors, API rate limits)
-4. **Commit only when all checks pass** — never commit with known errors or untested assumptions
-5. **Ask yourself**: "Would a staff engineer approve this?"
-
-**Examples:**
-
-- Changing an auth flow → "will the session be ready when updateUser() is called?"
-- Adding a component → "are imports correct? will TypeScript complain? do tests need updating?"
-- Setting a DB value via SQL → "is the extension enabled? is the format compatible?"
-
-### 5. Demand Elegance (Balanced)
-
-- For non-trivial changes: pause and ask "is there a more elegant way?"
-- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
-- Skip this for simple, obvious fixes — don't over-engineer
-- Challenge your own work before presenting it
-
-### 6. Autonomous Bug Fixing
-
-- When given a bug report: just fix it. Don't ask for hand-holding
-- Point at logs, errors, failing tests — then resolve them
-- Zero context switching required from the user
-- Go fix failing CI tests without being told how
-
-### 7. Task Management
-
-1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
-2. **Verify Plan**: Check in before starting implementation
-3. **Track Progress**: Mark items complete as you go
-4. **Explain Changes**: High-level summary at each step
-5. **Document Results**: Add review section to `tasks/todo.md`
-6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
-
-### 8. Core Principles
-
-- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
-- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
-- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+Если этот файл спорит с `ISKRA_CODER.md`, `docs/CODEX_INSTRUCTIONS.md`, `.env.example` или актуальным кодом,
+**побеждает более свежий и более безопасный источник**.
 
 ---
 
-## Key Conventions
+## 1) Что это за репозиторий
 
-### Code Style
+KateStudio — npm workspaces репозиторий проекта K Sebe Yoga Studio:
 
-1. **TypeScript**: Strict mode enabled, always use explicit types
-2. **Components**: Functional components with hooks, no class components
-3. **Imports**: Use path aliases (`@ksebe/shared`, `@web/*`, `@app/*`)
-4. **Exports**: Prefer named exports over default exports
-5. **Naming**:
-   - Components: PascalCase (`VideoLibrary.tsx`)
-   - Hooks: camelCase with `use` prefix (`useScrollLock.ts`)
-   - Utils: camelCase (`formatDate.ts`)
-   - Constants: SCREAMING_SNAKE_CASE (`BRAND_COLORS`)
+- `shared/` — общий слой (`@ksebe/shared`)
+- `k-sebe-yoga-studioWEB/` — WEB
+- `k-sebe-yoga-studio-APPp/` — APP
+- `supabase/` — migrations, RLS, Edge Functions
+- `skills/` — machine-readable rules / checks
+- `docs/` — документационный слой проекта
 
-### File Organization
+Claude должен мыслить **repo-first**, а не prompt-first.
 
-- One component per file
-- Co-locate tests with source files (`Component.tsx`, `Component.test.tsx`)
-- Keep components under 300 lines, extract logic to hooks/utils
-- Group related files in feature folders
+---
 
-### Styling Guidelines
+## 2) Роль этого файла
 
-- Use Tailwind utility classes
-- Custom colors defined in `shared/styles/tailwind.preset.js`
-- Brand colors: `brand-green` (#57a773), `brand-mint`, `brand-yellow`
-- Animations: `animate-fade-in`, `animate-blob`, `animate-float`
+`CLAUDE.md` не дублирует весь канон.
+Его задача — дать Claude-подобному агенту **быстрый рабочий контур**:
 
-## Important Files
+1. где искать истину;
+2. как не сломать репозиторий;
+3. как работать при конфликтующих документах;
+4. что не трогать без отдельного разрешения;
+5. как завершать задачу с проверкой.
 
-| File                                         | Purpose                                       |
-| -------------------------------------------- | --------------------------------------------- |
-| `shared/types/index.ts`                      | All TypeScript interfaces                     |
-| `shared/constants/index.ts`                  | Brand constants, API endpoints                |
-| `shared/constants/images.ts`                 | Centralized asset management                  |
-| `shared/utils/index.ts`                      | Utility functions (cn, formatDate, etc.)      |
-| `shared/services/supabase.ts`                | Supabase client configuration                 |
-| `.env.example`                               | Required environment variables                |
-| `CURRENT_TASKS.md`                           | Active priorities and task tracking           |
-| `CHANGELOG.md`                               | Version history (semver)                      |
-| `docs/INDEX.md`                              | Central documentation index                   |
-| `docs/CODEX_INSTRUCTIONS.md`                 | Development protocol for AI agents            |
-| `docs/LAUNCH_CHECKLIST.md`                   | Pre-launch gap analysis                       |
-| `skills/registry.json`                       | Agent skill registry                          |
-| `k-sebe-yoga-studio-APPp/native/`            | Capacitor native wrapper (platform + plugins) |
-| `k-sebe-yoga-studio-APPp/hooks/useNative.ts` | React hook for native features                |
+Полный поведенческий контракт:
+- [`ISKRA_CODER.md`](./ISKRA_CODER.md) — canonical repo guardian protocol
+- [`AGENTS.md`](./AGENTS.md) — multi-agent routing and precedence
+- [`docs/CODEX_INSTRUCTIONS.md`](./docs/CODEX_INSTRUCTIONS.md) — launch-sensitive working canon
+- [`CURRENT_TASKS.md`](./CURRENT_TASKS.md) — active priorities
+- [`skills/registry.json`](./skills/registry.json) — active skill surface
 
-## Common Tasks
+---
 
-### Adding a New Shared Component
+## 3) Working canon and drift handling
 
-1. Create component in `shared/components/YourComponent.tsx`
-2. Export from `shared/components/index.ts`
-3. Re-export from `shared/index.ts`
-4. Import in WEB/APP: `import { YourComponent } from '@ksebe/shared'`
+### 3.1 SoT order
 
-### Adding a New Type
+При любом нетривиальном вопросе смотри по убыванию доверия:
 
-1. Add interface to `shared/types/index.ts`
-2. Types are auto-exported via `shared/index.ts`
+1. релевантный код;
+2. `.env.example`, `package.json`, `.github/workflows/*`;
+3. `ISKRA_CODER.md`;
+4. `docs/CODEX_INSTRUCTIONS.md`;
+5. `CURRENT_TASKS.md`;
+6. `AGENTS.md`, `QWEN.md`, прочие guide-файлы;
+7. старые audit/status документы.
 
-### Working with Supabase
+### 3.2 Не доверяй status-claims без перепроверки
 
-```typescript
-import { supabase } from '@ksebe/shared';
+Не считай фактом без подтверждения:
+- количество тестов;
+- coverage;
+- lint/typecheck/build status;
+- readiness score;
+- количество миграций;
+- формулировки вида “production-ready”, “fully green”, “done”.
 
-// Authentication
-const {
-  data: { user },
-} = await supabase.auth.getUser();
+Если документ утверждает число — проверь кодом, свежим файлом или явной командой.
 
-// Database query
-const { data, error } = await supabase
-  .from('bookings')
-  .select('*')
-  .eq('user_id', user.id);
+### 3.3 Что делать при конфликте документов
+
+Если `README`, `CURRENT_TASKS`, audits, `CLAUDE.md`, `AGENTS.md` и `docs/*` спорят:
+- **назови конфликт**
+- выбери **рабочий канон для этой задачи**
+- пометь остальное как **drift**
+- предложи **doc-sync** как отдельную задачу, если конфликт мешает решению
+
+Не усредняй противоречия.
+
+---
+
+## 4) Repo boundaries
+
+### Shared
+- общий слой, который предпочитаем переиспользовать вместо копирования логики в WEB/APP;
+- изменения публичных контрактов shared = повышенный governance risk.
+
+### WEB
+- маркетинг, landing, admin projection;
+- не запихивай сюда серверную или чувствительную бизнес-логику.
+
+### APP
+- mobile-first PWA + Capacitor wrapper;
+- прямые импорты `@capacitor/*` в компонентах запрещены;
+- native integration идёт через `k-sebe-yoga-studio-APPp/native/`.
+
+### Supabase
+- schema, RLS, Edge Functions;
+- auth/security/data boundaries живут здесь.
+
+### Skills / Workflows
+- не выдумывай pipeline, если `.github/workflows/*` и `skills/*.yaml` уже описывают рабочий контур.
+
+---
+
+## 5) Frozen AI policy
+
+Для обычной работы по репозиторию действует правило:
+
+**AI-контур frozen по умолчанию.**
+
+Это значит:
+- не менять `supabase/functions/gemini-proxy`;
+- не менять AI service wiring;
+- не менять model routing;
+- не менять prompt contracts;
+- не менять AI env-переменные;
+- не менять client/server integration points, которые завязаны на AI.
+
+Если обычная задача косвенно упирается в AI-контур:
+1. остановись;
+2. назови пересечение;
+3. предложи путь без затрагивания AI;
+4. только при отдельном явном разрешении переходи к review этой зоны.
+
+---
+
+## 6) Security rules
+
+Никогда:
+- не коммить секреты;
+- не печатай реальные ключи;
+- не используй `VITE_GEMINI_API_KEY` в клиентском коде;
+- не используй service role key в браузере;
+- не ослабляй CORS/RLS “временно”;
+- не запускай destructive / deploy / prod-команды без явного поручения.
+
+Разрешено:
+- опираться на `.env.example`;
+- описывать missing vars;
+- давать безопасные локальные команды;
+- предлагать doc-sync / governance fixes до кода.
+
+---
+
+## 7) Workflow for Claude
+
+### Before code
+- сначала review;
+- потом tradeoffs;
+- потом recommendation;
+- потом approval;
+- потом implementation.
+
+### During work
+- делай минимальный diff;
+- не тащи рефактор “по пути”;
+- не ослабляй типы;
+- prefer named exports;
+- сохраняй existing path aliases;
+- отделяй факт от гипотезы.
+
+### After code
+Прогони по возможности:
+```bash
+npm run test:run
+npm run lint
+npm run typecheck
+npm run build:web
+npm run build:app
 ```
 
-### Working with Native/Capacitor (APP only)
+Если гонял не всё — скажи честно, что именно не проверял.
 
-```typescript
-// Platform detection — import from ./native (NOT from @capacitor/core directly)
-import { isNative, isIOS, isAndroid, getPlatform } from './native';
+---
 
-// Haptic feedback — safe on web (no-op when not native)
-import { hapticLight, hapticSuccess, hapticError } from './native';
-void hapticLight(); // light tap — for nav, button presses
-void hapticSuccess(); // success pulse — for completed actions
-void hapticError(); // error buzz — for failures
+## 8) Skills-first
 
-// React hook — network status + haptics in one hook
-import { useNative } from './hooks/useNative';
-const { isOnline, isNative, haptic } = useNative();
-haptic.light();
+Перед review / implementation смотри:
+- `skills/architecture.yaml`
+- `skills/code_review.yaml`
+- `skills/git_workflow.yaml`
+- `skills/security.yaml`
+- `skills/code_quality.yaml`
 
-// Building for Android/iOS
-// npm run build:mobile        — build + sync Android (auto-adds if missing)
-// npm run build:mobile:ios    — build + sync iOS
-// npm run cap:open:android    — open Android Studio
-// npm run cap:open:ios        — open Xcode
-```
+Если трогаешь `supabase/`:
+- `skills/migration.yaml`
+- `skills/supabase_ops.yaml`
+- при необходимости `skills/security_scanner.yaml`
 
-**Rules:**
+Если трогаешь docs / governance:
+- `skills/doc_sync.yaml`
 
-- Never import from `@capacitor/*` directly in components — always use
-  `./native`
-- All haptic calls must be `void hapticFn()` (returns Promise)
-- Native projects (`android/`, `ios/`) are generated locally, not committed
+---
 
-### Working with Gemini AI (via Edge Function Proxy)
+## 9) Output contract
 
-```typescript
-// All Gemini calls MUST go through the Edge Function proxy
-// NEVER use VITE_GEMINI_API_KEY in client code
+Claude по умолчанию отвечает структурой:
 
-// The proxy handles: rate limiting, auth, subscription-based quotas
-// Location: supabase/functions/gemini-proxy/index.ts
-```
+**A Intake** — что за задача на самом деле  
+**B SIFT** — Fact / Interpretation / Hypothesis / Risk  
+**C Frame** — 1–3 пути + цена  
+**D Step** — ближайший безопасный шаг  
+**E Verify** — PASS / FAIL критерий  
+**F Close** — ΔDΩΛ
 
-## Domain Knowledge
+Финал по задаче:
+- изменённые файлы;
+- команды проверки;
+- PASS/FAIL;
+- незакрытые риски;
+- следующий шаг, если нужен.
 
-### Inside Flow Yoga
+DONE без проверки не писать.
 
-Inside Flow is a modern yoga style created by Young Ho Kim that combines:
+---
 
-- Vinyasa flow movements synchronized with music
-- Emotional expression through movement
-- Breath-to-beat coordination
-- Contemporary music integration
-- 10,000+ certified teachers globally
-- Elite Training Frankfurt (May-June 2026)
-
-### Key Features
-
-1. **AI Coach (Aria)**: Gemini-powered assistant for yoga guidance
-2. **Video Library**: Curated Inside Flow classes
-3. **Schedule**: Class booking with Supabase backend
-4. **Breathwork**: Square breathing and pranayama exercises
-5. **Blog**: Articles about yoga, wellness, mindfulness
-6. **Gamification**: Streaks, achievements, progress tracking
-7. **Admin Panel**: Schedule, bookings, contacts management
-
-### User Personas
-
-- **Primary**: Women 25-45 interested in yoga and mindfulness
-- **Secondary**: Yoga practitioners looking for Inside Flow content
-- **Tertiary**: Complete beginners seeking gentle introduction to yoga
-
-## Testing
+## 10) Practical command set
 
 ```bash
-npm run test          # Run tests in watch mode
-npm run test:run      # Run tests once (CI)
-npm run test:coverage # Run with coverage report
-npm run test:ui       # Visual test UI
-npm run lint          # ESLint
-npm run typecheck     # TypeScript type check
-npm run format:check  # Prettier check
+npm run dev:web
+npm run dev:app
+
+npm run test:run
+npm run lint
+npm run typecheck
+npm run format:check
+
+npm run build:web
+npm run build:app
+npm run build:all
 ```
 
-### Before Making Changes
-
-1. Run existing tests: `npm run test:run`
-2. Type check: `npm run typecheck`
-3. Lint: `npm run lint`
-
-### After Making Changes
-
-1. Run tests: `npm run test:run`
-2. Type check: `npm run typecheck`
-3. Lint: `npm run lint`
-4. Build: `npm run build:web` / `npm run build:app`
-
-## Deployment
-
-- **WEB**: GitHub Pages via `deploy-pages.yml` (domain: ksebe-studio.ru)
-- **APP**: Firebase Hosting via `firebase-deploy.yml` (PWA)
-- **CI**: Runs on push to main/develop and all PRs
-
-## Security Model
-
-### Resolved (February 2026)
-
-- **Edge Function Proxy**: Gemini API key in Supabase secrets, not client-side
-- **Payment Webhook**: HMAC signature verification, secret required
-- **Service Role Key**: Required for backend ops, no anon fallback
-- **RLS Policies**: Subscriptions locked down (no user self-update)
-- **CORS**: Restricted to ksebe-studio.ru, app.ksebe-studio.ru, localhost
-
-### Rules
-
-- Never commit `.env` files or secrets
-- Never use `SUPABASE_SERVICE_ROLE_KEY` in browser code
-- Never use `VITE_GEMINI_API_KEY` in production builds
-- All Gemini calls must go through Edge Function proxy
-- CORS must be restricted to specific domains (no wildcard `*`)
-- All Edge Functions must validate required secrets on startup
-
-## Contact
-
-- **Studio Owner**: Katya Gabran
-- **Address**: Станционная ул., 5Б, Дубна, 141981 (этаж 2)
-- **Instagram**: @kate_gabran
-- **Telegram**: @k_sebe_dubna
-- **Yandex Maps**: https://yandex.ru/navi/org/k_sebe/7167334007
+Смотри `package.json` как текущий источник команд.
+Не копируй команды из старых документов, если они расходятся с реальным script surface.
 
 ---
 
-**Principles**: This is a passion project for a yoga studio. Prioritize:
+## 11) What Claude should optimize for
 
-- Clean, maintainable code
-- Accessible design (WCAG 2.1 AA)
-- Mobile-first responsive layouts
-- Calm, mindful user experience
-- Security first (Edge Functions proxy, RLS, input validation)
+Приоритеты по умолчанию:
+1. truth over fluency
+2. repo integrity over speed
+3. launch safety over architectural vanity
+4. minimal safe diff over sprawling refactor
+5. explicit verification over confident prose
 
-## Current Priorities (February 2026)
-
-### P0 Critical (Blockers)
-
-| Task                                | Status                     |
-| ----------------------------------- | -------------------------- |
-| Webhook secret validation           | ✅ Resolved                |
-| Subscriptions RLS policy            | ✅ Resolved                |
-| CORS restrictions                   | ✅ Resolved                |
-| API key fallback removal            | ✅ Resolved                |
-| Service Role Key enforcement        | ✅ Resolved                |
-| Capacitor native wrapper            | ✅ Done (2.1.0)            |
-| CI fully green                      | ✅ Done (2.1.0)            |
-| Replace Unsplash placeholder images | 🔄 WEB done, APP remaining |
-| Configure production .env           | ⏳ Pending                 |
-| Set GitHub Secrets                  | ⏳ Pending                 |
-
-### P1 High Priority
-
-- Input validation with Zod for Edge Functions
-- YooKassa payment integration (full)
-- Database migrations for missing tables (`contacts`, `classes`)
-- Increase test coverage to 50%+ (currently ~25%)
-- Replace placeholder videos in APP
-
-### P2 Medium Priority
-
-- Remove remaining default exports
-- Image optimization (WebP)
-- Newsletter integration (Mailchimp)
-- Logging & monitoring (Sentry)
-- Database type generation
-
-See [CURRENT_TASKS.md](./CURRENT_TASKS.md) for the full task list.
-
-## Gamification (Implemented)
-
-- **Streaks**: StreakCard + StreakCalendar + milestones (3/7/14/30/60/100 days)
-- **Achievements**: 20+ achievements, AchievementUnlockedModal, AchievementsGrid
-- **Push Notifications**: UI ready, Firebase Cloud Messaging planned
-
-## Monetization
-
-```
-Free:     0₽      - AI Chat (100 msg/day), 3 videos/week
-Premium:  990₽/mo - All videos, offline, AI programs
-VIP:      2,990₽  - Premium + consultations with Katya (2/month)
-```
-
-Payment: YooKassa (Russia) + Stripe (international) — integration in progress.
-
-## AI Agent Ecosystem
-
-This project supports multiple AI agents. See [AGENTS.md](./AGENTS.md) for the
-full multi-agent architecture.
-
-### Agent-Specific Files
-
-| File                         | Agent Target                                    |
-| ---------------------------- | ----------------------------------------------- |
-| `CLAUDE.md`                  | Claude Code, Claude                             |
-| `ISKRA_CODER.md`             | Claude Code, Copilot, Cursor (Искра-Кодер vΩ.6) |
-| `AGENTS.md`                  | All AI agents                                   |
-| `docs/CODEX_INSTRUCTIONS.md` | OpenAI Codex                                    |
-| `skills/*.yaml`              | Jules agent skills                              |
-| `skills/registry.json`       | Skill registry                                  |
-
-## Performance Targets 2026
-
-| Metric             | Current | Q4 2026 Target |
-| ------------------ | ------- | -------------- |
-| Lighthouse Score   | ~75     | 90+            |
-| Test Coverage      | ~20%    | 70%+           |
-| Bundle Size (gzip) | ~300KB  | <200KB         |
-| LCP                | ~3s     | <2.5s          |
-| Tests Passing      | 174     | 300+           |
-
-## Resources
-
-- [Current Tasks](./CURRENT_TASKS.md)
-- [Strategic Roadmap 2026](./STRATEGIC_ROADMAP_2026.md)
-- [Deep Analysis 2026](./docs/DEEP_ANALYSIS_2026.md)
-- [Action Plan 2026](./ACTION_PLAN_2026.md)
-- [Architecture](./docs/ARCHITECTURE.md)
-- [Launch Checklist](./docs/LAUNCH_CHECKLIST.md)
-- [Security Report](./docs/SECURITY_REPORT_2026_02_11.md)
-- [Documentation Index](./docs/INDEX.md)
+Формула:
+**Сначала правда. Потом границы. Потом код. Потом проверка.**
