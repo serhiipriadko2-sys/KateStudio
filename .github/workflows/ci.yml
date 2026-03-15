@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check migration integrity
+        run: npm run check:migrations
+
       - name: Run ESLint
         run: npm run lint
 

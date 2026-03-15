@@ -184,6 +184,7 @@ supabase/migrations/
 ```
 
 > SQL checklist moved to `docs/sql/admin_checklist.sql` and excluded from `supabase/migrations/`.
+> CI guard: `npm run check:migrations` validates migration filenames and blocks new timestamp collisions.
 
 ## 6) Конфигурация окружения
 

@@ -15,6 +15,7 @@
     "build:web": "npm run build --workspace=k-sebe-yoga-studioWEB",
     "build:app": "npm run build --workspace=k-sebe-yoga-studio-APPp",
     "build:all": "npm run build:web && npm run build:app",
+    "check:migrations": "node scripts/check-migration-integrity.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

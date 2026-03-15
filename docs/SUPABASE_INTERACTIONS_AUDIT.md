@@ -15,7 +15,7 @@
     2. `get_admin_analytics` now hard-checks `public.is_admin()` in function body.
     3. Documentation drift (`push_tokens` vs `user_push_tokens`) is synced.
   - Remaining follow-up outside this remediation:
-    - migration timestamp collisions still require governance cleanup.
+    - legacy migration timestamp collisions are now CI-guarded; full normalization still requires dedicated governance cleanup.
 
 ## A) Client Initialization
 
@@ -241,3 +241,4 @@ Remediation applied in this cycle:
 - `docs(sync): align push token naming and edge invocation docs`
 - `chore(migrations): move admin checklist script out of supabase/migrations`
 - `fix(app-subscriptions): align guard behavior with WEB subscription service`
+- `chore(ci): add migration integrity checker with collision allowlist`
