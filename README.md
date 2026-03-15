@@ -9,6 +9,56 @@
 **"К себе" (To Yourself)** is a comprehensive digital ecosystem for the K Sebe
 Yoga Studio (Dubna, Russia).
 
+## 🗺 System at a glance
+
+```text
+┌─────────────┐     ┌─────────────┐
+│  Studio     │     │  App User   │
+│  Admin      │     │  (client)   │
+└──────┬──────┘     └──────┬──────┘
+       │                   │
+       ▼                   ▼
+┌─────────────┐     ┌─────────────────────┐
+│     WEB     │     │         APP         │
+│ ksebe-      │     │ app.ksebe-studio.ru  │
+│ studio.ru   │     │ PWA + Capacitor      │
+│ GitHub Pages│     │ Firebase Hosting     │
+└──────┬──────┘     └──────┬──────────────┘
+       │                   │
+       └─────────┬─────────┘
+                 │  Supabase JS SDK (anon key only)
+                 ▼
+       ┌─────────────────┐
+       │    Supabase     │
+       │  Auth · DB · RLS│
+       └────────┬────────┘
+                │
+                ▼
+       ┌─────────────────────────────────┐
+       │         Edge Functions          │
+       │  gemini-proxy  create-payment   │
+       │  payment-webhook  send-push     │
+       │  cancel-subscription  cron ...  │
+       └────────┬────────────────────────┘
+                │
+       ┌────────┴────────┐
+       ▼                 ▼
+ ┌──────────┐     ┌──────────────┐
+ │ YooKassa │     │  Gemini API  │
+ │ Payments │     │  (AI proxy)  │
+ └──────────┘     └──────────────┘
+```
+
+**Containers in short:**
+
+- **WEB** — marketing site + admin panel. Served via GitHub Pages. Admin auth boundary is separate from end-user flow.
+- **APP** — mobile-first PWA with optional Capacitor native wrapper (Android/iOS). Served via Firebase Hosting.
+- **Supabase** — auth, database, RLS policies. Both WEB and APP talk to it using the public anon key. Sensitive data is protected by row-level security.
+- **Edge Functions** — all sensitive operations: AI calls, payments, push notifications, maintenance. Never expose secret keys to the browser.
+- **Payment providers / AI** — external systems reached only through Edge Functions, never directly from the client.
+
+> Full container narrative: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+
 ## 📚 Documentation
 
 | Document | Purpose |
@@ -90,13 +140,31 @@ npm run cap:open:ios           # Open Xcode
 
 ## 🔐 Security
 
-- **AI**: Powered by Gemini via Supabase Edge Functions (`gemini-proxy`). All AI
-  calls go through the proxy — never expose `GEMINI_API_KEY` client-side.
-- **Auth**: Supabase Auth with OTP + RLS policies.
-- **Payments**: HMAC-verified webhook + create-payment Edge Functions.
-- **CORS**: Restricted to `ksebe-studio.ru`, `app.ksebe-studio.ru`, localhost.
+**Who sees what:**
+
+- **App user (client)** — sees only their own data. Supabase RLS enforces `auth.uid() = user_id` on every sensitive table. There is no way to read another user's bookings, profile, or subscription via the public API.
+- **Studio admin** — works through a separate admin auth boundary in WEB. Admin rights are stored in the `admins` table and checked server-side; they are not derived from the same RLS path as regular users.
+- **Edge Functions** — hold all secrets (API keys, service role key, webhook secrets). The browser never receives them. Sensitive operations — AI, payments, push notifications — are only reachable through these functions.
+- **Client code** — receives only two public values: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Both are safe to expose. No other secrets appear in the browser bundle.
+
+**Mechanisms that back this up:** Supabase RLS · HMAC webhook verification · CORS domain allowlist · Zod input validation on Edge Functions · JWT auth check on all non-public endpoints.
 
 **Never commit `.env` files or expose API keys in client-side code.**
+
+> Full security model: [docs/SECURITY_MODEL.md](./docs/SECURITY_MODEL.md)
+
+## 🚢 Delivery
+
+| Stage | Where |
+| --- | --- |
+| Local checks | `npm run lint` · `typecheck` · `test:run` · `build:web` · `build:app` |
+| CI gate | GitHub Actions — lint → typecheck → test → build (all must pass) |
+| WEB deploy | Push to `main` → `deploy-pages.yml` → GitHub Pages (`ksebe-studio.ru`) |
+| APP deploy | Push to `main` → `firebase-deploy.yml` → Firebase Hosting (`app.ksebe-studio.ru`) |
+| Backend | Supabase Edge Functions deployed via Supabase CLI (`supabase functions deploy`) |
+| Mobile | `npm run build:mobile` → Capacitor sync → Android Studio / Xcode (local only) |
+
+No deploy happens without the CI gate passing. WEB and APP deploy in parallel from the same `main` push.
 
 ## 📄 License
 

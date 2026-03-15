@@ -29,7 +29,7 @@
 - [**EDGE_FUNCTIONS.md**](./EDGE_FUNCTIONS.md) — 7 Edge Functions: назначение, env, auth, endpoints
 - [**TESTING.md**](./TESTING.md) — Тестовая архитектура, паттерны, coverage (473 тестов / 60 suites)
 - [**LAUNCH_CHECKLIST.md**](./LAUNCH_CHECKLIST.md) — Pre-launch gap analysis (статус: март 2026)
-- [**SECURITY_MODEL.md**](./SECURITY_MODEL.md) — Модель безопасности, RLS политики
+- [**SECURITY_MODEL.md**](./SECURITY_MODEL.md) — Role narrative: кто что видит, trust boundaries, механизмы защиты
 - [**ADMIN_SETUP.md**](./ADMIN_SETUP.md) — Настройка admin-панели
 
 ---

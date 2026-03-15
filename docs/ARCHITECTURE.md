@@ -46,7 +46,69 @@ KateStudio/
 └── .github/workflows/             # CI/CD (ci.yml, deploy-pages.yml, firebase-deploy.yml)
 ```
 
-## 3) Runtime-архитектура
+## 3) Контейнерная модель (C4 Level 2)
+
+### Акторы
+
+| Актор | Описание |
+| --- | --- |
+| **App User** | Клиент студии — бронирует занятия, смотрит видео, взаимодействует с APP |
+| **Studio Admin** | Сотрудник студии — управляет расписанием и данными через WEB |
+
+### Контейнеры и их ответственность
+
+| Контейнер | Технология | Ответственность |
+| --- | --- | --- |
+| **WEB** | React 19, Vite, Tailwind | Маркетинг, лендинг, admin panel. Собственная auth boundary для администратора. |
+| **APP** | React 19, Vite, Capacitor | Личный кабинет пользователя, видео, расписание, бронирование. PWA + нативные обёртки. |
+| **shared** | TypeScript library | Переиспользуемые компоненты, хуки, сервисы, типы. Не деплоится отдельно. |
+| **Supabase DB** | PostgreSQL + RLS | Единственное хранилище данных. Row-level security изолирует записи по `user_id`. |
+| **Supabase Auth** | GoTrue (OTP) | Аутентификация пользователей и администраторов. JWT выдаётся клиенту. |
+| **Edge Functions** | Deno (TypeScript) | Все операции, требующие секретов: AI, платежи, push, обслуживание. |
+
+### Внешние системы
+
+| Система | Роль | Достигается через |
+| --- | --- | --- |
+| **Gemini API** | AI-операции | `gemini-proxy` Edge Function (ключ хранится в Vault) |
+| **YooKassa** | Приём платежей | `create-payment` + `payment-webhook` Edge Functions |
+| **Firebase FCM** | Push-уведомления | `send-push` Edge Function |
+| **Mailchimp** | Email-рассылки | `subscribe-newsletter` Edge Function |
+| **Sentry** | Мониторинг ошибок | `shared/services/monitoring.ts` (public DSN) |
+
+### Trust boundaries
+
+```text
+┌────────────────────────────────────────────────────────┐
+│                    BROWSER / DEVICE                    │
+│                                                        │
+│  WEB (admin)          APP (user)                       │
+│  – public anon key    – public anon key                │
+│  – no secrets         – no secrets                     │
+└───────────────────────┬────────────────────────────────┘
+                        │  HTTPS · JWT · anon key
+                   ─────┼─────  ← trust boundary
+                        │
+┌───────────────────────▼────────────────────────────────┐
+│                     SUPABASE                           │
+│                                                        │
+│  Auth (JWT validation)   DB (RLS policies)             │
+│                                                        │
+│              Edge Functions                            │
+│  – hold all secrets (Vault)                            │
+│  – service role key (never leaves server)              │
+│  – call external APIs (Gemini, YooKassa, FCM)          │
+└────────────────────────────────────────────────────────┘
+```
+
+**Что граница означает на практике:**
+
+- Клиент передаёт только JWT + тело запроса. Никаких серверных ключей.
+- Edge Functions проверяют JWT, извлекают `user_id`, применяют business logic.
+- Supabase RLS гарантирует, что даже при прямом SQL-запросе пользователь не увидит чужие строки.
+- Admin boundary: права администратора хранятся в таблице `admins` и проверяются в Edge Functions; обычный пользователь не может эскалировать права через клиентский код.
+
+## 3.1) Runtime-архитектура
 
 ```text
 [Пользователь]
