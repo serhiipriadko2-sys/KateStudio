@@ -379,16 +379,16 @@ export const dataService = {
       await cacheAdapter.upsertBookings(
         bookings.map((booking) => ({
           ...booking,
-          phone: user.phone,
+          phone: user.phone ?? '',
           status: 'synced',
         }))
       );
 
-      const pending = await cacheAdapter.getPendingBookings(user.phone);
+      const pending = await cacheAdapter.getPendingBookings(user.phone ?? '');
       return [...bookings, ...pending.map(dataService.stripCachedBooking)];
     } catch (e) {
       console.warn('Failed to fetch bookings from DB', e);
-      const cached = await cacheAdapter.getBookingsByPhone(user.phone);
+      const cached = await cacheAdapter.getBookingsByPhone(user.phone ?? '');
       return cached.map(dataService.stripCachedBooking);
     }
   },
@@ -404,9 +404,9 @@ export const dataService = {
     }
 
     // Ensure profile exists server-side (best-effort).
-    await dataService.registerUser(user.name, user.phone, authUserId);
+    await dataService.registerUser(user.name, user.phone ?? '', authUserId);
 
-    const existingLocal = await cacheAdapter.findBookingByClassId(user.phone, cls.id);
+    const existingLocal = await cacheAdapter.findBookingByClassId(user.phone ?? '', cls.id);
     if (existingLocal) {
       return false;
     }
@@ -452,7 +452,7 @@ export const dataService = {
           time: data.time,
           location: data.location,
           timestamp: data.timestamp,
-          phone: user.phone,
+          phone: user.phone ?? '',
           status: 'synced',
         };
         await cacheAdapter.upsertBookings([cachedBooking]);
@@ -491,7 +491,7 @@ export const dataService = {
     const authUserId = await getAuthenticatedUserId(user.id);
     if (!authUserId) return;
 
-    const pending = await cacheAdapter.getPendingBookings(user.phone);
+    const pending = await cacheAdapter.getPendingBookings(user.phone ?? '');
     if (!pending.length) return;
 
     await Promise.all(

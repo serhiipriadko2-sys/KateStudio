@@ -56,19 +56,7 @@ interface DashboardProps {
 // const subscriptionPlanLabels: Record<SubscriptionPlan, string> = { ... };
 
 export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'overview' }) => {
-  const {
-    user,
-    setUser,
-    logout,
-    authStatus,
-    requestOtp,
-    verifyOtp,
-    cancelOtp,
-    authError,
-    authLoading,
-    pendingPhone,
-    isSupabaseConfigured,
-  } = useAuth();
+  const { user, setUser, logout, authStatus, isSupabaseConfigured } = useAuth();
   const [activeTab, setActiveTab] = useState<
     'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev'
   >(initialTab);
@@ -89,11 +77,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const [editCity, setEditCity] = useState('');
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Auth (OTP) UI state
-  const [loginName, setLoginName] = useState('');
-  const [loginPhone, setLoginPhone] = useState('');
-  const [otpCode, setOtpCode] = useState('');
 
   // Daily recommendation
   const [dailyRec, setDailyRec] = useState<DailyRecommendationType | null>(null);
@@ -625,121 +608,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
           {activeTab === 'profile' && (
             <div className="max-w-md mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500 pb-24">
-              {authStatus !== 'authenticated' && (
-                <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
-                  <h2 className="text-xl font-serif text-brand-text mb-2">Вход по телефону</h2>
-                  <p className="text-stone-400 text-sm mb-4">
-                    Подтверди номер — и откроются “дорогие” AI‑функции (анализ/генерации).
-                  </p>
-
-                  {!isSupabaseConfigured && (
-                    <div className="mb-4 p-3 bg-amber-50 text-amber-700 rounded-xl text-sm">
-                      Конфигурация не настроена. Авторизация недоступна.
-                    </div>
-                  )}
-
-                  {authError && (
-                    <div className="mb-4 p-3 bg-rose-50 text-rose-600 rounded-xl text-sm">
-                      {authError}
-                    </div>
-                  )}
-
-                  {authStatus === 'otp_sent' ? (
-                    <div className="space-y-3">
-                      <div className="text-xs text-stone-400">
-                        Код отправлен на: <span className="font-mono">{pendingPhone}</span>
-                      </div>
-                      <input
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value)}
-                        inputMode="numeric"
-                        placeholder="Код из SMS"
-                        className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400"
-                      />
-                      <div className="flex gap-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            cancelOtp();
-                            setOtpCode('');
-                          }}
-                          disabled={authLoading}
-                          className="flex-1 py-4 rounded-2xl bg-stone-50 text-stone-600 font-medium hover:bg-stone-100 transition-colors disabled:opacity-70"
-                        >
-                          Изменить номер
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            try {
-                              await verifyOtp(otpCode);
-                              showToast('Телефон подтверждён', 'success');
-                            } catch {
-                              // error shown in UI
-                            }
-                          }}
-                          disabled={authLoading || !otpCode.trim()}
-                          className="flex-1 py-4 rounded-2xl bg-brand-green text-white font-medium hover:bg-brand-green/90 transition-colors shadow-lg shadow-brand-green/20 disabled:opacity-70"
-                        >
-                          {authLoading ? (
-                            <span className="inline-flex items-center gap-2">
-                              <Loader2 className="w-4 h-4 animate-spin" /> Проверяю…
-                            </span>
-                          ) : (
-                            'Подтвердить'
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <input
-                        value={loginName}
-                        onChange={(e) => setLoginName(e.target.value)}
-                        placeholder="Имя"
-                        disabled={!isSupabaseConfigured}
-                        className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400"
-                      />
-                      <input
-                        value={loginPhone}
-                        onChange={(e) => setLoginPhone(e.target.value)}
-                        inputMode="tel"
-                        placeholder="Телефон (например: +79001234567)"
-                        disabled={!isSupabaseConfigured}
-                        className="w-full bg-stone-50 border border-stone-100 text-brand-text px-5 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all placeholder:text-stone-400"
-                      />
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const name = (loginName || user?.name || 'Пользователь').trim();
-                          const phone = (loginPhone || user?.phone || '').trim();
-                          if (!phone) {
-                            showToast('Введите телефон', 'error');
-                            return;
-                          }
-                          try {
-                            await requestOtp(name, phone);
-                            showToast('Код отправлен', 'success');
-                          } catch {
-                            // error shown in UI
-                          }
-                        }}
-                        disabled={authLoading || !isSupabaseConfigured}
-                        className="w-full py-4 rounded-2xl bg-brand-green text-white font-medium hover:bg-brand-green/90 transition-colors shadow-lg shadow-brand-green/20 disabled:opacity-70"
-                      >
-                        {authLoading ? (
-                          <span className="inline-flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" /> Отправляю…
-                          </span>
-                        ) : (
-                          'Получить код'
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
               {/* AI Subscription hidden — re-enable after launch */}
               {/* <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6"> ... AI Subscription block ... </div> */}
 

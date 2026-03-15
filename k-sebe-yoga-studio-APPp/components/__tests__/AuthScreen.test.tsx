@@ -2,12 +2,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock Logo to avoid SVG complexity
 vi.mock('../Logo', () => ({
   Logo: () => <div data-testid="logo" />,
 }));
 
-// Use vi.hoisted so mockUseAuth is available inside the vi.mock factory
 const mockUseAuth = vi.hoisted(() => vi.fn());
 vi.mock('../../context/AuthContext', () => ({
   useAuth: mockUseAuth,
@@ -15,16 +13,16 @@ vi.mock('../../context/AuthContext', () => ({
 
 import { AuthScreen } from '../AuthScreen';
 
-const mockRequestOtp = vi.fn();
-const mockSignInWithEmail = vi.fn();
-const mockVerifyOtp = vi.fn();
-const mockCancelOtp = vi.fn();
+const mockSignUp = vi.fn();
+const mockSignIn = vi.fn();
+const mockVerifyPhoneRegistration = vi.fn();
+const mockCancelPhoneVerification = vi.fn();
 
 const defaultAuthContext = {
-  requestOtp: mockRequestOtp,
-  verifyOtp: mockVerifyOtp,
-  cancelOtp: mockCancelOtp,
-  signInWithEmail: mockSignInWithEmail,
+  signUp: mockSignUp,
+  signIn: mockSignIn,
+  verifyPhoneRegistration: mockVerifyPhoneRegistration,
+  cancelPhoneVerification: mockCancelPhoneVerification,
   authStatus: 'anonymous' as const,
   authError: null,
   authLoading: false,
@@ -37,118 +35,141 @@ const defaultAuthContext = {
   isSupabaseConfigured: true,
 };
 
+// Helpers
+const getSubmitBtn = () => screen.getByTestId('auth-submit');
+const getPasswordInput = () => screen.getByLabelText('Пароль', { selector: 'input' });
+const getPhoneInput = () => screen.getByLabelText('Телефон', { selector: 'input' });
+const getEmailInput = () => screen.getByLabelText('Email', { selector: 'input' });
+const getNameInput = () => screen.getByLabelText('Имя', { selector: 'input' });
+
 describe('AuthScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ ...defaultAuthContext });
   });
 
-  it('renders phone mode by default', () => {
+  it('renders login+phone mode by default', () => {
     render(<AuthScreen />);
-    expect(screen.getByLabelText(/имя/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/телефон/i)).toBeInTheDocument();
-    expect(screen.getByText('Получить код')).toBeInTheDocument();
+    expect(getPhoneInput()).toBeInTheDocument();
+    expect(getPasswordInput()).toBeInTheDocument();
+    expect(getSubmitBtn()).toHaveTextContent('Войти');
+    // Name field only on register
+    expect(screen.queryByLabelText('Имя', { selector: 'input' })).not.toBeInTheDocument();
   });
 
-  it('shows mode toggle buttons', () => {
+  it('shows login/register and phone/email toggles', () => {
     render(<AuthScreen />);
-    // Use role selector to distinguish toggle button from the phone input label
-    expect(screen.getByRole('button', { name: /телефон/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /email/i })).toBeInTheDocument();
+    expect(screen.getByTestId('mode-login')).toBeInTheDocument();
+    expect(screen.getByTestId('mode-register')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Телефон/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /Email/i })[0]).toBeInTheDocument();
   });
 
-  it('switches to email mode on toggle click', async () => {
+  it('switches to register mode — shows name field and phone+password', async () => {
     const user = userEvent.setup();
     render(<AuthScreen />);
 
-    await user.click(screen.getByText('Email'));
+    await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
 
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/пароль/i)).toBeInTheDocument();
-    expect(screen.getByText('Войти')).toBeInTheDocument();
+    expect(getNameInput()).toBeInTheDocument();
+    expect(getPhoneInput()).toBeInTheDocument();
+    expect(getPasswordInput()).toBeInTheDocument();
+    expect(getSubmitBtn()).toHaveTextContent('Получить код');
   });
 
-  it('switches back to phone mode from email mode', async () => {
+  it('switches to email mode in login', async () => {
     const user = userEvent.setup();
     render(<AuthScreen />);
 
-    await user.click(screen.getByText('Email'));
-    await user.click(screen.getByText('Телефон'));
+    await user.click(screen.getByRole('button', { name: /^Email$/i }));
 
-    expect(screen.getByLabelText(/имя/i)).toBeInTheDocument();
-    expect(screen.getByText('Получить код')).toBeInTheDocument();
+    expect(getEmailInput()).toBeInTheDocument();
+    expect(getPasswordInput()).toBeInTheDocument();
+    expect(screen.queryByLabelText('Имя', { selector: 'input' })).not.toBeInTheDocument();
+    expect(getSubmitBtn()).toHaveTextContent('Войти');
   });
 
-  it('submit button disabled when phone fields are empty', () => {
-    render(<AuthScreen />);
-    const btn = screen.getByText('Получить код').closest('button')!;
-    expect(btn).toBeDisabled();
-  });
-
-  it('calls signInWithEmail on email form submit', async () => {
-    mockSignInWithEmail.mockResolvedValue(undefined);
+  it('switches to email mode in register — shows name field', async () => {
     const user = userEvent.setup();
     render(<AuthScreen />);
 
-    await user.click(screen.getByText('Email'));
-    await user.type(screen.getByLabelText(/email/i), 'test@test.com');
-    await user.type(screen.getByLabelText(/пароль/i), 'secret123');
-    await user.click(screen.getByText('Войти'));
+    await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
+    await user.click(screen.getByRole('button', { name: /^Email$/i }));
+
+    expect(getNameInput()).toBeInTheDocument();
+    expect(getEmailInput()).toBeInTheDocument();
+    expect(getPasswordInput()).toBeInTheDocument();
+    expect(getSubmitBtn()).toHaveTextContent('Зарегистрироваться');
+  });
+
+  it('submit disabled when login phone fields empty', () => {
+    render(<AuthScreen />);
+    expect(getSubmitBtn()).toBeDisabled();
+  });
+
+  it('calls signIn with email on email login submit', async () => {
+    mockSignIn.mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(<AuthScreen />);
+
+    await user.click(screen.getByRole('button', { name: /^Email$/i }));
+    await user.type(getEmailInput(), 'test@test.com');
+    await user.type(getPasswordInput(), 'secret123');
+    await user.click(getSubmitBtn());
 
     await waitFor(() => {
-      expect(mockSignInWithEmail).toHaveBeenCalledWith('test@test.com', 'secret123');
+      expect(mockSignIn).toHaveBeenCalledWith('test@test.com', 'secret123', 'email');
     });
   });
 
-  it('email submit button disabled when fields empty', async () => {
+  it('calls signIn with phone on phone login submit', async () => {
+    mockSignIn.mockResolvedValue(undefined);
     const user = userEvent.setup();
     render(<AuthScreen />);
 
-    await user.click(screen.getByText('Email'));
+    await user.type(getPhoneInput(), '+79161234567');
+    await user.type(getPasswordInput(), 'secret123');
 
-    const btn = screen.getByText('Войти').closest('button')!;
-    expect(btn).toBeDisabled();
+    fireEvent.submit(getSubmitBtn().closest('form')!);
+
+    await waitFor(() => {
+      expect(mockSignIn).toHaveBeenCalledWith('+79161234567', 'secret123', 'phone');
+    });
+  });
+
+  it('calls signUp with phone on phone register submit', async () => {
+    mockSignUp.mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(<AuthScreen />);
+
+    await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
+    await user.type(getNameInput(), 'Катя');
+    await user.type(getPhoneInput(), '+79161234567');
+    await user.type(getPasswordInput(), 'secret123');
+
+    fireEvent.submit(getSubmitBtn().closest('form')!);
+
+    await waitFor(() => {
+      expect(mockSignUp).toHaveBeenCalledWith('Катя', '+79161234567', 'secret123', 'phone');
+    });
   });
 
   it('shows authError message', () => {
-    mockUseAuth.mockReturnValue({ ...defaultAuthContext, authError: 'Неверный email или пароль.' });
+    mockUseAuth.mockReturnValue({ ...defaultAuthContext, authError: 'Неверный логин или пароль.' });
     render(<AuthScreen />);
-    expect(screen.getByText('Неверный email или пароль.')).toBeInTheDocument();
+    expect(screen.getByText('Неверный логин или пароль.')).toBeInTheDocument();
   });
 
-  it('shows loading spinner when authLoading=true', async () => {
+  it('submit button is disabled when authLoading=true', () => {
     mockUseAuth.mockReturnValue({ ...defaultAuthContext, authLoading: true });
-    const user = userEvent.setup();
     render(<AuthScreen />);
-
-    await user.click(screen.getByText('Email'));
-
-    // Button should show spinner (Loader2) — no text
-    expect(screen.queryByText('Войти')).not.toBeInTheDocument();
+    expect(getSubmitBtn()).toBeDisabled();
   });
 
-  it('calls requestOtp on phone form submit', async () => {
-    mockRequestOtp.mockResolvedValue(undefined);
-    const user = userEvent.setup();
-    render(<AuthScreen />);
-
-    await user.type(screen.getByLabelText(/имя/i), 'Катя');
-    await user.type(screen.getByLabelText(/телефон/i), '+79161234567');
-
-    const btn = screen.getByText('Получить код').closest('button')!;
-    expect(btn).not.toBeDisabled();
-
-    fireEvent.submit(btn.closest('form')!);
-
-    await waitFor(() => {
-      expect(mockRequestOtp).toHaveBeenCalledWith('Катя', '+79161234567');
-    });
-  });
-
-  it('shows OTP step when authStatus is otp_sent', () => {
+  it('shows OTP step when authStatus is phone_otp_sent', () => {
     mockUseAuth.mockReturnValue({
       ...defaultAuthContext,
-      authStatus: 'otp_sent',
+      authStatus: 'phone_otp_sent',
       pendingPhone: '+79161234567',
     });
     render(<AuthScreen />);
@@ -161,26 +182,35 @@ describe('AuthScreen', () => {
   it('OTP step has 6 individual inputs', () => {
     mockUseAuth.mockReturnValue({
       ...defaultAuthContext,
-      authStatus: 'otp_sent',
+      authStatus: 'phone_otp_sent',
       pendingPhone: '+7999',
     });
     render(<AuthScreen />);
 
     const inputs = screen.getAllByRole('textbox');
-    // 6 OTP digits
     expect(inputs.length).toBe(6);
   });
 
-  it('handleBack calls cancelOtp', async () => {
+  it('handleBack calls cancelPhoneVerification', async () => {
     mockUseAuth.mockReturnValue({
       ...defaultAuthContext,
-      authStatus: 'otp_sent',
+      authStatus: 'phone_otp_sent',
       pendingPhone: '+7999',
     });
     const user = userEvent.setup();
     render(<AuthScreen />);
 
     await user.click(screen.getByText('Изменить номер'));
-    expect(mockCancelOtp).toHaveBeenCalled();
+    expect(mockCancelPhoneVerification).toHaveBeenCalled();
+  });
+
+  it('shows email_sent step when authStatus is email_unverified', () => {
+    mockUseAuth.mockReturnValue({
+      ...defaultAuthContext,
+      authStatus: 'email_unverified',
+    });
+    render(<AuthScreen />);
+
+    expect(screen.getByText('Проверьте почту')).toBeInTheDocument();
   });
 });

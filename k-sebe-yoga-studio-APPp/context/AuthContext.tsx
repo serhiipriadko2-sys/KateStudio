@@ -1,20 +1,22 @@
 import { isSupabaseConfigured, supabase } from '@ksebe/shared';
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useRef, useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
 import { retentionService } from '../services/retentionService';
 import { UserProfile } from '../types';
 
+export type AuthMethod = 'email' | 'phone';
+
 interface AuthContextType {
   user: UserProfile | null;
-  authStatus: 'anonymous' | 'otp_sent' | 'authenticated';
-  requestOtp: (name: string, phone: string) => Promise<void>;
-  verifyOtp: (code: string) => Promise<void>;
-  cancelOtp: () => void;
-  signInWithEmail: (email: string, password: string) => Promise<void>;
+  authStatus: 'anonymous' | 'phone_otp_sent' | 'email_unverified' | 'authenticated';
+  signUp: (name: string, identifier: string, password: string, method: AuthMethod) => Promise<void>;
+  signIn: (identifier: string, password: string, method: AuthMethod) => Promise<void>;
+  verifyPhoneRegistration: (code: string) => Promise<void>;
+  cancelPhoneVerification: () => void;
   logout: () => void;
   isAuthenticated: boolean;
   isInitializing: boolean;
-  setUser: (user: UserProfile) => void; // Exposed to allow manual updates without API calls
+  setUser: (user: UserProfile) => void;
   authError: string | null;
   authLoading: boolean;
   pendingPhone: string;
@@ -30,10 +32,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authError, setAuthError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [pendingPhone, setPendingPhone] = useState('');
-  const [pendingName, setPendingName] = useState('');
+
+  // Refs to avoid stale closure in onAuthStateChange
+  const pendingPhoneRef = useRef('');
+  const pendingNameRef = useRef('');
 
   useEffect(() => {
     let isMounted = true;
+
     const loadUser = async () => {
       const storedUser = await dataService.getUser();
       if (storedUser && isMounted) {
@@ -50,74 +56,73 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     }
 
-    // Keep auth status in sync with Supabase session.
     supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return;
       setAuthStatus(data.session ? 'authenticated' : 'anonymous');
       setIsInitializing(false);
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
+
       if (session?.access_token) {
         setAuthStatus('authenticated');
-        const cached = await dataService.getUser();
         const sessionUserId = session.user?.id;
-        const phone = session.user?.phone || cached?.phone || pendingPhone;
-        const name = cached?.name || pendingName || 'Пользователь';
-
         if (sessionUserId) {
-          const identifier = phone || session.user?.email || '';
+          const identifier = session.user?.phone || session.user?.email || '';
+          const name =
+            (session.user?.user_metadata as Record<string, string> | undefined)?.name ||
+            pendingNameRef.current ||
+            'Пользователь';
           const profile = await dataService.registerUser(name, identifier, sessionUserId);
-          setUser(profile);
-        } else if (cached) {
-          setUser(cached);
+          if (isMounted) setUser(profile);
+          retentionService.bootstrapForUser(sessionUserId).catch(() => {});
         }
-
-        // Retention bootstrap: migrate local onboarding/streak → Supabase on first login.
-        if (session.user?.id) {
-          retentionService.bootstrapForUser(session.user.id).catch(() => {});
-        }
-      } else {
+      } else if (event === 'SIGNED_OUT') {
         setAuthStatus('anonymous');
       }
+      // Other events without session (SIGNED_UP pending confirmation) — don't touch authStatus
     });
 
     return () => {
       isMounted = false;
       sub.subscription.unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const requestOtp = async (name: string, phone: string) => {
+  const signUp = async (name: string, identifier: string, password: string, method: AuthMethod) => {
     setAuthError(null);
     setAuthLoading(true);
     try {
-      if (!isSupabaseConfigured) {
-        const message = 'Конфигурация не настроена.';
-        setAuthError(message);
-        setAuthStatus('anonymous');
-        throw new Error('CONFIG_MISSING');
+      if (!isSupabaseConfigured) throw new Error('CONFIG_MISSING');
+
+      const trimmedName = name.trim() || 'Пользователь';
+      pendingNameRef.current = trimmedName;
+
+      if (method === 'email') {
+        const { error } = await supabase.auth.signUp({
+          email: identifier.trim(),
+          password,
+          options: { data: { name: trimmedName } },
+        });
+        if (error) throw error;
+        setAuthStatus('email_unverified');
+      } else {
+        const normalizedPhone = identifier.startsWith('+') ? identifier : `+${identifier}`;
+        pendingPhoneRef.current = normalizedPhone;
+        setPendingPhone(normalizedPhone);
+
+        const { error } = await supabase.auth.signUp({
+          phone: normalizedPhone,
+          password,
+          options: { data: { name: trimmedName } },
+        });
+        if (error) throw error;
+        setAuthStatus('phone_otp_sent');
       }
-      const normalizedPhone = phone.startsWith('+') ? phone : `+${phone}`;
-      setPendingPhone(normalizedPhone);
-      setPendingName(name.trim() || 'Пользователь');
-
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: normalizedPhone,
-        options: {
-          // Avoid auto-redirects for OTP.
-          shouldCreateUser: true,
-        },
-      });
-      if (error) throw error;
-
-      setAuthStatus('otp_sent');
     } catch (e) {
-      console.error('OTP request failed', e);
-      if (!isSupabaseConfigured) {
-        setAuthError('Конфигурация не настроена.');
+      if (method === 'email') {
+        setAuthError('Не удалось зарегистрироваться. Проверьте email и попробуйте снова.');
       } else {
         setAuthError('Не удалось отправить код. Проверьте номер и попробуйте снова.');
       }
@@ -128,72 +133,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const verifyOtp = async (code: string) => {
+  const signIn = async (identifier: string, password: string, method: AuthMethod) => {
     setAuthError(null);
     setAuthLoading(true);
     try {
-      if (!isSupabaseConfigured) {
-        const message = 'Конфигурация не настроена.';
-        setAuthError(message);
-        setAuthStatus('anonymous');
-        throw new Error('CONFIG_MISSING');
-      }
-      if (!pendingPhone) {
+      if (!isSupabaseConfigured) throw new Error('CONFIG_MISSING');
+
+      const credentials =
+        method === 'email'
+          ? { email: identifier.trim(), password }
+          : { phone: identifier.startsWith('+') ? identifier : `+${identifier}`, password };
+
+      const { error } = await supabase.auth.signInWithPassword(credentials);
+      if (error) throw error;
+      // onAuthStateChange handles setUser and setAuthStatus
+    } catch (e) {
+      setAuthError('Неверный логин или пароль. Попробуйте ещё раз.');
+      throw e;
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const verifyPhoneRegistration = async (code: string) => {
+    setAuthError(null);
+    setAuthLoading(true);
+    try {
+      if (!isSupabaseConfigured) throw new Error('CONFIG_MISSING');
+
+      const phone = pendingPhoneRef.current;
+      if (!phone) {
         setAuthError('Сначала запросите код.');
         setAuthStatus('anonymous');
         return;
       }
+
       const token = code.replace(/\s+/g, '');
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: pendingPhone,
-        token,
-        type: 'sms',
-      });
+      const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
       if (error) throw error;
 
-      // Cache / sync profile for UI
       const session = await supabase.auth.getSession();
       const supabaseUserId = session.data.session?.user?.id || data.user?.id;
-      if (!supabaseUserId) {
-        throw new Error('AUTH_REQUIRED');
-      }
+      if (!supabaseUserId) throw new Error('AUTH_REQUIRED');
+
       const profile = await dataService.registerUser(
-        pendingName || 'Пользователь',
-        pendingPhone,
+        pendingNameRef.current || 'Пользователь',
+        phone,
         supabaseUserId
       );
       setUser(profile);
       setAuthStatus('authenticated');
     } catch (e) {
-      console.error('OTP verify failed', e);
       setAuthError('Неверный код или срок действия истёк. Попробуйте ещё раз.');
-      setAuthStatus('otp_sent');
+      setAuthStatus('phone_otp_sent');
       throw e;
     } finally {
       setAuthLoading(false);
     }
   };
 
-  const signInWithEmail = async (email: string, password: string) => {
-    setAuthError(null);
-    setAuthLoading(true);
-    try {
-      if (!isSupabaseConfigured) throw new Error('CONFIG_MISSING');
-      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (error) throw error;
-      // onAuthStateChange handles setUser
-    } catch (e) {
-      setAuthError('Неверный email или пароль. Попробуйте ещё раз.');
-      throw e;
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const cancelOtp = () => {
+  const cancelPhoneVerification = () => {
     setAuthError(null);
     setPendingPhone('');
-    setPendingName('');
+    pendingPhoneRef.current = '';
     setAuthStatus('anonymous');
   };
 
@@ -202,7 +204,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dataService.logout();
     setUser(null);
     setPendingPhone('');
-    setPendingName('');
+    pendingPhoneRef.current = '';
+    pendingNameRef.current = '';
     setAuthStatus('anonymous');
   };
 
@@ -211,10 +214,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         authStatus,
-        requestOtp,
-        verifyOtp,
-        cancelOtp,
-        signInWithEmail,
+        signUp,
+        signIn,
+        verifyPhoneRegistration,
+        cancelPhoneVerification,
         logout,
         isAuthenticated: authStatus === 'authenticated' && !!user,
         isInitializing,

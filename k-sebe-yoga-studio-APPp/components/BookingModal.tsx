@@ -35,7 +35,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   useEffect(() => {
     if (user) {
       setName(user.name);
-      setPhone(user.phone);
+      setPhone(user.phone ?? '');
     }
   }, [user, isOpen]);
 

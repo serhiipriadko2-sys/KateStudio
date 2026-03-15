@@ -1,6 +1,7 @@
 import { isSupabaseConfigured, supabase, useIsAdmin } from '@ksebe/shared';
 import {
   AlertCircle,
+  BarChart2,
   BookOpen,
   CalendarDays,
   CheckCircle,
@@ -11,9 +12,12 @@ import {
   LayoutDashboard,
   Loader2,
   Mail,
+  MapPin,
   MessageSquare,
   Palette,
   Settings,
+  Users,
+  Video,
   X,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -21,16 +25,20 @@ import { useAuth } from '../context/AuthContext';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { AdminQueryProvider } from './admin/AdminQueryProvider';
 import {
+  AnalyticsTab,
+  ArticlesTab,
   BookingsTab,
   ContactsTab,
-  ContentTab,
   DashboardTab,
   FAQTab,
   ImagesTab,
   PricingTab,
+  RetreatsTab,
   ReviewsTab,
   ScheduleTab,
   SettingsTab,
+  UsersTab,
+  VideoTab,
 } from './admin/tabs';
 import { AdminTab } from './admin/types';
 
@@ -167,6 +175,17 @@ interface AdminPanelProps {
   onClose: () => void;
 }
 
+interface TabItem {
+  id: AdminTab;
+  icon: React.ReactNode;
+  label: string;
+}
+
+interface TabGroup {
+  label: string;
+  tabs: TabItem[];
+}
+
 /* ═══════════════════════════════════════════════════════════
    Toast hook
    ═══════════════════════════════════════════════════════════ */
@@ -206,39 +225,76 @@ const NoSupabase = () => (
 );
 
 /* ═══════════════════════════════════════════════════════════
+   Tab Groups
+   ═══════════════════════════════════════════════════════════ */
+
+const TAB_GROUPS: TabGroup[] = [
+  {
+    label: 'Операции',
+    tabs: [
+      { id: 'schedule', icon: <CalendarDays className="w-4 h-4" />, label: 'Расписание' },
+      { id: 'bookings', icon: <ClipboardList className="w-4 h-4" />, label: 'Записи' },
+      { id: 'contacts', icon: <MessageSquare className="w-4 h-4" />, label: 'Обращения' },
+    ],
+  },
+  {
+    label: 'Контент',
+    tabs: [
+      { id: 'articles', icon: <BookOpen className="w-4 h-4" />, label: 'Блог' },
+      { id: 'videos', icon: <Video className="w-4 h-4" />, label: 'Видео' },
+      { id: 'images', icon: <ImageIcon className="w-4 h-4" />, label: 'Медиа' },
+      { id: 'faq', icon: <HelpCircle className="w-4 h-4" />, label: 'FAQ' },
+      { id: 'retreats', icon: <MapPin className="w-4 h-4" />, label: 'Ретриты' },
+      { id: 'reviews', icon: <MessageSquare className="w-4 h-4" />, label: 'Отзывы' },
+    ],
+  },
+  {
+    label: 'Аудитория',
+    tabs: [
+      { id: 'users', icon: <Users className="w-4 h-4" />, label: 'Пользователи' },
+      { id: 'analytics', icon: <BarChart2 className="w-4 h-4" />, label: 'Аналитика' },
+    ],
+  },
+  {
+    label: 'Система',
+    tabs: [
+      { id: 'dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Обзор' },
+      { id: 'pricing', icon: <ClipboardList className="w-4 h-4" />, label: 'Тарифы' },
+      { id: 'settings', icon: <Palette className="w-4 h-4" />, label: 'Настройки' },
+    ],
+  },
+];
+
+/* ═══════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════ */
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<AdminTab | 'dashboard'>('dashboard');
+  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const { notification, toast } = useToast();
   const { signOut } = useAuth();
 
-  // Use shared admin hook for robust checking
   const { isAdmin, isLoading: isLoadingAdmin, user } = useIsAdmin();
 
   useScrollLock(isOpen);
 
   if (!isOpen) return null;
 
-  // 1. Supabase Config Check
   if (!isSupabaseConfigured) {
     return <NoSupabase />;
   }
 
-  // 2. Auth Gate
   if (isLoadingAdmin) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-100 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
         <Loader2 className="w-10 h-10 animate-spin text-brand-green" />
       </div>
     );
   }
 
-  // If not logged in, show login screen
   if (!user) {
     return (
-      <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
+      <div className="fixed inset-0 z-100 flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-stone-100 relative overflow-hidden">
           <button
             type="button"
@@ -254,10 +310,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     );
   }
 
-  // If logged in but not admin
   if (!isAdmin) {
     return (
-      <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
+      <div className="fixed inset-0 z-100 flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-stone-100 p-8 text-center relative">
           <button
             type="button"
@@ -286,22 +341,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     );
   }
 
-  const tabs: { id: AdminTab | 'dashboard'; icon: React.ReactNode; label: string }[] = [
-    { id: 'dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Обзор' },
-    { id: 'schedule', icon: <CalendarDays className="w-4 h-4" />, label: 'Расписание' },
-    { id: 'bookings', icon: <ClipboardList className="w-4 h-4" />, label: 'Записи' },
-    { id: 'contacts', icon: <MessageSquare className="w-4 h-4" />, label: 'Обращения' },
-    { id: 'reviews', icon: <MessageSquare className="w-4 h-4" />, label: 'Отзывы' },
-    { id: 'pricing', icon: <ClipboardList className="w-4 h-4" />, label: 'Тарифы' },
-    { id: 'content', icon: <BookOpen className="w-4 h-4" />, label: 'Контент' },
-    { id: 'images', icon: <ImageIcon className="w-4 h-4" />, label: 'Медиа' },
-    { id: 'faq', icon: <HelpCircle className="w-4 h-4" />, label: 'FAQ' },
-    { id: 'settings', icon: <Palette className="w-4 h-4" />, label: 'Настройки' },
-  ];
-
   return (
     <AdminQueryProvider>
-      <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in">
+      <div className="fixed inset-0 z-100 flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in">
         <div className="w-full max-w-3xl bg-white shadow-2xl h-full ml-auto flex flex-col animate-in slide-in-from-right duration-300 relative">
           {/* Header */}
           <div className="p-5 border-b border-stone-100 flex items-center justify-between bg-stone-50 shrink-0">
@@ -315,6 +357,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
               </div>
             </div>
             <button
+              type="button"
               onClick={onClose}
               aria-label="Закрыть"
               className="p-2 hover:bg-stone-200 rounded-full transition-colors"
@@ -323,21 +366,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          {/* Tabs */}
-          <div className="flex border-b border-stone-100 overflow-x-auto shrink-0">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-3 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap px-2 min-w-0 ${
-                  activeTab === tab.id
-                    ? 'bg-white text-brand-green border-b-2 border-brand-green'
-                    : 'bg-stone-50 text-stone-400 hover:bg-stone-100 hover:text-stone-600'
-                }`}
-              >
-                {tab.icon}
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
+          {/* Grouped Navigation */}
+          <div className="flex flex-col border-b border-stone-100 shrink-0 bg-stone-50">
+            {TAB_GROUPS.map((group) => (
+              <div key={group.label} className="flex items-center gap-0 overflow-x-auto">
+                <span className="text-[10px] font-semibold text-stone-300 uppercase tracking-widest px-3 whitespace-nowrap shrink-0 hidden sm:block">
+                  {group.label}
+                </span>
+                <div className="flex">
+                  {group.tabs.map((tab) => (
+                    <button
+                      type="button"
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`py-2.5 px-3 text-xs font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap ${
+                        activeTab === tab.id
+                          ? 'bg-white text-brand-green border-b-2 border-brand-green'
+                          : 'text-stone-400 hover:bg-stone-100 hover:text-stone-600'
+                      }`}
+                    >
+                      {tab.icon}
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="flex-1 border-b border-stone-100" />
+              </div>
             ))}
           </div>
 
@@ -349,9 +403,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             {activeTab === 'contacts' && <ContactsTab toast={toast} />}
             {activeTab === 'reviews' && <ReviewsTab toast={toast} />}
             {activeTab === 'pricing' && <PricingTab toast={toast} />}
-            {activeTab === 'content' && <ContentTab toast={toast} />}
+            {activeTab === 'articles' && <ArticlesTab toast={toast} />}
+            {activeTab === 'videos' && <VideoTab toast={toast} />}
             {activeTab === 'images' && <ImagesTab toast={toast} />}
             {activeTab === 'faq' && <FAQTab toast={toast} />}
+            {activeTab === 'retreats' && <RetreatsTab toast={toast} />}
+            {activeTab === 'users' && <UsersTab toast={toast} />}
+            {activeTab === 'analytics' && <AnalyticsTab />}
             {activeTab === 'settings' && <SettingsTab toast={toast} />}
           </div>
 

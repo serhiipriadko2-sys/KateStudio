@@ -1,13 +1,18 @@
 export type AdminTab =
+  | 'dashboard'
   | 'schedule'
   | 'bookings'
   | 'contacts'
-  | 'content'
-  | 'images'
-  | 'settings'
   | 'reviews'
+  | 'articles'
+  | 'videos'
+  | 'images'
+  | 'faq'
+  | 'retreats'
+  | 'users'
+  | 'analytics'
   | 'pricing'
-  | 'faq';
+  | 'settings';
 
 export interface ClassRow {
   id: string;

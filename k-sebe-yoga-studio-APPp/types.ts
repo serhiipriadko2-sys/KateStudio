@@ -31,7 +31,7 @@ export interface GalleryImage {
 export interface UserProfile {
   id: string;
   name: string;
-  phone: string;
+  phone: string | null;
   city: string;
   avatar?: string;
   isRegistered: boolean;
