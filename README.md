@@ -164,7 +164,7 @@ npm run cap:open:ios           # Open Xcode
 | Backend | Supabase Edge Functions deployed via Supabase CLI (`supabase functions deploy`) |
 | Mobile | `npm run build:mobile` → Capacitor sync → Android Studio / Xcode (local only) |
 
-No deploy happens without the CI gate passing. WEB and APP deploy in parallel from the same `main` push.
+Deploy workflows are triggered by pushes to `main`. CI gate runs separately, and branch protection should require CI checks before merge.
 
 ## 📄 License
 
