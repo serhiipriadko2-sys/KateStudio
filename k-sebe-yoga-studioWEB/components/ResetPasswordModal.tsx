@@ -15,23 +15,29 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ onClose 
   );
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Wait for Supabase to process the recovery hash and fire PASSWORD_RECOVERY event.
-  // Only then is the session valid and updateUser() will succeed.
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setStatus('ready');
-      }
-    });
+    // Parse tokens directly from the URL hash — no dependency on event timing.
+    // Supabase sends: #access_token=...&refresh_token=...&type=recovery
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
 
-    // Fallback: if session already exists (e.g. user refreshed the page)
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setStatus('ready');
-    });
+    if (!accessToken || !refreshToken) {
+      setErrorMsg('Ссылка для сброса пароля недействительна или устарела.');
+      setStatus('error');
+      return;
+    }
 
-    return () => subscription.unsubscribe();
+    supabase.auth
+      .setSession({ access_token: accessToken, refresh_token: refreshToken })
+      .then(({ error }) => {
+        if (error) {
+          setErrorMsg('Ссылка устарела. Запросите новую через Supabase Dashboard.');
+          setStatus('error');
+        } else {
+          setStatus('ready');
+        }
+      });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,39 +86,43 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ onClose 
 
         {(status === 'ready' || status === 'loading' || status === 'error') && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="relative">
-              <input
-                type={showPw ? 'text' : 'password'}
-                placeholder="Новый пароль"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-green pr-10"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPw((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400"
-              >
-                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            <input
-              type={showPw ? 'text' : 'password'}
-              placeholder="Повторите пароль"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-green"
-              required
-            />
             {errorMsg && <p className="text-rose-500 text-sm">{errorMsg}</p>}
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className="bg-brand-green text-white rounded-xl px-6 py-3 text-sm font-medium disabled:opacity-60"
-            >
-              {status === 'loading' ? 'Сохраняем…' : 'Сохранить пароль'}
-            </button>
+            {status !== 'error' && (
+              <>
+                <div className="relative">
+                  <input
+                    type={showPw ? 'text' : 'password'}
+                    placeholder="Новый пароль"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-green pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400"
+                  >
+                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <input
+                  type={showPw ? 'text' : 'password'}
+                  placeholder="Повторите пароль"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-green"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="bg-brand-green text-white rounded-xl px-6 py-3 text-sm font-medium disabled:opacity-60"
+                >
+                  {status === 'loading' ? 'Сохраняем…' : 'Сохранить пароль'}
+                </button>
+              </>
+            )}
             <button
               type="button"
               onClick={onClose}
