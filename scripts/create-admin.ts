@@ -1,82 +1,129 @@
-/* eslint-disable no-console */
-import path from 'path';
-import { createInterface } from 'readline';
-import { fileURLToPath } from 'url';
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+/**
+ * Script to create admin user in Supabase
+ * Usage: npx tsx scripts/create-admin.ts <email> <password> <name>
+ */
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import * as path from 'path';
+import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+
+// Load .env from root
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-const rl = createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-const question = (q: string) => new Promise<string>((resolve) => rl.question(q, resolve));
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in .env');
+  process.exit(1);
+}
 
-async function main() {
-  console.log('\n--- Create Admin User ---');
-  console.log('This script will create a new Supabase user and grant them Admin access.');
-  console.log('You need your SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.\n');
+console.log('🔧 Supabase URL:', supabaseUrl);
 
-  const url = process.env.VITE_SUPABASE_URL || (await question('Supabase URL: '));
-  const serviceKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY || (await question('Supabase Service Role Key: '));
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  if (!url || !serviceKey) {
-    console.error('Missing URL or Service Key.');
+async function createAdmin(email: string, password: string, name: string) {
+  console.log(`\n📝 Creating admin: ${email} (${name})`);
+
+  // 1. Sign up user
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  if (authError) {
+    if (authError.message.includes('already registered')) {
+      console.log('⚠️  User already exists. Fetching user ID...');
+      // User exists, try to sign in to get ID
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        console.error('❌ Sign in error:', signInError.message);
+        process.exit(1);
+      }
+
+      const userId = signInData.user?.id;
+      if (!userId) {
+        console.error('❌ No user ID after sign in');
+        process.exit(1);
+      }
+
+      console.log('✅ User ID:', userId);
+      await ensureAdmin(userId);
+      return;
+    }
+
+    console.error('❌ Sign up error:', authError.message);
     process.exit(1);
   }
 
-  const supabase = createClient(url, serviceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+  if (!authData.user) {
+    console.error('❌ No user returned from sign up');
+    process.exit(1);
+  }
+
+  console.log('✅ User created:', authData.user.id);
+
+  // 2. Create profile
+  const { error: profileError } = await supabase.from('profiles').insert({
+    user_id: authData.user.id,
+    name: name || email.split('@')[0],
   });
 
-  const email = await question('Admin Email: ');
-  const password = await question('Admin Password: ');
-
-  try {
-    console.log(`\nCreating user ${email}...`);
-    // 1. Create User
-    const { data: userData, error: userError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-    });
-
-    if (userError) {
-      console.error('Error creating user:', userError.message);
-      process.exit(1);
-    }
-
-    const userId = userData.user.id;
-    console.log(`User created (ID: ${userId}). Granting admin access...`);
-
-    // 2. Insert into public.admins
-    const { error: dbError } = await supabase.from('admins').insert({ user_id: userId });
-
-    if (dbError) {
-      // If duplicate, it's fine
-      if (dbError.code === '23505') {
-        console.log('User is already an admin.');
-      } else {
-        console.error('Error adding to admins table:', dbError.message);
-        process.exit(1);
-      }
-    } else {
-      console.log('Successfully added to admins table.');
-    }
-
-    console.log('\n✅ Success! You can now log in to the Admin Panel.');
-  } catch (err) {
-    console.error('Unexpected error:', err);
-  } finally {
-    rl.close();
+  if (profileError) {
+    console.error('⚠️  Profile error:', profileError.message);
+  } else {
+    console.log('✅ Profile created');
   }
+
+  // 3. Add to admins table
+  await ensureAdmin(authData.user.id);
+
+  console.log('\n✅ Admin created successfully!');
+  console.log(`\n📌 Login credentials:`);
+  console.log(`   Email: ${email}`);
+  console.log(`   Password: ${password}`);
+  console.log(`   Admin Panel: http://localhost:5173/admin`);
 }
 
-main();
+async function ensureAdmin(userId: string) {
+  // Check if already admin
+  const { data: existing } = await supabase
+    .from('admins')
+    .select('user_id')
+    .eq('user_id', userId)
+    .single();
+
+  if (existing) {
+    console.log('✅ User is already admin');
+    return;
+  }
+
+  // Add to admins
+  const { error } = await supabase.from('admins').insert({ user_id: userId });
+
+  if (error) {
+    console.error('❌ Failed to add to admins:', error.message);
+    process.exit(1);
+  }
+
+  console.log('✅ Added to admins table');
+}
+
+// Main
+const [, , email, password, name] = process.argv;
+
+if (!email || !password) {
+  console.log('📖 Usage: npx tsx scripts/create-admin.ts <email> <password> [name]');
+  console.log('\nExample:');
+  console.log('  npx tsx scripts/create-admin.ts admin@ksebe.ru SecurePass123 "Катя Габран"');
+  process.exit(1);
+}
+
+createAdmin(email, password, name || email.split('@')[0]).catch((err) => {
+  console.error('❌ Unexpected error:', err);
+  process.exit(1);
+});

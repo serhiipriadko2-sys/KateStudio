@@ -29,7 +29,12 @@
     "test:web": "npm run test --workspace=k-sebe-yoga-studioWEB --if-present",
     "test:app": "npm run test --workspace=k-sebe-yoga-studio-APPp --if-present",
     "optimize:images": "node scripts/optimize-images.mjs",
-    "optimize:images:force": "node scripts/optimize-images.mjs --force"
+    "optimize:images:force": "node scripts/optimize-images.mjs --force",
+    "create-admin": "tsx scripts/create-admin.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "tsx": "^4.19.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",
