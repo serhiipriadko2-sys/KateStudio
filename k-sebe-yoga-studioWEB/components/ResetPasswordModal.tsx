@@ -1,12 +1,14 @@
 import { supabase } from '@ksebe/shared';
 import { Eye, EyeOff } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface ResetPasswordModalProps {
   onClose: () => void;
 }
 
 export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ onClose }) => {
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -75,12 +77,16 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ onClose 
         {status === 'success' && (
           <div className="text-center">
             <p className="text-brand-green font-medium mb-4">Пароль успешно изменён!</p>
-            <a
-              href="/admin"
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                navigate('/admin');
+              }}
               className="inline-block bg-brand-green text-white rounded-xl px-6 py-3 text-sm font-medium"
             >
               Войти в AdminPanel
-            </a>
+            </button>
           </div>
         )}
 

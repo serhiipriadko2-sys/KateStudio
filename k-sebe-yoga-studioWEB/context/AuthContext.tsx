@@ -178,12 +178,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      if (error.message.includes('Invalid login')) {
-        setAuthError('Неверный email или пароль.');
-      } else {
-        setAuthError('Ошибка входа. Попробуйте позже.');
-      }
-      throw error;
+      const translatedMsg = error.message.includes('Invalid login')
+        ? 'Неверный email или пароль.'
+        : 'Ошибка входа. Попробуйте позже.';
+      setAuthError(translatedMsg);
+      throw new Error(translatedMsg);
     }
   };
 

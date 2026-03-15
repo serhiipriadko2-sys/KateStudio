@@ -212,6 +212,7 @@ const NoSupabase = () => (
 export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<AdminTab | 'dashboard'>('dashboard');
   const { notification, toast } = useToast();
+  const { signOut } = useAuth();
 
   // Use shared admin hook for robust checking
   const { isAdmin, isLoading: isLoadingAdmin, user } = useIsAdmin();
@@ -240,6 +241,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-stone-100 relative overflow-hidden">
           <button
+            type="button"
+            aria-label="Закрыть"
             onClick={onClose}
             className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
           >
@@ -257,6 +260,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       <div className="fixed inset-0 z-[100] flex bg-stone-900/50 backdrop-blur-sm animate-in fade-in items-center justify-center p-4">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-stone-100 p-8 text-center relative">
           <button
+            type="button"
+            aria-label="Закрыть"
             onClick={onClose}
             className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
           >
@@ -270,10 +275,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             Ваш аккаунт ({user.email}) не обладает правами администратора.
           </p>
           <button
-            onClick={async () => {
-              await supabase?.auth.signOut();
-              // State update will trigger re-render showing login screen
-            }}
+            type="button"
+            onClick={signOut}
             className="px-6 py-2 border border-stone-200 rounded-xl text-stone-600 hover:bg-stone-50 transition-colors"
           >
             Выйти из аккаунта
