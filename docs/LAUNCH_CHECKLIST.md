@@ -1,79 +1,132 @@
 # Launch Checklist & Gap Analysis
 
-**Status:** In Progress | **Updated:** 27 февраля 2026
+> **Обновлено:** 15 марта 2026 | Верифицировано кодом и `npm run test:run`.
 
-## 1. Schema Gap (Tables used in code vs. Migrations)
+---
 
-The following tables are referenced in the codebase but are missing proper
-`CREATE TABLE` statements in the `supabase/migrations/` folder. The current
-migrations only `ALTER` some of them or assume they exist.
+## 1. Схема БД (таблицы в коде vs миграции)
 
-| Table                  | Status           | Code Usage References                                                                                    | Migration Status                                                |
-| :--------------------- | :--------------- | :------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------- |
-| **`contacts`**         | 🔴 **Missing**   | `k-sebe-yoga-studioWEB/components/Contact.tsx`<br>`k-sebe-yoga-studio-APPp/components/Contact.tsx`       | No migration found.                                             |
-| **`classes`**          | 🔴 **Missing**   | `k-sebe-yoga-studioWEB/components/Schedule.tsx`                                                          | No migration found.                                             |
-| **`bookings`**         | 🟠 **Partial**   | `k-sebe-yoga-studioWEB/components/BookingModal.tsx`<br>`k-sebe-yoga-studio-APPp/services/dataService.ts` | `20251227160000...sql` attempts to `ALTER` it, but no `CREATE`. |
-| **`profiles`**         | 🟠 **Partial**   | `k-sebe-yoga-studio-APPp/services/dataService.ts`                                                        | `20251227160000...sql` attempts to `ALTER` it, but no `CREATE`. |
-| **`booking_requests`** | ⚪️ **Suggested** | Not yet used, but recommended for guest booking flow.                                                    | N/A                                                             |
+| Таблица | Статус | Примечание |
+| --- | --- | --- |
+| `profiles` | ✅ | Миграция + RLS политики исправлены (20260309000002) |
+| `bookings` | 🟠 Partial | `ALTER` без `CREATE`, существует в Supabase |
+| `subscriptions` | ✅ | RLS обновлён (admin_subscriptions — 20260315000001) |
+| `analytics_events` | ✅ | RLS исправлен (admins.user_id — 20260309000001) |
+| `push_tokens` | ✅ | Миграция 20260309000000 |
+| `faq_items` | ✅ | Миграция 20260312000001 |
+| `site_images` | ✅ | Миграция 20260312000002 |
+| `retreats` | ✅ | Миграция 20260315000000 |
+| `admins` | ✅ | Таблица существует, `is_admin` RPC (20260315000003) |
+| `contacts` | 🔴 Missing | Не найдена CREATE миграция |
+| `classes` | 🔴 Missing | Не найдена CREATE миграция |
 
-**Action Item:** Create a consolidated migration (e.g.,
-`20260101000000_schema_baseline.sql`) that safely creates these tables if they
-don't exist.
+**Действие:** создать консолидированную миграцию для `contacts` и `classes`.
 
-## 2. Security Blockers (P0)
+---
 
-All P0 security blockers are **resolved** as of February 2026. See
-[Security Report](./SECURITY_REPORT_2026_02_11.md) for details.
+## 2. Security (P0)
 
-| Component                            | Issue                                      | Status                                                                              |
-| :----------------------------------- | :----------------------------------------- | :---------------------------------------------------------------------------------- |
-| **Edge Function: `payment-webhook`** | Webhook secret was optional                | ✅ **Resolved** — HMAC verification, 401 if secret missing                          |
-| **Edge Function: `create-payment`**  | Anon fallback if serviceRoleKey missing    | ✅ **Resolved** — Fails hard without Service Role Key                               |
-| **All Edge Functions**               | CORS `*` allowed any origin                | ✅ **Resolved** — Restricted to `ksebe-studio.ru`, `app.ksebe-studio.ru`, localhost |
-| **RLS: `subscriptions`**             | Users could update own subscription status | ✅ **Resolved** — Update policy removed, Service Role only                          |
-| **Gemini API key in client**         | `VITE_GEMINI_API_KEY` fallback in browser  | ✅ **Resolved** — All AI calls via Edge Function proxy                              |
+Все критические блокеры **устранены** по состоянию на март 2026.
 
-**Security Score:** 85/100 (was 55)
+| Компонент | Проблема | Статус |
+| --- | --- | --- |
+| `payment-webhook` | Webhook secret был опциональным | ✅ HMAC verification |
+| `create-payment` | Anon fallback при отсутствии serviceRoleKey | ✅ Fails hard |
+| Все Edge Functions | CORS `*` | ✅ Ограничен доменами |
+| RLS `subscriptions` | Пользователь мог менять статус подписки | ✅ Service Role only |
+| Gemini API key | `VITE_GEMINI_API_KEY` fallback в браузере | ✅ Только через proxy |
+| `analytics_events` RLS | Неверная ссылка `admins.id` | ✅ Исправлено (20260309000001) |
+| `profiles` update policy | Ссылка на удалённую колонку `is_admin` | ✅ Исправлено (20260309000002) |
+| Zod validation | Отсутствовала в `gemini-proxy` | ✅ `ProxyRequestSchema` |
 
-## 3. Content & Assets (P1)
+**Security Score:** ~90/100
 
-| Asset Type             | Issue                            | Location                                                                                                                                                          | Status                     |
-| :--------------------- | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------- |
-| **Unsplash in APP**    | Hardcoded Unsplash URLs          | `APP/components/Blog.tsx`<br>`APP/components/Reviews.tsx`<br>`APP/components/VideoLibrary.tsx`<br>`APP/components/Dashboard.tsx`<br>`APP/components/Retreats.tsx` | 🔄 In Progress             |
-| **WEB Images**         | Were using Unsplash placeholders | `shared/constants/images.ts`                                                                                                                                      | ✅ Resolved — local assets |
-| **Placeholder Videos** | 4 placeholder video URLs in APP  | `APP/components/VideoLibrary.tsx`                                                                                                                                 | ⏳ Pending                 |
+---
 
-## 4. Deployment & Infrastructure
+## 3. Контент и ассеты
 
-| Item                     | Status | Notes                                                               |
-| :----------------------- | :----- | :------------------------------------------------------------------ |
-| `.env` files             | ⏳     | Create from `.env.example` for local dev; inject in CI              |
-| GitHub Secrets           | ⏳     | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, Firebase credentials |
-| Firebase deploy workflow | ⏳     | Needs env vars injected in `firebase-deploy.yml`                    |
-| Web 404 handling         | ✅     | `public/404.html` handles client-side routing for `ksebe-studio.ru` |
-| Capacitor mobile build   | ✅     | `npm run build:mobile` (Android), `npm run build:mobile:ios` (iOS)  |
-| CI (lint/typecheck/test) | ✅     | All green: 0 errors, 208/208 tests pass                             |
+| Ассет | Проблема | Статус |
+| --- | --- | --- |
+| WEB изображения | Были внешние URL | ✅ Локальные ассеты (`shared/constants/images.ts`) |
+| APP изображения | Unsplash placeholder URL | ✅ Убраны (grep не находит) |
+| Видео в APP VideoLibrary | 4 placeholder видео | ⏳ Нужны реальные URL в БД |
+| PWA иконки | Не было | ✅ 72–512px |
+| og-image.jpg | Не было | ✅ Добавлена |
+
+---
+
+## 4. Деплой и инфраструктура
+
+| Элемент | Статус | Примечание |
+| --- | --- | --- |
+| `.env` файлы (локально) | ⏳ | Создавать вручную из `.env.example` |
+| GitHub Secrets | ✅ | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `FIREBASE_SERVICE_ACCOUNT`, `CRON_SECRET`, `SUPABASE_URL` |
+| Firebase deploy workflow | ✅ | `firebase-deploy.yml` настроен |
+| Web 404 handling | ✅ | `public/404.html` для SPA routing |
+| Capacitor mobile build | ✅ | `npm run build:mobile` (Android) |
+| CI (lint/typecheck/test) | ✅ | 0 errors, 473/473 тестов |
+
+---
 
 ## 5. Native / Mobile
 
-| Item                     | Status | Notes                                                        |
-| :----------------------- | :----- | :----------------------------------------------------------- |
-| Capacitor scaffold       | ✅     | `native/`, `capacitor.config.ts`, all plugins wired up       |
-| Platform CSS classes     | ✅     | `is-ios`, `is-android`, `is-native` set via `initNative()`   |
-| Safe area insets         | ✅     | `.pt-safe`, `.pb-safe` etc. defined in `index.css`           |
-| StatusBar / SplashScreen | ✅     | Brand green StatusBar, fade-out SplashScreen                 |
-| Haptic feedback          | ✅     | App.tsx nav + BookingModal (submit, success, error)          |
-| Android back button      | ✅     | Minimize app if no history (default Capacitor behaviour)     |
-| Android Studio project   | ⏳     | `npm run cap:add:android` → generated locally, not committed |
-| Xcode project            | ⏳     | `npm run cap:add:ios` → requires macOS + CocoaPods           |
+| Элемент | Статус | Примечание |
+| --- | --- | --- |
+| Capacitor scaffold | ✅ | `native/`, `capacitor.config.ts`, все плагины |
+| Platform CSS классы | ✅ | `is-ios`, `is-android`, `is-native` |
+| Safe area insets | ✅ | `.pt-safe`, `.pb-safe` и т.д. |
+| StatusBar / SplashScreen | ✅ | Бренд-зелёный, fade-out |
+| Haptic feedback | ✅ | Tab nav + BookingModal |
+| Android back button | ✅ | Минимизация при пустой истории |
+| Android Studio project | ⏳ | Генерируется локально: `npm run cap:add:android` |
+| Xcode project | ⏳ | Требует macOS + CocoaPods |
 
-## 6. Next Steps (Priority Order)
+---
 
-1. **[P0]** Create `.env` files and configure GitHub Secrets
-2. **[P1]** Generate missing DB migrations (`contacts`, `classes`)
-3. **[P1]** Add Zod input validation to Edge Functions
-4. **[P1]** Complete YooKassa payment integration
-5. **[P1]** Replace APP placeholder images and videos
-6. **[P2]** Sentry logging and monitoring
-7. **[P2]** Push notifications (Firebase Cloud Messaging)
-8. **[P3]** Performance optimization (Lighthouse 90+)
+## 6. Edge Functions
+
+| Функция | Статус | Примечание |
+| --- | --- | --- |
+| `gemini-proxy` | ✅ | Zod, rate limiting, JWT auth |
+| `create-payment` | 🔄 | YooKassa частично (нет YOOKASSA_* ключей) |
+| `payment-webhook` | ✅ | HMAC verification |
+| `cancel-subscription` | ✅ | Реализована |
+| `cron-maintenance` | ✅ | Реализована |
+| `send-push` | ✅ | FCM готова |
+| `subscribe-newsletter` | ✅ | Mailchimp готова |
+
+---
+
+## 7. Тестирование
+
+| Метрика | Статус |
+| --- | --- |
+| Tests passing | ✅ 473 / 473 |
+| Test suites | ✅ 60 |
+| TypeScript errors | ✅ 0 |
+| Lint errors | ✅ 0 |
+| Lint warnings | ⚠️ 75 (не блокеры) |
+| Coverage | ~35% (цель 70%) |
+
+---
+
+## 8. Открытые блокеры (P0)
+
+| # | Блокер | Действие |
+| --- | --- | --- |
+| 1 | **GEMINI_API_KEY** не установлен | Семён → Supabase Vault → `supabase secrets set GEMINI_API_KEY=...` |
+| 2 | **YooKassa** не live | Получить `YOOKASSA_SHOP_ID` + `YOOKASSA_SECRET_KEY`, установить в Vault |
+| 3 | **Видео** в VideoLibrary — placeholder | Загрузить реальные видео, добавить URL в таблицу `videos` |
+| 4 | **`contacts`/`classes`** — нет CREATE миграции | Написать миграцию с `CREATE TABLE IF NOT EXISTS` |
+
+---
+
+## 9. Следующие шаги (приоритет)
+
+1. **[P0]** `GEMINI_API_KEY` → Supabase Vault
+2. **[P0]** YooKassa ключи → завершить `create-payment`
+3. **[P1]** Миграции `contacts` и `classes`
+4. **[P1]** Реальные видео в VideoLibrary
+5. **[P2]** Lint warnings 75 → 0 (console.log → console.error в Edge Functions)
+6. **[P2]** Test coverage 35% → 70%
+7. **[P3]** Performance (Lighthouse 90+)

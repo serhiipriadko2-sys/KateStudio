@@ -3,23 +3,26 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![TypeScript](https://img.shields.io/badge/typescript-100%25-blue.svg)
-![Tests](https://img.shields.io/badge/tests-208%20passing-brightgreen.svg)
-![Production Readiness](https://img.shields.io/badge/production--readiness-76%2F100-yellow.svg)
+![Tests](https://img.shields.io/badge/tests-473%20passing-brightgreen.svg)
+![Production Readiness](https://img.shields.io/badge/production--readiness-82%2F100-yellow.svg)
 
 **"К себе" (To Yourself)** is a comprehensive digital ecosystem for the K Sebe
 Yoga Studio (Dubna, Russia).
 
 ## 📚 Documentation
 
-| Document                                               | Purpose                                         |
-| ------------------------------------------------------ | ----------------------------------------------- |
-| [AGENTS.md](./AGENTS.md)                               | **MUST READ** — AI agent guidelines             |
-| [CLAUDE.md](./CLAUDE.md)                               | Instructions for Claude Code / Copilot / Cursor |
-| [CURRENT_TASKS.md](./CURRENT_TASKS.md)                 | Active sprint tasks and priorities              |
-| [CHANGELOG.md](./CHANGELOG.md)                         | Version history                                 |
-| [docs/INDEX.md](./docs/INDEX.md)                       | Central documentation index                     |
-| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)         | System architecture                             |
-| [docs/LAUNCH_CHECKLIST.md](./docs/LAUNCH_CHECKLIST.md) | Pre-launch gap analysis                         |
+| Document | Purpose |
+| --- | --- |
+| [AGENTS.md](./AGENTS.md) | **MUST READ** — AI agent guidelines |
+| [ISKRA_CODER.md](./ISKRA_CODER.md) | Canonical engineering protocol (Искра-Кодер) |
+| [CLAUDE.md](./CLAUDE.md) | Instructions for Claude Code / Copilot / Cursor |
+| [CURRENT_TASKS.md](./CURRENT_TASKS.md) | Active sprint tasks and priorities |
+| [CHANGELOG.md](./CHANGELOG.md) | Version history |
+| [docs/INDEX.md](./docs/INDEX.md) | Central documentation index |
+| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | System architecture |
+| [docs/EDGE_FUNCTIONS.md](./docs/EDGE_FUNCTIONS.md) | Edge Functions reference (7 functions) |
+| [docs/TESTING.md](./docs/TESTING.md) | Testing architecture and patterns |
+| [docs/LAUNCH_CHECKLIST.md](./docs/LAUNCH_CHECKLIST.md) | Pre-launch gap analysis |
 
 ## 📂 Repository Structure
 
@@ -56,7 +59,7 @@ npm run dev:app    # Mobile PWA / APP
 ### Testing & Quality
 
 ```bash
-npm run test:run       # Run all tests (Vitest) — 208 passing
+npm run test:run       # Run all tests (Vitest) — 473 passing / 60 suites
 npm run typecheck      # TypeScript strict check (0 errors)
 npm run lint           # ESLint (0 errors)
 npm run format:check   # Prettier check

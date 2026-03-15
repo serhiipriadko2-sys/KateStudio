@@ -10,6 +10,56 @@ and this project adheres to
 
 ---
 
+## [3.0.0] - 2026-03-15
+
+### Added
+
+- **Edge Functions**: 4 новых функции — `cancel-subscription`, `cron-maintenance`, `send-push`, `subscribe-newsletter`
+  - `cancel-subscription` — отмена подписки через YooKassa API
+  - `cron-maintenance` — плановое обслуживание БД (очистка, архивация)
+  - `send-push` — отправка Firebase Cloud Messaging (FCM) пуш-уведомлений
+  - `subscribe-newsletter` — подписка на рассылку через Mailchimp
+- **Gamification**: `DailyRecommendation` компонент с персонализированными рекомендациями
+- **Gamification**: `StreakCalendar` — визуализация активности с heat-map
+- **APP**: `Achievements` экран с разблокированными ачивками
+- **APP**: `Retreats` компонент для секции ретритов
+- **APP**: `DeveloperSettings` экран для отладки (dev-only)
+- **AI Coach**: `AICoach` компонент с режимами Chat, Create, Meditation
+- **Analytics**: `analytics_rpc` — RPC функция для агрегации аналитики
+- **Migrations** (март 2026):
+  - `20260312000001_faq_items.sql` — таблица FAQ
+  - `20260312000002_site_images.sql` — управление изображениями сайта
+  - `20260315000000_retreats_table.sql` — таблица ретритов
+  - `20260315000001_admin_subscriptions_rls.sql` — RLS для подписок (admin)
+  - `20260315000002_analytics_rpc.sql` — RPC агрегации аналитики
+  - `20260315000003_grant_is_admin_execute.sql` — разрешение execute для `is_admin`
+- **Tests**: 473 тестов / 60 suites (было 208/36 — рост ×2.3)
+  - Новые тест-файлы: `AuthContext`, `AuthScreen`, `retentionService`, `subscriptionService`, `useStreak`, `useIsAdmin`, `geminiService`, `videoService`, утилиты `practiceLog`
+
+### Changed
+
+- **gemini-proxy**: Добавлены операции `editYogaImage` (Imagen 3 edit) и `generateYogaVideo` (Veo) — 12 операций итого
+- **gemini-proxy**: Zod-валидация на всех входящих запросах через `ProxyRequestSchema`
+- **APP VideoLibrary**: Видео читаются из Supabase DB через `videoService` (не хардкод)
+- **APP Dashboard**: Subscription UI временно скрыт (`// re-enable after launch`)
+- **shared/constants/images.ts**: Все URL — локальные ассеты (`/images/*`), внешние placeholder полностью убраны
+- **APP**: Расписание (`Schedule`) интегрировано с Supabase с fallback на mock
+
+### Fixed
+
+- **Migrations**: `analytics_events` RLS — исправлена ссылка `admins.id` → `admins.user_id` (20260309000001)
+- **Migrations**: `profiles` update policy — убрана ссылка на удалённую колонку `is_admin` (20260309000002)
+- **shared/types**: `SubscriptionStatus` — исправлен вариант `'canceled'` (не `'cancelled'`), добавлен `'pending'`
+- **shared/components/index.ts**: Убран дубль экспорта `AsanaAnalysis`
+
+### Security
+
+- **RLS**: Исправлена политика `analytics_events` (admins.user_id вместо admins.id)
+- **RLS**: Новая политика `admin_subscriptions` — только service role может обновлять подписки
+- **Edge Functions**: Zod input validation на всех операциях gemini-proxy
+
+---
+
 ## [2.1.0] - 2026-02-27
 
 ### Added

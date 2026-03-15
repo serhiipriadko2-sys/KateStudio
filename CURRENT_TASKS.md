@@ -1,189 +1,122 @@
 # Текущие задачи
 
-Краткая сводка ближайших приоритетов (по **ACTION_PLAN_2026.md**,
-**PRODUCTION_READINESS_AUDIT.md** и **REMEDIATION_PLAN.md**). Фокус на задачах,
-которые можно брать в работу прямо сейчас.
-
-_Обновлено: 27 февраля 2026 (Capacitor wrapper + интеграция хаптики)._
+> **Обновлено:** 15 марта 2026 | **Версия:** 4.0.0
+> Источник истины: код + `package.json` + миграции. Цифры верифицированы запуском.
 
 ---
 
-## Завершённые задачи (P0 Security)
+## Верифицированные метрики (15 марта 2026)
 
-Все критические security-блокеры **устранены** (см.
-[Security Report](./docs/SECURITY_REPORT_2026_02_11.md)):
-
-| #     | Задача                                  | Статус       |
-| ----- | --------------------------------------- | ------------ |
-| **1** | npm install — установить зависимости    | ✅ Завершено |
-| **2** | Исправить webhook secret (обязательный) | ✅ Завершено |
-| **3** | Убрать subscriptions update RLS policy  | ✅ Завершено |
-| **4** | Ограничить CORS конкретными доменами    | ✅ Завершено |
-| **5** | Убрать API key fallback для production  | ✅ Завершено |
-| **6** | Требовать Service Role Key              | ✅ Завершено |
-
-**Security Score:** 55 → 85+ после исправлений
-
-## Оставшиеся P0 (Блокеры запуска)
-
-| #     | Задача                                  | Где менять      | Время    | Статус |
-| ----- | --------------------------------------- | --------------- | -------- | ------ |
-| **7** | **Создать .env файлы**                  | Root, WEB, APP  | 15 мин   | ⏳     |
-| **8** | **Установить GitHub Secrets**           | GitHub Settings | 10 мин   | ⏳     |
-| **9** | **Заменить Unsplash изображения в APP** | APP components  | 2-4 часа | 🔄     |
-
-**Примечание:** WEB-изображения заменены на локальные ассеты
-(`shared/constants/images.ts`). Остаётся APP.
+| Метрика | Значение | Как проверено |
+| --- | --- | --- |
+| Tests passing | **473** | `npm run test:run` |
+| Test suites | **60** | `npm run test:run` |
+| TypeScript errors | **0** | `npm run typecheck` |
+| Lint errors | **0** | `npm run lint` |
+| Lint warnings | **75** | `npm run lint` |
+| Edge Functions | **7** | `ls supabase/functions/` |
+| Migrations | **20+** | `ls supabase/migrations/` |
 
 ---
 
-## Завершённые задачи (Sprint: Полировка экосистемы)
+## 🔴 P0 — Блокеры запуска
 
-| #   | Задача                                                             | Статус |
-| --- | ------------------------------------------------------------------ | ------ |
-| 1   | ✅ Создать Edge Function-прокси для Gemini API с rate limiting     | ✅     |
-| 2   | ✅ Добавить вебхуки оплаты: `create-payment` и `payment-webhook`   | ✅     |
-| 3   | ✅ Сгенерировать PWA-иконки 72–512px                               | ✅     |
-| 4   | ✅ Добавить `og-image.jpg` для соцсетей                            | ✅     |
-| 5   | ✅ Рефакторинг ChatWidget: разбить на подкомпоненты и хук          | ✅     |
-| 6   | ✅ Добавить `.env.example` в APP                                   | ✅     |
-| 7   | ✅ Добавить `robots.txt` в APP                                     | ✅     |
-| 8   | ✅ Добавить `sitemap.xml` в APP                                    | ✅     |
-| 9   | ✅ Обновить sitemap.xml с датой 2026                               | ✅     |
-| 10  | ✅ Исправить `any` типы в shared/utils                             | ✅     |
-| 11  | ✅ Исправить неиспользуемые переменные                             | ✅     |
-| 12  | ✅ Исправить a11y предупреждения                                   | ✅     |
-| 13  | ✅ Экранирование кавычек в JSX                                     | ✅     |
-| 14  | ✅ Обновить типы для геймификации                                  | ✅     |
-| 15  | ✅ Добавить константы достижений                                   | ✅     |
-| 16  | ✅ Добавить INSIDE_FLOW info                                       | ✅     |
-| 17  | ✅ Добавить ARIA_CONFIG                                            | ✅     |
-| 18  | ✅ Добавить SUBSCRIPTION_PLANS                                     | ✅     |
-| 19  | ✅ Создать COMPREHENSIVE_UPDATE_2026.md                            | ✅     |
-| 20  | ✅ Обновить документацию (CLAUDE.md, AGENTS.md, skills, docs)      | ✅     |
-| 21  | ✅ Добавить Capacitor wrapper scaffold для APP                     | ✅     |
-| 22  | ✅ Добавить local native scaffold workflow (android/ios) для APP   | ✅     |
-| 23  | ✅ Интегрировать хаптику в нативные взаимодействия APP             | ✅     |
-| 24  | ✅ WEB: заменить прямую запись кнопкой связи + Telegram CTA        | ✅     |
-| 25  | ✅ WEB: исправить Telegram-ссылку на @Kate_Gabran                  | ✅     |
-| 26  | ✅ CI fix: согласовать версии Capacitor-плагинов (^7.0.0)          | ✅     |
-| 27  | ✅ Prettier: форматирование всего репозитория (format:check green) | ✅     |
+| # | Задача | Статус | Примечание |
+| --- | --- | --- | --- |
+| 1 | **GEMINI_API_KEY** — установить в Supabase Vault | ⏳ | AI features не работают без него |
+| 2 | **YooKassa** — завершить интеграцию платежей | 🔄 | `create-payment` Edge Function частично готова |
+| 3 | **Placeholder видео** в APP VideoLibrary | ⏳ | 4 URL нужно заменить реальными |
+| 4 | **.env файлы** — создать локально из `.env.example` | ⏳ | Нужно каждому разработчику вручную |
+
+> GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `FIREBASE_SERVICE_ACCOUNT`) — ✅ установлены Семёном.
 
 ---
 
-## 🟡 Высокий приоритет (P1) — Очень желательно перед запуском
+## 🟡 P1 — Завершено с февраля
 
-| #   | Задача                                    | Где менять                                    | Время     | Статус |
-| --- | ----------------------------------------- | --------------------------------------------- | --------- | ------ |
-| 10  | **Input validation (Zod)**                | `supabase/functions/gemini-proxy/index.ts`    | 2-3 часа  | ✅     |
-| 11  | **Rate limiting в Redis/KV**              | `supabase/functions/gemini-proxy/index.ts`    | 3-4 часа  | ✅     |
-| 12  | **Webhook signature verification (HMAC)** | `supabase/functions/payment-webhook/index.ts` | ✅        | ✅     |
-| 13  | **YooKassa интеграция (полная)**          | `supabase/functions/create-payment/index.ts`  | 1-2 дня   | 🔄     |
-| 14  | **Заменить 4 placeholder видео**          | `APP/components/VideoLibrary.tsx`             | 4-8 часов | ⏳     |
-| 15  | **Интегрировать расписание с Supabase**   | `APP/services/dataService.ts` + новая таблица | 1-2 дня   | ✅     |
-| 16  | **Добавить database индексы**             | Новая миграция                                | 30 мин    | ✅     |
-| 17  | **Повысить test coverage до 50%+**        | Все `__tests__/`                              | Ongoing   | 🔄     |
-| 18  | **Исправить nullable user_id**            | Миграция cleanup                              | 30 мин    | ✅     |
-| 19  | **Разбить Image.tsx (495 строк)**         | `shared/components/Image.tsx`                 | 2-3 часа  | ✅     |
-
-**Total P1:** 1-2 недели | **Testing Coverage:** ~25% → 50%+ | **Payment
-Integration:** 30% → 90%
-
-## 🟢 Средний приоритет (P2) — После запуска, но скоро
-
-| #   | Задача                                        | Где менять                                  | Время    | Статус |
-| --- | --------------------------------------------- | ------------------------------------------- | -------- | ------ |
-| 20  | Убрать default exports (8 файлов)             | shared/                                     | 1-2 часа | ✅     |
-| 21  | Вынести хардкод в константы                   | Blog, Pricing, Marquee, Breathwork          | 2-3 часа | ✅     |
-| 22  | Оптимизировать изображения (WebP)             | Все public/images/                          | 1 день   | 🔄     |
-| 23  | Реализовать Achievements UI                   | `shared/components/`                        | 1-2 дня  | ✅     |
-| 24  | Добавить Veo/Image Edit в Edge proxy          | `supabase/functions/gemini-proxy/`          | 1 день   | ✅     |
-| 25  | Раскомментировать Subscription UI             | `APP/components/Dashboard.tsx`              | 2 часа   | ✅     |
-| 26  | Newsletter интеграция (Mailchimp)             | `WEB/components/Footer.tsx` + Edge Function | 1 день   | ✅     |
-| 27  | "Все статьи" функционал или убрать            | `WEB/components/Blog.tsx`                   | 3-4 часа | ✅     |
-| 28  | Logging & Monitoring (Sentry)                 | WEB/APP                                     | 1 день   | ✅     |
-| 29  | Error recovery & cron jobs                    | Supabase Edge Functions                     | 1-2 дня  | ✅     |
-| 30  | Database types generation                     | `shared/types/database.types.ts`            | 1 час    | ✅     |
-| 31  | Push Notifications (Firebase Cloud Messaging) | `APP/`, Edge Function                       | 2-3 дня  | ✅     |
-
-**Total P2:** 2-4 недели
-
-## 🔵 Низкий приоритет (P3) — Backlog
-
-| #   | Задача                                    | Где менять           | Статус |
-| --- | ----------------------------------------- | -------------------- | ------ |
-| 32  | DailyRecommendation компонент             | `shared/components/` | ✅     |
-| 33  | PersonalProgram 7-day programs            | APP                  | ⏳     |
-| 34  | StreakCalendar visualization              | `shared/components/` | ✅     |
-| 35  | Активировать Retreats секцию              | `WEB/App.tsx`        | ⏳     |
-| 36  | Активировать AI Subscription              | `WEB/App.tsx`        | ⏳     |
-| 37  | i18n поддержка                            | WEB/APP              | ⏳     |
-| 38  | Storybook для компонентов                 | Все компоненты       | ⏳     |
-| 39  | Performance optimization (Lighthouse 90+) | WEB/APP              | ⏳     |
-| 40  | Analytics integration (Mixpanel/GA)       | WEB/APP              | ⏳     |
+| # | Задача | Статус |
+| --- | --- | --- |
+| 5 | Zod input validation в `gemini-proxy` | ✅ |
+| 6 | Rate limiting в `gemini-proxy` | ✅ |
+| 7 | Webhook HMAC verification | ✅ |
+| 8 | Расписание интегрировано с Supabase | ✅ |
+| 9 | Database индексы (миграция) | ✅ |
+| 10 | Nullable `user_id` — исправлен | ✅ |
+| 11 | `Image.tsx` разбит на подкомпоненты | ✅ |
+| 12 | Типы БД `database.types.ts` — сгенерированы | ✅ |
 
 ---
 
-## Документация
+## 🟢 P2 — Завершено с февраля
 
-### Ключевые документы:
-
-- **[AUDIT_EXECUTIVE_SUMMARY.md](./AUDIT_EXECUTIVE_SUMMARY.md)** — краткий обзор
-  (3 минуты чтения)
-- **[PRODUCTION_READINESS_AUDIT.md](./PRODUCTION_READINESS_AUDIT.md)** — полный
-  аудит (84 KB, 20 минут чтения)
-- **[REMEDIATION_PLAN.md](./REMEDIATION_PLAN.md)** — план исправлений с кодом
-  (45 KB, 15 минут чтения)
-- **[Security Report (Feb 2026)](./docs/SECURITY_REPORT_2026_02_11.md)** — аудит
-  безопасности
-
-### Стратегические:
-
-- **[STRATEGIC_ROADMAP_2026.md](./STRATEGIC_ROADMAP_2026.md)** — дорожная карта
-- **[ACTION_PLAN_2026.md](./ACTION_PLAN_2026.md)** — план действий
-- **[docs/COMPREHENSIVE_UPDATE_2026.md](./docs/COMPREHENSIVE_UPDATE_2026.md)** —
-  комплексное обновление
-- **[docs/INDEX.md](./docs/INDEX.md)** — центральный индекс документации
+| # | Задача | Статус |
+| --- | --- | --- |
+| 13 | Default exports убраны из `shared/` | ✅ |
+| 14 | Хардкод вынесен в константы | ✅ |
+| 15 | `Achievements` UI | ✅ |
+| 16 | `DailyRecommendation` компонент | ✅ |
+| 17 | `StreakCalendar` визуализация | ✅ |
+| 18 | Veo + Image Edit в `gemini-proxy` | ✅ |
+| 19 | Newsletter Edge Function (`subscribe-newsletter`) | ✅ |
+| 20 | Monitoring / Sentry (`shared/services/monitoring.ts`) | ✅ |
+| 21 | Cron jobs (`cron-maintenance` Edge Function) | ✅ |
+| 22 | Push Notifications FCM (`send-push` Edge Function) | ✅ |
+| 23 | Cancel Subscription (`cancel-subscription` Edge Function) | ✅ |
+| 24 | Оптимизация изображений WebP | 🔄 |
 
 ---
 
-## PRODUCTION READINESS
+## 🔵 P3 — Backlog
 
-**Текущая оценка: 76/100** (было 75, +Capacitor native wrapper завершён)
-
-| Метрика       | Текущее    | После P1   | Цель       |
-| ------------- | ---------- | ---------- | ---------- |
-| Security      | 85/100     | 90/100     | 95/100     |
-| Testing       | 25/100     | 50/100     | 70/100     |
-| Content       | 80/100     | 100/100    | 100/100    |
-| Payment       | 30/100     | 90/100     | 100/100    |
-| Mobile/Native | 60/100     | 80/100     | 90/100     |
-| **OVERALL**   | **76/100** | **86/100** | **90/100** |
-
----
-
-## TIMELINE
-
-- **Done (P0 Security):** Webhook, RLS, CORS, API key, Service Role Key
-- **Done (Native):** Capacitor scaffold, native plugins, haptics, Android
-  lifecycle
-- **Done (WEB):** Contact form UX, Telegram CTA, Telegram link fix
-- **Week 1 (P0 remaining):** .env, GitHub Secrets, APP images
-- **Week 2-3 (P1):** Backend + Features (Zod, YooKassa, DB migrations)
-- **Week 4-6 (P2):** Polish + Optimization
-- **Week 7+ (P3):** Advanced Features (ongoing)
+| # | Задача | Статус |
+| --- | --- | --- |
+| 25 | `PersonalProgram` 7-дневные программы | ⏳ |
+| 26 | Активировать секцию Retreats в WEB (`App.tsx`) | ⏳ |
+| 27 | Активировать AI Subscription в WEB | ⏳ |
+| 28 | i18n поддержка | ⏳ |
+| 29 | Storybook для компонентов | ⏳ |
+| 30 | Performance optimization (Lighthouse 90+) | ⏳ |
+| 31 | Analytics integration (Mixpanel/GA) | ⏳ |
 
 ---
 
 ## Тесты
 
-| Метрика       | Текущее | Цель |
-| ------------- | ------- | ---- |
-| Tests passing | 208     | 300+ |
-| Test suites   | 36      | 50+  |
-| Coverage      | ~25%    | 70%+ |
+| Метрика | Текущее | Цель |
+| --- | --- | --- |
+| Tests passing | **473** | 600+ |
+| Test suites | **60** | 80+ |
+| Coverage | ~35%+ | 70% |
+
+Динамика: 208 (янв) → 368 (фев) → **473 (март)**.
 
 ---
 
-> Обновляйте таблицу по мере выполнения: ✅ для сделанных, 🔄 для в работе, ⏳
-> для запланированных.
+## Production Readiness (оценка)
+
+| Метрика | Текущее | Цель |
+| --- | --- | --- |
+| Security | 90/100 | 95/100 |
+| Testing | 35/100 | 70/100 |
+| Content | 85/100 | 100/100 |
+| Payment | 30/100 | 100/100 |
+| Mobile/Native | 75/100 | 90/100 |
+| **OVERALL** | **~82/100** | **90/100** |
+
+---
+
+## Ключевые команды
+
+```bash
+npm run test:run       # 473 тестов / 60 suites
+npm run typecheck      # 0 ошибок
+npm run lint           # 0 errors / 75 warnings
+npm run build:web
+npm run build:app
+```
+
+Источник команд: `package.json` (не старые доки).
+
+---
+
+> Обновляй таблицы по мере выполнения: ✅ / 🔄 / ⏳
