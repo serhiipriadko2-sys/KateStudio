@@ -13,4 +13,6 @@ export {
 } from './imageStorage';
 export { analytics } from './analytics';
 export { monitoring } from './monitoring';
+export { subscribeNewsletter } from './newsletter';
+export type { SubscribeNewsletterInput, SubscribeNewsletterResult } from './newsletter';
 export type { MonitoringInitOptions } from './monitoring';

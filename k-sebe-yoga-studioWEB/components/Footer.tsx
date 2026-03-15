@@ -1,3 +1,4 @@
+import { subscribeNewsletter } from '@ksebe/shared';
 import { Send, MapPin, Terminal, Phone } from 'lucide-react';
 import React from 'react';
 import { useStudioContacts } from '../hooks/useStudioContacts';
@@ -13,6 +14,52 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
   const { data: contacts } = useStudioContacts();
+  const [newsletterEmail, setNewsletterEmail] = React.useState('');
+  const [newsletterStatus, setNewsletterStatus] = React.useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle');
+  const [newsletterMessage, setNewsletterMessage] = React.useState('');
+
+  const handleNewsletterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const email = newsletterEmail.trim();
+    if (!email) {
+      setNewsletterStatus('error');
+      setNewsletterMessage('Укажите email.');
+      return;
+    }
+
+    setNewsletterStatus('loading');
+    setNewsletterMessage('');
+
+    const result = await subscribeNewsletter({ email });
+    if (result.ok) {
+      setNewsletterStatus('success');
+      setNewsletterEmail('');
+      setNewsletterMessage(
+        result.alreadySubscribed
+          ? 'Этот email уже подписан на рассылку.'
+          : 'Подписка оформлена. Спасибо!'
+      );
+      return;
+    }
+
+    setNewsletterStatus('error');
+    if (result.error === 'invalid_email') {
+      setNewsletterMessage('Некорректный email.');
+      return;
+    }
+    if (result.error === 'not_configured') {
+      setNewsletterMessage('Сервис рассылки временно недоступен.');
+      return;
+    }
+    if (result.error === 'network_error') {
+      setNewsletterMessage('Ошибка сети. Попробуйте позже.');
+      return;
+    }
+    setNewsletterMessage('Не удалось оформить подписку.');
+  };
 
   return (
     <footer
@@ -114,6 +161,42 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
                 </li>
               )}
             </ul>
+          </div>
+        </div>
+
+        <div className="mb-10 border-b border-white/10 pb-10">
+          <div className="max-w-xl">
+            <h4 className="text-lg font-serif mb-2 text-brand-green">Подписка на новости</h4>
+            <p className="text-sm text-white/60 mb-4">
+              Редкие письма о новых классах, ретритах и спецпредложениях.
+            </p>
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="flex-1 rounded-xl bg-white/5 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-brand-green"
+                disabled={newsletterStatus === 'loading'}
+                required
+              />
+              <button
+                type="submit"
+                className="rounded-xl bg-brand-green px-5 py-3 text-sm font-medium text-brand-dark hover:brightness-110 transition-all disabled:opacity-60"
+                disabled={newsletterStatus === 'loading'}
+              >
+                {newsletterStatus === 'loading' ? 'Отправка...' : 'Подписаться'}
+              </button>
+            </form>
+            {newsletterStatus !== 'idle' && newsletterMessage && (
+              <p
+                className={`mt-3 text-sm ${
+                  newsletterStatus === 'success' ? 'text-emerald-300' : 'text-rose-300'
+                }`}
+              >
+                {newsletterMessage}
+              </p>
+            )}
           </div>
         </div>
 

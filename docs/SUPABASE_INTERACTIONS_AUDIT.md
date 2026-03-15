@@ -7,13 +7,16 @@
 ## Verdict
 
 - `verdict`: `partial`
-- `confidence`: 94%
+- `confidence`: 96%
 - `summary`:
   - Main interaction map is largely correct.
-  - Three important risks need explicit follow-up:
-    1. `send-push` endpoint auth enforcement is not explicit in function code.
-    2. `get_admin_analytics` RPC is executable by any `authenticated` role.
-    3. Documentation drift (`push_tokens` vs `user_push_tokens`) remains.
+  - Remediation applied on March 15, 2026:
+    1. `send-push` now enforces explicit bearer auth in function code.
+    2. `get_admin_analytics` now hard-checks `public.is_admin()` in function body.
+    3. Documentation drift (`push_tokens` vs `user_push_tokens`) is synced.
+  - Remaining follow-up outside this remediation:
+    - `subscribe-newsletter` wired in WEB footer; APP still has no newsletter UI.
+    - migration timestamp collisions still require governance cleanup.
 
 ## A) Client Initialization
 
@@ -77,18 +80,22 @@
   - `k-sebe-yoga-studioWEB/components/admin/tabs/AnalyticsTab.tsx:51`
   - `k-sebe-yoga-studioWEB/components/admin/tabs/DashboardTab.tsx:65`
 
-### RPC Security Note (confirmed risk)
+### RPC Security Note (remediated)
 
-- `get_admin_analytics` currently grants execute to any `authenticated` role.
+- `get_admin_analytics` remains callable by `authenticated`, but is now hard-gated in function body:
+  - non-admin callers receive `42501` (forbidden)
+  - admin callers receive aggregate payload
 - Evidence:
   - `supabase/migrations/20260315000002_analytics_rpc.sql:81`
   - `supabase/migrations/20260315000002_analytics_rpc.sql:82`
+  - `supabase/migrations/20260315000004_harden_get_admin_analytics.sql:1`
 
 ## D) Edge Function Invocations (Client/Automation)
 
 - Found direct `/functions/v1/...` calls via `fetch`:
   - `create-payment` (WEB + APP)
   - `cancel-subscription` (APP)
+  - `subscribe-newsletter` (WEB footer)
   - `cron-maintenance` (GitHub Action `cron.yml`)
 - No `supabase.functions.invoke(...)` usage in client code.
 - `gemini-proxy` is not wired in current chat UX (KB fallback path used).
@@ -101,6 +108,8 @@
   - `k-sebe-yoga-studioWEB/components/ChatWidget/useChatSession.ts:32`
   - `k-sebe-yoga-studioWEB/services/assistantService.ts:4`
   - `k-sebe-yoga-studio-APPp/services/geminiService.ts:33`
+  - `shared/services/newsletter.ts:29`
+  - `k-sebe-yoga-studioWEB/components/Footer.tsx:23`
 
 ## E) Storage Operations
 
@@ -160,63 +169,52 @@
   - `supabase/migrations/20260101000000_schema_baseline.sql:16`
   - `supabase/migrations/20260101000000_schema_baseline.sql:17`
 
-## H) Confirmed Drift
+## H) Drift & Gaps
 
-1. Docs still use `push_tokens`, code/schema uses `user_push_tokens`.
+1. Docs naming drift (`push_tokens` vs `user_push_tokens`) is resolved.
 - Evidence:
   - `supabase/migrations/20260309000000_push_tokens.sql:4`
   - `docs/EDGE_FUNCTIONS.md:216`
   - `docs/ARCHITECTURE.md:158`
   - `docs/LAUNCH_CHECKLIST.md:15`
 
-2. `subscribe-newsletter` exists server-side but no client invocation found.
+2. `subscribe-newsletter` now has WEB client invocation; APP invocation remains absent.
 - Evidence:
   - `supabase/functions/subscribe-newsletter/index.ts:1`
-  - no `/functions/v1/subscribe-newsletter` usage in WEB/APP code
+  - `shared/services/newsletter.ts:29`
+  - `k-sebe-yoga-studioWEB/components/Footer.tsx:23`
 
-3. `send-push` function comment implies auth header contract, but explicit runtime check is absent in function code.
+3. `send-push` auth contract is now explicitly enforced in function code.
 - Evidence:
   - `supabase/functions/send-push/index.ts:20`
-  - `supabase/functions/send-push/index.ts:149`
+  - `supabase/functions/send-push/index.ts:172`
 
-## I) Fix Plan (Top 3)
+## I) Applied Fixes (Top 3)
 
 ### FP-1: Harden `send-push` inbound auth
 
-- Problem:
-  - No explicit request authentication check inside function handler.
-- Minimal safe option:
-  - Add required secret check (e.g. `PUSH_INTERNAL_SECRET`) against `Authorization: Bearer ...` or dedicated header.
-  - Keep `SUPABASE_SERVICE_ROLE_KEY` for DB access only.
-- Verify:
-  - call without secret -> `401`
-  - call with wrong secret -> `401`
-  - call with correct secret -> normal behavior
+- Status:
+  - Implemented via explicit bearer-token check against `SUPABASE_SERVICE_ROLE_KEY`.
+- Evidence:
+  - `supabase/functions/send-push/index.ts:35`
+  - `supabase/functions/send-push/index.ts:172`
 
 ### FP-2: Gate `get_admin_analytics` in RPC body
 
-- Problem:
-  - Function executable by all `authenticated`.
-- Minimal safe option:
-  - Replace SQL body with PL/pgSQL and hard-check `public.is_admin()`:
-    - if false -> raise `42501` (forbidden)
-- Verify:
-  - non-admin authenticated token gets error
-  - admin token gets valid aggregate payload
+- Status:
+  - Implemented via new migration overriding function body with `public.is_admin()` guard.
+  - Non-admin path raises `42501`.
+- Evidence:
+  - `supabase/migrations/20260315000004_harden_get_admin_analytics.sql:1`
 
 ### FP-3: Remove docs drift for push tokens and interaction map
 
-- Problem:
-  - mixed naming (`push_tokens` vs `user_push_tokens`) and stale descriptions.
-- Minimal safe option:
-  - Update docs:
+- Status:
+  - Implemented in:
     - `docs/EDGE_FUNCTIONS.md`
     - `docs/ARCHITECTURE.md`
     - `docs/LAUNCH_CHECKLIST.md`
-  - Align edge invocation section with actual client wiring.
-- Verify:
-  - `rg -n "push_tokens"` in docs returns only intentional historical mentions
-  - `rg -n "user_push_tokens"` matches active architecture/security docs
+  - Edge invocation section now reflects `fetch` pattern used in clients.
 
 ## J) Status Matrix
 
@@ -228,15 +226,15 @@
 | Edge invocation map | `verified` |
 | RLS baseline presence | `verified` |
 | Migration ordering integrity | `partial` |
-| RPC security model | `partial` |
-| `send-push` endpoint auth certainty | `unknown` |
+| RPC security model | `verified` |
+| `send-push` endpoint auth certainty | `verified` |
 | AI integration wiring (`gemini-proxy`) | `verified` (currently not wired) |
-| Newsletter client integration | `partial` (server ready, client missing) |
-| Docs consistency | `partial` |
+| Newsletter client integration | `partial` (server ready, WEB wired, APP missing UI) |
+| Docs consistency | `verified` |
 
 ---
 
-If needed, this file can be used as the canonical input for a follow-up remediation PR:
+Remediation applied in this cycle:
 - `fix(send-push-auth): enforce inbound secret`
 - `fix(rpc-security): hard gate get_admin_analytics by is_admin()`
 - `docs(sync): align push token naming and edge invocation docs`
