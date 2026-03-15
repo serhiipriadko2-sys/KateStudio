@@ -70,20 +70,73 @@ KateStudio/
 ## Agent Execution Rules
 
 > These rules apply to all AI agents working on this codebase.
+> Based on best practices by Boris Cherny (Claude Code creator) + project-specific lessons.
 
-### Think 2-3 Steps Ahead
+### 1. Workflow Orchestration
+
+- **Plan first**: Enter plan mode for any non-trivial task (3+ steps or architectural decisions)
+- If something goes sideways, STOP and re-plan — don't keep pushing
+- Write detailed specs upfront to reduce ambiguity
+- Use plan mode for verification steps, not just building
+
+### 2. Subagent Strategy
+
+- Use subagents to keep the main context window clean
+- Offload research, exploration, and parallel analysis to subagents
+- For complex problems, throw more compute at it via subagents
+- One task per subagent for focused execution
+
+### 3. Self-Improvement Loop
+
+- After ANY correction from the user: update `tasks/lessons.md` with the pattern
+- Write rules that prevent the same mistake from recurring
+- Review lessons at session start for relevant context
+- Each correction captured = fewer future mistakes
+
+### 4. Think 2-3 Steps Ahead — Verify Before Done
 
 Before considering a task complete, the agent **must**:
 
 1. **Predict downstream effects** — ask "what breaks or fails next because of this change?"
 2. **Verify the full flow** — run `typecheck`, `lint`, and `test:run` after every change
-3. **Test the user-facing scenario** — consider the actual runtime path, not just compile-time correctness (e.g. auth event timing, network errors, API rate limits)
+3. **Test the user-facing scenario** — consider actual runtime path, not just compile-time correctness (e.g. auth event timing, network errors, API rate limits)
 4. **Commit only when all checks pass** — never commit with known errors or untested assumptions
+5. **Ask yourself**: "Would a staff engineer approve this?"
 
-**Example of correct behaviour:**
-- Changing an auth flow → think: "will the session be ready when updateUser() is called?"
-- Adding a new component → think: "are the imports correct? will TypeScript complain? do tests need updating?"
-- Setting a DB value via SQL → think: "is the extension enabled? is the format compatible?"
+**Examples:**
+
+- Changing an auth flow → "will the session be ready when updateUser() is called?"
+- Adding a component → "are imports correct? will TypeScript complain? do tests need updating?"
+- Setting a DB value via SQL → "is the extension enabled? is the format compatible?"
+
+### 5. Demand Elegance (Balanced)
+
+- For non-trivial changes: pause and ask "is there a more elegant way?"
+- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
+- Skip this for simple, obvious fixes — don't over-engineer
+- Challenge your own work before presenting it
+
+### 6. Autonomous Bug Fixing
+
+- When given a bug report: just fix it. Don't ask for hand-holding
+- Point at logs, errors, failing tests — then resolve them
+- Zero context switching required from the user
+- Go fix failing CI tests without being told how
+
+### 7. Task Management
+
+1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
+2. **Verify Plan**: Check in before starting implementation
+3. **Track Progress**: Mark items complete as you go
+4. **Explain Changes**: High-level summary at each step
+5. **Document Results**: Add review section to `tasks/todo.md`
+6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
+
+### 8. Core Principles
+
+- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
+- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
+- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
 
 ---
 
