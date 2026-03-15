@@ -183,7 +183,7 @@ supabase/migrations/
 └── 20260315000003_grant_is_admin_execute.sql
 ```
 
-> `9999999999_admin_checklist.sql` — нестандартная нумерация, требует уточнения (checklist или migration?).
+> SQL checklist moved to `docs/sql/admin_checklist.sql` and excluded from `supabase/migrations/`.
 
 ## 6) Конфигурация окружения
 

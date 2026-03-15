@@ -15,7 +15,6 @@
     2. `get_admin_analytics` now hard-checks `public.is_admin()` in function body.
     3. Documentation drift (`push_tokens` vs `user_push_tokens`) is synced.
   - Remaining follow-up outside this remediation:
-    - `subscribe-newsletter` wired in WEB footer; APP still has no newsletter UI.
     - migration timestamp collisions still require governance cleanup.
 
 ## A) Client Initialization
@@ -95,21 +94,22 @@
 - Found direct `/functions/v1/...` calls via `fetch`:
   - `create-payment` (WEB + APP)
   - `cancel-subscription` (APP)
-  - `subscribe-newsletter` (WEB footer)
+  - `subscribe-newsletter` (WEB + APP footers)
   - `cron-maintenance` (GitHub Action `cron.yml`)
 - No `supabase.functions.invoke(...)` usage in client code.
 - `gemini-proxy` is not wired in current chat UX (KB fallback path used).
 - Evidence:
   - `k-sebe-yoga-studioWEB/services/subscriptionService.ts:7`
   - `k-sebe-yoga-studioWEB/services/subscriptionService.ts:38`
-  - `k-sebe-yoga-studio-APPp/services/subscriptionService.ts:31`
-  - `k-sebe-yoga-studio-APPp/services/subscriptionService.ts:63`
+  - `k-sebe-yoga-studio-APPp/services/subscriptionService.ts:38`
+  - `k-sebe-yoga-studio-APPp/services/subscriptionService.ts:73`
   - `.github/workflows/cron.yml:44`
   - `k-sebe-yoga-studioWEB/components/ChatWidget/useChatSession.ts:32`
   - `k-sebe-yoga-studioWEB/services/assistantService.ts:4`
   - `k-sebe-yoga-studio-APPp/services/geminiService.ts:33`
   - `shared/services/newsletter.ts:29`
   - `k-sebe-yoga-studioWEB/components/Footer.tsx:23`
+  - `k-sebe-yoga-studio-APPp/components/Footer.tsx:17`
 
 ## E) Storage Operations
 
@@ -160,7 +160,7 @@
 ## G) RLS / Migration Inventory Facts
 
 - SQL migrations in repo: `35`
-- Excluding checklist file: `34`
+- Non-migration admin checklist moved to `docs/sql/admin_checklist.sql`
 - Duplicate timestamps found:
   - `20260216000000` (2 files)
   - `20260308000000` (4 files)
@@ -178,11 +178,12 @@
   - `docs/ARCHITECTURE.md:158`
   - `docs/LAUNCH_CHECKLIST.md:15`
 
-2. `subscribe-newsletter` now has WEB client invocation; APP invocation remains absent.
+2. `subscribe-newsletter` now has client invocation in both WEB and APP.
 - Evidence:
   - `supabase/functions/subscribe-newsletter/index.ts:1`
   - `shared/services/newsletter.ts:29`
   - `k-sebe-yoga-studioWEB/components/Footer.tsx:23`
+  - `k-sebe-yoga-studio-APPp/components/Footer.tsx:17`
 
 3. `send-push` auth contract is now explicitly enforced in function code.
 - Evidence:
@@ -229,7 +230,7 @@
 | RPC security model | `verified` |
 | `send-push` endpoint auth certainty | `verified` |
 | AI integration wiring (`gemini-proxy`) | `verified` (currently not wired) |
-| Newsletter client integration | `partial` (server ready, WEB wired, APP missing UI) |
+| Newsletter client integration | `verified` |
 | Docs consistency | `verified` |
 
 ---
@@ -238,3 +239,5 @@ Remediation applied in this cycle:
 - `fix(send-push-auth): enforce inbound secret`
 - `fix(rpc-security): hard gate get_admin_analytics by is_admin()`
 - `docs(sync): align push token naming and edge invocation docs`
+- `chore(migrations): move admin checklist script out of supabase/migrations`
+- `fix(app-subscriptions): align guard behavior with WEB subscription service`

@@ -1,7 +1,7 @@
 -- ============================================
--- ADMIN PANEL — SQL CHECKLIST
+-- ADMIN PANEL - SQL CHECKLIST
 -- ============================================
--- Execute this in Supabase Dashboard → SQL Editor
+-- Execute this in Supabase Dashboard -> SQL Editor
 -- To verify admin setup is complete
 
 -- ============================================
