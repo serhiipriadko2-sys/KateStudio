@@ -3,12 +3,16 @@
  * Usage: npx tsx scripts/create-admin.ts <email> <password> <name>
  */
 
-import * as path from 'path';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Load .env from root
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: resolve(__dirname, '../.env') });
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
