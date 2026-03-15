@@ -1,6 +1,6 @@
 import { supabase } from '@ksebe/shared';
 import { Eye, EyeOff } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface ResetPasswordModalProps {
   onClose: () => void;
@@ -10,8 +10,29 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ onClose 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPw, setShowPw] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<'waiting' | 'ready' | 'loading' | 'success' | 'error'>(
+    'waiting'
+  );
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Wait for Supabase to process the recovery hash and fire PASSWORD_RECOVERY event.
+  // Only then is the session valid and updateUser() will succeed.
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setStatus('ready');
+      }
+    });
+
+    // Fallback: if session already exists (e.g. user refreshed the page)
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setStatus('ready');
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,21 +49,24 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ onClose 
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
       setErrorMsg(error.message);
-      setStatus('error');
+      setStatus('ready');
     } else {
       setStatus('success');
-      // Clear the recovery hash from URL
       window.history.replaceState(null, '', window.location.pathname);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4">
-      <div className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-xl">
+    <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/40 px-4">
+      <div className="bg-white rounded-4xl p-8 w-full max-w-md shadow-xl">
         <h2 className="text-2xl font-serif text-brand-text mb-2">Новый пароль</h2>
         <p className="text-stone-400 text-sm mb-6">Введите новый пароль для вашего аккаунта.</p>
 
-        {status === 'success' ? (
+        {status === 'waiting' && (
+          <p className="text-stone-400 text-sm text-center py-4">Проверяем сессию…</p>
+        )}
+
+        {status === 'success' && (
           <div className="text-center">
             <p className="text-brand-green font-medium mb-4">Пароль успешно изменён!</p>
             <a
@@ -52,7 +76,9 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ onClose 
               Войти в AdminPanel
             </a>
           </div>
-        ) : (
+        )}
+
+        {(status === 'ready' || status === 'loading' || status === 'error') && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="relative">
               <input
