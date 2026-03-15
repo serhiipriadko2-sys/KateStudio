@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   LayoutDashboard,
   Loader2,
+  Mail,
   MessageSquare,
   Palette,
   Settings,
@@ -41,29 +42,48 @@ const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [magicLoading, setMagicLoading] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-  const { signIn, authError } = useAuth();
+  const { signIn } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) return;
-
     setLoading(true);
     setLocalError(null);
-
     try {
       await signIn(email.trim(), password);
-    } catch {
-      setLocalError('Неверный email или пароль');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setLocalError(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  const errorMessage = authError || localError;
+  const handleMagicLink = async () => {
+    if (!email.trim()) {
+      setLocalError('Введите email выше');
+      return;
+    }
+    if (!supabase) return;
+    setMagicLoading(true);
+    setLocalError(null);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: `${window.location.origin}/admin` },
+    });
+    setMagicLoading(false);
+    if (error) {
+      setLocalError(error.message);
+    } else {
+      setMagicLinkSent(true);
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center">
+    <div className="flex flex-col items-center justify-center min-h-100 p-6 text-center">
       <div className="w-16 h-16 bg-brand-green text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-brand-green/20">
         <Database className="w-8 h-8" />
       </div>
@@ -72,8 +92,14 @@ const LoginScreen: React.FC = () => {
         Для управления студией необходима авторизация администратора.
       </p>
 
-      <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
-        <div>
+      {magicLinkSent ? (
+        <div className="flex flex-col items-center gap-3 text-brand-green">
+          <CheckCircle className="w-10 h-10" />
+          <p className="font-medium">Ссылка отправлена на {email}</p>
+          <p className="text-stone-400 text-sm">Откройте письмо и нажмите на ссылку для входа.</p>
+        </div>
+      ) : (
+        <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
           <input
             type="email"
             placeholder="Email"
@@ -82,33 +108,52 @@ const LoginScreen: React.FC = () => {
             className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 outline-none transition-all"
             required
           />
-        </div>
-        <div>
           <input
             type="password"
             placeholder="Пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 outline-none transition-all"
-            required
           />
-        </div>
 
-        {errorMessage && (
-          <div className="p-3 bg-rose-50 text-rose-600 text-sm rounded-xl border border-rose-100 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            {errorMessage}
+          {localError && (
+            <div className="p-3 bg-rose-50 text-rose-600 text-sm rounded-xl border border-rose-100 flex items-center gap-2 text-left">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              {localError}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading || !password}
+            className="w-full py-3 bg-brand-green text-white rounded-xl font-medium hover:bg-brand-green/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Войти с паролем'}
+          </button>
+
+          <div className="relative flex items-center gap-3 text-stone-300 text-xs">
+            <div className="flex-1 h-px bg-stone-100" />
+            или
+            <div className="flex-1 h-px bg-stone-100" />
           </div>
-        )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 bg-brand-green text-white rounded-xl font-medium hover:bg-brand-green/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Войти'}
-        </button>
-      </form>
+          <button
+            type="button"
+            onClick={handleMagicLink}
+            disabled={magicLoading}
+            className="w-full py-3 border border-stone-200 text-stone-600 rounded-xl font-medium hover:bg-stone-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {magicLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <Mail className="w-4 h-4" />
+                Войти по ссылке на почту
+              </>
+            )}
+          </button>
+        </form>
+      )}
     </div>
   );
 };
