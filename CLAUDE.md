@@ -1,6 +1,6 @@
 # CLAUDE.md - AI Agent Instructions
 
-> **Last updated:** February 27, 2026 | **Version:** 3.1.0
+> **Last updated:** March 15, 2026 | **Version:** 3.2.0
 
 This file provides context and instructions for AI assistants (Claude Code,
 GitHub Copilot, Cursor, Codex, etc.) working with the KateStudio codebase.
@@ -66,6 +66,26 @@ KateStudio/
 - **Format**: 100% Prettier-clean
 - **Build**: Both WEB and APP build successfully
 - **Production Readiness**: 76/100 (security ✅, Capacitor ✅, payments pending)
+
+## Agent Execution Rules
+
+> These rules apply to all AI agents working on this codebase.
+
+### Think 2-3 Steps Ahead
+
+Before considering a task complete, the agent **must**:
+
+1. **Predict downstream effects** — ask "what breaks or fails next because of this change?"
+2. **Verify the full flow** — run `typecheck`, `lint`, and `test:run` after every change
+3. **Test the user-facing scenario** — consider the actual runtime path, not just compile-time correctness (e.g. auth event timing, network errors, API rate limits)
+4. **Commit only when all checks pass** — never commit with known errors or untested assumptions
+
+**Example of correct behaviour:**
+- Changing an auth flow → think: "will the session be ready when updateUser() is called?"
+- Adding a new component → think: "are the imports correct? will TypeScript complain? do tests need updating?"
+- Setting a DB value via SQL → think: "is the extension enabled? is the format compatible?"
+
+---
 
 ## Key Conventions
 
