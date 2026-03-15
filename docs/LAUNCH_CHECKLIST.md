@@ -12,7 +12,7 @@
 | `bookings` | 🟠 Partial | `ALTER` без `CREATE`, существует в Supabase |
 | `subscriptions` | ✅ | RLS обновлён (admin_subscriptions — 20260315000001) |
 | `analytics_events` | ✅ | RLS исправлен (admins.user_id — 20260309000001) |
-| `push_tokens` | ✅ | Миграция 20260309000000 |
+| `user_push_tokens` | ✅ | Миграция 20260309000000 |
 | `faq_items` | ✅ | Миграция 20260312000001 |
 | `site_images` | ✅ | Миграция 20260312000002 |
 | `retreats` | ✅ | Миграция 20260315000000 |

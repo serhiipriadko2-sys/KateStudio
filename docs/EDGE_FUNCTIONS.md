@@ -64,13 +64,22 @@ SUPABASE_ANON_KEY
 
 **Rate limiting:** in-memory Map (per-user). Для production scale нужен KV/Redis.
 
-**Запрос:**
+**Request:**
 
 ```typescript
-const { data } = await supabase.functions.invoke('gemini-proxy', {
-  body: { op: 'chat', message: 'Привет' },
+const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy`;
+const response = await fetch(url, {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+    authorization: `Bearer ${jwtToken}`,
+  },
+  body: JSON.stringify({ op: 'chat', message: 'Hello' }),
 });
 ```
+
+> Note: current client code calls Edge Functions via `fetch` to `/functions/v1/...`; `gemini-proxy` is not wired to ChatWidget (KB fallback).
 
 ---
 
@@ -187,7 +196,7 @@ Body: { "tasks": ["expire_subscriptions"] }
 
 **Назначение:** Отправка Firebase Cloud Messaging (FCM) push-уведомлений одному или нескольким пользователям.
 
-**Auth:** `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>` — только внутреннее использование.
+**Auth:** `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>` — только внутреннее использование (проверяется явно в коде функции).
 
 **Требуемые секреты:**
 
@@ -213,7 +222,7 @@ FIREBASE_SERVICE_ACCOUNT_JSON  # полный JSON service account
 **Поток:**
 
 ```text
-→ Получить FCM токены из таблицы push_tokens (по userIds)
+→ Получить FCM токены из таблицы user_push_tokens (по userIds)
 → Для каждого токена: POST к FCM API
 → Удалить невалидные токены (registration-token-not-registered)
 → Вернуть { sent: N, failed: M }

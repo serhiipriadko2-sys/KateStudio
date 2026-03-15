@@ -155,7 +155,7 @@ KateStudio/
 | `bookings` | Записи на занятия |
 | `subscriptions` | Подписки пользователей |
 | `analytics_events` | События аналитики |
-| `push_tokens` | FCM токены для push-уведомлений |
+| `user_push_tokens` | FCM токены для push-уведомлений |
 | `faq_items` | FAQ (с марта 2026) |
 | `site_images` | Управление изображениями сайта |
 | `retreats` | Таблица ретритов (с марта 2026) |

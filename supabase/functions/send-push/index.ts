@@ -32,6 +32,13 @@ type ServiceAccount = {
   token_uri: string;
 };
 
+function getBearerToken(req: Request): string | null {
+  const auth = req.headers.get('Authorization') ?? req.headers.get('authorization');
+  if (!auth) return null;
+  const match = auth.match(/^Bearer\s+(.+)$/i);
+  return match?.[1] ?? null;
+}
+
 // ── FCM Auth: create a short-lived OAuth2 token via Service Account JWT ──────
 
 async function getAccessToken(sa: ServiceAccount): Promise<string> {
@@ -159,6 +166,12 @@ serve(async (req: Request) => {
   if (!supabaseUrl || !serviceRoleKey || !projectId || !saJson) {
     console.error('send-push: missing required secrets');
     return json({ error: 'server_misconfigured' }, 500);
+  }
+
+  // Explicitly require internal bearer auth.
+  const token = getBearerToken(req);
+  if (!token || token !== serviceRoleKey) {
+    return json({ error: 'unauthorized' }, 401);
   }
 
   // Parse body

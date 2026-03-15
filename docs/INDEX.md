@@ -36,9 +36,10 @@
 
 ### Security и аудиты
 
+- [**SUPABASE_AUDIT_LIVE_2026_03_15.md**](./SUPABASE_AUDIT_LIVE_2026_03_15.md) — **АКТУАЛЬНО** Прямой аудит live Supabase (март 2026): 5 P0, 6 P1, 5 P2
 - [**SECURITY_REPORT_2026_02_11.md**](./SECURITY_REPORT_2026_02_11.md) — Аудит безопасности (февраль 2026): все P0 устранены
 - [**COMPREHENSIVE_AUDIT_FEB_2026.md**](./COMPREHENSIVE_AUDIT_FEB_2026.md) — Полный аудит (февраль 2026)
-- [**SUPABASE_AUDIT_REPORT.md**](./SUPABASE_AUDIT_REPORT.md) — Аудит базы данных
+- [**SUPABASE_AUDIT_REPORT.md**](./SUPABASE_AUDIT_REPORT.md) — Аудит базы данных (устаревший)
 
 ---
 
