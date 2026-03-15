@@ -18,28 +18,16 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ onClose 
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    // Parse tokens directly from the URL hash — no dependency on event timing.
-    // Supabase sends: #access_token=...&refresh_token=...&type=recovery
-    const params = new URLSearchParams(window.location.hash.slice(1));
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
-
-    if (!accessToken || !refreshToken) {
-      setErrorMsg('Ссылка для сброса пароля недействительна или устарела.');
-      setStatus('error');
-      return;
-    }
-
-    supabase.auth
-      .setSession({ access_token: accessToken, refresh_token: refreshToken })
-      .then(({ error }) => {
-        if (error) {
-          setErrorMsg('Ссылка устарела. Запросите новую через Supabase Dashboard.');
-          setStatus('error');
-        } else {
-          setStatus('ready');
-        }
-      });
+    // Supabase SDK automatically processes the recovery hash on init and establishes
+    // the session via onAuthStateChange. We just verify the session is active.
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error || !session) {
+        setErrorMsg('Ссылка устарела. Запросите новую через Supabase Dashboard.');
+        setStatus('error');
+      } else {
+        setStatus('ready');
+      }
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
