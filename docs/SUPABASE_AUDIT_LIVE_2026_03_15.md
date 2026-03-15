@@ -4,6 +4,7 @@
 > **Проект:** kate · eu-central-1 · PostgreSQL 17.6.1 · ACTIVE_HEALTHY
 > **Метод:** прямые SQL-запросы + Supabase MCP API (live данные)
 > **Версия документа:** 1.0.0
+> **Примечание sync (15 марта 2026):** количество SQL-файлов в репо обновлено до 35 после переноса checklist-скрипта из `supabase/migrations/`.
 
 ---
 
@@ -22,7 +23,7 @@
 | Contacts (форм) | **11** |
 | Analytics events | **914** |
 | Embeddings data | **1.6 MB** (vector, реальные данные) |
-| Applied migrations | **12** (из 34 SQL-файлов в репо) |
+| Applied migrations | **12** (из 35 SQL-файлов в репо) |
 | Deployed Edge Functions | **2** (`ai-run`, `ai-embeddings`) |
 
 ---
@@ -90,7 +91,7 @@ DROP POLICY "Allow public read/write profiles" ON public.profiles;
 
 ---
 
-### 🔴 C3 — Migration drift: 12 из 34 / schema вне контроля версий
+### 🔴 C3 — Migration drift: 12 из 35 / schema вне контроля версий
 
 **Реально применённые миграции (12):**
 
@@ -115,7 +116,7 @@ DROP POLICY "Allow public read/write profiles" ON public.profiles;
 `admins`, `articles`, `app_settings`, все RLS политики на них) — **создано вручную через SQL Editor**,
 вне системы миграций Supabase CLI.
 
-**Репозиторий содержит 34 SQL-файла в `supabase/migrations/`**, но их timestamps
+**Репозиторий содержит 35 SQL-файлов в `supabase/migrations/`**, но их timestamps
 (начиная с `20251227`) не совпадают с тем, что применено в БД.
 
 **Опасность:** `supabase db reset` уничтожит всю ручную схему и данные.
