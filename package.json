@@ -34,7 +34,7 @@
     "create-admin": "tsx scripts/create-admin.ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/supabase-js": "^2.99.1",
     "tsx": "^4.19.3"
   },
   "devDependencies": {
