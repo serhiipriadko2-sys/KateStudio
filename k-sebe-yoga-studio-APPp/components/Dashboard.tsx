@@ -44,11 +44,12 @@ import { Image } from './Image';
 import { Logo } from './Logo';
 // Paywall hidden — re-enable after launch
 // import { Paywall } from './Paywall';
+import { Schedule } from './Schedule';
 import { VideoLibrary } from './VideoLibrary';
 
 interface DashboardProps {
   onBack: () => void;
-  initialTab?: 'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
+  initialTab?: 'overview' | 'schedule' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
 }
 
 // Subscription labels hidden — re-enable after launch
@@ -58,7 +59,7 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'overview' }) => {
   const { user, setUser, logout, authStatus, isSupabaseConfigured } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev'
+    'overview' | 'schedule' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev'
   >(initialTab);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
@@ -292,9 +293,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   };
 
-  type DashboardTab = 'overview' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
+  type DashboardTab = 'overview' | 'schedule' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
   const navItems: { id: DashboardTab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'Главная', icon: <LayoutDashboard className="w-6 h-6" /> },
+    { id: 'schedule', label: 'Расписание', icon: <Calendar className="w-6 h-6" /> },
     { id: 'videos', label: 'Практики', icon: <Video className="w-6 h-6" /> },
     { id: 'breath', label: 'Дыхание', icon: <Wind className="w-6 h-6" /> },
     { id: 'ai', label: 'AI Тренер', icon: <Sparkles className="w-6 h-6" /> },
@@ -571,6 +573,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'schedule' && (
+            <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
+              <Schedule />
             </div>
           )}
 
