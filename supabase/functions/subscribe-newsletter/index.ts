@@ -14,7 +14,6 @@
  * Response:
  *   200 { success: true }
  *   400 { error: 'invalid_email' | 'missing_email' }
- *   409 { error: 'already_subscribed' }
  *   500 { error: 'server_error' }
  */
 
@@ -75,7 +74,8 @@ serve(async (req: Request) => {
 
   const payload = {
     email_address: email,
-    status: 'subscribed',
+    // Use double opt-in to prevent adding arbitrary third-party emails directly.
+    status: 'pending',
     ...(firstName || lastName
       ? { merge_fields: { FNAME: firstName, LNAME: lastName } }
       : {}),
@@ -105,9 +105,9 @@ serve(async (req: Request) => {
   const mcBody = await mcRes.json().catch(() => ({}));
   const title: string = mcBody?.title ?? '';
 
-  // "Member Exists" is returned when already subscribed
+  // Return generic success to avoid leaking list membership status.
   if (mcRes.status === 400 && title === 'Member Exists') {
-    return json({ error: 'already_subscribed' }, 409);
+    return json({ success: true }, 200);
   }
 
   console.error('subscribe-newsletter: Mailchimp error', mcRes.status, mcBody);
