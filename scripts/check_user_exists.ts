@@ -25,8 +25,15 @@ async function checkUser() {
   console.log('🔍 Checking user in Supabase auth...\n');
 
   // Try to sign in to verify credentials
-  const email = 'serhiipriadko2@gmail.com';
-  const password = '3binpqfmf';
+  const email = process.env.CHECK_USER_EMAIL ?? process.argv[2];
+  const password = process.env.CHECK_USER_PASSWORD ?? process.argv[3];
+
+  if (!email || !password) {
+    console.error('❌ Missing login credentials.');
+    console.log('Usage: npm run check-user <email> <password>');
+    console.log('or set CHECK_USER_EMAIL and CHECK_USER_PASSWORD env vars.');
+    return;
+  }
 
   console.log(`📝 Testing login: ${email}`);
 
@@ -36,7 +43,7 @@ async function checkUser() {
     console.error('❌ Login failed:', error.message);
     console.log('\n💡 User does not exist or credentials are wrong.');
     console.log('\n📝 To create user, run:');
-    console.log('   npm run create-admin serhiipriadko2@gmail.com 3binpqfmf "Сергей"');
+    console.log('   npm run create-admin <email> <password> "<name>"');
     return;
   }
 
