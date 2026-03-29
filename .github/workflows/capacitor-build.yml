@@ -20,6 +20,27 @@ on:
         options:
           - debug
           - release
+      android_release_type:
+        description: 'Android release artifact type'
+        required: true
+        default: 'APK'
+        type: choice
+        options:
+          - APK
+          - AAB
+      ios_export_method:
+        description: 'iOS export method for release builds'
+        required: true
+        default: 'app-store-connect'
+        type: choice
+        options:
+          - app-store-connect
+          - release-testing
+          - enterprise
+          - debugging
+          - developer-id
+          - mac-application
+          - validation
 
 # Only one native build at a time to avoid Gradle/Xcode conflicts
 concurrency:
@@ -98,28 +119,74 @@ jobs:
         working-directory: k-sebe-yoga-studio-APPp
         run: npx cap sync android
 
+      - name: Ensure Gradle wrapper is executable
+        working-directory: k-sebe-yoga-studio-APPp/android
+        run: chmod +x gradlew
+
       - name: Build Android Debug APK
         if: inputs.build_type == 'debug'
         working-directory: k-sebe-yoga-studio-APPp/android
         run: ./gradlew assembleDebug
 
-      - name: Build Android Release APK
+      - name: Prepare Android signing keystore
         if: inputs.build_type == 'release'
-        working-directory: k-sebe-yoga-studio-APPp/android
-        run: ./gradlew assembleRelease
         env:
-          KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${ANDROID_KEYSTORE_BASE64:-}" ]; then
+            echo "::error::Missing ANDROID_KEYSTORE_BASE64 secret"
+            exit 1
+          fi
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
 
-      - name: Upload APK
+      - name: Build Android Release Artifact
+        if: inputs.build_type == 'release'
+        working-directory: k-sebe-yoga-studio-APPp
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for var in ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!var:-}" ]; then
+              echo "::error::Missing $var secret"
+              exit 1
+            fi
+          done
+          npm exec cap -- build android \
+            --androidreleasetype "${{ inputs.android_release_type }}" \
+            --signing-type apksigner \
+            --keystorepath "$RUNNER_TEMP/release.keystore" \
+            --keystorepass "$ANDROID_KEYSTORE_PASSWORD" \
+            --keystorealias "$ANDROID_KEY_ALIAS" \
+            --keystorealiaspass "$ANDROID_KEY_PASSWORD"
+
+      - name: Upload Android Debug APK
+        if: inputs.build_type == 'debug'
         uses: actions/upload-artifact@v6
         with:
-          name: android-${{ inputs.build_type }}-apk
-          path: |
-            k-sebe-yoga-studio-APPp/android/app/build/outputs/apk/debug/*.apk
-            k-sebe-yoga-studio-APPp/android/app/build/outputs/apk/release/*.apk
+          name: android-debug-apk
+          path: k-sebe-yoga-studio-APPp/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 7
+
+      - name: Upload Android Release APK
+        if: inputs.build_type == 'release' && inputs.android_release_type == 'APK'
+        uses: actions/upload-artifact@v6
+        with:
+          name: android-release-apk
+          path: k-sebe-yoga-studio-APPp/android/app/build/outputs/apk/release/*-signed.apk
+          retention-days: 7
+
+      - name: Upload Android Release AAB
+        if: inputs.build_type == 'release' && inputs.android_release_type == 'AAB'
+        uses: actions/upload-artifact@v6
+        with:
+          name: android-release-aab
+          path: k-sebe-yoga-studio-APPp/android/app/build/outputs/bundle/release/*-signed.aab
           retention-days: 7
 
   # ── iOS build ─────────────────────────────────────────────────────────────
@@ -161,6 +228,56 @@ jobs:
         working-directory: k-sebe-yoga-studio-APPp/ios/App
         run: pod install
 
+      - name: Install Apple certificate and provisioning profile
+        id: ios-signing
+        if: inputs.build_type == 'release'
+        env:
+          IOS_BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_CERTIFICATE_BASE64 }}
+          IOS_P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+          IOS_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_BUILD_PROVISION_PROFILE_BASE64 }}
+          IOS_KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for var in IOS_BUILD_CERTIFICATE_BASE64 IOS_P12_PASSWORD IOS_BUILD_PROVISION_PROFILE_BASE64 IOS_KEYCHAIN_PASSWORD; do
+            if [ -z "${!var:-}" ]; then
+              echo "::error::Missing $var secret"
+              exit 1
+            fi
+          done
+
+          CERTIFICATE_PATH="$RUNNER_TEMP/build_certificate.p12"
+          PP_PATH="$RUNNER_TEMP/build_pp.mobileprovision"
+          PP_PLIST="$RUNNER_TEMP/build_pp.plist"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+
+          printf '%s' "$IOS_BUILD_CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
+          printf '%s' "$IOS_BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > "$PP_PATH"
+
+          security create-keychain -p "$IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$IOS_P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$IOS_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
+
+          security cms -D -i "$PP_PATH" > "$PP_PLIST"
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$PP_PLIST")
+          CERTIFICATE_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | awk 'NR==1 {print $2}')
+
+          if [ -z "${PROFILE_UUID:-}" ] || [ -z "${CERTIFICATE_IDENTITY:-}" ]; then
+            echo "::error::Unable to resolve provisioning profile UUID or signing certificate identity"
+            exit 1
+          fi
+
+          {
+            echo "profile_uuid=$PROFILE_UUID"
+            echo "certificate_identity=$CERTIFICATE_IDENTITY"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build iOS (simulator)
         if: inputs.build_type == 'debug'
         working-directory: k-sebe-yoga-studio-APPp/ios/App
@@ -175,10 +292,46 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             | xcpretty
 
-      - name: Upload iOS build
+      - name: Build iOS Release IPA
+        if: inputs.build_type == 'release'
+        working-directory: k-sebe-yoga-studio-APPp
+        env:
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${IOS_TEAM_ID:-}" ]; then
+            echo "::error::Missing IOS_TEAM_ID secret"
+            exit 1
+          fi
+          npm exec cap -- build ios \
+            --configuration Release \
+            --scheme App \
+            --xcode-team-id "$IOS_TEAM_ID" \
+            --xcode-export-method "${{ inputs.ios_export_method }}" \
+            --xcode-signing-style manual \
+            --xcode-signing-certificate "${{ steps.ios-signing.outputs.certificate_identity }}" \
+            --xcode-provisioning-profile "${{ steps.ios-signing.outputs.profile_uuid }}"
+
+      - name: Upload iOS simulator build
         if: inputs.build_type == 'debug'
         uses: actions/upload-artifact@v6
         with:
           name: ios-debug-app
           path: k-sebe-yoga-studio-APPp/ios/App/build/Build/Products/Debug-iphonesimulator/*.app
           retention-days: 7
+
+      - name: Upload iOS release IPA
+        if: inputs.build_type == 'release'
+        uses: actions/upload-artifact@v6
+        with:
+          name: ios-release-ipa
+          path: k-sebe-yoga-studio-APPp/ios/App/output/*.ipa
+          retention-days: 7
+
+      - name: Clean up Apple signing material
+        if: ${{ always() && inputs.build_type == 'release' }}
+        shell: bash
+        run: |
+          security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" || true
+          rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision

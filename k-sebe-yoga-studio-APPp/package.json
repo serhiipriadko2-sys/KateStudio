@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "build:mobile": "sh -c 'npm run build && (npm exec cap -- sync android || (npm exec cap -- add android && npm exec cap -- sync android))'",
-    "build:mobile:ios": "sh -c 'npm run build && (npm exec cap -- sync ios || (npm exec cap -- add ios && npm exec cap -- sync ios))'",
+    "build:mobile": "node ./scripts/capacitor-platform.mjs android",
+    "build:mobile:ios": "node ./scripts/capacitor-platform.mjs ios",
     "cap:sync": "npm exec cap -- sync",
     "cap:sync:android": "npm exec cap -- sync android",
     "cap:sync:ios": "npm exec cap -- sync ios",
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@capacitor/app": "^7.1.2",
-    "@capacitor/core": "^7.6.0",
+    "@capacitor/core": "8.1.0",
     "@capacitor/haptics": "^7.0.4",
     "@capacitor/keyboard": "^7.0.5",
     "@capacitor/network": "^7.0.4",
@@ -36,9 +36,9 @@
     "firebase": "^11.0.0"
   },
   "devDependencies": {
-    "@capacitor/android": "^8.1.0",
-    "@capacitor/cli": "^8.1.0",
-    "@capacitor/ios": "^8.1.0",
+    "@capacitor/android": "8.1.0",
+    "@capacitor/cli": "8.1.0",
+    "@capacitor/ios": "8.1.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^25.3.3",
     "@types/react": "^19.2.14",

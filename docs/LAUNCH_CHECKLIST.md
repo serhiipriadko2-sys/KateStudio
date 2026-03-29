@@ -60,7 +60,7 @@
 | Элемент | Статус | Примечание |
 | --- | --- | --- |
 | `.env` файлы (локально) | ⏳ | Создавать вручную из `.env.example` |
-| GitHub Secrets | ✅ | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `FIREBASE_SERVICE_ACCOUNT`, `CRON_SECRET`, `SUPABASE_URL` |
+| GitHub Secrets | 🟠 Partial | Базовые secrets готовы; для mobile release нужны `ANDROID_*` и `IOS_*` signing secrets |
 | Firebase deploy workflow | ✅ | `firebase-deploy.yml` настроен |
 | Web 404 handling | ✅ | `public/404.html` для SPA routing |
 | Capacitor mobile build | ✅ | `npm run build:mobile` (Android) |
@@ -80,6 +80,8 @@
 | Android back button | ✅ | Минимизация при пустой истории |
 | Android Studio project | ⏳ | Генерируется локально: `npm run cap:add:android` |
 | Xcode project | ⏳ | Требует macOS + CocoaPods |
+| Android signed release artifact | 🟠 Partial | Workflow готовит signed `APK/AAB` после настройки `ANDROID_*` secrets |
+| iOS signed IPA export | 🟠 Partial | Workflow экспортирует `ipa` после настройки `IOS_*` secrets |
 
 ---
 

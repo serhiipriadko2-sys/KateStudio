@@ -50,3 +50,4 @@ Android/iOS приложение без полного переписывани�
 - Это снижает PR-шум и исключает проблемы с бинарными файлами в review tooling.
 - Runtime secrets остаются на backend (Supabase Edge Functions).
 - Для iOS требуется CocoaPods (`pod install`), обычно на macOS/Xcode.
+- Для signed release artifacts (`APK/AAB`, `IPA`) см. `docs/MOBILE_RELEASES.md`.
