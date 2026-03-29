@@ -153,6 +153,13 @@ export default [
     },
   },
   {
+    // Scripts are developer CLI tools — console output is intentional
+    files: ['scripts/**/*.{ts,js,mjs,cjs}'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
     files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
     languageOptions: {
       globals: {

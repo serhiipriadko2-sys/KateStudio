@@ -36,3 +36,11 @@ Thumbs.db
 # Generated
 *.d.ts
 coverage/
+
+# Documentation — free-form prose, skip auto-formatting
+**/*.md
+docs/
+skills/
+
+# Claude Code local settings
+.claude/

@@ -8,9 +8,7 @@ const MIGRATIONS_DIR = path.join(process.cwd(), 'supabase', 'migrations');
 const FILE_PATTERN = /^(\d{8}|\d{14})_([a-z0-9]+(?:_[a-z0-9]+)*)\.sql$/;
 
 // Legacy naming kept for backward compatibility with already applied history.
-const LEGACY_SHORT_TIMESTAMP_FILES = new Set([
-  '20260205_create_contacts.sql',
-]);
+const LEGACY_SHORT_TIMESTAMP_FILES = new Set(['20260205_create_contacts.sql']);
 
 // Known collisions are frozen until a dedicated migration-governance task.
 const KNOWN_TIMESTAMP_COLLISIONS = new Map([
@@ -73,9 +71,7 @@ for (const [timestamp, groupedFiles] of byTimestamp.entries()) {
 
   const known = KNOWN_TIMESTAMP_COLLISIONS.get(timestamp);
   if (!known) {
-    issues.push(
-      `Unexpected timestamp collision ${timestamp}: ${groupedFiles.join(', ')}`
-    );
+    issues.push(`Unexpected timestamp collision ${timestamp}: ${groupedFiles.join(', ')}`);
     continue;
   }
 
@@ -89,9 +85,7 @@ for (const [timestamp, groupedFiles] of byTimestamp.entries()) {
 
   for (const fileName of known) {
     if (!actual.has(fileName)) {
-      issues.push(
-        `Known collision entry missing for ${timestamp}: ${fileName}`
-      );
+      issues.push(`Known collision entry missing for ${timestamp}: ${fileName}`);
     }
   }
 }
@@ -104,9 +98,7 @@ for (const [timestamp, knownFiles] of KNOWN_TIMESTAMP_COLLISIONS.entries()) {
   }
   for (const fileName of knownFiles) {
     if (!actual.has(fileName)) {
-      issues.push(
-        `Known collision baseline mismatch for ${timestamp}: missing ${fileName}`
-      );
+      issues.push(`Known collision baseline mismatch for ${timestamp}: missing ${fileName}`);
     }
   }
 }
