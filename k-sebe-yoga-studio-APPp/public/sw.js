@@ -2,12 +2,13 @@
  * K Sebe Yoga Studio - Service Worker
  * Provides offline support and caching strategies
  *
- * IMPORTANT: skipWaiting() is only called on explicit user request
- * to avoid breaking resource consistency during runtime.
+ * skipWaiting() is called on install so the new SW activates immediately
+ * on the next page visit. This prevents serving a stale index.html with
+ * old chunk hashes after a new deployment.
  * @see https://web.dev/articles/service-worker-lifecycle
  */
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `ksebe-app-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `ksebe-runtime-${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline.html';
@@ -22,8 +23,9 @@ const PRECACHE_ASSETS = [
   '/manifest.json',
 ];
 
-// Install event - precache essential assets
-// NOTE: We do NOT call skipWaiting() here - only on user request
+// Install event - precache essential assets and activate immediately.
+// skipWaiting() ensures the new SW takes over on the next page visit
+// without requiring manual "Clear Site Data" after each deployment.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -31,6 +33,7 @@ self.addEventListener('install', (event) => {
       return cache.addAll(PRECACHE_ASSETS);
     })
   );
+  self.skipWaiting();
 });
 
 // Activate event - clean up old caches

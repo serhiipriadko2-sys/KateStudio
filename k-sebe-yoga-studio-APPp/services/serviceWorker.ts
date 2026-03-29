@@ -1,11 +1,11 @@
 /**
  * Service Worker Registration Service
- * Handles PWA registration with proper update UX patterns
+ * Handles PWA registration with automatic update activation.
  *
  * Key principles:
- * - Only call skipWaiting() on explicit user request
- * - Show update banner only when registration.waiting exists
- * - Handle controller change for clean refresh
+ * - sw.js calls skipWaiting() on install → new SW activates immediately
+ * - controllerchange triggers window.location.reload() for fresh content
+ * - UpdateBanner is a fallback for edge cases where waiting SW exists
  *
  * @see https://web.dev/articles/service-worker-lifecycle
  */

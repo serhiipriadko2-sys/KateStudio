@@ -20,7 +20,7 @@ import {
   Trophy,
   ChevronRight,
   User,
-  Sparkles,
+  // Sparkles, // AI tab hidden — re-enable after launch
   Loader2,
   X,
   Edit2,
@@ -37,7 +37,7 @@ import { dataService } from '../services/dataService';
 import { subscriptionService } from '../services/subscriptionService';
 import { Booking, Subscription } from '../types';
 import { Achievements } from './Achievements';
-import { AICoach } from './AICoach';
+// import { AICoach } from './AICoach'; // AI hidden — re-enable after launch
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
 import { Image } from './Image';
@@ -49,7 +49,7 @@ import { VideoLibrary } from './VideoLibrary';
 
 interface DashboardProps {
   onBack: () => void;
-  initialTab?: 'overview' | 'schedule' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
+  initialTab?: 'overview' | 'schedule' | 'videos' | 'breath' | 'profile' | 'dev';
 }
 
 // Subscription labels hidden — re-enable after launch
@@ -59,7 +59,7 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'overview' }) => {
   const { user, setUser, logout, authStatus, isSupabaseConfigured } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'schedule' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev'
+    'overview' | 'schedule' | 'videos' | 'breath' | 'profile' | 'dev'
   >(initialTab);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
@@ -293,13 +293,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   };
 
-  type DashboardTab = 'overview' | 'schedule' | 'videos' | 'breath' | 'ai' | 'profile' | 'dev';
+  type DashboardTab = 'overview' | 'schedule' | 'videos' | 'breath' | 'profile' | 'dev';
   const navItems: { id: DashboardTab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'Главная', icon: <LayoutDashboard className="w-6 h-6" /> },
     { id: 'schedule', label: 'Расписание', icon: <Calendar className="w-6 h-6" /> },
     { id: 'videos', label: 'Практики', icon: <Video className="w-6 h-6" /> },
     { id: 'breath', label: 'Дыхание', icon: <Wind className="w-6 h-6" /> },
-    { id: 'ai', label: 'AI Тренер', icon: <Sparkles className="w-6 h-6" /> },
+    // { id: 'ai', label: 'AI Тренер', icon: <Sparkles className="w-6 h-6" /> }, // hidden — re-enable after launch
     { id: 'profile', label: 'Профиль', icon: <User className="w-6 h-6" /> },
   ];
 
@@ -604,7 +604,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             </div>
           )}
 
-          {activeTab === 'ai' && (
+          {/* AI Тренер tab hidden — re-enable after launch */}
+          {/* {activeTab === 'ai' && (
             <div className="max-w-2xl mx-auto h-[80vh] flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-500 pb-24">
               <header className="mb-6">
                 <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">AI Тренер</h1>
@@ -612,7 +613,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               </header>
               <AICoach />
             </div>
-          )}
+          )} */}
 
           {activeTab === 'profile' && (
             <div className="max-w-md mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500 pb-24">
