@@ -98,12 +98,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For navigation requests (HTML pages) - Network First
+  // For navigation requests (HTML pages) - Network First, bypassing HTTP cache.
+  // Using cache: 'no-store' on the fetch so the browser's HTTP cache never
+  // returns a stale index.html with outdated chunk hashes after a deployment.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      fetch(new Request(request, { cache: 'no-store' }))
         .then((response) => {
-          // Cache successful navigation responses
+          // Cache successful navigation responses for offline fallback
           if (response.ok) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -113,7 +115,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // Return cached page or offline page
+          // Offline: return cached page or offline page
           return caches.match(request).then((cachedResponse) => {
             return cachedResponse || caches.match(OFFLINE_URL);
           });
