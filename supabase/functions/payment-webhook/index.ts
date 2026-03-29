@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
         return new Response('Database error', { status: 500 });
       }
 
-      console.log(`Subscription activated: user=${userId} plan=${planId}`);
+      console.warn(`Subscription activated: user=${userId} plan=${planId}`);
     }
 
     // --- Payment canceled: mark subscription as canceled ---
@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
         return new Response('Database error', { status: 500 });
       }
 
-      console.log(`Subscription canceled: user=${userId}`);
+      console.warn(`Subscription canceled: user=${userId}`);
     }
 
     return new Response('OK', { status: 200 });

@@ -1,7 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Mock } from 'vitest';
 import { useIsAdmin } from '../useIsAdmin';
 
 const { mockGetUser, mockRpc, mockOnAuthStateChange } = vi.hoisted(() => ({

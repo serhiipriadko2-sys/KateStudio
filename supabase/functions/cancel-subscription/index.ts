@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       return json({ error: 'Failed to cancel subscription' }, { status: 500 }, cors);
     }
 
-    console.log(`Subscription canceled: user=${user.id}`);
+    console.warn(`Subscription canceled: user=${user.id}`);
     return json({ success: true, subscription }, {}, cors);
   } catch (e) {
     console.error('Cancel subscription error:', e);

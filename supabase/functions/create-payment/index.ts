@@ -1,8 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.47.10';
 import { z } from 'npm:zod@3.24.1';
 
-type PlanId = 'free' | 'premium' | 'vip';
-
 const CreatePaymentRequestSchema = z.object({
   plan: z.enum(['free', 'premium', 'vip']),
   returnUrl: z.string().url().optional(),

@@ -257,7 +257,7 @@ serve(async (req: Request) => {
   const sent = results.filter((r) => r.success).length;
   const failed = results.filter((r) => !r.success).length;
 
-  console.log(`send-push: sent=${sent} failed=${failed}`);
+  console.warn(`send-push: sent=${sent} failed=${failed}`);
   return json({ sent, failed, total: rows.length });
 });
 

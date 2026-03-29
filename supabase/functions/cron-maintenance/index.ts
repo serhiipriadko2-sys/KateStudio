@@ -210,7 +210,7 @@ serve(async (req: Request) => {
     ...(Object.keys(errors).length > 0 ? { errors } : {}),
   };
 
-  console.log('cron-maintenance completed:', JSON.stringify(response));
+  console.warn('cron-maintenance completed:', JSON.stringify(response));
 
   return new Response(JSON.stringify(response), {
     status: response.ok ? 200 : 207, // 207 Multi-Status if partial failure
