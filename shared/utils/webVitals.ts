@@ -139,7 +139,7 @@ export function observeINP(callback: ReportCallback): () => void {
         type: 'event',
         buffered: true,
         durationThreshold: INP_DURATION_THRESHOLD_MS,
-      } as any /* eslint-disable-line @typescript-eslint/no-explicit-any */
+      } as any /* eslint-disable-line @typescript-eslint/no-explicit-any -- durationThreshold is a valid Chrome-only PerformanceObserver option not yet in the TypeScript lib.dom types */
     );
 
     return () => observer.disconnect();

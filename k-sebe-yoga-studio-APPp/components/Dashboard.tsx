@@ -67,7 +67,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
   // Subscription State (hidden — re-enable after launch)
   const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [_subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [, setSubscriptionLoading] = useState(false);
   // subscriptionActionLoading, showPaywall — hidden, re-enable after launch
   // const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
   // const [showPaywall, setShowPaywall] = useState(false);

@@ -17,6 +17,7 @@ import { BookingModal } from './components/BookingModal';
 // import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
 import { Directions } from './components/Directions';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { FirstVisit } from './components/FirstVisit';
 import { Footer } from './components/Footer';
 import { Gallery } from './components/Gallery';
@@ -444,9 +445,11 @@ function App() {
           <Route
             path="/admin"
             element={
-              <Suspense fallback={null}>
-                <AdminPanel isOpen={true} onClose={() => navigate('/')} />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={null}>
+                  <AdminPanel isOpen={true} onClose={() => navigate('/')} />
+                </Suspense>
+              </ErrorBoundary>
             }
           />
         </Routes>

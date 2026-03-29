@@ -2,6 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Mock } from 'vitest';
+import { useIsAdmin } from '../useIsAdmin';
 
 const { mockGetUser, mockRpc, mockOnAuthStateChange } = vi.hoisted(() => ({
   mockGetUser: vi.fn(),
@@ -19,8 +20,6 @@ vi.mock('../../services/supabase', () => ({
   },
   isSupabaseConfigured: true,
 }));
-
-import { useIsAdmin } from '../useIsAdmin';
 
 const MOCK_USER = { id: 'user-123', email: 'admin@test.com' };
 

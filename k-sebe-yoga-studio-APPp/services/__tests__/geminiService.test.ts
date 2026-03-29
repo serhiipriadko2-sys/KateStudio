@@ -1,12 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-
-vi.mock('@ksebe/shared', () => ({
-  getKnowledgeBaseResponse: vi.fn().mockReturnValue({
-    text: 'Поза воина — базовая поза.',
-    sources: [{ title: 'KB', url: '#' }],
-  }),
-}));
-
 import {
   analyzeMedia,
   createMeditation,
@@ -18,6 +10,13 @@ import {
   getGeminiChatStream,
   getThinkingResponse,
 } from '../geminiService';
+
+vi.mock('@ksebe/shared', () => ({
+  getKnowledgeBaseResponse: vi.fn().mockReturnValue({
+    text: 'Поза воина — базовая поза.',
+    sources: [{ title: 'KB', url: '#' }],
+  }),
+}));
 
 describe('geminiService (MVP stubs)', () => {
   it('getThinkingResponse returns disabled message', async () => {

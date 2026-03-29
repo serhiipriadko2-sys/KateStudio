@@ -98,7 +98,7 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
 
   // --- MUTATIONS ---
   const saveMutation = useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- payload.data is a partial classes row; exact shape varies by form fields, typed at the UI layer
     mutationFn: async (payload: { id?: string; data: any }) => {
       if (!supabase) throw new Error('Supabase not initialized');
       if (payload.id) {

@@ -1,6 +1,7 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Mock } from 'vitest';
+import { useGamification } from '../useGamification';
 
 const { mockFrom, mockRpc } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
@@ -13,8 +14,6 @@ vi.mock('../../services/supabase', () => ({
     rpc: mockRpc,
   },
 }));
-
-import { useGamification } from '../useGamification';
 
 function makeFromBuilder(overrides: Record<string, unknown> = {}) {
   const builder: Record<string, unknown> = {

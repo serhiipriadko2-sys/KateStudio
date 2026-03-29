@@ -133,14 +133,14 @@ export const UserCabinet: React.FC<UserCabinetProps> = ({ isOpen, onClose }) => 
 
   const getStatusLabel = (status: string | null) => {
     switch (status) {
-      case 'confirmed':
-        return { text: 'Подтверждено', cls: 'bg-brand-mint/30 text-brand-green' };
-      case 'pending':
-        return { text: 'Ожидает', cls: 'bg-amber-100 text-amber-700' };
+      case 'active':
+        return { text: 'Активная', cls: 'bg-brand-mint/30 text-brand-green' };
       case 'cancelled':
         return { text: 'Отменено', cls: 'bg-stone-100 text-stone-500' };
       case 'completed':
         return { text: 'Завершено', cls: 'bg-stone-100 text-stone-500' };
+      case 'no_show':
+        return { text: 'Не явился', cls: 'bg-rose-50 text-rose-400' };
       default:
         return { text: 'Новая', cls: 'bg-blue-50 text-blue-600' };
     }

@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { AuthProvider, useAuth } from '../AuthContext';
 
 // Use vi.hoisted so all mock functions are available inside vi.mock factories
 const {
@@ -57,8 +58,6 @@ vi.mock('../../services/retentionService', () => ({
     bootstrapForUser: vi.fn().mockResolvedValue(undefined),
   },
 }));
-
-import { AuthProvider, useAuth } from '../AuthContext';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>

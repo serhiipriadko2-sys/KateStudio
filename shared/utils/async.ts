@@ -209,7 +209,7 @@ export function debounceAsync<T extends (...args: unknown[]) => Promise<unknown>
         try {
           const result = await fn(...args);
           resolvePromise?.(
-            result as any /* eslint-disable-line @typescript-eslint/no-explicit-any */
+            result as any /* eslint-disable-line @typescript-eslint/no-explicit-any -- generic ReturnType cannot be inferred through the deferred-promise pattern; safe because fn is typed at the call site */
           );
         } catch (error) {
           rejectPromise?.(error);
@@ -260,7 +260,9 @@ export function throttleAsync<T extends (...args: unknown[]) => Promise<unknown>
             lastCall = Date.now();
             const result = await fn(...args);
             pendingPromise = null;
-            resolve(result as any /* eslint-disable-line @typescript-eslint/no-explicit-any */);
+            resolve(
+              result as any /* eslint-disable-line @typescript-eslint/no-explicit-any -- same deferred-promise generic inference issue as debounceAsync above */
+            );
           },
           delayMs - (now - lastCall)
         );

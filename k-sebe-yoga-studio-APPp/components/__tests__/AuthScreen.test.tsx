@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { AuthScreen } from '../AuthScreen';
 
 vi.mock('../Logo', () => ({
   Logo: () => <div data-testid="logo" />,
@@ -10,8 +11,6 @@ const mockUseAuth = vi.hoisted(() => vi.fn());
 vi.mock('../../context/AuthContext', () => ({
   useAuth: mockUseAuth,
 }));
-
-import { AuthScreen } from '../AuthScreen';
 
 const mockSignUp = vi.fn();
 const mockSignIn = vi.fn();

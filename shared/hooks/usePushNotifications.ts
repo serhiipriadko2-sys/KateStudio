@@ -136,7 +136,7 @@ export function usePushNotifications(
     } finally {
       setIsLoading(false);
     }
-  }, [supported, userId]);
+  }, [supported, userId, firebaseConfig]);
 
   const unsubscribe = useCallback(async () => {
     if (!userId) return;

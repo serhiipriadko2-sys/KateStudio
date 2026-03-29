@@ -9,6 +9,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { AuthScreen } from './components/AuthScreen';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Logo } from './components/Logo';
 import { OnboardingQuizModal, type OnboardingData } from './components/OnboardingQuizModal';
 import { useAuth } from './context/AuthContext';
@@ -290,9 +291,11 @@ export function App() {
 
   return (
     <>
-      <Suspense fallback={<LoadingFallback />}>
-        <Dashboard onBack={() => {}} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingFallback />}>
+          <Dashboard onBack={() => {}} />
+        </Suspense>
+      </ErrorBoundary>
 
       <UpdateBanner
         visible={updateAvailable}
