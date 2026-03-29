@@ -33,7 +33,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "@sentry/react": "^8.54.0",
-    "firebase": "^11.0.0"
+    "firebase": "^12.11.0"
   },
   "devDependencies": {
     "@capacitor/android": "8.1.0",
