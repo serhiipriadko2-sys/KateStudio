@@ -1,7 +1,7 @@
 /**
  * Tests for async utilities
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   safeAsync,
   retryAsync,
@@ -14,6 +14,14 @@ import {
 describe('Async Utilities', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(console, 'debug').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('safeAsync', () => {

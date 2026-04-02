@@ -12,6 +12,7 @@ vi.mock('@ksebe/shared', () => ({
 describe('videoService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   it('returns videos on success', async () => {

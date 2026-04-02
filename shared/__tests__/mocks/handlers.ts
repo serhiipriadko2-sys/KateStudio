@@ -39,6 +39,14 @@ const DEFAULT_REVIEWS = [
   },
 ];
 
+const DEFAULT_USER_PROGRESS = {
+  user_id: 'test-user',
+  current_streak: 0,
+  max_streak: 0,
+  total_xp: 0,
+  level: 1,
+};
+
 export const handlers = [
   // GET app_settings (used by useStudioContacts)
   http.get(`${SUPABASE_URL}/rest/v1/app_settings`, () => {
@@ -53,5 +61,26 @@ export const handlers = [
   // GET reviews
   http.get(`${SUPABASE_URL}/rest/v1/reviews`, () => {
     return HttpResponse.json(DEFAULT_REVIEWS);
+  }),
+
+  // GET pricing_plans
+  http.get(`${SUPABASE_URL}/rest/v1/pricing_plans`, () => {
+    return HttpResponse.json([]);
+  }),
+
+  // GET site_images mapping
+  http.get(`${SUPABASE_URL}/rest/v1/site_images`, () => {
+    return HttpResponse.json(null);
+  }),
+
+  // GET user_progress
+  http.get(`${SUPABASE_URL}/rest/v1/user_progress`, () => {
+    return HttpResponse.json(DEFAULT_USER_PROGRESS);
+  }),
+
+  // INSERT user_progress
+  http.post(`${SUPABASE_URL}/rest/v1/user_progress`, async ({ request }) => {
+    const payload = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ ...DEFAULT_USER_PROGRESS, ...payload });
   }),
 ];

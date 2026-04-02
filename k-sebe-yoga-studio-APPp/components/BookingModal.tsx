@@ -54,9 +54,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
     try {
       // Execute booking via Service
-      const success = await dataService.bookClass(classDetails, user);
+      const bookingResult = await dataService.bookClass(classDetails, user);
 
-      if (success) {
+      if (bookingResult.ok) {
         const cached = await dataService.getUser();
         if (cached) setUser(cached);
 
@@ -65,7 +65,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         if (onSuccess) onSuccess();
       } else {
         void hapticError();
+        setError(
+          bookingResult.status === 'duplicate'
+            ? 'Вы уже записаны на эту практику.'
+            : bookingResult.status === 'auth_required'
+              ? 'Для бронирования нужно снова войти в аккаунт и подтвердить телефон.'
+              : 'Не удалось записаться. Сервер временно недоступен, попробуйте позже.'
+        );
+        return;
+        /*
         setError('Не удалось записаться. Проверьте, что вы вошли в аккаунт.');
+        */
       }
     } catch (e) {
       void hapticError();
@@ -202,7 +212,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </div>
 
             {error && (
-              <div className="mb-4 p-3 bg-rose-50 text-rose-600 rounded-xl text-sm flex items-center gap-2">
+              <div
+                role="alert"
+                className="mb-4 p-3 bg-rose-50 text-rose-600 rounded-xl text-sm flex items-center gap-2"
+              >
                 <AlertCircle className="w-4 h-4" />
                 {error}
               </div>

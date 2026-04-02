@@ -24,6 +24,8 @@ describe('subscriptionService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubGlobal('fetch', vi.fn());
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   // ─── getCurrentSubscription ──────────────────────────────────────────────────

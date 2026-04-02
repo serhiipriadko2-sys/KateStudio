@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import React from 'react';
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { server } from '../../../shared/__tests__/mocks/server';
 import { useStudioContacts } from '../useStudioContacts';
 
@@ -23,6 +23,10 @@ const createWrapper = () => {
 };
 
 describe('useStudioContacts', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
   it('should return default contacts on error', async () => {
     // Override the default handler to simulate a server error
     server.use(

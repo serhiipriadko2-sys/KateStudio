@@ -22,7 +22,6 @@ export default [
       '**/ios/**',
       '**/*.config.js',
       '**/*.config.cjs',
-      'scripts/**/*.mjs',
     ],
   },
   {
@@ -154,7 +153,21 @@ export default [
   },
   {
     // Scripts are developer CLI tools — console output is intentional
-    files: ['scripts/**/*.{ts,js,mjs,cjs}'],
+    files: ['**/scripts/**/*.{ts,js,mjs,cjs}'],
+    languageOptions: {
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        Buffer: 'readonly',
+      },
+    },
     rules: {
       'no-console': 'off',
     },

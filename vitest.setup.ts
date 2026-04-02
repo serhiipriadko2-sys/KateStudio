@@ -3,7 +3,7 @@ import { afterAll, afterEach, beforeAll } from 'vitest';
 import { server } from './shared/__tests__/mocks/server';
 
 // Start MSW server before all tests, reset after each, close when done
-beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

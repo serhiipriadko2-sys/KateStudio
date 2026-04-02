@@ -1,7 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { dataService } from '../k-sebe-yoga-studio-APPp/services/dataService';
 
-// Mock Supabase
 vi.mock('@ksebe/shared', () => ({
   isSupabaseConfigured: false,
   supabase: {
@@ -21,20 +20,28 @@ vi.mock('@ksebe/shared', () => ({
   },
 }));
 
-// Mock Cache Adapter
 vi.mock('../k-sebe-yoga-studio-APPp/services/localCache', () => ({
   cacheAdapter: {
     getUser: vi.fn().mockResolvedValue(null),
     setUser: vi.fn(),
+    clearUser: vi.fn(),
     getBookingsByPhone: vi.fn().mockResolvedValue([]),
     getPendingBookings: vi.fn().mockResolvedValue([]),
+    findBookingByClassId: vi.fn().mockResolvedValue(undefined),
+    getBookingById: vi.fn().mockResolvedValue(undefined),
     upsertBookings: vi.fn(),
+    removeBooking: vi.fn(),
   },
 }));
 
 describe('Critical Paths Verification', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
   describe('Data Service', () => {
-    it('should return empty array when Supabase is not configured and cache is empty', async () => {
+    it('returns an honest cache result when Supabase is not configured and cache is empty', async () => {
       const user = {
         id: 'test-user',
         name: 'Test User',
@@ -44,19 +51,25 @@ describe('Critical Paths Verification', () => {
         createdAt: new Date().toISOString(),
       };
 
-      const bookings = await dataService.getBookings(user);
-      expect(bookings).toBeDefined();
-      expect(Array.isArray(bookings)).toBe(true);
-      expect(bookings.length).toBe(0);
+      const bookingsResult = await dataService.getBookings(user);
+      expect(bookingsResult).toBeDefined();
+      expect(Array.isArray(bookingsResult.data)).toBe(true);
+      expect(bookingsResult.source).toBe('cache');
+      expect(bookingsResult.degraded).toBe(true);
+      expect(bookingsResult.reason).toBe('auth_required');
+      expect(bookingsResult.data.length).toBe(0);
     });
 
-    it('should generate class schedule for offline classes', async () => {
-      const classes = await dataService.getClassesForDate(new Date(), 'offline');
-      expect(classes).toBeDefined();
-      expect(Array.isArray(classes)).toBe(true);
-      if (classes.length > 0) {
-        expect(classes[0].price).toBeGreaterThan(0);
-        expect(classes[0].isOnline).toBe(false);
+    it('returns a mock schedule result for offline classes when cloud data is disabled', async () => {
+      const classesResult = await dataService.getClassesForDate(new Date(), 'offline');
+      expect(classesResult).toBeDefined();
+      expect(Array.isArray(classesResult.data)).toBe(true);
+      expect(classesResult.source).toBe('mock');
+      expect(classesResult.degraded).toBe(true);
+      expect(classesResult.reason).toBe('supabase_unavailable');
+      if (classesResult.data.length > 0) {
+        expect(classesResult.data[0].price).toBeGreaterThan(0);
+        expect(classesResult.data[0].isOnline).toBe(false);
       }
     });
   });

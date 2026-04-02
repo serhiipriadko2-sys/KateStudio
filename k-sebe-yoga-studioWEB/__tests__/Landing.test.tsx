@@ -1,11 +1,12 @@
 import { IMAGES } from '@ksebe/shared';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { Blog } from '../../shared/components/Blog';
 import { Retreats } from '../components/Retreats';
 import { Reviews } from '../components/Reviews';
 
-// Mock IntersectionObserver if not already mocked in setup (it is, but just in case of environment issues)
 window.IntersectionObserver = vi.fn().mockImplementation(function () {
   return {
     observe: vi.fn(),
@@ -14,24 +15,34 @@ window.IntersectionObserver = vi.fn().mockImplementation(function () {
   };
 });
 
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+const renderWithQueryClient = (ui: ReactElement) => {
+  const queryClient = createTestQueryClient();
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+};
+
 describe('Landing Page Components', () => {
   it('renders Reviews with correct images', () => {
-    render(<Reviews />);
+    renderWithQueryClient(<Reviews />);
     const heading = screen.getByText(/Отзывы учеников/i);
     expect(heading).toBeInTheDocument();
 
-    // Check for images
-    // Since images might be lazy loaded or inside custom components, we look for img tags
-    // The avatars are in TestimonialCard
     const images = screen.getAllByRole('img');
-    // We expect at least some images to be present
     expect(images.length).toBeGreaterThan(0);
   });
 
   it('renders Retreats with correct main image', () => {
     render(<Retreats onBook={vi.fn()} />);
 
-    const mainTitle = screen.getByText(/Йога-тур "Сила Тишины"/i); // Note: Quotes were escaped in code but text content renders quotes
+    const mainTitle = screen.getByText(/Йога-тур "Сила Тишины"/i);
     expect(mainTitle).toBeInTheDocument();
 
     const mainImage = screen.getByAltText(/Yoga Retreat Altai/i);
@@ -44,7 +55,6 @@ describe('Landing Page Components', () => {
 
     expect(screen.getByText(/Как начать медитировать: 5 простых шагов/i)).toBeInTheDocument();
 
-    // Check for images
     const images = screen.getAllByRole('img');
     const articleImage = images.find((img) => img.getAttribute('src') === IMAGES.blog.articles[0]);
     expect(articleImage).toBeInTheDocument();

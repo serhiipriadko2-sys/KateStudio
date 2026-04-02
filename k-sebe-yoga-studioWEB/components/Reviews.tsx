@@ -1,6 +1,7 @@
 import { IMAGES, isSupabaseConfigured, supabase } from '@ksebe/shared';
+import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
 
@@ -94,14 +95,14 @@ const TestimonialCard: React.FC<TestimonialProps> = ({ id, name, text, image }) 
 
 export const Reviews: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [reviews, setReviews] = useState<TestimonialProps[]>(defaultTestimonials);
+  const { data: reviews = defaultTestimonials } = useQuery<TestimonialProps[]>({
+    queryKey: ['public', 'reviews'],
+    queryFn: async () => {
+      if (!isSupabaseConfigured || !supabase) {
+        return defaultTestimonials;
+      }
 
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return;
-
-    const fetchReviews = async () => {
       try {
-        if (!supabase) return;
         const { data, error } = await supabase
           .from('reviews')
           .select('*')
@@ -109,22 +110,24 @@ export const Reviews: React.FC = () => {
           .order('display_order', { ascending: true })
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
-          const mapped = data.map((r: ReviewData) => ({
-            id: r.id,
-            name: r.name,
-            text: r.text,
-            image: r.image_url || '/placeholder.png', // Fallback image if missing
-          }));
-          setReviews(mapped);
+        if (error || !data || data.length === 0) {
+          return defaultTestimonials;
         }
-      } catch {
-        // void('Failed to fetch reviews');
-      }
-    };
 
-    fetchReviews();
-  }, []);
+        return data.map((r: ReviewData) => ({
+          id: r.id,
+          name: r.name,
+          text: r.text,
+          image: r.image_url || '/placeholder.png',
+        }));
+      } catch {
+        return defaultTestimonials;
+      }
+    },
+    initialData: defaultTestimonials,
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+  });
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {

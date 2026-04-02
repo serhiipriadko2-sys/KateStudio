@@ -41,8 +41,8 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
-      // Increase chunk size warning limit for large components
-      chunkSizeWarningLimit: 1000,
+      // Keep chunk warnings honest so bundle drift shows up during local builds.
+      chunkSizeWarningLimit: 250,
       // Enable minification with esbuild (built-in, faster than terser)
       minify: 'esbuild',
     },

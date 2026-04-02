@@ -16,6 +16,44 @@ import { ClassSession } from '../types';
 import { BookingModal } from './BookingModal';
 import { FadeIn } from './FadeIn';
 
+interface ScheduleNotice {
+  title: string;
+  message: string;
+}
+
+const getScheduleNotice = (reason?: string): ScheduleNotice | null => {
+  if (reason === 'booking_counts_unavailable') {
+    return {
+      title: 'Места могут быть неточными',
+      message: 'Расписание загружено, но live-обновление мест временно недоступно.',
+    };
+  }
+
+  if (reason === 'missing_server_data') {
+    return {
+      title: 'Показываем резервное расписание',
+      message:
+        'На сервере пока нет данных за этот период, поэтому используется резервный календарь.',
+    };
+  }
+
+  if (reason === 'server_unavailable') {
+    return {
+      title: 'Показываем резервное расписание',
+      message: 'Сервер временно недоступен, поэтому используется сохранённый резервный календарь.',
+    };
+  }
+
+  if (reason === 'supabase_unavailable') {
+    return {
+      title: 'Работаем в локальном режиме',
+      message: 'Облачный источник недоступен, поэтому расписание показано из встроенного резерва.',
+    };
+  }
+
+  return null;
+};
+
 export const Schedule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'offline' | 'online'>(() => {
     return (sessionStorage.getItem('ksebe_schedule_tab') as 'offline' | 'online') || 'offline';
@@ -29,10 +67,12 @@ export const Schedule: React.FC = () => {
   const [classes, setClasses] = useState<ClassSession[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [scheduleNotice, setScheduleNotice] = useState<ScheduleNotice | null>(null);
 
   // Swipe Refs
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
+  const fetchClassesRef = useRef<(showLoading?: boolean) => Promise<void>>(async () => {});
 
   // Persist tab change
   useEffect(() => {
@@ -53,11 +93,13 @@ export const Schedule: React.FC = () => {
       setError(false);
       try {
         const date = getSelectedDate();
-        const fetchedClasses = await dataService.getClassesForDate(date, activeTab);
-        setClasses(fetchedClasses);
+        const classesResult = await dataService.getClassesForDate(date, activeTab);
+        setClasses(classesResult.data);
+        setScheduleNotice(classesResult.degraded ? getScheduleNotice(classesResult.reason) : null);
       } catch (e) {
         console.error('Failed to load schedule', e);
         setError(true);
+        setScheduleNotice(null);
       } finally {
         if (showLoading) setLoading(false);
       }
@@ -65,24 +107,32 @@ export const Schedule: React.FC = () => {
     [getSelectedDate, activeTab]
   );
 
-  // Initial Fetch & Real-time Subscription
   useEffect(() => {
-    fetchClasses(true);
+    fetchClassesRef.current = fetchClasses;
+  }, [fetchClasses]);
 
-    // Subscribe to changes in bookings to update seat counts in real-time
+  // Refetch when the viewed date or tab changes.
+  useEffect(() => {
+    void fetchClasses(true);
+  }, [fetchClasses]);
+
+  // Keep one realtime subscription and refresh the current view through a ref.
+  useEffect(() => {
+    if (!supabase?.channel) {
+      return;
+    }
+
     const channel = supabase
       .channel('public:bookings')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
-        // When any booking is added or removed, refresh the schedule
-        // false = don't show full loading spinner, just update data
-        fetchClasses(false);
+        void fetchClassesRef.current(false);
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchClasses]);
+  }, []);
 
   const changeMonth = (offset: number) => {
     const newDate = new Date(currentMonth);
@@ -123,11 +173,6 @@ export const Schedule: React.FC = () => {
     setCurrentMonth(now);
     setSelectedDateNum(now.getDate());
   };
-
-  // Refetch when dependencies change
-  useEffect(() => {
-    fetchClasses(true);
-  }, [currentMonth, selectedDateNum, activeTab, fetchClasses]);
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -342,6 +387,17 @@ export const Schedule: React.FC = () => {
               </h3>
               <span className="text-stone-400 pb-1.5 text-sm md:text-base">Расписание</span>
             </div>
+            {scheduleNotice && !error && (
+              <div
+                role="status"
+                aria-live="polite"
+                aria-label="Schedule notice"
+                className="mb-4 rounded-[1.75rem] border border-amber-200 bg-amber-50 px-5 py-4 text-left"
+              >
+                <p className="text-sm font-semibold text-amber-900">{scheduleNotice.title}</p>
+                <p className="mt-1 text-sm text-amber-700">{scheduleNotice.message}</p>
+              </div>
+            )}
             <div className="space-y-4">
               {loading ? (
                 <div className="flex justify-center py-12">

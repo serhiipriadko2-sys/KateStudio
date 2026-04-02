@@ -9,8 +9,8 @@
  */
 
 import { createRequire } from 'module';
-import { readdirSync, mkdirSync, existsSync, statSync } from 'fs';
-import { join, extname, basename, dirname, relative } from 'path';
+import { readdirSync, existsSync, statSync } from 'fs';
+import { join, extname, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

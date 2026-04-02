@@ -25,17 +25,20 @@ const MOCK_USER = { id: 'user-123', email: 'admin@test.com' };
 describe('useIsAdmin', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
     mockOnAuthStateChange.mockReturnValue({
       data: { subscription: { unsubscribe: vi.fn() } },
     });
   });
 
-  it('starts with isLoading=true', () => {
+  it('starts with isLoading=true before the async auth check settles', async () => {
     mockGetUser.mockResolvedValue({ data: { user: MOCK_USER }, error: null });
     mockRpc.mockResolvedValue({ data: false, error: null });
 
     const { result } = renderHook(() => useIsAdmin());
     expect(result.current.isLoading).toBe(true);
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
   });
 
   it('sets isAdmin=false and isLoading=false when no user is found', async () => {

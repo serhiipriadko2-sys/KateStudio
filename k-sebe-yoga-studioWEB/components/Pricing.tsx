@@ -1,6 +1,7 @@
 import { isSupabaseConfigured, supabase } from '@ksebe/shared';
+import { useQuery } from '@tanstack/react-query';
 import { Check, Star, ArrowRight } from 'lucide-react';
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FadeIn } from './FadeIn';
 
 interface PricingProps {
@@ -116,6 +117,8 @@ const defaultPricingData = {
   ] as PriceOption[],
 };
 
+type PricingData = typeof defaultPricingData;
+
 interface PricingCardProps {
   option: PriceOption;
   onBook: (plan: string, price: string) => void;
@@ -228,14 +231,14 @@ const PricingSection: React.FC<PricingSectionProps> = ({
 };
 
 export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
-  const [plans, setPlans] = useState<typeof defaultPricingData>(defaultPricingData);
+  const { data: plans = defaultPricingData } = useQuery<PricingData>({
+    queryKey: ['public', 'pricing_plans'],
+    queryFn: async () => {
+      if (!isSupabaseConfigured || !supabase) {
+        return defaultPricingData;
+      }
 
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return;
-
-    const fetchPlans = async () => {
       try {
-        if (!supabase) return;
         const { data, error } = await supabase
           .from('pricing_plans')
           .select('*')
@@ -243,34 +246,38 @@ export const Pricing: React.FC<PricingProps> = ({ onBook }) => {
           .order('display_order', { ascending: true })
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
-          const grouped = data.reduce(
-            (acc, plan) => {
-              if (!acc[plan.category]) {
-                acc[plan.category] = [];
-              }
-              acc[plan.category].push({
-                title: plan.title,
-                price: plan.price,
-                description: plan.description || '',
-                features: plan.features || [],
-                isPopular: plan.is_popular,
-                isDark: plan.is_dark,
-              });
-              return acc;
-            },
-            {} as Record<string, PriceOption[]>
-          );
-
-          setPlans((prev) => ({ ...prev, ...grouped }));
+        if (error || !data || data.length === 0) {
+          return defaultPricingData;
         }
+
+        const grouped = data.reduce(
+          (acc, plan) => {
+            if (!acc[plan.category]) {
+              acc[plan.category] = [];
+            }
+            acc[plan.category].push({
+              title: plan.title,
+              price: plan.price,
+              description: plan.description || '',
+              features: plan.features || [],
+              isPopular: plan.is_popular,
+              isDark: plan.is_dark,
+            });
+            return acc;
+          },
+          {} as Partial<Record<keyof PricingData, PriceOption[]>>
+        );
+
+        return { ...defaultPricingData, ...grouped };
       } catch (e) {
         console.warn('Failed to fetch pricing plans', e);
+        return defaultPricingData;
       }
-    };
-
-    fetchPlans();
-  }, []);
+    },
+    initialData: defaultPricingData,
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+  });
 
   const tabs = useMemo(
     () => [

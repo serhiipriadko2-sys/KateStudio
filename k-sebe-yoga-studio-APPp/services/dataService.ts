@@ -2,6 +2,37 @@ import { isSupabaseConfigured, supabase } from '@ksebe/shared';
 import { Booking, ClassSession, UserProfile } from '../types';
 import { cacheAdapter, CachedBooking } from './localCache';
 
+export type DataServiceReadSource = 'server' | 'cache' | 'mock';
+
+export type DataServiceReadReason =
+  | 'auth_required'
+  | 'booking_counts_unavailable'
+  | 'missing_server_data'
+  | 'pending_sync'
+  | 'server_unavailable'
+  | 'supabase_unavailable';
+
+export interface DataServiceReadResult<T> {
+  data: T;
+  source: DataServiceReadSource;
+  degraded: boolean;
+  reason?: DataServiceReadReason;
+}
+
+export type DataServiceMutationStatus =
+  | 'success'
+  | 'degraded'
+  | 'auth_required'
+  | 'duplicate'
+  | 'server_error';
+
+export interface DataServiceMutationResult {
+  ok: boolean;
+  status: DataServiceMutationStatus;
+  source: 'server' | 'cache';
+  reason?: Extract<DataServiceReadReason, 'auth_required' | 'server_unavailable'>;
+}
+
 export const DATA_SOURCES = {
   userProfile: 'supabase',
   bookings: 'supabase',
@@ -31,11 +62,173 @@ const pseudoRandom = (seed: number) => {
   return x - Math.floor(x);
 };
 
+const isAuthRequiredError = (error: unknown) =>
+  error instanceof Error &&
+  (error.message === 'AUTH_REQUIRED' || error.message === 'Missing user id');
+
+const buildReadResult = <T>(
+  data: T,
+  source: DataServiceReadSource,
+  degraded = false,
+  reason?: DataServiceReadReason
+): DataServiceReadResult<T> => ({
+  data,
+  source,
+  degraded,
+  ...(reason ? { reason } : {}),
+});
+
+const buildMutationResult = (
+  ok: boolean,
+  status: DataServiceMutationStatus,
+  source: 'server' | 'cache',
+  reason?: Extract<DataServiceReadReason, 'auth_required' | 'server_unavailable'>
+): DataServiceMutationResult => ({
+  ok,
+  status,
+  source,
+  ...(reason ? { reason } : {}),
+});
+
 // In-memory cache: key = "YYYY-MM-type" → array of ClassSessions for the whole month
-const monthCache = new Map<string, ClassSession[]>();
+const monthCache = new Map<string, DataServiceReadResult<ClassSession[]>>();
 
 const getMonthCacheKey = (year: number, month: number, type: 'offline' | 'online') =>
   `${year}-${String(month + 1).padStart(2, '0')}-${type}`;
+
+const invalidateMonthCache = () => {
+  monthCache.clear();
+};
+
+const buildMockClassesResult = async (
+  year: number,
+  month: number,
+  type: 'offline' | 'online',
+  reason: Extract<
+    DataServiceReadReason,
+    'missing_server_data' | 'server_unavailable' | 'supabase_unavailable'
+  >
+): Promise<DataServiceReadResult<ClassSession[]>> => {
+  const templates =
+    type === 'offline'
+      ? [
+          {
+            name: 'Inside Flow',
+            time: '09:00',
+            duration: '60 РјРёРЅ',
+            spots: 12,
+            loc: 'РЎС‚Р°РЅС†РёРѕРЅРЅР°СЏ СѓР»., 5Р‘',
+            int: 3,
+            price: 700,
+          },
+          {
+            name: 'РҐР°С‚С…Р° Р™РѕРіР°',
+            time: '18:30',
+            duration: '60 РјРёРЅ',
+            spots: 15,
+            loc: 'РЎС‚Р°РЅС†РёРѕРЅРЅР°СЏ СѓР»., 5Р‘',
+            int: 2,
+            price: 700,
+          },
+          {
+            name: 'РњРµРґРёС‚Р°С†РёСЏ + Sound Healing',
+            time: '20:00',
+            duration: '60 РјРёРЅ',
+            spots: 10,
+            loc: 'РЎС‚Р°РЅС†РёРѕРЅРЅР°СЏ СѓР»., 5Р‘',
+            int: 1,
+            price: 1500,
+          },
+          {
+            name: 'Vinyasa Flow',
+            time: '12:00',
+            duration: '60 РјРёРЅ',
+            spots: 12,
+            loc: 'РЎС‚Р°РЅС†РёРѕРЅРЅР°СЏ СѓР»., 5Р‘',
+            int: 3,
+            price: 700,
+          },
+        ]
+      : [
+          {
+            name: 'РЈС‚СЂРµРЅРЅРёР№ РїРѕС‚РѕРє (Zoom)',
+            time: '08:00',
+            duration: '45 РјРёРЅ',
+            spots: 50,
+            loc: 'Online',
+            int: 2,
+            price: 400,
+          },
+          {
+            name: 'Р’РµС‡РµСЂРЅСЏСЏ СЂР°СЃС‚СЏР¶РєР° (Zoom)',
+            time: '19:00',
+            duration: '60 РјРёРЅ',
+            spots: 50,
+            loc: 'Online',
+            int: 1,
+            price: 400,
+          },
+        ];
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const allClassIds: string[] = [];
+  const monthClassEntries: Array<{
+    dateStr: string;
+    daySeed: number;
+    template: (typeof templates)[number];
+    id: string;
+  }> = [];
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const daySeed = year * 1000 + (month + 1) * 100 + day;
+    const todaysClasses = templates.filter((_, i) => pseudoRandom(daySeed + i) > 0.3);
+    todaysClasses.forEach((template, idx) => {
+      const id = `${dateStr}-${type}-${idx}`;
+      allClassIds.push(id);
+      monthClassEntries.push({ dateStr, daySeed, template, id });
+    });
+  }
+
+  const bookingCounts: Record<string, number> = {};
+  try {
+    const { data: bookings, error } = await supabase
+      .from('bookings')
+      .select('class_id')
+      .in('class_id', allClassIds);
+    if (error) throw error;
+    if (bookings) {
+      bookings.forEach((b: { class_id: string }) => {
+        bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
+      });
+    }
+  } catch {
+    // Keep mock schedule available even when live seat counts cannot be read.
+  }
+
+  const sessions: ClassSession[] = monthClassEntries.map(
+    ({ dateStr, daySeed, template, id }, idx) => {
+      const initialBooked = Math.floor(pseudoRandom(daySeed + idx * 10) * (template.spots / 3));
+      const realBookings = bookingCounts[id] || 0;
+      return {
+        id,
+        dateStr,
+        time: template.time,
+        name: template.name,
+        instructor: 'РљР°С‚СЏ Р“Р°Р±СЂР°РЅ',
+        duration: template.duration,
+        spotsTotal: template.spots,
+        spotsBooked: Math.min(initialBooked + realBookings, template.spots),
+        location: template.loc,
+        intensity: template.int as 1 | 2 | 3,
+        price: template.price,
+        isOnline: type === 'online',
+      };
+    }
+  );
+
+  return buildReadResult(sessions, 'mock', true, reason);
+};
 
 export const dataService = {
   // --- Auth & User ---
@@ -93,11 +286,13 @@ export const dataService = {
     return user;
   },
 
-  updateUserProfile: async (user: UserProfile): Promise<boolean> => {
+  updateUserProfile: async (user: UserProfile): Promise<DataServiceMutationResult> => {
+    let result = buildMutationResult(true, 'success', 'server');
+
     try {
       // Auth-first: updates must be tied to the authenticated user_id.
       const authUserId = await getAuthenticatedUserId(user.id);
-      if (!authUserId) throw new Error('Missing authenticated user id');
+      if (!authUserId) throw new Error('AUTH_REQUIRED');
       const updates: { name: string; city: string; avatar?: string } = {
         name: user.name,
         city: user.city,
@@ -112,15 +307,22 @@ export const dataService = {
       if (error) throw error;
     } catch (e) {
       console.warn('Supabase update failed, using local only', e);
+      result = buildMutationResult(
+        true,
+        'degraded',
+        'cache',
+        isAuthRequiredError(e) ? 'auth_required' : 'server_unavailable'
+      );
     }
 
     // Update local cache
     await cacheAdapter.setUser(user);
-    return true;
+    return result;
   },
 
   logout: () => {
     cacheAdapter.clearUser();
+    invalidateMonthCache();
   },
 
   // --- Schedule ---
@@ -132,7 +334,7 @@ export const dataService = {
     year: number,
     month: number,
     type: 'offline' | 'online'
-  ): Promise<ClassSession[]> => {
+  ): Promise<DataServiceReadResult<ClassSession[]>> => {
     const cacheKey = getMonthCacheKey(year, month, type);
     if (monthCache.has(cacheKey)) {
       return monthCache.get(cacheKey)!;
@@ -155,15 +357,21 @@ export const dataService = {
           .order('date', { ascending: true })
           .order('time', { ascending: true });
 
-        if (!error && rows && rows.length > 0) {
+        if (error) throw error;
+
+        if (rows && rows.length > 0) {
           // Batch-fetch booking counts for all classes in the month
           const classIds = rows.map((r: { id: string }) => r.id);
           const bookingCounts: Record<string, number> = {};
-          const { data: bookings } = await supabase
+          let bookingCountsUnavailable = false;
+          const { data: bookings, error: bookingsError } = await supabase
             .from('bookings')
             .select('class_id')
             .in('class_id', classIds);
-          if (bookings) {
+          if (bookingsError) {
+            console.warn('Failed to fetch live booking counts for classes', bookingsError);
+            bookingCountsUnavailable = true;
+          } else if (bookings) {
             bookings.forEach((b: { class_id: string }) => {
               bookingCounts[b.class_id] = (bookingCounts[b.class_id] || 0) + 1;
             });
@@ -204,11 +412,23 @@ export const dataService = {
             }
           );
 
-          monthCache.set(cacheKey, sessions);
-          return sessions;
+          const result = buildReadResult(
+            sessions,
+            'server',
+            bookingCountsUnavailable,
+            bookingCountsUnavailable ? 'booking_counts_unavailable' : undefined
+          );
+          monthCache.set(cacheKey, result);
+          return result;
         }
-      } catch {
-        // Fall through to mock data
+        const fallback = await buildMockClassesResult(year, month, type, 'missing_server_data');
+        monthCache.set(cacheKey, fallback);
+        return fallback;
+      } catch (loadError) {
+        console.warn('Failed to fetch classes from DB, using mock schedule', loadError);
+        const fallback = await buildMockClassesResult(year, month, type, 'server_unavailable');
+        monthCache.set(cacheKey, fallback);
+        return fallback;
       }
     }
 
@@ -330,33 +550,45 @@ export const dataService = {
       }
     );
 
-    monthCache.set(cacheKey, sessions);
-    return sessions;
+    const fallback = buildReadResult(sessions, 'mock', true, 'supabase_unavailable');
+    monthCache.set(cacheKey, fallback);
+    return fallback;
   },
 
   // Delegates to getClassesForMonth and filters by the requested day.
   // Backward-compatible — callers are unchanged.
-  getClassesForDate: async (date: Date, type: 'offline' | 'online'): Promise<ClassSession[]> => {
+  getClassesForDate: async (
+    date: Date,
+    type: 'offline' | 'online'
+  ): Promise<DataServiceReadResult<ClassSession[]>> => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const day = date.getDate();
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-    const monthSessions = await dataService.getClassesForMonth(year, month, type);
-    return monthSessions.filter((s) => s.dateStr === dateStr);
+    const monthResult = await dataService.getClassesForMonth(year, month, type);
+    return buildReadResult(
+      monthResult.data.filter((session) => session.dateStr === dateStr),
+      monthResult.source,
+      monthResult.degraded,
+      monthResult.reason
+    );
   },
 
   // --- Booking ---
-  getBookings: async (user: UserProfile): Promise<Booking[]> => {
+  getBookings: async (user: UserProfile): Promise<DataServiceReadResult<Booking[]>> => {
     await dataService.syncPendingBookings(user);
+    const pendingBookings = (await cacheAdapter.getPendingBookings(user.phone ?? '')).map(
+      dataService.stripCachedBooking
+    );
     try {
       const authUserId = await getAuthenticatedUserId(user.id);
-      if (!authUserId) throw new Error('Missing user id');
+      if (!authUserId) throw new Error('AUTH_REQUIRED');
       const { data, error } = await supabase.from('bookings').select('*').eq('user_id', authUserId);
 
       if (error) throw error;
 
-      const bookings = data.map(
+      const bookings = (data ?? []).map(
         (b: {
           id: string;
           class_id: string;
@@ -384,23 +616,32 @@ export const dataService = {
         }))
       );
 
-      const pending = await cacheAdapter.getPendingBookings(user.phone ?? '');
-      return [...bookings, ...pending.map(dataService.stripCachedBooking)];
+      return buildReadResult(
+        [...bookings, ...pendingBookings],
+        'server',
+        pendingBookings.length > 0,
+        pendingBookings.length > 0 ? 'pending_sync' : undefined
+      );
     } catch (e) {
       console.warn('Failed to fetch bookings from DB', e);
       const cached = await cacheAdapter.getBookingsByPhone(user.phone ?? '');
-      return cached.map(dataService.stripCachedBooking);
+      return buildReadResult(
+        cached.map(dataService.stripCachedBooking),
+        'cache',
+        true,
+        isAuthRequiredError(e) ? 'auth_required' : 'server_unavailable'
+      );
     }
   },
 
-  bookClass: async (cls: ClassSession, user: UserProfile): Promise<boolean> => {
+  bookClass: async (cls: ClassSession, user: UserProfile): Promise<DataServiceMutationResult> => {
     // Auth-first: real bookings require authenticated user_id (RLS).
     // If user.id is not a UUID, treat as unauthenticated.
     const authUserId = await getAuthenticatedUserId(user.id);
     if (!authUserId) {
       // Keep local profile cached for UX, but don't attempt DB booking.
       await cacheAdapter.setUser({ ...user, isRegistered: true });
-      return false;
+      return buildMutationResult(false, 'auth_required', 'cache', 'auth_required');
     }
 
     // Ensure profile exists server-side (best-effort).
@@ -408,7 +649,7 @@ export const dataService = {
 
     const existingLocal = await cacheAdapter.findBookingByClassId(user.phone ?? '', cls.id);
     if (existingLocal) {
-      return false;
+      return buildMutationResult(false, 'duplicate', 'cache');
     }
 
     const bookingPayload = {
@@ -424,15 +665,16 @@ export const dataService = {
 
     try {
       // 2. Check for duplicate booking
-      const { data: existing } = await supabase
+      const { data: existing, error: existingError } = await supabase
         .from('bookings')
         .select('id')
         .eq('user_id', authUserId)
-        .eq('class_id', cls.id)
-        .single();
+        .eq('class_id', cls.id);
 
-      if (existing) {
-        return false; // Already booked
+      if (existingError) throw existingError;
+
+      if (existing && existing.length > 0) {
+        return buildMutationResult(false, 'duplicate', 'server');
       }
 
       // 3. Insert Booking
@@ -458,18 +700,20 @@ export const dataService = {
         await cacheAdapter.upsertBookings([cachedBooking]);
       }
 
-      return true;
+      invalidateMonthCache();
+      return buildMutationResult(true, 'success', 'server');
     } catch (e) {
-      console.error('Booking error, falling back to simulation', e);
-      return false;
+      console.error('Booking error', e);
+      return buildMutationResult(false, 'server_error', 'server');
     }
   },
 
-  cancelBooking: async (bookingId: string): Promise<boolean> => {
+  cancelBooking: async (bookingId: string): Promise<DataServiceMutationResult> => {
     const pending = await cacheAdapter.getBookingById(bookingId);
     if (pending?.status === 'pending') {
       await cacheAdapter.removeBooking(bookingId);
-      return true;
+      invalidateMonthCache();
+      return buildMutationResult(true, 'success', 'cache');
     }
 
     try {
@@ -479,10 +723,16 @@ export const dataService = {
 
       if (error) throw error;
       await cacheAdapter.removeBooking(bookingId);
-      return true;
+      invalidateMonthCache();
+      return buildMutationResult(true, 'success', 'server');
     } catch (e: unknown) {
       console.error('Cancellation error', e);
-      return false;
+      return buildMutationResult(
+        false,
+        isAuthRequiredError(e) ? 'auth_required' : 'server_error',
+        isAuthRequiredError(e) ? 'cache' : 'server',
+        isAuthRequiredError(e) ? 'auth_required' : undefined
+      );
     }
   },
 
@@ -534,6 +784,8 @@ export const dataService = {
         }
       })
     );
+
+    invalidateMonthCache();
   },
 
   stripCachedBooking: (booking: CachedBooking): Booking => ({
