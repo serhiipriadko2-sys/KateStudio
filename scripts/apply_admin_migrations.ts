@@ -14,6 +14,10 @@ dotenv.config({ path: resolve(__dirname, '../.env') });
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const adminUserId = process.env.ADMIN_USER_ID;
+const adminPhone = process.env.ADMIN_PHONE;
+
+const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 if (!supabaseUrl || !serviceRoleKey) {
   console.error('❌ Missing VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
@@ -44,46 +48,59 @@ async function applyMigrations() {
   }
 
   // 2. Add user to admins table
-  console.log('\n📝 2. Adding user to admins table...');
-  const userId = '259e55a3-1a0a-4a1f-8855-c53f75564e6c'; // serhiipriadko2@gmail.com
+  console.log('\n📝 2. Optionally add user to admins table...');
 
-  const { error: adminError } = await supabase.from('admins').insert({ user_id: userId });
-
-  if (adminError) {
-    if (adminError.message.includes('duplicate')) {
-      console.log('✅ User already in admins table');
-    } else {
-      console.error('❌ Failed to add admin:', adminError.message);
+  if (!adminUserId) {
+    console.log('ℹ️  ADMIN_USER_ID is not set; skipping admin insertion and profile update.');
+    console.log('   To add an admin intentionally, run with ADMIN_USER_ID=<uuid>.');
+  } else {
+    if (!UUID_V4_REGEX.test(adminUserId)) {
+      console.error('❌ ADMIN_USER_ID must be a valid UUID v4.');
+      process.exit(1);
     }
-  } else {
-    console.log('✅ User added to admins');
-  }
 
-  // 3. Update profile (add phone)
-  console.log('\n📝 3. Updating profile with phone...');
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .update({ phone: '+79990000000' })
-    .eq('user_id', userId);
+    const { error: adminError } = await supabase.from('admins').insert({ user_id: adminUserId });
 
-  if (profileError) {
-    console.error('❌ Failed to update profile:', profileError.message);
-  } else {
-    console.log('✅ Profile updated');
-  }
+    if (adminError) {
+      if (adminError.message.includes('duplicate')) {
+        console.log('✅ User already exists in admins table');
+      } else {
+        console.error('❌ Failed to add admin:', adminError.message);
+      }
+    } else {
+      console.log('✅ User added to admins');
+    }
 
-  // 4. Verify admin status
-  console.log('\n📝 4. Verifying admin status...');
-  const { data: adminCheck } = await supabase
-    .from('admins')
-    .select('user_id')
-    .eq('user_id', userId)
-    .single();
+    // 3. Optionally update profile phone
+    if (adminPhone) {
+      console.log('\n📝 3. Updating profile with phone...');
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ phone: adminPhone })
+        .eq('user_id', adminUserId);
 
-  if (adminCheck) {
-    console.log('✅ VERIFIED: User is admin');
-  } else {
-    console.log('⚠️  User may not be in admins table yet');
+      if (profileError) {
+        console.error('❌ Failed to update profile:', profileError.message);
+      } else {
+        console.log('✅ Profile updated');
+      }
+    } else {
+      console.log('\nℹ️  ADMIN_PHONE is not set; skipping profile update.');
+    }
+
+    // 4. Verify admin status
+    console.log('\n📝 4. Verifying admin status...');
+    const { data: adminCheck } = await supabase
+      .from('admins')
+      .select('user_id')
+      .eq('user_id', adminUserId)
+      .single();
+
+    if (adminCheck) {
+      console.log('✅ VERIFIED: User is admin');
+    } else {
+      console.log('⚠️  User may not be in admins table yet');
+    }
   }
 
   console.log('\n✅ Migrations applied successfully!');
