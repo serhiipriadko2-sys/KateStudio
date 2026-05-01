@@ -10,8 +10,12 @@
     "k-sebe-yoga-studio-APPp"
   ],
   "scripts": {
+    "dev": "npm-run-all --parallel dev:web dev:app",
     "dev:web": "npm run dev --workspace=k-sebe-yoga-studioWEB",
     "dev:app": "npm run dev --workspace=k-sebe-yoga-studio-APPp",
+    "preview": "npm-run-all --parallel preview:web preview:app",
+    "preview:web": "npm run preview --workspace=k-sebe-yoga-studioWEB",
+    "preview:app": "npm run preview --workspace=k-sebe-yoga-studio-APPp",
     "build:web": "npm run build --workspace=k-sebe-yoga-studioWEB",
     "build:app": "npm run build --workspace=k-sebe-yoga-studio-APPp",
     "build:all": "npm run build:web && npm run build:app",
@@ -61,6 +65,7 @@
     "jsdom": "^28.1.0",
     "lint-staged": "^16.3.2",
     "msw": "^2.12.10",
+    "npm-run-all": "^4.1.5",
     "prettier": "^3.4.2",
     "sharp": "^0.33.5",
     "supabase": "^2.77.1",

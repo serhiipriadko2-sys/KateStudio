@@ -5,8 +5,9 @@ import { defineConfig, type PluginOption } from 'vite';
 export default defineConfig(({ mode }) => {
   return {
     server: {
-      port: 3000,
+      port: 3001,
       host: '0.0.0.0',
+      open: true,
     },
     plugins: [react() as unknown as PluginOption],
     resolve: {
