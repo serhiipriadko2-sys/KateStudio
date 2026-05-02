@@ -1,21 +1,28 @@
 # Текущие задачи
 
-> **Обновлено:** 15 марта 2026 | **Версия:** 4.0.0
-> Источник истины: код + `package.json` + миграции. Цифры верифицированы запуском.
+> **Обновлено:** 2 мая 2026 | **Версия:** 4.1.0
+> Источник истины: код + `package.json` + миграции + live Supabase metadata audit.
+> Текущий режим: audit-first completion. Production mutation и AI scope changes запрещены без отдельного решения.
 
 ---
 
-## Верифицированные метрики (15 марта 2026)
+## Верифицированные метрики (2 мая 2026)
 
 | Метрика | Значение | Как проверено |
 | --- | --- | --- |
-| Tests passing | **473** | `npm run test:run` |
-| Test suites | **60** | `npm run test:run` |
+| Tests passing | **489** | `npm run test:run` |
+| Test files | **64** | `npm run test:run` |
 | TypeScript errors | **0** | `npm run typecheck` |
-| Lint errors | **0** | `npm run lint` |
-| Lint warnings | **75** | `npm run lint` |
-| Edge Functions | **7** | `ls supabase/functions/` |
-| Migrations | **20+** | `ls supabase/migrations/` |
+| Lint | **PASS** | `npm run lint` |
+| Web build | **PASS** | `npm run build:web` |
+| App build | **PASS** | `npm run build:app` |
+| Repo Edge Functions | **7** | `supabase/functions/` |
+| Live Edge Functions | **2** | Supabase MCP `_list_edge_functions` |
+| Repo migrations | **36** | `supabase/migrations/` |
+| Live applied migrations | **12** | Supabase MCP `_list_migrations` |
+| Public tables live | **27** | metadata-only SQL |
+
+Сборки проходят, но обе Vite-сборки предупреждают о крупном чанке `assets/index-DlAt0FZ_.js` около `357.68 kB`.
 
 ---
 
@@ -23,60 +30,54 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 1 | **GEMINI_API_KEY** — установить в Supabase Vault | ⏳ | AI features не работают без него |
-| 2 | **YooKassa** — завершить интеграцию платежей | 🔄 | `create-payment` Edge Function частично готова |
-| 3 | **Placeholder видео** в APP VideoLibrary | ⏳ | 4 URL нужно заменить реальными |
-| 4 | **.env файлы** — создать локально из `.env.example` | ⏳ | Нужно каждому разработчику вручную |
+| 1 | **`profiles` RLS** — убрать public `ALL true/true` policy | ⛔ | Live policy `Allow public read/write profiles` всё ещё активна |
+| 2 | **Migration drift** — reconcile live schema vs repo | ⛔ | 12 applied migrations live vs 36 SQL files repo |
+| 3 | **Edge Functions drift** — решить live/repo split | ⛔ | Live: `ai-run`, `ai-embeddings`; repo 7 functions not deployed |
+| 4 | **AI contour frozen** | 🔒 | Не менять `gemini-proxy`, `ai-run`, `ai-embeddings`, prompts/model routing/env contracts |
+| 5 | **YooKassa live path** | 🔄 | Требует non-AI function deployment + secrets validation |
 
-> GitHub Secrets (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `FIREBASE_SERVICE_ACCOUNT`) — ✅ установлены Семёном.
-
----
-
-## 🟡 P1 — Завершено с февраля
-
-| # | Задача | Статус |
-| --- | --- | --- |
-| 5 | Zod input validation в `gemini-proxy` | ✅ |
-| 6 | Rate limiting в `gemini-proxy` | ✅ |
-| 7 | Webhook HMAC verification | ✅ |
-| 8 | Расписание интегрировано с Supabase | ✅ |
-| 9 | Database индексы (миграция) | ✅ |
-| 10 | Nullable `user_id` — исправлен | ✅ |
-| 11 | `Image.tsx` разбит на подкомпоненты | ✅ |
-| 12 | Типы БД `database.types.ts` — сгенерированы | ✅ |
+> GitHub Secrets и production secret values не проверялись в этом audit-first pass. Секреты не читать и не печатать.
 
 ---
 
-## 🟢 P2 — Завершено с февраля
+## 🟠 P1 — Launch blockers after P0
 
-| # | Задача | Статус |
-| --- | --- | --- |
-| 13 | Default exports убраны из `shared/` | ✅ |
-| 14 | Хардкод вынесен в константы | ✅ |
-| 15 | `Achievements` UI | ✅ |
-| 16 | `DailyRecommendation` компонент | ✅ |
-| 17 | `StreakCalendar` визуализация | ✅ |
-| 18 | Veo + Image Edit в `gemini-proxy` | ✅ |
-| 19 | Newsletter Edge Function (`subscribe-newsletter`) | ✅ |
-| 20 | Monitoring / Sentry (`shared/services/monitoring.ts`) | ✅ |
-| 21 | Cron jobs (`cron-maintenance` Edge Function) | ✅ |
-| 22 | Push Notifications FCM (`send-push` Edge Function) | ✅ |
-| 23 | Cancel Subscription (`cancel-subscription` Edge Function) | ✅ |
-| 24 | Оптимизация изображений WebP | 🔄 |
+| # | Задача | Статус | Примечание |
+| --- | --- | --- | --- |
+| 6 | `database.types.ts` regenerate from reconciled schema | ⏳ | Current hand-crafted types drift from live columns |
+| 7 | RLS policy consolidation | ⏳ | `profiles` 8 policies, `bookings` 9, `app_settings` 4 |
+| 8 | `dialogue` decision | ⏳ | RLS enabled, 0 policies |
+| 9 | Function hardening | ⏳ | mutable `search_path` advisors |
+| 10 | SECURITY DEFINER execute review | ⏳ | `rls_auto_enable`, `get_admin_analytics` exposed by advisors |
+| 11 | Storage hardening | ⏳ | `images` no MIME/size limits, broad listing; `interf` undocumented |
+| 12 | Non-AI Edge Function deployment plan | ⏳ | payments, webhook, push, cron, newsletter, cancel-subscription |
 
 ---
 
-## 🔵 P3 — Backlog
+## 🟡 P2 — Cleanup / Performance
+
+| # | Задача | Статус | Примечание |
+| --- | --- | --- | --- |
+| 13 | Unindexed FK cleanup | ⏳ | advisors: `ai_jobs`, `api_logs`, `bookings`, `prompt_requests` |
+| 14 | RLS initplan optimization | ⏳ | wrap `auth.uid()`/auth functions as `(select auth.uid())` where appropriate |
+| 15 | Multiple permissive policies cleanup | ⏳ | advisors across `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos` |
+| 16 | Bundle split / chunk warning | ⏳ | Vite chunk warning over 250 kB |
+| 17 | Test coverage increase | ⏳ | target remains 70%+ |
+
+---
+
+## 🔵 P3 — Product Backlog
 
 | # | Задача | Статус |
 | --- | --- | --- |
-| 25 | `PersonalProgram` 7-дневные программы | ⏳ |
-| 26 | Активировать секцию Retreats в WEB (`App.tsx`) | ⏳ |
-| 27 | Активировать AI Subscription в WEB | ⏳ |
-| 28 | i18n поддержка | ⏳ |
-| 29 | Storybook для компонентов | ⏳ |
-| 30 | Performance optimization (Lighthouse 90+) | ⏳ |
-| 31 | Analytics integration (Mixpanel/GA) | ⏳ |
+| 18 | Verify/replace real VideoLibrary URLs through approved content workflow | ⏳ |
+| 19 | `PersonalProgram` 7-day programs | ⏳ |
+| 20 | Activate Retreats section in WEB (`App.tsx`) | ⏳ |
+| 21 | Activate AI Subscription in WEB after AI decision | ⏳ |
+| 22 | i18n support | ⏳ |
+| 23 | Storybook for components | ⏳ |
+| 24 | Lighthouse 90+ | ⏳ |
+| 25 | Analytics integration (Mixpanel/GA) | ⏳ |
 
 ---
 
@@ -84,33 +85,36 @@
 
 | Метрика | Текущее | Цель |
 | --- | --- | --- |
-| Tests passing | **473** | 600+ |
-| Test suites | **60** | 80+ |
+| Tests passing | **489** | 600+ |
+| Test files | **64** | 80+ |
 | Coverage | ~35%+ | 70% |
 
-Динамика: 208 (янв) → 368 (фев) → **473 (март)**.
+Динамика: 208 (янв) → 368 (фев) → 473 (март) → **489 (май)**.
 
 ---
 
-## Production Readiness (оценка)
+## Production Readiness
 
-| Метрика | Текущее | Цель |
-| --- | --- | --- |
-| Security | 90/100 | 95/100 |
-| Testing | 35/100 | 70/100 |
-| Content | 85/100 | 100/100 |
-| Payment | 30/100 | 100/100 |
-| Mobile/Native | 75/100 | 90/100 |
-| **OVERALL** | **~82/100** | **90/100** |
+Числовой score временно снят с канона. Пока live Supabase имеет P0 drift, честный статус:
+
+| Домен | Статус |
+| --- | --- |
+| Local code health | PASS |
+| Security governance | FAIL |
+| Schema reproducibility | FAIL |
+| Edge Functions launch path | FAIL |
+| AI boundary | FROZEN |
+| Overall launch readiness | **FAIL** |
 
 ---
 
 ## Ключевые команды
 
 ```bash
-npm run test:run       # 473 тестов / 60 suites
-npm run typecheck      # 0 ошибок
-npm run lint           # 0 errors / 75 warnings
+npm run check:migrations
+npm run typecheck
+npm run lint
+npm run test:run       # 489 tests / 64 files
 npm run build:web
 npm run build:app
 ```
@@ -119,4 +123,11 @@ npm run build:app
 
 ---
 
-> Обновляй таблицы по мере выполнения: ✅ / 🔄 / ⏳
+## Текущий audit artifact
+
+- [docs/SUPABASE_AUDIT_LIVE_2026_05_02.md](./docs/SUPABASE_AUDIT_LIVE_2026_05_02.md)
+- [docs/LAUNCH_CHECKLIST.md](./docs/LAUNCH_CHECKLIST.md)
+
+---
+
+> Обновляй таблицы по мере выполнения: ✅ / 🔄 / ⏳ / ⛔ / 🔒

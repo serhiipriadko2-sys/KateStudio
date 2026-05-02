@@ -1,7 +1,7 @@
 # Центральный индекс документации | K Sebe Ecosystem
 
 > **Единая точка входа для всей технической и стратегической документации**
-> **Обновлено:** 15 марта 2026 | **Версия:** 8.0.0
+> **Обновлено:** 2 мая 2026 | **Версия:** 8.1.0
 
 ---
 
@@ -18,7 +18,7 @@
 
 ### Активная работа
 
-- [**CURRENT_TASKS.md**](../CURRENT_TASKS.md) — **СЮДА** Верифицированные задачи и метрики (март 2026)
+- [**CURRENT_TASKS.md**](../CURRENT_TASKS.md) — **СЮДА** Верифицированные задачи и метрики (май 2026)
 - [**CHANGELOG.md**](../CHANGELOG.md) — История версий (последняя: 3.0.0 — март 2026)
 
 ---
@@ -27,8 +27,8 @@
 
 - [**ARCHITECTURE.md**](./ARCHITECTURE.md) — Архитектура системы, workspace topology, CI/CD
 - [**EDGE_FUNCTIONS.md**](./EDGE_FUNCTIONS.md) — 7 Edge Functions: назначение, env, auth, endpoints
-- [**TESTING.md**](./TESTING.md) — Тестовая архитектура, паттерны, coverage (473 тестов / 60 suites)
-- [**LAUNCH_CHECKLIST.md**](./LAUNCH_CHECKLIST.md) — Pre-launch gap analysis (статус: март 2026)
+- [**TESTING.md**](./TESTING.md) — Тестовая архитектура, паттерны, coverage (актуальная проверка: 489 тестов / 64 suites)
+- [**LAUNCH_CHECKLIST.md**](./LAUNCH_CHECKLIST.md) — Pre-launch gap analysis (статус: май 2026)
 - [**SECURITY_MODEL.md**](./SECURITY_MODEL.md) — Role narrative: кто что видит, trust boundaries, механизмы защиты
 - [**ADMIN_SETUP.md**](./ADMIN_SETUP.md) — Настройка admin-панели
 
@@ -36,7 +36,8 @@
 
 ### Security и аудиты
 
-- [**SUPABASE_AUDIT_LIVE_2026_03_15.md**](./SUPABASE_AUDIT_LIVE_2026_03_15.md) — **АКТУАЛЬНО** Прямой аудит live Supabase (март 2026): 5 P0, 6 P1, 5 P2
+- [**SUPABASE_AUDIT_LIVE_2026_05_02.md**](./SUPABASE_AUDIT_LIVE_2026_05_02.md) — **АКТУАЛЬНО** Audit-first live Supabase recheck (май 2026): P0 repo/live drift сохраняется
+- [**SUPABASE_AUDIT_LIVE_2026_03_15.md**](./SUPABASE_AUDIT_LIVE_2026_03_15.md) — Исторический прямой аудит live Supabase (март 2026)
 - [**SECURITY_REPORT_2026_02_11.md**](./SECURITY_REPORT_2026_02_11.md) — Аудит безопасности (февраль 2026): все P0 устранены
 - [**COMPREHENSIVE_AUDIT_FEB_2026.md**](./COMPREHENSIVE_AUDIT_FEB_2026.md) — Полный аудит (февраль 2026)
 - [**SUPABASE_AUDIT_REPORT.md**](./SUPABASE_AUDIT_REPORT.md) — Аудит базы данных (устаревший)
@@ -69,18 +70,18 @@
 
 ---
 
-## Верифицированные метрики (15 марта 2026)
+## Верифицированные метрики (2 мая 2026)
 
 ### Технические метрики
 
 | Метрика | Текущее | Q4 2026 Target |
 | --- | --- | --- |
-| Tests passing | **473** | 600+ |
-| Test suites | **60** | 80+ |
+| Tests passing | **489** | 600+ |
+| Test suites | **64** | 80+ |
 | TypeScript errors | **0** | 0 |
 | Lint errors | **0** | 0 |
-| Lint warnings | 75 | 0 |
-| Edge Functions | 7 | 7+ |
+| Lint warnings | not counted in current audit | 0 |
+| Edge Functions | repo 7 / live 2 | 7+ |
 | Coverage | ~35% | 70%+ |
 
 ### Бизнес метрики (план)
@@ -94,9 +95,9 @@
 
 ---
 
-## Текущий статус (15 марта 2026)
+## Текущий статус (2 мая 2026)
 
-**TypeScript:** 0 ошибок | **Lint:** 0 errors / 75 warnings | **Tests:** 473/60 ✅
+**TypeScript:** 0 ошибок | **Lint:** PASS | **Tests:** 489/64 ✅ | **Launch readiness:** FAIL до снятия P0 Supabase drift
 
 ### Завершено (с февраля 2026)
 
@@ -110,9 +111,11 @@
 
 ### Открыто (P0 блокеры)
 
-- ⏳ GEMINI_API_KEY → установить в Supabase Vault
-- 🔄 YooKassa интеграция → завершить
-- ⏳ Placeholder видео в APP VideoLibrary → заменить реальными
+- 🔴 Live `profiles` имеет public `ALL true/true` RLS policy
+- 🔴 Migration drift: 12 applied live migrations vs 36 repo SQL files
+- 🔴 Edge Functions drift: live `ai-run`/`ai-embeddings`, repo 7 functions not deployed
+- 🔒 AI contour frozen: не менять `gemini-proxy`, live AI functions, prompts/model routing без отдельного решения
+- 🔄 YooKassa / push / newsletter / cron зависят от решения по non-AI Edge Function deployment
 
 ---
 
@@ -127,8 +130,8 @@
 | `ECOSYSTEM_AUDIT.md` | Исторический аудит, не актуален |
 | `SYNC_REPORT.md` | Устаревший отчёт о синхронизации |
 
-Рабочий канон: `CURRENT_TASKS.md` + код + миграции.
+Рабочий канон: `CURRENT_TASKS.md` + код + миграции + текущий live audit 2026-05-02.
 
 ---
 
-**Последнее обновление:** 15 марта 2026 | **Версия:** 8.0.0 | **Следующий ревью:** апрель 2026
+**Последнее обновление:** 2 мая 2026 | **Версия:** 8.1.0 | **Следующий ревью:** после branch-first Supabase remediation
