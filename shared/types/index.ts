@@ -51,7 +51,7 @@ export interface BookingDetails {
 /** Row shape from `bookings` table */
 export interface BookingRow {
   id: string;
-  user_id: string;
+  user_id: string | null;
   name: string;
   phone: string;
   instagram: string | null;
@@ -95,18 +95,19 @@ export interface ContactRow {
   phone: string | null;
   message: string | null;
   created_at: string;
-  status: 'new' | 'in_progress' | 'done' | 'spam' | null;
+  status: 'new' | 'read' | 'processed' | 'spam' | null;
   ip_address: string | null;
 }
 
 /** Row shape from `profiles` table */
 export interface ProfileRow {
-  user_id: string;
+  user_id: string | null;
   phone: string | null;
   name: string | null;
   city: string | null;
   avatar: string | null;
   created_at: string;
+  updated_at: string | null;
 }
 
 /** Row shape from `user_progress` table */

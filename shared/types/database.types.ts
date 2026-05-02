@@ -13,7 +13,7 @@
 export type SubscriptionPlanDb = 'free' | 'premium' | 'vip';
 export type SubscriptionStatusDb = 'active' | 'pending' | 'canceled' | 'past_due' | 'trialing';
 
-export type ContactStatus = 'new' | 'in_progress' | 'done' | 'spam';
+export type ContactStatus = 'new' | 'read' | 'processed' | 'spam';
 export type PricingCategory = 'yoga' | 'personal' | 'sound' | 'massage';
 export type PushTokenPlatform = 'web' | 'android' | 'ios';
 
@@ -46,10 +46,11 @@ export interface ClassRow {
   price: number | null;
   description: string | null;
   created_at: string;
+  updated_at: string | null;
 }
 
 export interface ProfileRow {
-  user_id: string;
+  user_id: string | null;
   name: string | null;
   phone: string | null;
   city: string | null;
@@ -60,7 +61,7 @@ export interface ProfileRow {
 
 export interface BookingRow {
   id: string;
-  user_id: string;
+  user_id: string | null;
   // Common
   phone: string | null;
   name: string | null;
@@ -128,15 +129,16 @@ export interface PracticeEventRow {
 
 export interface UserPreferencesRow {
   user_id: string;
-  answers: Record<string, unknown>;
+  onboarding: Record<string, unknown> | null;
+  created_at: string;
   updated_at: string;
 }
 
 export interface AppEventRow {
   id: string;
   user_id: string;
-  event: string;
-  metadata: Record<string, unknown> | null;
+  name: string;
+  props: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -226,7 +228,7 @@ export type DBUserProgress = UserProgressRow;
 export type DBUserAchievement = UserAchievementRow;
 
 export type ContactInsert = Omit<ContactRow, 'id' | 'created_at'>;
-export type ClassInsert = Omit<ClassRow, 'id' | 'created_at'>;
+export type ClassInsert = Omit<ClassRow, 'id' | 'created_at' | 'updated_at'>;
 export type ProfileInsert = Omit<ProfileRow, 'created_at' | 'updated_at'>;
 export type BookingInsert = Omit<BookingRow, 'id' | 'created_at'>;
 export type SubscriptionInsert = Omit<SubscriptionRow, 'id' | 'created_at' | 'updated_at'>;
@@ -238,6 +240,8 @@ export type AnalyticsEventInsert = Omit<AnalyticsEventRow, 'id' | 'created_at'>;
 export type ArticleInsert = Omit<ArticleRow, 'id' | 'created_at'>;
 export type PricingPlanInsert = Omit<PricingPlanRow, 'id' | 'created_at'>;
 export type UserPushTokenInsert = Omit<UserPushTokenRow, 'id' | 'created_at' | 'updated_at'>;
+export type UserPreferencesInsert = Omit<UserPreferencesRow, 'created_at' | 'updated_at'>;
+export type AppEventInsert = Omit<AppEventRow, 'id' | 'created_at'>;
 
 // ============================================
 // UPDATE TYPES
@@ -318,6 +322,18 @@ export interface Database {
         Row: UserAchievementRow;
         Insert: UserAchievementInsert;
         Update: UserAchievementUpdate;
+        Relationships: [];
+      };
+      user_preferences: {
+        Row: UserPreferencesRow;
+        Insert: UserPreferencesInsert;
+        Update: Partial<Omit<UserPreferencesInsert, 'user_id'>>;
+        Relationships: [];
+      };
+      app_events: {
+        Row: AppEventRow;
+        Insert: AppEventInsert;
+        Update: never;
         Relationships: [];
       };
       analytics_events: {

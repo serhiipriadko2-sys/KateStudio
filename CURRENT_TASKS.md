@@ -1,6 +1,6 @@
 # Текущие задачи
 
-> **Обновлено:** 2 мая 2026 | **Версия:** 4.1.0
+> **Обновлено:** 2 мая 2026 | **Версия:** 4.2.0
 > Источник истины: код + `package.json` + миграции + live Supabase metadata audit.
 > Текущий режим: audit-first completion. Production mutation и AI scope changes запрещены без отдельного решения.
 
@@ -18,7 +18,7 @@
 | App build | **PASS** | `npm run build:app` |
 | Repo Edge Functions | **7** | `supabase/functions/` |
 | Live Edge Functions | **2** | Supabase MCP `_list_edge_functions` |
-| Repo migrations | **36** | `supabase/migrations/` |
+| Repo migrations | **37** | `supabase/migrations/` |
 | Live applied migrations | **12** | Supabase MCP `_list_migrations` |
 | Public tables live | **27** | metadata-only SQL |
 
@@ -30,8 +30,8 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 1 | **`profiles` RLS** — убрать public `ALL true/true` policy | ⛔ | Live policy `Allow public read/write profiles` всё ещё активна |
-| 2 | **Migration drift** — reconcile live schema vs repo | ⛔ | 12 applied migrations live vs 36 SQL files repo |
+| 1 | **`profiles` RLS** — убрать public `ALL true/true` policy | 🔄 | Repo catch-up migration prepared; live policy still active until branch/staging apply |
+| 2 | **Migration drift** — reconcile live schema vs repo | 🔄 | 12 applied migrations live vs 37 SQL files repo; catch-up migration prepared |
 | 3 | **Edge Functions drift** — решить live/repo split | ⛔ | Live: `ai-run`, `ai-embeddings`; repo 7 functions not deployed |
 | 4 | **AI contour frozen** | 🔒 | Не менять `gemini-proxy`, `ai-run`, `ai-embeddings`, prompts/model routing/env contracts |
 | 5 | **YooKassa live path** | 🔄 | Требует non-AI function deployment + secrets validation |
@@ -44,7 +44,7 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 6 | `database.types.ts` regenerate from reconciled schema | ⏳ | Current hand-crafted types drift from live columns |
+| 6 | `database.types.ts` align/regenerate from reconciled schema | 🔄 | Current TS contract patched for known live/app drift; final regeneration still after branch apply |
 | 7 | RLS policy consolidation | ⏳ | `profiles` 8 policies, `bookings` 9, `app_settings` 4 |
 | 8 | `dialogue` decision | ⏳ | RLS enabled, 0 policies |
 | 9 | Function hardening | ⏳ | mutable `search_path` advisors |
@@ -127,6 +127,7 @@ npm run build:app
 
 - [docs/SUPABASE_AUDIT_LIVE_2026_05_02.md](./docs/SUPABASE_AUDIT_LIVE_2026_05_02.md)
 - [docs/LAUNCH_CHECKLIST.md](./docs/LAUNCH_CHECKLIST.md)
+- [supabase/migrations/20260502095933_p0_live_rls_governance_catchup.sql](./supabase/migrations/20260502095933_p0_live_rls_governance_catchup.sql)
 
 ---
 

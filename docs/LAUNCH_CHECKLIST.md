@@ -29,14 +29,22 @@ Primary evidence file: [SUPABASE_AUDIT_LIVE_2026_05_02.md](./SUPABASE_AUDIT_LIVE
 | --- | --- | --- |
 | Repo migrations | PASS local integrity | 36 SQL files |
 | Live applied migrations | FAIL governance | 12 applied migrations |
-| Schema reproducibility | FAIL | repo/live baseline mismatch |
+| Repo migrations | PASS local integrity | 37 SQL files after P0 catch-up migration |
+| Schema reproducibility | FAIL until branch apply | repo/live baseline mismatch; catch-up migration prepared |
 | `contacts` | Live exists, migration governance drift | earlier "missing CREATE" should be read as baseline mismatch, not absence in live |
 | `classes` | Live exists, migration governance drift | local type does not match live columns |
-| `profiles` | FAIL security | public `ALL` policy with `USING true` and `WITH CHECK true` still active |
+| `profiles` | FAIL live / patch ready | public `ALL` policy still active in live; catch-up migration removes it |
 | `dialogue` | FAIL | RLS enabled, 0 policies |
 | `database.types.ts` | FAIL contract | hand-crafted types drift from live schema |
 
 Required action: create branch/local reproduction target, baseline live schema, prove reset/replay outside production, then regenerate types.
+
+Prepared repo patch:
+
+- `supabase/migrations/20260502095933_p0_live_rls_governance_catchup.sql`
+- `k-sebe-yoga-studioWEB/components/admin/tabs/UsersTab.tsx`
+- `shared/types/database.types.ts`
+- `shared/types/index.ts`
 
 ---
 

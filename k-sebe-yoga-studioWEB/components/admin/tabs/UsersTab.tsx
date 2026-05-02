@@ -6,7 +6,7 @@ import { AdminTabProps } from '../types';
 
 interface UserRow {
   id: string;
-  full_name: string | null;
+  name: string | null;
   phone: string | null;
   city: string | null;
   created_at: string;
@@ -69,7 +69,7 @@ export const UsersTab: React.FC<AdminTabProps> = ({ toast }) => {
       const [profilesRes, subsRes] = await Promise.all([
         supabase
           .from('profiles')
-          .select('id, full_name, phone, city, created_at')
+          .select('user_id, name, phone, city, created_at')
           .order('created_at', { ascending: false })
           .limit(200),
         supabase.from('subscriptions').select('*'),
@@ -78,9 +78,28 @@ export const UsersTab: React.FC<AdminTabProps> = ({ toast }) => {
       const subMap = new Map<string, SubscriptionRow>(
         (subsRes.data ?? []).map((s) => [s.user_id, s as SubscriptionRow])
       );
-      return (profilesRes.data as UserRow[]).map(
-        (p): UserWithSub => ({ ...p, subscription: subMap.get(p.id) ?? null })
-      );
+      return (profilesRes.data ?? [])
+        .filter(
+          (
+            p
+          ): p is {
+            user_id: string;
+            name: string | null;
+            phone: string | null;
+            city: string | null;
+            created_at: string;
+          } => Boolean(p.user_id)
+        )
+        .map(
+          (p): UserWithSub => ({
+            id: p.user_id,
+            name: p.name,
+            phone: p.phone,
+            city: p.city,
+            created_at: p.created_at,
+            subscription: subMap.get(p.user_id) ?? null,
+          })
+        );
     },
   });
 
@@ -121,9 +140,7 @@ export const UsersTab: React.FC<AdminTabProps> = ({ toast }) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
-      u.full_name?.toLowerCase().includes(q) ||
-      u.phone?.includes(q) ||
-      u.city?.toLowerCase().includes(q)
+      u.name?.toLowerCase().includes(q) || u.phone?.includes(q) || u.city?.toLowerCase().includes(q)
     );
   });
 
@@ -171,7 +188,7 @@ export const UsersTab: React.FC<AdminTabProps> = ({ toast }) => {
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-medium text-stone-700 text-sm truncate">
-                {user.full_name || 'Без имени'}
+                {user.name || 'Без имени'}
               </div>
               <div className="text-xs text-stone-400 mt-0.5 flex items-center gap-2">
                 {user.phone && <span>{user.phone}</span>}
@@ -245,9 +262,7 @@ const SubscriptionEditor: React.FC<{
   return (
     <div className="fixed inset-0 z-[110] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 space-y-4">
-        <h3 className="font-semibold text-stone-700">
-          Подписка: {user.full_name || 'Пользователь'}
-        </h3>
+        <h3 className="font-semibold text-stone-700">Подписка: {user.name || 'Пользователь'}</h3>
 
         <label className="space-y-1 block">
           <span className="text-xs text-stone-500 font-medium">План</span>

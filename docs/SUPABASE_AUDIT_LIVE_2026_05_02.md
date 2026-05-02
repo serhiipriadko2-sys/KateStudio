@@ -322,3 +322,17 @@ FAIL remains if:
 ---
 
 **Итог:** локальная сборка стоит, но production Supabase не стоит на каноне. Следующий безопасный шаг - branch-first remediation backlog, начиная с `profiles` RLS и schema baseline.
+
+---
+
+## 10) Remediation Patch Prepared
+
+> **Дата:** 2 мая 2026, после audit pass.
+
+[FACT] В репозитории подготовлен catch-up migration:
+
+- `supabase/migrations/20260502095933_p0_live_rls_governance_catchup.sql`
+
+[FACT] Migration не применён к production в рамках этого аудита.
+
+[INTERP] До применения на Supabase branch/staging live findings из этого документа остаются актуальными. Patch закрывает intended path для `profiles` RLS, app-contract columns, non-AI RLS consolidation, function `search_path`, storage hardening and selected non-AI performance indexes, но требует branch apply + advisors re-run.
