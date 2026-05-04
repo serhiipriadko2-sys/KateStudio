@@ -24,7 +24,7 @@
     "@capacitor/keyboard": "^7.0.5",
     "@capacitor/network": "^7.0.4",
     "@capacitor/splash-screen": "^7.0.5",
-    "@capacitor/status-bar": "^7.0.5",
+    "@capacitor/status-bar": "^8.0.2",
     "@google/genai": "^1.33.0",
     "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.90.21",
