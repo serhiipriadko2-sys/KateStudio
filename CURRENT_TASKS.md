@@ -4,6 +4,8 @@
 > Источник истины: код + `package.json` + миграции + live Supabase metadata audit.
 > Текущий режим: audit-first completion. Production mutation и AI scope changes запрещены без отдельного решения.
 
+> **2026-05-05 branch-remediation update:** Supabase MCP re-auth/access works, but creating dev branch `p0-live-rls-governance-catchup` is blocked by Supabase plan eligibility: `PaymentRequiredException`, `Branching is supported only on the Pro plan or above`. Production remains unchanged.
+
 ---
 
 ## Верифицированные метрики (2 мая 2026)
@@ -30,8 +32,8 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 1 | **`profiles` RLS** — убрать public `ALL true/true` policy | 🔄 | Repo catch-up migration prepared; live policy still active until branch/staging apply |
-| 2 | **Migration drift** — reconcile live schema vs repo | 🔄 | 12 applied migrations live vs 37 SQL files repo; catch-up migration prepared |
+| 1 | **`profiles` RLS** — убрать public `ALL true/true` policy | ⛔ | Repo catch-up migration prepared; live policy still active; Supabase branch creation blocked by plan |
+| 2 | **Migration drift** — reconcile live schema vs repo | ⛔ | 12 applied migrations live vs 37 SQL files repo; branch-first apply blocked until Pro/staging path |
 | 3 | **Edge Functions drift** — решить live/repo split | ⛔ | Live: `ai-run`, `ai-embeddings`; repo 7 functions not deployed |
 | 4 | **AI contour frozen** | 🔒 | Не менять `gemini-proxy`, `ai-run`, `ai-embeddings`, prompts/model routing/env contracts |
 | 5 | **YooKassa live path** | 🔄 | Требует non-AI function deployment + secrets validation |
@@ -105,6 +107,14 @@
 | Edge Functions launch path | FAIL |
 | AI boundary | FROZEN |
 | Overall launch readiness | **FAIL** |
+
+Branch remediation evidence, 2026-05-05:
+
+- MCP project access: PASS for `qkaycdcbstjobacmuaro` / `kate`.
+- Branch cost: `0.01344` hourly, confirmed through MCP.
+- Branch create: FAIL, `PaymentRequiredException`; Supabase branching requires Pro plan or above.
+- Catch-up migration apply: NOT RUN because no branch was created.
+- Production merge/hotfix: NOT RUN; production unchanged by design.
 
 ---
 
