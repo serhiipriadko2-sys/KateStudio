@@ -60,6 +60,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!isMounted) return;
       setAuthStatus(data.session ? 'authenticated' : 'anonymous');
       setIsInitializing(false);
+    }).catch((err) => {
+      console.error('getSession failed:', err);
+      if (!isMounted) return;
+      setAuthStatus('anonymous');
+      setIsInitializing(false);
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
