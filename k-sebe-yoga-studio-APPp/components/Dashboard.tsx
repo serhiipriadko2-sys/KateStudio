@@ -93,13 +93,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
   const getProfileSavedMessage = (reason?: string) =>
     reason === 'auth_required'
-      ? 'РџСЂРѕС„РёР»СЊ СЃРѕС…СЂР°РЅС‘РЅ Р»РѕРєР°Р»СЊРЅРѕ. Р”Р»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё СЃРЅРѕРІР° РІРѕР№РґРёС‚Рµ РІ Р°РєРєР°СѓРЅС‚.'
-      : 'РџСЂРѕС„РёР»СЊ СЃРѕС…СЂР°РЅС‘РЅ Р»РѕРєР°Р»СЊРЅРѕ. РЎРµСЂРІРµСЂ РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРµРЅ.';
+      ? 'Профиль сохранён локально. Для синхронизации снова войдите в аккаунт.'
+      : 'Профиль сохранён локально. Сервер временно недоступен.';
 
   const getAvatarSavedMessage = (reason?: string) =>
     reason === 'auth_required'
-      ? 'Р¤РѕС‚Рѕ СЃРѕС…СЂР°РЅРµРЅРѕ Р»РѕРєР°Р»СЊРЅРѕ. Р”Р»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё СЃРЅРѕРІР° РІРѕР№РґРёС‚Рµ РІ Р°РєРєР°СѓРЅС‚.'
-      : 'Р¤РѕС‚Рѕ СЃРѕС…СЂР°РЅРµРЅРѕ Р»РѕРєР°Р»СЊРЅРѕ. РЎРµСЂРІРµСЂ РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРµРЅ.';
+      ? 'Фото сохранено локально. Для синхронизации снова войдите в аккаунт.'
+      : 'Фото сохранено локально. Сервер временно недоступен.';
 
   const fetchBookings = useCallback(
     async (showLoading = false) => {
@@ -125,10 +125,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           if (bookingsNoticeRef.current !== noticeKey) {
             const noticeMessage =
               bookingResult.reason === 'pending_sync'
-                ? 'Р§Р°СЃС‚СЊ Р·Р°РїРёСЃРµР№ СЃРѕС…СЂР°РЅРµРЅР° Р»РѕРєР°Р»СЊРЅРѕ Рё РµС‰С‘ РѕР¶РёРґР°РµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё.'
+                ? 'Часть записей сохранена локально и ещё ожидает синхронизации.'
                 : bookingResult.reason === 'auth_required'
-                  ? 'РџРѕРєР°Р·С‹РІР°РµРј Р»РѕРєР°Р»СЊРЅС‹Рµ Р·Р°РїРёСЃРё, РїРѕРєР° Р°РєРєР°СѓРЅС‚ РЅРµ СЃРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅ СЃ СЃРµСЂРІРµСЂРѕРј.'
-                  : 'РџРѕРєР°Р·С‹РІР°РµРј СЃРѕС…СЂР°РЅС‘РЅРЅС‹Рµ Р·Р°РїРёСЃРё: СЃРµСЂРІРµСЂ РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРµРЅ.';
+                  ? 'Показываем локальные записи, пока аккаунт не синхронизирован с сервером.'
+                  : 'Показываем сохранённые записи: сервер временно недоступен.';
             showToast(noticeMessage, 'info');
             bookingsNoticeRef.current = noticeKey;
           }
@@ -138,7 +138,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       } catch (error) {
         console.error('Failed to load bookings', error);
         showToast(
-          'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ Р·Р°РїРёСЃРё. РџРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰С‘ СЂР°Р· РїРѕР·Р¶Рµ.',
+          'Не удалось загрузить записи. Попробуйте ещё раз позже.',
           'error'
         );
       } finally {
@@ -187,7 +187,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         (payload) => {
           void fetchBookings();
           if (payload.eventType === 'INSERT')
-            showToast('РќРѕРІР°СЏ Р·Р°РїРёСЃСЊ РґРѕР±Р°РІР»РµРЅР°!', 'success');
+            showToast('Новая запись добавлена!', 'success');
         }
       )
       .subscribe();
@@ -222,33 +222,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       const practices: Array<DailyRecommendationType> = [
         {
           practiceId: 'inside-flow-1',
-          title: 'РЈС‚СЂРµРЅРЅРёР№ Inside Flow',
+          title: 'Утренний Inside Flow',
           duration: 30,
           type: 'inside-flow',
           reason:
-            'РРґРµР°Р»СЊРЅРѕ РґР»СЏ РЅР°С‡Р°Р»Р° РґРЅСЏ вЂ” Р°РєС‚РёРІРёСЂСѓРµС‚ СЌРЅРµСЂРіРёСЋ Рё СѓР»СѓС‡С€Р°РµС‚ РЅР°СЃС‚СЂРѕР№',
+            'Рдеально для начала дня — активирует энергию и улучшает настрой',
           matchScore: 92,
           musicMood: 'Uplifting',
           generatedAt: new Date().toISOString(),
         },
         {
           practiceId: 'hatha-1',
-          title: 'РҐР°С‚С…Р° РґР»СЏ РіРёР±РєРѕСЃС‚Рё',
+          title: 'Хатха для гибкости',
           duration: 45,
           type: 'hatha',
           reason:
-            'РњСЏРіРєРѕРµ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ, РїРѕРјРѕРіР°РµС‚ СЂР°СЃСЃР»Р°Р±РёС‚СЊ РЅР°РїСЂСЏР¶РµРЅРёРµ РІ С‚РµР»Рµ',
+            'Мягкое восстановление, помогает расслабить напряжение в теле',
           matchScore: 88,
           musicMood: 'Serene',
           generatedAt: new Date().toISOString(),
         },
         {
           practiceId: 'meditation-1',
-          title: 'РњРµРґРёС‚Р°С†РёСЏ РїРµСЂРµРґ СЃРЅРѕРј',
+          title: 'Медитация перед сном',
           duration: 15,
           type: 'meditation',
           reason:
-            'РЈСЃРїРѕРєР°РёРІР°РµС‚ СѓРј Рё РіРѕС‚РѕРІРёС‚ Рє РіР»СѓР±РѕРєРѕРјСѓ РѕС‚РґС‹С…Сѓ',
+            'Успокаивает ум и готовит к глубокому отдыху',
           matchScore: 85,
           musicMood: 'Calm',
           generatedAt: new Date().toISOString(),
@@ -287,10 +287,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const handleLogout = () => {
     logout();
     onBack();
-    showToast('Р’С‹ РІС‹С€Р»Рё РёР· СЃРёСЃС‚РµРјС‹', 'info');
+    showToast('Вы вышли из системы', 'info');
   };
 
-  // handleSubscribePlan hidden вЂ” re-enable after launch
+  // handleSubscribePlan hidden — re-enable after launch
   // const handleSubscribePlan = async (plan: SubscriptionPlan) => { ... };
 
   // handleCancelSubscription hidden вЂ” re-enable after launch
@@ -298,7 +298,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
   const handleCancelBooking = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ РѕС‚РјРµРЅРёС‚СЊ Р·Р°РїРёСЃСЊ?'))
+    if (!window.confirm('Вы уверены, что хотите отменить запись?'))
       return;
 
     const result = await dataService.cancelBooking(id);
@@ -306,29 +306,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       setBookings((prev) => prev.filter((b) => b.id !== id));
       showToast(
         result.source === 'cache'
-          ? 'Р›РѕРєР°Р»СЊРЅР°СЏ Р·Р°РїРёСЃСЊ РѕС‚РјРµРЅРµРЅР°. РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЃ СЃРµСЂРІРµСЂРѕРј РЅРµ РїРѕС‚СЂРµР±РѕРІР°Р»Р°СЃСЊ.'
-          : 'Р вЂ”Р В°Р С—Р С‘РЎРѓРЎРЉ Р С•РЎвЂљР СР ВµР Р…Р ВµР Р…Р В°',
+          ? 'Локальная запись отменена. Синхронизация с сервером не потребовалась.'
+          : 'Р—Р°РїРёСЃСЊ РѕС‚РСРµРЅРµРЅР°',
         result.source === 'cache' ? 'info' : 'success'
       );
       return;
       /*
-      showToast('Р—Р°РїРёСЃСЊ РѕС‚РјРµРЅРµРЅР°', 'success');
+      showToast('Запись отменена', 'success');
       */
     } else {
       if (result.status === 'auth_required') {
         showToast(
-          'Р§С‚РѕР±С‹ РѕС‚РјРµРЅРёС‚СЊ СЃРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅРЅСѓСЋ Р·Р°РїРёСЃСЊ, РЅСѓР¶РЅРѕ СЃРЅРѕРІР° РІРѕР№С‚Рё РІ Р°РєРєР°СѓРЅС‚.',
+          'Чтобы отменить синхронизированную запись, нужно снова войти в аккаунт.',
           'error'
         );
         return;
       }
       showToast(
-        'РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РјРµРЅРёС‚СЊ Р·Р°РїРёСЃСЊ. РЎРµСЂРІРµСЂ РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРµРЅ.',
+        'Не удалось отменить запись. Сервер временно недоступен.',
         'error'
       );
       return;
       /*
-      showToast('РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РјРµРЅРёС‚СЊ Р·Р°РїРёСЃСЊ', 'error');
+      showToast('Не удалось отменить запись', 'error');
       */
     }
   };
@@ -349,12 +349,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       showToast(
         result.status === 'degraded'
           ? getProfileSavedMessage(result.reason)
-          : 'Р СџРЎР‚Р С•РЎвЂћР С‘Р В»РЎРЉ Р С•Р В±Р Р…Р С•Р Р†Р В»Р ВµР Р…',
+          : 'РџСЂРѕС„РёР»СЊ РѕР±РЅРѕРІР»РµРЅ',
         result.status === 'degraded' ? 'info' : 'success'
       );
       return;
     } else {
-      showToast('РћС€РёР±РєР° РїСЂРё РѕР±РЅРѕРІР»РµРЅРёРё РїСЂРѕС„РёР»СЏ', 'error');
+      showToast('Ошибка при обновлении профиля', 'error');
     }
   };
 
@@ -363,7 +363,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     if (!file || !user) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      showToast('Р¤Р°Р№Р» СЃР»РёС€РєРѕРј Р±РѕР»СЊС€РѕР№ (РјР°РєСЃ 5MB)', 'error');
+      showToast('Файл слишком большой (макс 5MB)', 'error');
       return;
     }
 
@@ -380,12 +380,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           showToast(
             result.status === 'degraded'
               ? getAvatarSavedMessage(result.reason)
-              : 'Р В¤Р С•РЎвЂљР С• Р С•Р В±Р Р…Р С•Р Р†Р В»Р ВµР Р…Р С•',
+              : 'Р¤РѕС‚Рѕ РѕР±РЅРѕРІР»РµРЅРѕ',
             result.status === 'degraded' ? 'info' : 'success'
           );
           return;
         } else {
-          showToast('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ СЃСЃС‹Р»РєСѓ', 'error');
+          showToast('Не удалось сохранить ссылку', 'error');
         }
       } else {
         const reader = new FileReader();
@@ -398,13 +398,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             showToast(
               result.status === 'degraded'
                 ? getAvatarSavedMessage(result.reason)
-                : 'Р В¤Р С•РЎвЂљР С• Р С•Р В±Р Р…Р С•Р Р†Р В»Р ВµР Р…Р С•',
+                : 'Р¤РѕС‚Рѕ РѕР±РЅРѕРІР»РµРЅРѕ',
               result.status === 'degraded' ? 'info' : 'success'
             );
             return;
           }
           showToast(
-            'Р СњР Вµ РЎС“Р Т‘Р В°Р В»Р С•РЎРѓРЎРЉ РЎРѓР С•РЎвЂ¦РЎР‚Р В°Р Р…Р С‘РЎвЂљРЎРЉ РЎвЂћР С•РЎвЂљР С•',
+            'РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ С„РѕС‚Рѕ',
             'error'
           );
         };
@@ -412,7 +412,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       }
     } catch (err) {
       console.error(err);
-      showToast('РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё', 'error');
+      showToast('Ошибка загрузки', 'error');
     } finally {
       setIsAvatarUploading(false);
     }
@@ -420,16 +420,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
   type DashboardTab = 'overview' | 'schedule' | 'videos' | 'breath' | 'profile' | 'dev';
   const navItems: { id: DashboardTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'overview', label: 'Р“Р»Р°РІРЅР°СЏ', icon: <LayoutDashboard className="w-6 h-6" /> },
-    { id: 'schedule', label: 'Р Р°СЃРїРёСЃР°РЅРёРµ', icon: <Calendar className="w-6 h-6" /> },
-    { id: 'videos', label: 'РџСЂР°РєС‚РёРєРё', icon: <Video className="w-6 h-6" /> },
-    { id: 'breath', label: 'Р”С‹С…Р°РЅРёРµ', icon: <Wind className="w-6 h-6" /> },
-    // { id: 'ai', label: 'AI РўСЂРµРЅРµСЂ', icon: <Sparkles className="w-6 h-6" /> }, // hidden вЂ” re-enable after launch
-    { id: 'profile', label: 'РџСЂРѕС„РёР»СЊ', icon: <User className="w-6 h-6" /> },
+    { id: 'overview', label: 'Главная', icon: <LayoutDashboard className="w-6 h-6" /> },
+    { id: 'schedule', label: 'Расписание', icon: <Calendar className="w-6 h-6" /> },
+    { id: 'videos', label: 'Практики', icon: <Video className="w-6 h-6" /> },
+    { id: 'breath', label: 'Дыхание', icon: <Wind className="w-6 h-6" /> },
+    // { id: 'ai', label: 'AI Тренер', icon: <Sparkles className="w-6 h-6" /> }, // hidden — re-enable after launch
+    { id: 'profile', label: 'Профиль', icon: <User className="w-6 h-6" /> },
   ];
 
-  const userName = user?.name || 'Р“РѕСЃС‚СЊ';
-  const userCity = user?.city || 'РњРѕСЃРєРІР°';
+  const userName = user?.name || 'Гость';
+  const userCity = user?.city || 'Москва';
 
   if (activeTab === 'dev') {
     return <DeveloperSettings onBack={() => setActiveTab('profile')} />;
@@ -466,7 +466,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           className="flex items-center gap-3 text-stone-400 hover:text-rose-500 transition-colors px-6 py-4 text-sm font-medium rounded-2xl hover:bg-rose-50"
         >
           <LogOut className="w-5 h-5" />
-          Р’С‹Р№С‚Рё
+          Выйти
         </button>
       </aside>
 
@@ -494,7 +494,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               <header className="flex justify-between items-end mb-8 md:mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div>
                   <h1 className="text-2xl md:text-4xl font-serif text-brand-text mb-2">
-                    РџСЂРёРІРµС‚, {userName}!
+                    Привет, {userName}!
                   </h1>
                   <p className="text-stone-400 font-light text-sm md:text-base">
                     Рады видеть тебя снова.
@@ -515,7 +515,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   <div className="relative z-10">
                     <p className="text-4xl font-serif text-brand-text mb-1">{bookings.length}</p>
                     <p className="text-xs text-stone-400 font-medium uppercase tracking-wider">
-                      Р’СЃРµРіРѕ Р·Р°РїРёСЃРµР№
+                      Всего записей
                     </p>
                   </div>
                 </div>
@@ -532,11 +532,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   <div>
                     <p className="text-2xl font-serif mb-1">
                       {subscription && subscription.plan !== 'free'
-                        ? 'РџСЂРµРјРёСѓРј'
-                        : 'РџСЂР°РєС‚РёРє'}
+                        ? 'Премиум'
+                        : 'Практик'}
                     </p>
                     <p className="text-xs text-white/50 font-medium uppercase tracking-wider">
-                      Р’Р°С€ СЃС‚Р°С‚СѓСЃ
+                      Ваш статус
                     </p>
                   </div>
                 </div>
@@ -552,7 +552,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                       <>
                         <div className="flex items-center gap-2 mb-4">
                           <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider">
-                            Р‘Р»РёР¶Р°Р№С€РµРµ
+                            Ближайшее
                           </span>
                           <span className="flex w-2 h-2 relative">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
@@ -561,21 +561,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                         </div>
                         <p className="text-xl font-serif mb-1 truncate">{nextBooking.className}</p>
                         <p className="text-white/70 text-sm">
-                          {nextBooking.time} вЂў {nextBooking.date}
+                          {nextBooking.time} • {nextBooking.date}
                         </p>
                       </>
                     ) : (
                       <>
                         <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider mb-4">
-                          РќРµС‚ Р·Р°РїРёСЃРµР№
+                          Нет записей
                         </span>
-                        <p className="text-xl font-serif mb-1">Р—Р°РїРёСЃР°С‚СЊСЃСЏ?</p>
-                        <p className="text-white/70 text-sm">Р’С‹Р±РµСЂРё РїСЂР°РєС‚РёРєСѓ</p>
+                        <p className="text-xl font-serif mb-1">Записаться?</p>
+                        <p className="text-white/70 text-sm">Выбери практику</p>
                       </>
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider mt-auto">
-                    РџРµСЂРµР№С‚Рё <ChevronRight className="w-4 h-4" />
+                    Перейти <ChevronRight className="w-4 h-4" />
                   </div>
                 </div>
               </div>
@@ -591,7 +591,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                     isLoading={dailyRecLoading}
                     onStart={(_id) => {
                       setActiveTab('videos');
-                      showToast(`РћС‚РєСЂС‹РІР°РµРј РїСЂР°РєС‚РёРєСѓвЂ¦`, 'success');
+                      showToast(`Открываем практику…`, 'success');
                     }}
                     onRefresh={() => {
                       localStorage.removeItem(`ksebe_daily_rec_${new Date().toDateString()}`);
@@ -611,7 +611,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               >
                 <h3 className="font-serif text-xl mb-6 flex items-center gap-2">
                   <Ticket className="w-5 h-5 text-brand-green" />
-                  РњРѕРё Р±РёР»РµС‚С‹
+                  Мои билеты
                 </h3>
 
                 {loading ? (
@@ -636,7 +636,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                                 <span
                                   className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2 inline-block ${isFuture ? 'bg-brand-mint text-brand-green' : 'bg-stone-100 text-stone-400'}`}
                                 >
-                                  {isFuture ? 'РђРєС‚РёРІРµРЅ' : 'Р—Р°РІРµСЂС€РµРЅ'}
+                                  {isFuture ? 'Активен' : 'Завершен'}
                                 </span>
                                 <h4 className="text-2xl font-serif text-brand-text">
                                   {b.className}
@@ -661,7 +661,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                                   aria-label={`Cancel booking ${b.className}`}
                                   className="text-xs text-rose-400 hover:text-rose-600 font-medium transition-colors"
                                 >
-                                  РћС‚РјРµРЅРёС‚СЊ
+                                  Отменить
                                 </button>
                               )}
                             </div>
@@ -675,7 +675,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                             <div
                               role="button"
                               tabIndex={0}
-                              aria-label="РџРѕРєР°Р·Р°С‚СЊ QR-РєРѕРґ"
+                              aria-label="Показать QR-код"
                               className="opacity-20 hover:opacity-100 transition-opacity flex flex-col items-center gap-1 cursor-pointer"
                               onClick={() => setExpandedQr(b.id)}
                               onKeyDown={(e) => {
@@ -699,7 +699,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                       <Ticket className="w-8 h-8" />
                     </div>
                     <p className="text-stone-400 text-sm">
-                      РЈ РІР°СЃ РїРѕРєР° РЅРµС‚ Р±РёР»РµС‚РѕРІ РЅР° РїСЂР°РєС‚РёРєСѓ.
+                      У вас пока нет билетов на практику.
                     </p>
                   </div>
                 )}
@@ -717,10 +717,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
               <header className="mb-8">
                 <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">
-                  Р’РёРґРµРѕС‚РµРєР°
+                  Видеотека
                 </h1>
                 <p className="text-stone-400 font-light text-sm">
-                  РўРІРѕСЏ СЃС‚СѓРґРёСЏ РІСЃРµРіРґР° СЃ С‚РѕР±РѕР№.
+                  Твоя студия всегда с тобой.
                 </p>
               </header>
               <VideoLibrary />
@@ -731,10 +731,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             <div className="max-w-lg mx-auto h-[70vh] flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
               <header className="mb-6 text-center">
                 <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">
-                  Р”С‹С…Р°РЅРёРµ
+                  Дыхание
                 </h1>
                 <p className="text-stone-400 font-light text-sm">
-                  РЈСЃРїРѕРєРѕР№ СѓРј Р·Р° 4 РјРёРЅСѓС‚С‹.
+                  Успокой ум за 4 минуты.
                 </p>
               </header>
               <div className="flex-1 bg-white rounded-[3rem] shadow-xl shadow-stone-100 border border-stone-50 p-6 flex flex-col justify-center relative overflow-hidden">
@@ -743,12 +743,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             </div>
           )}
 
-          {/* AI РўСЂРµРЅРµСЂ tab hidden вЂ” re-enable after launch */}
+          {/* AI Тренер tab hidden — re-enable after launch */}
           {/* {activeTab === 'ai' && (
             <div className="max-w-2xl mx-auto h-[80vh] flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-500 pb-24">
               <header className="mb-6">
-                <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">AI РўСЂРµРЅРµСЂ</h1>
-                <p className="text-stone-400 font-light text-sm">РђРЅР°Р»РёР· Р°СЃР°РЅ, С‡Р°С‚ Рё С‚РІРѕСЂС‡РµСЃС‚РІРѕ.</p>
+                <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">AI Тренер</h1>
+                <p className="text-stone-400 font-light text-sm">Анализ асан, чат и творчество.</p>
               </header>
               <AICoach />
             </div>
@@ -775,7 +775,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   tabIndex={isEditingProfile ? 0 : -1}
                   aria-label={
                     isEditingProfile
-                      ? 'Р—Р°РіСЂСѓР·РёС‚СЊ РЅРѕРІРѕРµ С„РѕС‚Рѕ РїСЂРѕС„РёР»СЏ'
+                      ? 'Загрузить новое фото профиля'
                       : undefined
                   }
                   className={`w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-xl mb-4 relative group ${isEditingProfile ? 'cursor-pointer hover:border-brand-green/50' : ''}`}
@@ -832,21 +832,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 ) : (
                   <div className="w-full space-y-2 mt-2">
                     <p className="text-xs text-stone-400 text-center mb-2">
-                      РќР°Р¶РјРёС‚Рµ РЅР° С„РѕС‚Рѕ, С‡С‚РѕР±С‹ РёР·РјРµРЅРёС‚СЊ
+                      Нажмите на фото, чтобы изменить
                     </p>
                     <input
                       type="text"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       className="w-full p-2 text-center border border-stone-200 rounded-lg text-lg font-serif focus:outline-none focus:border-brand-green"
-                      placeholder="РРјСЏ"
+                      placeholder="Рмя"
                     />
                     <input
                       type="text"
                       value={editCity}
                       onChange={(e) => setEditCity(e.target.value)}
                       className="w-full p-2 text-center border border-stone-200 rounded-lg text-sm text-stone-500 focus:outline-none focus:border-brand-green"
-                      placeholder="Р“РѕСЂРѕРґ"
+                      placeholder="Город"
                     />
                     <div className="flex justify-center gap-2 mt-2">
                       <button
@@ -870,9 +870,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
               <div className="bg-white rounded-[2rem] p-2 shadow-sm border border-stone-100 divide-y divide-stone-50">
                 <div className="w-full flex items-center justify-between p-5 rounded-xl">
-                  <span className="text-brand-text font-medium">РўРµР»РµС„РѕРЅ</span>
+                  <span className="text-brand-text font-medium">Телефон</span>
                   <span className="text-stone-400 text-sm">
-                    {user?.phone || 'РќРµ СѓРєР°Р·Р°РЅ'}
+                    {user?.phone || 'Не указан'}
                   </span>
                 </div>
 
@@ -882,13 +882,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 >
                   <span className="text-brand-text font-medium flex items-center gap-2">
                     <Terminal className="w-4 h-4 text-stone-400" />
-                    РќР°СЃС‚СЂРѕР№РєРё СЂР°Р·СЂР°Р±РѕС‚С‡РёРєР°
+                    Настройки разработчика
                   </span>
                   <ChevronRight className="w-5 h-5 text-stone-300 group-hover:text-brand-green" />
                 </button>
 
                 <button className="w-full flex items-center justify-between p-5 hover:bg-stone-50 transition-colors rounded-xl group">
-                  <span className="text-brand-text font-medium">РџРѕРґРґРµСЂР¶РєР°</span>
+                  <span className="text-brand-text font-medium">Поддержка</span>
                   <ChevronRight className="w-5 h-5 text-stone-300 group-hover:text-brand-green" />
                 </button>
               </div>
@@ -898,14 +898,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 aria-label="Logout"
                 className="w-full mt-6 py-4 text-rose-500 font-medium text-sm bg-rose-50 rounded-2xl hover:bg-rose-100 transition-colors"
               >
-                Р’С‹Р№С‚Рё РёР· Р°РєРєР°СѓРЅС‚Р°
+                Выйти из аккаунта
               </button>
             </div>
           )}
         </div>
       </main>
 
-      {/* Paywall hidden вЂ” re-enable after launch */}
+      {/* Paywall hidden — re-enable after launch */}
       {/* {showPaywall && (
         <Paywall
           onClose={() => setShowPaywall(false)}
@@ -918,7 +918,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="QR-РєРѕРґ Р±СЂРѕРЅРёСЂРѕРІР°РЅРёСЏ"
+          aria-label="QR-код бронирования"
           className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-8 animate-in fade-in"
           onClick={() => setExpandedQr(null)}
           onKeyDown={(e) => {
@@ -932,7 +932,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             <QrCode className="w-full h-full text-brand-dark" />
           </div>
           <p className="text-white/50 mt-8 text-center">
-            РџРѕРєР°Р¶РёС‚Рµ QR-РєРѕРґ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂСѓ
+            Покажите QR-код администратору
           </p>
           <button
             onClick={() => setExpandedQr(null)}
