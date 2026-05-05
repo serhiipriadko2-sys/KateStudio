@@ -14,7 +14,7 @@
 
 | Проверка | Статус | Evidence |
 | --- | --- | --- |
-| `npm run check:migrations` | PASS | `36 files`, `2 known collision group(s)`, `1 legacy short timestamp file(s)` |
+| `npm run check:migrations` | PASS | `37 files`, `2 known collision group(s)`, `1 legacy short timestamp file(s)` |
 | `npm run typecheck` | PASS | 0 TypeScript errors |
 | `npm run lint` | PASS | command completed successfully |
 | `npm run test:run` | PASS | `64 passed (64)`, `489 passed (489)` |
@@ -23,7 +23,7 @@
 
 [FACT] Live Supabase всё ещё не является launch-ready:
 
-- 12 applied migrations in live vs 36 SQL migration files in repo.
+- 12 applied migrations in live vs 37 SQL migration files in repo.
 - Live Edge Functions: only `ai-run` and `ai-embeddings`.
 - Repo Edge Functions: 7 functions, none are deployed in live function inventory.
 - `profiles` still has open `ALL` policy with `USING true` and `WITH CHECK true`.
@@ -72,7 +72,7 @@ Supabase docs used as current operating guidance:
 | Created | `2025-12-10T03:11:36.751735Z` |
 | Public tables | 27 tables, all have RLS enabled |
 | Applied migrations | 12 |
-| Repo migrations | 36 SQL files |
+| Repo migrations | 37 SQL files |
 | Live Edge Functions | 2: `ai-run`, `ai-embeddings` |
 | Repo Edge Functions | 7: `gemini-proxy`, `create-payment`, `payment-webhook`, `cancel-subscription`, `cron-maintenance`, `send-push`, `subscribe-newsletter` |
 | Storage buckets | `images` public, `interf` private |
@@ -126,7 +126,7 @@ PASS condition:
 
 ### P0.2 - Migration history cannot reproduce live schema
 
-[FACT] Live has 12 applied migrations; repo has 36 migration files.
+[FACT] Live has 12 applied migrations; repo has 37 migration files.
 
 [FACT] Live has 27 public tables, including manual/shadow objects that are not safely represented by applied migration history.
 
@@ -311,7 +311,7 @@ FAIL remains if:
 | Area | 2026-03-15 doc | 2026-05-02 recheck |
 | --- | --- | --- |
 | Local tests | 473 / 60 | 489 / 64 |
-| Repo migrations | 35 | 36 |
+| Repo migrations | 35 | 37 |
 | Applied migrations | 12 | 12 |
 | Live Edge Functions | 2 | 2 |
 | `profiles` open policy | present | still present |
@@ -336,3 +336,48 @@ FAIL remains if:
 [FACT] Migration не применён к production в рамках этого аудита.
 
 [INTERP] До применения на Supabase branch/staging live findings из этого документа остаются актуальными. Patch закрывает intended path для `profiles` RLS, app-contract columns, non-AI RLS consolidation, function `search_path`, storage hardening and selected non-AI performance indexes, но требует branch apply + advisors re-run.
+
+---
+
+## 11) Branch Remediation Attempt - 2026-05-05
+
+[FACT] Supabase MCP access was re-verified for project `qkaycdcbstjobacmuaro`:
+
+- project `kate`, organization `lwydigvmulkaunbosesd`, region `eu-central-1`;
+- status `ACTIVE_HEALTHY`;
+- database PostgreSQL `17.6.1.054`.
+
+[FACT] Branch cost was fetched and confirmed through MCP:
+
+- type: `branch`;
+- recurrence: `hourly`;
+- amount: `0.01344`.
+
+[FACT] Creating branch `p0-live-rls-governance-catchup` failed before any migration was applied:
+
+- Supabase error: `PaymentRequiredException`;
+- message: `Branching is supported only on the Pro plan or above`.
+
+[FACT] Production remained unchanged. The catch-up migration
+`supabase/migrations/20260502095933_p0_live_rls_governance_catchup.sql`
+was not applied to production and no production merge was attempted.
+
+[FACT] Metadata-only production recheck after the branch blocker still shows:
+
+- applied live migrations: 12;
+- `profiles` policy `Allow public read/write profiles` remains `ALL` with `USING true` and `WITH CHECK true`;
+- `profiles.is_admin` still exists;
+- `dialogue` still has RLS enabled and no policies;
+- mutable `search_path` advisors remain for `is_admin`, `set_updated_at`, `touch_push_token_updated_at`, `trigger_set_timestamp`, and `get_admin_analytics`;
+- `get_admin_analytics(period_days integer)` remains `SECURITY DEFINER` with `proconfig = null`;
+- `rls_auto_enable()` remains `SECURITY DEFINER`;
+- bucket `images` remains public with no `file_size_limit` and no `allowed_mime_types`;
+- broad storage policy `Public Access` remains on `storage.objects`.
+
+[INTERP] The remediation patch is ready, but the required branch-first execution path is blocked by Supabase plan eligibility. Applying the migration directly to production would violate the current remediation plan.
+
+Next safe paths:
+
+1. Upgrade/enable Supabase branching for organization `lwydigvmulkaunbosesd`, then retry the same branch flow.
+2. Provide a separate staging Supabase project explicitly approved for mutation, then apply and verify there.
+3. Give explicit production-hotfix approval only after accepting the risk of bypassing branch evidence.
