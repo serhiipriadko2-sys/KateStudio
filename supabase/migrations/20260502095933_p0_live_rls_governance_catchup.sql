@@ -7,6 +7,13 @@
 -- - It intentionally does not touch AI Edge Functions, AI routing, prompts, or AI env.
 -- - It avoids destructive data deletes. The only column removal is the legacy
 --   profiles.is_admin flag after backfilling public.admins.
+-- migration-note: DROP COLUMN profiles.is_admin is intentional after copying
+--   true admin flags into public.admins; profiles.is_admin is a legacy public
+--   profile-column authorization source and must not remain part of RLS/admin
+--   decisions.
+-- rollback: If rollback is required, re-add public.profiles.is_admin boolean
+--   default false, restore values from public.admins for matching user_id rows,
+--   and re-review all app/admin authorization paths before exposing it again.
 
 -- ============================================================
 -- 1. Schema alignment for app contracts
@@ -83,6 +90,8 @@ begin
 
     drop index if exists public.idx_profiles_is_admin;
 
+    -- migration-note: Remove the legacy authorization flag only after the
+    -- public.admins backfill above has preserved existing admin identities.
     alter table public.profiles
       drop column if exists is_admin;
   end if;
