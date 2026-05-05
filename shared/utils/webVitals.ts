@@ -316,12 +316,12 @@ export function logWebVitals(): () => void {
 /**
  * Send metrics to analytics endpoint
  */
-export function reportWebVitals(endpoint: string, callback?: ReportCallback): () => void {
+export function reportWebVitals(endpoint?: string, callback?: ReportCallback): () => void {
   return observeWebVitals((metric) => {
     callback?.(metric);
 
     // Use sendBeacon for reliable delivery
-    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+    if (endpoint && typeof navigator !== 'undefined' && navigator.sendBeacon) {
       const body = JSON.stringify({
         name: metric.name,
         value: metric.value,

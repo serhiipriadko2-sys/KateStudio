@@ -65,7 +65,7 @@ export const analytics = {
     if (window.__analytics_initialized) return;
     window.__analytics_initialized = true;
 
-    reportWebVitals('/api/analytics', (metric: WebVitalMetric) => {
+    reportWebVitals(undefined, (metric: WebVitalMetric) => {
       sendEvent('web_vital', {
         name: metric.name,
         value: metric.value,
