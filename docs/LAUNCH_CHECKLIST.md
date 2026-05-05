@@ -174,5 +174,8 @@ Attempted branch-first execution through Supabase MCP:
 | Create branch | FAIL blocked | `PaymentRequiredException`: branching requires Pro plan or above |
 | Apply catch-up migration | NOT RUN | no branch was created |
 | Production mutation | NOT RUN | production intentionally unchanged |
+| Governance note | PASS local | `profiles.is_admin` drop now has migration-note and rollback note |
 
 Current launch verdict remains **FAIL**. The prepared P0 migration can only be validated after either Supabase branching is enabled or an explicitly approved staging project is provided.
+
+Follow-up implementation attempt on 2026-05-05 rechecked project `qkaycdcbstjobacmuaro` as `ACTIVE_HEALTHY`, confirmed organization `lwydigvmulkaunbosesd` is still on the `free` plan, reconfirmed branch cost `0.01344` hourly, and retried branch creation. The result remained `PaymentRequiredException`, so the catch-up migration, generated DB types, and production state were not changed.
