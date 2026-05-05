@@ -10,25 +10,8 @@ const FILE_PATTERN = /^(\d{8}|\d{14})_([a-z0-9]+(?:_[a-z0-9]+)*)\.sql$/;
 // Legacy naming kept for backward compatibility with already applied history.
 const LEGACY_SHORT_TIMESTAMP_FILES = new Set(['20260205_create_contacts.sql']);
 
-// Known collisions are frozen until a dedicated migration-governance task.
-const KNOWN_TIMESTAMP_COLLISIONS = new Map([
-  [
-    '20260216000000',
-    new Set([
-      '20260216000000_deep_refactor.sql',
-      '20260216000000_schedule_admin_booking_status.sql',
-    ]),
-  ],
-  [
-    '20260308000000',
-    new Set([
-      '20260308000000_harden_profiles_is_admin_rls.sql',
-      '20260308000000_secure_analytics_events.sql',
-      '20260308000000_secure_video_select_policy.sql',
-      '20260308000000_unify_admin_roles.sql',
-    ]),
-  ],
-]);
+// Timestamp collisions break Supabase CLI from-scratch replay.
+const KNOWN_TIMESTAMP_COLLISIONS = new Map();
 
 const issues = [];
 

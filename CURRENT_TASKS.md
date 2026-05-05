@@ -115,6 +115,9 @@ Branch remediation evidence, 2026-05-05:
 - Branch create: FAIL, `PaymentRequiredException`; Supabase branching requires Pro plan or above.
 - Catch-up migration apply: NOT RUN because no branch was created.
 - Production merge/hotfix: NOT RUN; production unchanged by design.
+- 2026-05-05 implementation follow-up: local migration governance note added for
+  `profiles.is_admin` drop; project remained `ACTIVE_HEALTHY`, org plan remained
+  `free`, branch retry still failed with `PaymentRequiredException`.
 
 ---
 

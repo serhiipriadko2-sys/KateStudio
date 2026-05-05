@@ -10,7 +10,7 @@
 
 | Проверка | Статус | Evidence |
 | --- | --- | --- |
-| `npm run check:migrations` | PASS | 37 migration files, known collision groups documented by checker |
+| `npm run check:migrations` | PASS | 37 migration files, 0 timestamp collision groups, 1 legacy short timestamp |
 | `npm run typecheck` | PASS | 0 TypeScript errors |
 | `npm run lint` | PASS | command completed successfully |
 | `npm run test:run` | PASS | 489 tests / 64 files |
@@ -30,14 +30,14 @@ Primary evidence file: [SUPABASE_AUDIT_LIVE_2026_05_02.md](./SUPABASE_AUDIT_LIVE
 | Repo migrations | PASS local integrity | 37 SQL files |
 | Live applied migrations | FAIL governance | 12 applied migrations |
 | Repo migrations | PASS local integrity | 37 SQL files after P0 catch-up migration |
-| Schema reproducibility | FAIL until branch apply | repo/live baseline mismatch; catch-up migration prepared |
+| Schema reproducibility | PARTIAL local PASS / live FAIL | 37 migrations replay in isolated local Supabase; live still has 12 applied migrations and P0 drift |
 | `contacts` | Live exists, migration governance drift | earlier "missing CREATE" should be read as baseline mismatch, not absence in live |
 | `classes` | Live exists, migration governance drift | local type does not match live columns |
 | `profiles` | FAIL live / patch ready | public `ALL` policy still active in live; catch-up migration removes it |
 | `dialogue` | FAIL | RLS enabled, 0 policies |
 | `database.types.ts` | FAIL contract | hand-crafted types drift from live schema |
 
-Required action: create branch/local reproduction target, baseline live schema, prove reset/replay outside production, then regenerate types.
+Required action: use staging or production-approved path to reconcile live schema, then regenerate committed types from that reconciled target.
 
 Prepared repo patch:
 
@@ -138,9 +138,9 @@ No live `videos` rows were read in this audit. Treat video readiness as an open 
 
 ## 9. Next Steps
 
-1. Unblock Supabase branch execution: current org requires Pro plan or another approved staging target.
-2. Generate/commit a live schema baseline in a controlled branch.
-3. Fix `profiles` open policy and verify access contexts.
+1. Provide an approved staging target or explicit production-hotfix approval; Supabase branches require Pro.
+2. Generate/commit a live schema baseline in the approved target.
+3. Apply the prepared P0 migration and verify `profiles` access contexts.
 4. Consolidate RLS policies and pin function `search_path`.
 5. Harden storage buckets.
 6. Decide non-AI Edge Function deployment path.
@@ -174,5 +174,22 @@ Attempted branch-first execution through Supabase MCP:
 | Create branch | FAIL blocked | `PaymentRequiredException`: branching requires Pro plan or above |
 | Apply catch-up migration | NOT RUN | no branch was created |
 | Production mutation | NOT RUN | production intentionally unchanged |
+| Governance note | PASS local | `profiles.is_admin` drop now has migration-note and rollback note |
 
 Current launch verdict remains **FAIL**. The prepared P0 migration can only be validated after either Supabase branching is enabled or an explicitly approved staging project is provided.
+
+Follow-up implementation attempt on 2026-05-05 rechecked project `qkaycdcbstjobacmuaro` as `ACTIVE_HEALTHY`, confirmed organization `lwydigvmulkaunbosesd` is still on the `free` plan, reconfirmed branch cost `0.01344` hourly, and retried branch creation. The result remained `PaymentRequiredException`, so the catch-up migration, generated DB types, and production state were not changed.
+
+## 12. Local Reproduction Status - 2026-05-05
+
+An isolated temporary local Supabase project was created outside the repo and run on non-default ports while the existing `iskra` stack remained separate.
+
+| Step | Status | Evidence |
+| --- | --- | --- |
+| Migration timestamp collisions | PASS fixed | renamed duplicate migration timestamps; checker now reports `0 known collision group(s)` |
+| From-scratch replay | PASS local | 37 migrations applied through `20260502095933` |
+| Local DB lint | PASS | `npx supabase db lint` reported no schema errors |
+| P0 metadata checks | PASS local | no `profiles` open policy, no `profiles.is_admin`, `images` bucket constrained |
+| Generated types smoke | PASS temp | generated temporary TypeScript types; committed app types unchanged |
+
+This does not make production launch-ready. It proves the repo migration chain can now replay locally; live Supabase still requires staging/prod remediation.

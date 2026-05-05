@@ -32,6 +32,8 @@ DROP POLICY IF EXISTS "Admin can delete any booking" ON public.bookings;
 
 -- profiles
 DROP POLICY IF EXISTS "Admin can read all profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
 
 -- ============================================================
 -- 3. DROP is_admin COLUMN from profiles

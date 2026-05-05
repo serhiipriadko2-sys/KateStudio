@@ -332,6 +332,8 @@ FAIL remains if:
 [FACT] В репозитории подготовлен catch-up migration:
 
 - `supabase/migrations/20260502095933_p0_live_rls_governance_catchup.sql`
+- 2026-05-05 implementation follow-up added the required migration-note
+  and rollback note for the intentional `profiles.is_admin` column drop.
 
 [FACT] Migration не применён к production в рамках этого аудита.
 
@@ -357,6 +359,15 @@ FAIL remains if:
 
 - Supabase error: `PaymentRequiredException`;
 - message: `Branching is supported only on the Pro plan or above`.
+
+[FACT] A follow-up implementation attempt on 2026-05-05 rechecked the project
+and branch path after the local migration governance note was added:
+
+- project `qkaycdcbstjobacmuaro` remained `ACTIVE_HEALTHY`;
+- organization `lwydigvmulkaunbosesd` reported plan `free`;
+- branch cost remained `0.01344` hourly;
+- creating branch `p0-live-rls-governance-catchup` still failed with
+  `PaymentRequiredException`.
 
 [FACT] Production remained unchanged. The catch-up migration
 `supabase/migrations/20260502095933_p0_live_rls_governance_catchup.sql`
