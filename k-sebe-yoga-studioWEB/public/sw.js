@@ -45,6 +45,10 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const requestUrl = new URL(event.request.url);
+  
+  // Skip non-HTTP protocols (e.g., chrome-extension://)
+  if (!requestUrl.protocol.startsWith('http')) return;
+
   const isSameOrigin = requestUrl.origin === self.location.origin;
 
   // Navigation requests - Network First with cache fallback
