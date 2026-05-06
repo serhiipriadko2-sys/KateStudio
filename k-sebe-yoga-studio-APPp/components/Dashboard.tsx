@@ -547,6 +547,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 <div
                   className="bg-brand-green p-6 rounded-[2rem] shadow-xl shadow-brand-green/20 flex flex-col justify-between h-40 md:h-48 text-white relative overflow-hidden cursor-pointer group hover:scale-[1.02] transition-transform animate-in zoom-in-95 duration-500 fill-mode-backwards"
                   style={{ animationDelay: '300ms' }}
+                  onClick={() => setActiveTab('schedule')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setActiveTab('schedule');
+                    }
+                  }}
                 >
                   <div className="absolute -right-6 -top-6 w-24 h-24 border-[6px] border-white/10 rounded-full group-hover:scale-125 transition-transform duration-700"></div>
                   <div className="relative z-10">
