@@ -75,6 +75,7 @@ export const UsersTab: React.FC<AdminTabProps> = ({ toast }) => {
         supabase.from('subscriptions').select('*'),
       ]);
       if (profilesRes.error) throw profilesRes.error;
+      if (subsRes.error) throw subsRes.error;
       const subMap = new Map<string, SubscriptionRow>(
         (subsRes.data ?? []).map((s) => [s.user_id, s as SubscriptionRow])
       );
