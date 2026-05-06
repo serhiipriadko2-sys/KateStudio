@@ -12,7 +12,7 @@ interface DBPricingPlan {
   price: string;
   subtitle?: string;
   description?: string;
-  features: string[]; // JSONB array stored as string[]
+  features: string[] | null; // JSONB array stored as string[]; existing rows may be null.
   is_popular: boolean;
   is_dark: boolean;
   display_order: number;
@@ -49,7 +49,10 @@ export const PricingTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') 
         .order('display_order', { ascending: true })
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as DBPricingPlan[];
+      return ((data as DBPricingPlan[]) ?? []).map((plan) => ({
+        ...plan,
+        features: Array.isArray(plan.features) ? plan.features : [],
+      }));
     },
   });
 
@@ -209,7 +212,7 @@ export const PricingTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') 
                   <p className="text-xs text-stone-500 mb-2">{plan.description}</p>
                 )}
                 <div className="flex flex-wrap gap-1">
-                  {plan.features.slice(0, 3).map((f, i) => (
+                  {(plan.features ?? []).slice(0, 3).map((f, i) => (
                     <span
                       key={i}
                       className="text-[10px] bg-stone-50 text-stone-500 px-2 py-1 rounded border border-stone-100"
@@ -217,9 +220,9 @@ export const PricingTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') 
                       {f}
                     </span>
                   ))}
-                  {plan.features.length > 3 && (
+                  {(plan.features?.length ?? 0) > 3 && (
                     <span className="text-[10px] text-stone-400 px-1 py-1">
-                      +{plan.features.length - 3}
+                      +{(plan.features?.length ?? 0) - 3}
                     </span>
                   )}
                 </div>

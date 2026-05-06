@@ -237,7 +237,12 @@ const ArticleEditor: React.FC<{
             type="datetime-local"
             value={draft.published_at?.slice(0, 16)}
             onChange={(e) =>
-              setDraft((d) => ({ ...d, published_at: new Date(e.target.value).toISOString() }))
+              setDraft((d) => ({
+                ...d,
+                published_at: e.target.value
+                  ? new Date(e.target.value).toISOString()
+                  : new Date().toISOString(),
+              }))
             }
             className="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none focus:border-brand-green"
           />
