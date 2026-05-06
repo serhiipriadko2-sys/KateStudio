@@ -31,7 +31,6 @@ import {
   QrCode,
   Camera,
   Database,
-  Settings,
 } from 'lucide-react';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';

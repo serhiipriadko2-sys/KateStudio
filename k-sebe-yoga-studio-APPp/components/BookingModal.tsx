@@ -53,8 +53,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setError(null);
 
     try {
-      // Execute booking via Service
-      const bookingResult = await dataService.bookClass(classDetails, user);
+      // Execute booking via Service using the details entered in the form
+      const updatedUser = { ...user, name, phone };
+      const bookingResult = await dataService.bookClass(classDetails, updatedUser);
 
       if (bookingResult.ok) {
         const cached = await dataService.getUser();
