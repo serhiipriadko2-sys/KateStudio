@@ -1,4 +1,4 @@
-﻿/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import {
   IMAGES,
   supabase,
@@ -6,6 +6,7 @@ import {
   DailyRecommendation,
   StreakCalendar,
   useGamification,
+  useIsAdmin,
 } from '@ksebe/shared';
 import type {
   DailyRecommendationData as DailyRecommendationType,
@@ -58,6 +59,7 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'overview' }) => {
   const { user, setUser, logout, authStatus, isSupabaseConfigured } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const [activeTab, setActiveTab] = useState<
     'overview' | 'schedule' | 'videos' | 'breath' | 'profile' | 'dev'
   >(initialTab);
@@ -876,16 +878,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   </span>
                 </div>
 
-                <button
-                  onClick={() => setActiveTab('dev')}
-                  className="w-full flex items-center justify-between p-5 hover:bg-stone-50 transition-colors rounded-xl group"
-                >
-                  <span className="text-brand-text font-medium flex items-center gap-2">
-                    <Terminal className="w-4 h-4 text-stone-400" />
-                    Настройки разработчика
-                  </span>
-                  <ChevronRight className="w-5 h-5 text-stone-300 group-hover:text-brand-green" />
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => setActiveTab('dev')}
+                    className="w-full flex items-center justify-between p-5 hover:bg-stone-50 transition-colors rounded-xl group"
+                  >
+                    <span className="text-brand-text font-medium flex items-center gap-2">
+                      <Terminal className="w-4 h-4 text-stone-400" />
+                      Настройки разработчика
+                    </span>
+                    <ChevronRight className="w-5 h-5 text-stone-300 group-hover:text-brand-green" />
+                  </button>
+                )}
 
                 <button className="w-full flex items-center justify-between p-5 hover:bg-stone-50 transition-colors rounded-xl group">
                   <span className="text-brand-text font-medium">Поддержка</span>

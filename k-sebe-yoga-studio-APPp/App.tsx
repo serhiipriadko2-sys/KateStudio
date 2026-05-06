@@ -210,7 +210,7 @@ export function App() {
 
   // Load and sync theme from Supabase
   useEffect(() => {
-    const loadAndSyncTheme = async () => {
+    const loadAndSyncThemeAndImages = async () => {
       try {
         const savedTheme = localStorage.getItem('ksebe_theme_config');
         if (savedTheme) {
@@ -227,23 +227,33 @@ export function App() {
         try {
           const { data } = await supabase
             .from('app_settings')
-            .select('key, value')
-            .eq('key', 'theme')
-            .single();
-          if (data?.value) {
-            const colors = data.value as Record<string, string>;
-            Object.entries(colors).forEach(([key, value]) => {
-              document.documentElement.style.setProperty(key, String(value));
+            .select('key, value');
+            
+          if (data) {
+            data.forEach((setting) => {
+              if (setting.key === 'theme') {
+                const colors = setting.value as Record<string, string>;
+                Object.entries(colors).forEach(([key, value]) => {
+                  document.documentElement.style.setProperty(key, String(value));
+                });
+                localStorage.setItem('ksebe_theme_config', JSON.stringify(colors));
+              }
+              if (setting.key === 'image_map') {
+                const map = setting.value as Record<string, string>;
+                Object.entries(map).forEach(([k, v]) => {
+                  localStorage.setItem(`ksebe-img-${k}`, v);
+                });
+                window.dispatchEvent(new Event('storage'));
+              }
             });
-            localStorage.setItem('ksebe_theme_config', JSON.stringify(colors));
           }
         } catch (e) {
-          console.warn('Theme sync failed', e);
+          console.warn('Theme/Image sync failed', e);
         }
       }
     };
 
-    loadAndSyncTheme();
+    loadAndSyncThemeAndImages();
   }, []);
 
   useEffect(() => {
