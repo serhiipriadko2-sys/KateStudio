@@ -90,5 +90,6 @@
   "[markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.wordWrap": "on"
-  }
+  },
+  "CodeGPT.apiKey": "Gemini CLI"
 }
