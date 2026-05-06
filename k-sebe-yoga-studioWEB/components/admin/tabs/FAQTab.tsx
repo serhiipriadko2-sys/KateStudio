@@ -29,12 +29,16 @@ export const FAQTab: React.FC<AdminTabProps> = ({ toast }) => {
     mutationFn: async (newItem: Partial<FAQItem>) => {
       if (!supabase) throw new Error('No Supabase');
       // Get max order_index
-      const { data: maxOrder } = await supabase
+      const { data: maxOrder, error: maxOrderError } = await supabase
         .from('faq_items')
         .select('order_index')
         .order('order_index', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
+
+      if (maxOrderError && maxOrderError.code !== 'PGRST116') {
+        console.warn('Error fetching max order_index', maxOrderError);
+      }
 
       const nextOrder = (maxOrder?.order_index ?? 0) + 1;
 

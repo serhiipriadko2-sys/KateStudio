@@ -69,7 +69,34 @@ export const defaultFAQData: FAQItem[] = [
   },
 ];
 
-export const FAQ: React.FC<FAQProps> = ({ data = defaultFAQData }) => {
+export const FAQ: React.FC<FAQProps> = ({ data: externalData }) => {
+  const [data, setData] = React.useState<FAQItem[]>(externalData || defaultFAQData);
+
+  React.useEffect(() => {
+    if (externalData) return;
+
+    const fetchFaqs = async () => {
+      // Lazy import supabase to avoid circular dependencies in some setups, or just use the global one if possible
+      try {
+        const { supabase } = await import('../services/supabase');
+        if (!supabase) return;
+        
+        const { data: faqs, error } = await supabase
+          .from('faq_items')
+          .select('*')
+          .order('order_index', { ascending: true });
+
+        if (!error && faqs && faqs.length > 0) {
+          setData(faqs);
+        }
+      } catch (e) {
+        console.warn('Failed to fetch FAQs:', e);
+      }
+    };
+
+    fetchFaqs();
+  }, [externalData]);
+
   return (
     <section className="py-24 px-6 max-w-3xl mx-auto scroll-mt-20">
       <FadeIn>
