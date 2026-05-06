@@ -1,0 +1,14 @@
+export { AnalyticsTab } from './AnalyticsTab';
+export { ArticlesTab } from './ArticlesTab';
+export { BookingsTab } from './BookingsTab';
+export { ContactsTab } from './ContactsTab';
+export { DashboardTab } from './DashboardTab';
+export { FAQTab } from './FAQTab';
+export { ImagesTab } from './ImagesTab';
+export { PricingTab } from './PricingTab';
+export { RetreatsTab } from './RetreatsTab';
+export { ReviewsTab } from './ReviewsTab';
+export { ScheduleTab } from './ScheduleTab';
+export { SettingsTab } from './SettingsTab';
+export { UsersTab } from './UsersTab';
+export { VideoTab } from './VideoTab';

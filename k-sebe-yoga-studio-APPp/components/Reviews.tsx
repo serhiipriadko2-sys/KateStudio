@@ -11,7 +11,7 @@ interface TestimonialProps {
   image: string;
 }
 
-const testimonials = [
+export const defaultTestimonials = [
   {
     id: 1,
     name: 'Екатерина',
@@ -159,7 +159,7 @@ export const Reviews: React.FC = () => {
             role="region"
             aria-label="Отзывы клиентов"
           >
-            {testimonials.map((t) => (
+            {defaultTestimonials.map((t) => (
               <TestimonialCard key={t.id} {...t} />
             ))}
           </div>

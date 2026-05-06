@@ -30,6 +30,8 @@ import {
   Ticket,
   QrCode,
   Camera,
+  Database,
+  Settings,
 } from 'lucide-react';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -47,19 +49,21 @@ import { Logo } from './Logo';
 // import { Paywall } from './Paywall';
 import { Schedule } from './Schedule';
 import { VideoLibrary } from './VideoLibrary';
+import { AdminPanel } from './AdminPanel';
 
 interface DashboardProps {
   onBack: () => void;
   initialTab?: 'overview' | 'schedule' | 'videos' | 'breath' | 'profile' | 'dev';
 }
 
-// Subscription labels hidden вЂ” re-enable after launch
+// Subscription labels hidden — re-enable after launch
 // const subscriptionStatusLabels: Record<SubscriptionStatus, string> = { ... };
 // const subscriptionPlanLabels: Record<SubscriptionPlan, string> = { ... };
 
 export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'overview' }) => {
   const { user, setUser, logout, authStatus, isSupabaseConfigured } = useAuth();
   const { isAdmin } = useIsAdmin();
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
     'overview' | 'schedule' | 'videos' | 'breath' | 'profile' | 'dev'
   >(initialTab);
@@ -888,16 +892,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 </div>
 
                 {isAdmin && (
-                  <button
-                    onClick={() => setActiveTab('dev')}
-                    className="w-full flex items-center justify-between p-5 hover:bg-stone-50 transition-colors rounded-xl group"
-                  >
-                    <span className="text-brand-text font-medium flex items-center gap-2">
-                      <Terminal className="w-4 h-4 text-stone-400" />
-                      Настройки разработчика
-                    </span>
-                    <ChevronRight className="w-5 h-5 text-stone-300 group-hover:text-brand-green" />
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setIsAdminPanelOpen(true)}
+                      className="w-full flex items-center justify-between p-5 hover:bg-stone-50 transition-colors rounded-xl group"
+                    >
+                      <span className="text-brand-text font-medium flex items-center gap-2">
+                        <Database className="w-4 h-4 text-brand-green" />
+                        Панель администратора
+                      </span>
+                      <ChevronRight className="w-5 h-5 text-stone-300 group-hover:text-brand-green" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('dev')}
+                      className="w-full flex items-center justify-between p-5 hover:bg-stone-50 transition-colors rounded-xl group"
+                    >
+                      <span className="text-brand-text font-medium flex items-center gap-2">
+                        <Terminal className="w-4 h-4 text-stone-400" />
+                        Настройки разработчика
+                      </span>
+                      <ChevronRight className="w-5 h-5 text-stone-300 group-hover:text-brand-green" />
+                    </button>
+                  </>
                 )}
 
                 <button className="w-full flex items-center justify-between p-5 hover:bg-stone-50 transition-colors rounded-xl group">
@@ -983,6 +999,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           );
         })}
       </nav>
+      
+      <AdminPanel isOpen={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} />
     </div>
   );
 };
