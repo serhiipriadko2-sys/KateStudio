@@ -7,7 +7,7 @@
       // Single Page App GitHub Pages redirect
       // This script takes the current URL path and redirects
       // to the index.html with the path stored in sessionStorage
-      var pathSegmentsToKeep = 0; // Set to 0 for custom domain (ksebe-studio.ru) served from root
+      var pathSegmentsToKeep = window.location.hostname.endsWith('github.io') ? 1 : 0;
 
       var l = window.location;
       l.replace(

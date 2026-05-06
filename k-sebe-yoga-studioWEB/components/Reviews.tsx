@@ -22,7 +22,7 @@ interface ReviewData {
   is_active?: boolean;
 }
 
-const defaultTestimonials = [
+export const defaultTestimonials = [
   {
     id: 1,
     name: 'Екатерина',
