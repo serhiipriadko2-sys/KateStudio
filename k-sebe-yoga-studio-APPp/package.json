@@ -36,18 +36,18 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@capacitor/android": "8.1.0",
-    "@capacitor/cli": "8.1.0",
-    "@capacitor/ios": "8.1.0",
-    "@tailwindcss/postcss": "^4.2.1",
-    "@types/node": "^25.3.3",
+    "@capacitor/android": "8.3.2",
+    "@capacitor/cli": "8.3.2",
+    "@capacitor/ios": "8.3.2",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@types/node": "^25.6.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.0.1",
-    "@vitejs/plugin-react": "^5.1.4",
-    "autoprefixer": "^10.4.27",
-    "postcss": "^8.5.8",
+    "@vitejs/plugin-react": "^6.0.1",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.14",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.7.3",
-    "vite": "^7.3.1"
+    "typescript": "^6.0.3",
+    "vite": "^8.0.11"
   }
 }
