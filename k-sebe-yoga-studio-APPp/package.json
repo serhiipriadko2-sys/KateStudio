@@ -26,7 +26,7 @@
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
     "@google/genai": "^1.33.0",
-    "@sentry/react": "^8.54.0",
+    "@sentry/react": "^10.52.0",
     "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.90.21",
     "dompurify": "^3.3.1",
