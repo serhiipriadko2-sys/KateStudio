@@ -60,7 +60,6 @@ function App() {
   );
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
-  const [waitingForRefresh, setWaitingForRefresh] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(() =>
     window.location.hash.includes('type=recovery')
   );
@@ -133,19 +132,14 @@ function App() {
         setSwRegistration(registration);
         setUpdateAvailable(true);
       },
+      onControllerChange: () => {
+        // SW has taken control (after skipWaiting), reload to get new content.
+        // The hadController guard inside registerServiceWorker prevents
+        // this from firing on fresh installs.
+        window.location.reload();
+      },
     });
   }, []);
-
-  useEffect(() => {
-    if (!waitingForRefresh) return;
-    const handleControllerChange = () => {
-      window.location.reload();
-    };
-    navigator.serviceWorker?.addEventListener('controllerchange', handleControllerChange);
-    return () => {
-      navigator.serviceWorker?.removeEventListener('controllerchange', handleControllerChange);
-    };
-  }, [waitingForRefresh]);
 
   // Online/offline listener
   useEffect(() => {
@@ -213,7 +207,6 @@ function App() {
 
   const handleUpdateApp = () => {
     if (!swRegistration?.waiting) return;
-    setWaitingForRefresh(true);
     swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
   };
 

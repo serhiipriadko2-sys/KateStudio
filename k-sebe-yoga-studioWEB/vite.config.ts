@@ -1,6 +1,28 @@
+import fs from 'fs';
 import path from 'path';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type PluginOption } from 'vite';
+
+/**
+ * Vite plugin: stamp the service worker with a unique BUILD_ID on every build.
+ * This guarantees the browser detects a new sw.js and triggers the update flow.
+ * In dev mode the plugin is a no-op — the raw sw.js is served from /public.
+ */
+function swBuildId(): PluginOption {
+  return {
+    name: 'sw-build-id',
+    apply: 'build',
+    closeBundle() {
+      const swPath = path.resolve(__dirname, 'dist', 'sw.js');
+      if (!fs.existsSync(swPath)) return;
+      const buildId = `b${Date.now()}`;
+      const content = fs.readFileSync(swPath, 'utf-8');
+      fs.writeFileSync(swPath, content.replaceAll('__BUILD_ID__', buildId));
+      // eslint-disable-next-line no-console
+      console.log(`[sw-build-id] Stamped sw.js with BUILD_ID=${buildId}`);
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => {
   return {
@@ -13,7 +35,7 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       open: true,
     },
-    plugins: [react() as unknown as PluginOption],
+    plugins: [react() as unknown as PluginOption, swBuildId()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

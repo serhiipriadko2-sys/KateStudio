@@ -109,6 +109,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const sb = supabase; // capture non-null reference for closures
     let isMounted = true;
 
+    // Safety timeout: never stay on the loading state for more than 5 s.
+    // If getSession hangs (stale token, network, etc.) we fall back to loaded.
+    const initTimeout = setTimeout(() => {
+      if (isMounted) {
+        console.warn('[Auth] Init timeout — falling back to unauthenticated');
+        setIsLoading(false);
+      }
+    }, 5000);
+
     const initAuth = async () => {
       try {
         const { data } = await sb.auth.getSession();
@@ -119,7 +128,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch {
         // Silent fail
       } finally {
-        if (isMounted) setIsLoading(false);
+        if (isMounted) {
+          clearTimeout(initTimeout);
+          setIsLoading(false);
+        }
       }
     };
 
@@ -137,6 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       isMounted = false;
+      clearTimeout(initTimeout);
       sub.subscription.unsubscribe();
     };
   }, []);
