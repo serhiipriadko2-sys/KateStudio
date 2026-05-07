@@ -25,12 +25,18 @@ const mocks = vi.hoisted(() => {
   const profilesOrder = vi.fn(() => ({ limit: profilesLimit }));
   const profilesSelect = vi.fn(() => ({ order: profilesOrder }));
   const subscriptionsSelect = vi.fn(() => Promise.resolve(subscriptionsResult));
+  const emptyResult = { data: [], error: null };
+  const listOrder = vi.fn(() => Promise.resolve(emptyResult));
+  const listSelect = vi.fn(() => ({ order: listOrder }));
   const from = vi.fn((table: string) => {
     if (table === 'profiles') {
       return { select: profilesSelect };
     }
     if (table === 'subscriptions') {
       return { select: subscriptionsSelect };
+    }
+    if (table === 'payment_orders' || table === 'user_passes') {
+      return { select: listSelect };
     }
     return {};
   });

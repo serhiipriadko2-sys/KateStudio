@@ -31,14 +31,17 @@ import {
   QrCode,
   Camera,
   Database,
+  CreditCard,
 } from 'lucide-react';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { dataService } from '../services/dataService';
+import { paymentService, type UserPass } from '../services/paymentService';
 import { subscriptionService } from '../services/subscriptionService';
 import { Booking, Subscription } from '../types';
 import { Achievements } from './Achievements';
+import { AdminPanel } from './AdminPanel';
 // import { AICoach } from './AICoach'; // AI hidden вЂ” re-enable after launch
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
@@ -46,13 +49,13 @@ import { Image } from './Image';
 import { Logo } from './Logo';
 // Paywall hidden вЂ” re-enable after launch
 // import { Paywall } from './Paywall';
+import { Pricing } from './Pricing';
 import { Schedule } from './Schedule';
 import { VideoLibrary } from './VideoLibrary';
-import { AdminPanel } from './AdminPanel';
 
 interface DashboardProps {
   onBack: () => void;
-  initialTab?: 'overview' | 'schedule' | 'videos' | 'breath' | 'profile' | 'dev';
+  initialTab?: 'overview' | 'schedule' | 'pricing' | 'videos' | 'breath' | 'profile' | 'dev';
 }
 
 // Subscription labels hidden — re-enable after launch
@@ -64,9 +67,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const { isAdmin } = useIsAdmin();
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'schedule' | 'videos' | 'breath' | 'profile' | 'dev'
+    'overview' | 'schedule' | 'pricing' | 'videos' | 'breath' | 'profile' | 'dev'
   >(initialTab);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [activePasses, setActivePasses] = useState<UserPass[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedQr, setExpandedQr] = useState<string | null>(null);
 
@@ -142,10 +146,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         }
       } catch (error) {
         console.error('Failed to load bookings', error);
-        showToast(
-          'Не удалось загрузить записи. Попробуйте ещё раз позже.',
-          'error'
-        );
+        showToast('Не удалось загрузить записи. Попробуйте ещё раз позже.', 'error');
       } finally {
         setLoading(false);
       }
@@ -164,6 +165,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     setSubscriptionLoading(false);
   }, [authStatus, isSupabaseConfigured]);
 
+  const loadActivePasses = useCallback(async () => {
+    if (authStatus !== 'authenticated' || !isSupabaseConfigured) {
+      setActivePasses([]);
+      return;
+    }
+    const passes = await paymentService.getActivePasses();
+    setActivePasses(passes);
+  }, [authStatus, isSupabaseConfigured]);
+
   // Initial bookings load
   useEffect(() => {
     void fetchBookings(true);
@@ -172,6 +182,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   useEffect(() => {
     void loadSubscription();
   }, [loadSubscription]);
+
+  useEffect(() => {
+    void loadActivePasses();
+  }, [loadActivePasses]);
 
   // Real-time subscription stays stable across booking list updates.
   useEffect(() => {
@@ -191,8 +205,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         },
         (payload) => {
           void fetchBookings();
-          if (payload.eventType === 'INSERT')
-            showToast('Новая запись добавлена!', 'success');
+          if (payload.eventType === 'INSERT') showToast('Новая запись добавлена!', 'success');
         }
       )
       .subscribe();
@@ -230,8 +243,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           title: 'Утренний Inside Flow',
           duration: 30,
           type: 'inside-flow',
-          reason:
-            'Рдеально для начала дня — активирует энергию и улучшает настрой',
+          reason: 'Рдеально для начала дня — активирует энергию и улучшает настрой',
           matchScore: 92,
           musicMood: 'Uplifting',
           generatedAt: new Date().toISOString(),
@@ -241,8 +253,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           title: 'Хатха для гибкости',
           duration: 45,
           type: 'hatha',
-          reason:
-            'Мягкое восстановление, помогает расслабить напряжение в теле',
+          reason: 'Мягкое восстановление, помогает расслабить напряжение в теле',
           matchScore: 88,
           musicMood: 'Serene',
           generatedAt: new Date().toISOString(),
@@ -252,8 +263,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           title: 'Медитация перед сном',
           duration: 15,
           type: 'meditation',
-          reason:
-            'Успокаивает ум и готовит к глубокому отдыху',
+          reason: 'Успокаивает ум и готовит к глубокому отдыху',
           matchScore: 85,
           musicMood: 'Calm',
           generatedAt: new Date().toISOString(),
@@ -303,8 +313,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
   const handleCancelBooking = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('Вы уверены, что хотите отменить запись?'))
-      return;
+    if (!window.confirm('Вы уверены, что хотите отменить запись?')) return;
 
     const result = await dataService.cancelBooking(id);
     if (result.ok) {
@@ -327,10 +336,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         );
         return;
       }
-      showToast(
-        'Не удалось отменить запись. Сервер временно недоступен.',
-        'error'
-      );
+      showToast('Не удалось отменить запись. Сервер временно недоступен.', 'error');
       return;
       /*
       showToast('Не удалось отменить запись', 'error');
@@ -408,10 +414,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             );
             return;
           }
-          showToast(
-            'РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ С„РѕС‚Рѕ',
-            'error'
-          );
+          showToast('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ С„РѕС‚Рѕ', 'error');
         };
         reader.readAsDataURL(file);
       }
@@ -423,10 +426,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   };
 
-  type DashboardTab = 'overview' | 'schedule' | 'videos' | 'breath' | 'profile' | 'dev';
+  type DashboardTab = 'overview' | 'schedule' | 'pricing' | 'videos' | 'breath' | 'profile' | 'dev';
   const navItems: { id: DashboardTab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'Главная', icon: <LayoutDashboard className="w-6 h-6" /> },
     { id: 'schedule', label: 'Расписание', icon: <Calendar className="w-6 h-6" /> },
+    { id: 'pricing', label: 'Оплата', icon: <CreditCard className="w-6 h-6" /> },
     { id: 'videos', label: 'Практики', icon: <Video className="w-6 h-6" /> },
     { id: 'breath', label: 'Дыхание', icon: <Wind className="w-6 h-6" /> },
     // { id: 'ai', label: 'AI Тренер', icon: <Sparkles className="w-6 h-6" /> }, // hidden — re-enable after launch
@@ -536,9 +540,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   </div>
                   <div>
                     <p className="text-2xl font-serif mb-1">
-                      {subscription && subscription.plan !== 'free'
-                        ? 'Премиум'
-                        : 'Практик'}
+                      {subscription && subscription.plan !== 'free' ? 'Премиум' : 'Практик'}
                     </p>
                     <p className="text-xs text-white/50 font-medium uppercase tracking-wider">
                       Ваш статус
@@ -712,9 +714,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                     <div className="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-4 text-stone-300">
                       <Ticket className="w-8 h-8" />
                     </div>
-                    <p className="text-stone-400 text-sm">
-                      У вас пока нет билетов на практику.
-                    </p>
+                    <p className="text-stone-400 text-sm">У вас пока нет билетов на практику.</p>
                   </div>
                 )}
               </div>
@@ -727,15 +727,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             </div>
           )}
 
+          {activeTab === 'pricing' && (
+            <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
+              <Pricing />
+            </div>
+          )}
+
           {activeTab === 'videos' && (
             <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
               <header className="mb-8">
-                <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">
-                  Видеотека
-                </h1>
-                <p className="text-stone-400 font-light text-sm">
-                  Твоя студия всегда с тобой.
-                </p>
+                <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">Видеотека</h1>
+                <p className="text-stone-400 font-light text-sm">Твоя студия всегда с тобой.</p>
               </header>
               <VideoLibrary />
             </div>
@@ -744,12 +746,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           {activeTab === 'breath' && (
             <div className="max-w-lg mx-auto h-[70vh] flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
               <header className="mb-6 text-center">
-                <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">
-                  Дыхание
-                </h1>
-                <p className="text-stone-400 font-light text-sm">
-                  Успокой ум за 4 минуты.
-                </p>
+                <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">Дыхание</h1>
+                <p className="text-stone-400 font-light text-sm">Успокой ум за 4 минуты.</p>
               </header>
               <div className="flex-1 bg-white rounded-[3rem] shadow-xl shadow-stone-100 border border-stone-50 p-6 flex flex-col justify-center relative overflow-hidden">
                 <Breathwork />
@@ -773,6 +771,39 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               {/* AI Subscription hidden вЂ” re-enable after launch */}
               {/* <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6"> ... AI Subscription block ... </div> */}
 
+              <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
+                <h3 className="font-serif text-xl mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-brand-green" />
+                  Мои абонементы
+                </h3>
+                {activePasses.length > 0 ? (
+                  <div className="space-y-3">
+                    {activePasses.map((pass) => (
+                      <div
+                        key={pass.id}
+                        className="rounded-2xl bg-stone-50 p-4 border border-stone-100"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-medium text-brand-text">{pass.title}</p>
+                            <p className="text-xs text-stone-400 mt-1">
+                              Действует до {new Date(pass.valid_until).toLocaleDateString('ru-RU')}
+                            </p>
+                          </div>
+                          <span className="text-sm font-semibold text-brand-green">
+                            {pass.visits_remaining}/{pass.visits_total}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-stone-400">
+                    Активных абонементов пока нет. Выберите услугу во вкладке оплаты.
+                  </p>
+                )}
+              </div>
+
               <Achievements />
 
               {/* Streak Calendar */}
@@ -787,11 +818,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 <div
                   role={isEditingProfile ? 'button' : undefined}
                   tabIndex={isEditingProfile ? 0 : -1}
-                  aria-label={
-                    isEditingProfile
-                      ? 'Загрузить новое фото профиля'
-                      : undefined
-                  }
+                  aria-label={isEditingProfile ? 'Загрузить новое фото профиля' : undefined}
                   className={`w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-xl mb-4 relative group ${isEditingProfile ? 'cursor-pointer hover:border-brand-green/50' : ''}`}
                   onClick={() => isEditingProfile && fileInputRef.current?.click()}
                   onKeyDown={(e) => {
@@ -885,9 +912,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               <div className="bg-white rounded-[2rem] p-2 shadow-sm border border-stone-100 divide-y divide-stone-50">
                 <div className="w-full flex items-center justify-between p-5 rounded-xl">
                   <span className="text-brand-text font-medium">Телефон</span>
-                  <span className="text-stone-400 text-sm">
-                    {user?.phone || 'Не указан'}
-                  </span>
+                  <span className="text-stone-400 text-sm">{user?.phone || 'Не указан'}</span>
                 </div>
 
                 {isAdmin && (
@@ -959,9 +984,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             <div className="absolute top-0 left-0 w-full h-2 bg-brand-green/20 animate-scan"></div>
             <QrCode className="w-full h-full text-brand-dark" />
           </div>
-          <p className="text-white/50 mt-8 text-center">
-            Покажите QR-код администратору
-          </p>
+          <p className="text-white/50 mt-8 text-center">Покажите QR-код администратору</p>
           <button
             onClick={() => setExpandedQr(null)}
             className="mt-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
@@ -998,7 +1021,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           );
         })}
       </nav>
-      
+
       <AdminPanel isOpen={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} />
     </div>
   );
