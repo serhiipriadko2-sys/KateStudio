@@ -56,13 +56,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     }
 
+    // Safety timeout: never stay on the loading spinner for more than 5 s.
+    // If getSession hangs (stale token, network, etc.) we fall back to anonymous.
+    const initTimeout = setTimeout(() => {
+      if (isMounted) {
+        console.warn('[Auth] Init timeout — falling back to anonymous');
+        setAuthStatus('anonymous');
+        setIsInitializing(false);
+      }
+    }, 5000);
+
     supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return;
+      clearTimeout(initTimeout);
       setAuthStatus(data.session ? 'authenticated' : 'anonymous');
       setIsInitializing(false);
     }).catch((err) => {
       console.error('getSession failed:', err);
       if (!isMounted) return;
+      clearTimeout(initTimeout);
       setAuthStatus('anonymous');
       setIsInitializing(false);
     });
@@ -91,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       isMounted = false;
+      clearTimeout(initTimeout);
       sub.subscription.unsubscribe();
     };
   }, []);

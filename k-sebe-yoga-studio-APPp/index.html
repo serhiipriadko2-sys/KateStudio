@@ -86,20 +86,6 @@
   <body class="antialiased">
     <div id="root" class="h-full"></div>
     <script type="module" src="/index.tsx"></script>
-    <script>
-      // Register Service Worker for PWA
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker
-            .register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered:', registration.scope);
-            })
-            .catch((error) => {
-              console.log('SW registration failed:', error);
-            });
-        });
-      }
-    </script>
+    <!-- SW registration is handled by services/serviceWorker.ts via usePWAUpdate -->
   </body>
 </html>

@@ -36,6 +36,11 @@ export function registerServiceWorker({
 
   window.addEventListener('load', async () => {
     try {
+      // Track whether there was an active controller when we loaded.
+      // If not, this is a fresh install and we should NOT reload on
+      // controllerchange — the page already loaded fresh content.
+      const hadController = !!navigator.serviceWorker.controller;
+
       const registration = await navigator.serviceWorker.register('/sw.js');
 
       // Check if there's already a waiting service worker
@@ -61,9 +66,12 @@ export function registerServiceWorker({
         });
       });
 
-      // Listen for controller change (happens after skipWaiting)
+      // Listen for controller change (happens after skipWaiting).
+      // Only reload if we're REPLACING an existing SW, not on first install.
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        onControllerChange?.();
+        if (hadController) {
+          onControllerChange?.();
+        }
       });
     } catch (error) {
       console.error('[SW] Registration failed:', error);
