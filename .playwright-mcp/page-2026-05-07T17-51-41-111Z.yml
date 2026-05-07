@@ -1,0 +1,5 @@
+- button "Удерживайте чтобы начать" [ref=e3]:
+  - img "К себе - Йога Студия" [ref=e7]
+  - generic:
+    - generic:
+      - paragraph: Удерживайте
