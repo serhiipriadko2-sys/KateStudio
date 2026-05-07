@@ -12,6 +12,13 @@
 
 export type SubscriptionPlanDb = 'free' | 'premium' | 'vip';
 export type SubscriptionStatusDb = 'active' | 'pending' | 'canceled' | 'past_due' | 'trialing';
+export type PaymentOrderStatus =
+  | 'pending'
+  | 'waiting_for_capture'
+  | 'succeeded'
+  | 'canceled'
+  | 'failed';
+export type UserPassStatus = 'active' | 'expired' | 'canceled' | 'used';
 
 export type ContactStatus = 'new' | 'read' | 'processed' | 'spam';
 export type PricingCategory = 'yoga' | 'personal' | 'sound' | 'massage';
@@ -205,7 +212,45 @@ export interface PricingPlanRow {
   is_dark: boolean | null;
   display_order: number | null;
   is_active: boolean | null;
+  amount_cents: number | null;
+  currency: 'RUB';
+  visits_total: number | null;
+  valid_days: number | null;
+  is_payable: boolean | null;
   created_at: string;
+}
+
+export interface PaymentOrderRow {
+  id: string;
+  user_id: string;
+  pricing_plan_id: string | null;
+  provider: string;
+  provider_payment_id: string | null;
+  status: PaymentOrderStatus;
+  amount_cents: number;
+  currency: 'RUB';
+  plan_snapshot: Record<string, unknown>;
+  checkout_url: string | null;
+  provider_payload: Record<string, unknown> | null;
+  error_message: string | null;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserPassRow {
+  id: string;
+  user_id: string;
+  payment_order_id: string;
+  pricing_plan_id: string | null;
+  title: string;
+  visits_total: number;
+  visits_remaining: number;
+  valid_from: string;
+  valid_until: string;
+  status: UserPassStatus;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface UserPushTokenRow {
@@ -239,6 +284,8 @@ export type UserAchievementInsert = Omit<UserAchievementRow, 'id' | 'created_at'
 export type AnalyticsEventInsert = Omit<AnalyticsEventRow, 'id' | 'created_at'>;
 export type ArticleInsert = Omit<ArticleRow, 'id' | 'created_at'>;
 export type PricingPlanInsert = Omit<PricingPlanRow, 'id' | 'created_at'>;
+export type PaymentOrderInsert = Omit<PaymentOrderRow, 'id' | 'created_at' | 'updated_at'>;
+export type UserPassInsert = Omit<UserPassRow, 'id' | 'created_at' | 'updated_at'>;
 export type UserPushTokenInsert = Omit<UserPushTokenRow, 'id' | 'created_at' | 'updated_at'>;
 export type UserPreferencesInsert = Omit<UserPreferencesRow, 'created_at' | 'updated_at'>;
 export type AppEventInsert = Omit<AppEventRow, 'id' | 'created_at'>;
@@ -366,6 +413,18 @@ export interface Database {
         Update: Partial<PricingPlanInsert>;
         Relationships: [];
       };
+      payment_orders: {
+        Row: PaymentOrderRow;
+        Insert: PaymentOrderInsert;
+        Update: Partial<Omit<PaymentOrderInsert, 'user_id'>>;
+        Relationships: [];
+      };
+      user_passes: {
+        Row: UserPassRow;
+        Insert: UserPassInsert;
+        Update: Partial<Omit<UserPassInsert, 'user_id' | 'payment_order_id'>>;
+        Relationships: [];
+      };
       user_push_tokens: {
         Row: UserPushTokenRow;
         Insert: UserPushTokenInsert;
@@ -389,6 +448,8 @@ export interface Database {
       subscription_status: SubscriptionStatusDb;
       contact_status: ContactStatus;
       pricing_category: PricingCategory;
+      payment_order_status: PaymentOrderStatus;
+      user_pass_status: UserPassStatus;
     };
     CompositeTypes: Record<string, never>;
   };

@@ -21,8 +21,30 @@ interface SubscriptionRow {
   current_period_end: string | null;
 }
 
+interface PaymentOrderRow {
+  id: string;
+  user_id: string;
+  status: 'pending' | 'waiting_for_capture' | 'succeeded' | 'canceled' | 'failed';
+  amount_cents: number;
+  currency: 'RUB';
+  provider_payment_id: string | null;
+  created_at: string;
+}
+
+interface UserPassRow {
+  id: string;
+  user_id: string;
+  title: string;
+  visits_total: number;
+  visits_remaining: number;
+  valid_until: string;
+  status: 'active' | 'expired' | 'canceled' | 'used';
+}
+
 interface UserWithSub extends UserRow {
   subscription: SubscriptionRow | null;
+  paymentOrders: PaymentOrderRow[];
+  userPasses: UserPassRow[];
 }
 
 const PLAN_LABELS: Record<string, string> = {
@@ -66,19 +88,33 @@ export const UsersTab: React.FC<AdminTabProps> = ({ toast }) => {
     queryKey: ['admin_users'],
     queryFn: async () => {
       if (!supabase) throw new Error('Supabase not configured');
-      const [profilesRes, subsRes] = await Promise.all([
+      const [profilesRes, subsRes, ordersRes, passesRes] = await Promise.all([
         supabase
           .from('profiles')
           .select('user_id, name, phone, city, created_at')
           .order('created_at', { ascending: false })
           .limit(200),
         supabase.from('subscriptions').select('*'),
+        supabase.from('payment_orders').select('*').order('created_at', { ascending: false }),
+        supabase.from('user_passes').select('*').order('valid_until', { ascending: false }),
       ]);
       if (profilesRes.error) throw profilesRes.error;
       if (subsRes.error) throw subsRes.error;
+      if (ordersRes.error) throw ordersRes.error;
+      if (passesRes.error) throw passesRes.error;
       const subMap = new Map<string, SubscriptionRow>(
         (subsRes.data ?? []).map((s) => [s.user_id, s as SubscriptionRow])
       );
+      const ordersByUser = new Map<string, PaymentOrderRow[]>();
+      (ordersRes.data ?? []).forEach((order) => {
+        const row = order as PaymentOrderRow;
+        ordersByUser.set(row.user_id, [...(ordersByUser.get(row.user_id) ?? []), row]);
+      });
+      const passesByUser = new Map<string, UserPassRow[]>();
+      (passesRes.data ?? []).forEach((pass) => {
+        const row = pass as UserPassRow;
+        passesByUser.set(row.user_id, [...(passesByUser.get(row.user_id) ?? []), row]);
+      });
       return (profilesRes.data ?? [])
         .filter(
           (
@@ -99,6 +135,8 @@ export const UsersTab: React.FC<AdminTabProps> = ({ toast }) => {
             city: p.city,
             created_at: p.created_at,
             subscription: subMap.get(p.user_id) ?? null,
+            paymentOrders: ordersByUser.get(p.user_id) ?? [],
+            userPasses: passesByUser.get(p.user_id) ?? [],
           })
         );
     },
@@ -197,6 +235,26 @@ export const UsersTab: React.FC<AdminTabProps> = ({ toast }) => {
                 <span>·</span>
                 <span>{new Date(user.created_at).toLocaleDateString('ru-RU')}</span>
               </div>
+              {(user.userPasses.length > 0 || user.paymentOrders.length > 0) && (
+                <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
+                  {user.userPasses.slice(0, 2).map((pass) => (
+                    <span
+                      key={pass.id}
+                      className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700"
+                    >
+                      {pass.title}: {pass.visits_remaining}/{pass.visits_total}
+                    </span>
+                  ))}
+                  {user.paymentOrders.slice(0, 2).map((order) => (
+                    <span
+                      key={order.id}
+                      className="px-2 py-0.5 rounded-full bg-stone-50 text-stone-500"
+                    >
+                      {order.status} · {(order.amount_cents / 100).toLocaleString('ru-RU')} ₽
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {user.subscription ? (

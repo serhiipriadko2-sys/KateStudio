@@ -3,6 +3,7 @@
  */
 import type { BlogArticle, PriceOption } from '../types';
 import { IMAGES } from './images';
+export * from './pricing';
 
 // ============================================
 // BRAND IDENTITY

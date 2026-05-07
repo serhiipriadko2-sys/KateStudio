@@ -17,6 +17,11 @@ interface DBPricingPlan {
   is_dark: boolean;
   display_order: number;
   is_active: boolean;
+  amount_cents: number | null;
+  currency: 'RUB';
+  visits_total: number | null;
+  valid_days: number | null;
+  is_payable: boolean;
 }
 
 const CATEGORY_LABELS: Record<PricingCategory, string> = {
@@ -87,6 +92,11 @@ export const PricingTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') 
           is_dark: plan.is_dark,
           display_order: plan.display_order,
           is_active: plan.is_active,
+          amount_cents: plan.amount_cents,
+          currency: plan.currency,
+          visits_total: plan.visits_total,
+          valid_days: plan.valid_days,
+          is_payable: plan.is_payable,
         })
         .eq('id', plan.id);
       if (error) throw error;
@@ -206,6 +216,11 @@ export const PricingTab: React.FC<{ toast: (m: string, t?: 'success' | 'error') 
                       <Moon className="w-3 h-3 fill-current" /> DARK
                     </span>
                   )}
+                  {plan.is_payable && (
+                    <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
+                      ONLINE
+                    </span>
+                  )}
                 </div>
                 <div className="text-lg font-serif text-brand-green mb-1">{plan.price}</div>
                 {plan.description && (
@@ -273,6 +288,11 @@ const PlanEditor: React.FC<{
       is_dark: false,
       display_order: 0,
       is_active: true,
+      amount_cents: null,
+      currency: 'RUB',
+      visits_total: null,
+      valid_days: null,
+      is_payable: false,
     }
   );
   const [featureInput, setFeatureInput] = useState('');
@@ -331,6 +351,66 @@ const PlanEditor: React.FC<{
           placeholder="Для знакомства со студией"
         />
       </label>
+
+      <div className="grid grid-cols-3 gap-3 rounded-2xl border border-stone-100 bg-stone-50 p-3">
+        <label className="space-y-1 block">
+          <span className="text-xs text-stone-500 font-medium">К оплате, коп.</span>
+          <input
+            type="number"
+            min={0}
+            value={draft.amount_cents ?? ''}
+            onChange={(e) =>
+              setDraft((d) => ({
+                ...d,
+                amount_cents: e.target.value ? Number(e.target.value) : null,
+              }))
+            }
+            className="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none"
+            placeholder="250000"
+          />
+        </label>
+        <label className="space-y-1 block">
+          <span className="text-xs text-stone-500 font-medium">Посещений</span>
+          <input
+            type="number"
+            min={1}
+            value={draft.visits_total ?? ''}
+            onChange={(e) =>
+              setDraft((d) => ({
+                ...d,
+                visits_total: e.target.value ? Number(e.target.value) : null,
+              }))
+            }
+            className="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none"
+            placeholder="4"
+          />
+        </label>
+        <label className="space-y-1 block">
+          <span className="text-xs text-stone-500 font-medium">Дней</span>
+          <input
+            type="number"
+            min={1}
+            value={draft.valid_days ?? ''}
+            onChange={(e) =>
+              setDraft((d) => ({
+                ...d,
+                valid_days: e.target.value ? Number(e.target.value) : null,
+              }))
+            }
+            className="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-brand-green/30 focus:outline-none"
+            placeholder="30"
+          />
+        </label>
+        <label className="col-span-3 flex items-center gap-2 text-sm text-stone-600">
+          <input
+            type="checkbox"
+            checked={Boolean(draft.is_payable)}
+            onChange={(e) => setDraft((d) => ({ ...d, is_payable: e.target.checked }))}
+            className="w-4 h-4 text-brand-green rounded focus:ring-brand-green/30"
+          />
+          Доступно для онлайн-оплаты в APP
+        </label>
+      </div>
 
       {/* Feature List Builder */}
       <div className="space-y-2">
