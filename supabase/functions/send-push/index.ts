@@ -154,6 +154,7 @@ async function sendFcmMessage(
 // ── Main handler ─────────────────────────────────────────────────────────────
 
 serve(async (req: Request) => {
+  const startedAt = Date.now();
   if (req.method === 'OPTIONS') return new Response(null, { status: 204 });
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
 
@@ -231,33 +232,66 @@ serve(async (req: Request) => {
     return json({ sent: 0, skipped: 0, message: 'No tokens found for these users' });
   }
 
-  // Send notifications in parallel (max 500 tokens per call — FCM limit)
-  const results = await Promise.all(
-    rows.map(async (row) => {
-      const result = await sendFcmMessage(
-        projectId,
-        accessToken,
-        row.token,
-        { title: body.title, body: body.body, image: body.imageUrl },
-        body.data
-      );
+  const concurrency = Math.max(1, Number(Deno.env.get('PUSH_CONCURRENCY') ?? '20'));
+  const staleTokenIds: string[] = [];
 
-      // Remove stale tokens automatically
-      if (
-        !result.success &&
-        (result.error === 'UNREGISTERED' || result.error === 'INVALID_ARGUMENT')
-      ) {
-        await admin.from('user_push_tokens').delete().eq('id', row.id);
+  async function mapWithConcurrency<T, R>(
+    input: T[],
+    limit: number,
+    fn: (item: T) => Promise<R>
+  ): Promise<R[]> {
+    const output: R[] = new Array(input.length);
+    let index = 0;
+    async function worker() {
+      while (true) {
+        const i = index++;
+        if (i >= input.length) return;
+        output[i] = await fn(input[i]);
       }
+    }
+    const workers = Array.from({ length: Math.min(limit, input.length) }, () => worker());
+    await Promise.all(workers);
+    return output;
+  }
 
-      return { tokenId: row.id, platform: row.platform, ...result };
-    })
-  );
+  // Send notifications in bounded parallelism (reduces spikes/rate-limit risk)
+  const results = await mapWithConcurrency(rows, concurrency, async (row) => {
+    const result = await sendFcmMessage(
+      projectId,
+      accessToken,
+      row.token,
+      { title: body.title, body: body.body, image: body.imageUrl },
+      body.data
+    );
+
+    // Remove stale tokens automatically
+    if (
+      !result.success &&
+      (result.error === 'UNREGISTERED' || result.error === 'INVALID_ARGUMENT')
+    ) {
+      staleTokenIds.push(row.id);
+    }
+
+    return { tokenId: row.id, platform: row.platform, ...result };
+  });
+
+  if (staleTokenIds.length > 0) {
+    const { error: cleanupErr } = await admin
+      .from('user_push_tokens')
+      .delete()
+      .in('id', staleTokenIds);
+    if (cleanupErr) {
+      console.error('send-push: stale token cleanup error', cleanupErr.message);
+    }
+  }
 
   const sent = results.filter((r) => r.success).length;
   const failed = results.filter((r) => !r.success).length;
+  const durationMs = Date.now() - startedAt;
 
-  console.warn(`send-push: sent=${sent} failed=${failed}`);
+  console.warn(
+    `send-push: sent=${sent} failed=${failed} stale_cleaned=${staleTokenIds.length} duration_ms=${durationMs} concurrency=${concurrency}`
+  );
   return json({ sent, failed, total: rows.length });
 });
 

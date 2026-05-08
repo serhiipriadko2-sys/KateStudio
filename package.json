@@ -41,6 +41,9 @@
     "@supabase/supabase-js": "^2.39.0",
     "tsx": "^4.19.3"
   },
+  "overrides": {
+    "balanced-match": "1.0.2"
+  },
   "devDependencies": {
     "@eslint/js": "^9.16.0",
     "@testing-library/dom": "^10.4.1",
