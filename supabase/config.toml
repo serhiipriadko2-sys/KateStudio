@@ -1,0 +1,16 @@
+project_id = "katestudio-supabase-rehearsal"
+
+[api]
+port = 55421
+
+[db]
+port = 55422
+
+[studio]
+port = 55423
+
+[inbucket]
+port = 55424
+
+[analytics]
+port = 55427
