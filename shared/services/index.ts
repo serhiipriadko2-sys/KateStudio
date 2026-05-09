@@ -14,5 +14,12 @@ export {
 export { analytics } from './analytics';
 export { monitoring } from './monitoring';
 export { subscribeNewsletter } from './newsletter';
+export {
+  getTrainerBySlug,
+  listClassesByTrainer,
+  listPublicTrainers,
+  mapTrainerRowToCard,
+  mapTrainerRowToDetail,
+} from './trainers';
 export type { SubscribeNewsletterInput, SubscribeNewsletterResult } from './newsletter';
 export type { MonitoringInitOptions } from './monitoring';

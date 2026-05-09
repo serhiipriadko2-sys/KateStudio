@@ -16,6 +16,7 @@ export type SubscriptionStatusDb = 'active' | 'pending' | 'canceled' | 'past_due
 export type ContactStatus = 'new' | 'read' | 'processed' | 'spam';
 export type PricingCategory = 'yoga' | 'personal' | 'sound' | 'massage';
 export type PushTokenPlatform = 'web' | 'android' | 'ios';
+export type TeachingFormatDb = 'studio' | 'online' | 'retreat' | 'private';
 
 // ============================================
 // ROW TYPES (one per table)
@@ -37,6 +38,7 @@ export interface ClassRow {
   time: string | null; // HH:mm
   name: string | null;
   instructor: string | null;
+  trainer_id: string | null;
   duration: string | null;
   spots_total: number | null;
   spots_booked: number | null;
@@ -47,6 +49,29 @@ export interface ClassRow {
   description: string | null;
   created_at: string;
   updated_at: string | null;
+}
+
+export interface TrainerRow {
+  id: string;
+  slug: string;
+  full_name: string;
+  short_name: string | null;
+  role_title: string;
+  bio_short: string;
+  bio_long: string | null;
+  quote: string | null;
+  avatar_url: string | null;
+  cover_image_url: string | null;
+  specialties: string[];
+  teaching_formats: TeachingFormatDb[];
+  experience_years: number | null;
+  instagram_url: string | null;
+  telegram_url: string | null;
+  sort_order: number;
+  is_featured: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ProfileRow {
