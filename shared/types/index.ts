@@ -17,6 +17,7 @@ export type AppSource = 'web' | 'app';
 
 export type BookingStatus = 'active' | 'cancelled' | 'completed' | 'no_show';
 export type LoadLevel = 'low' | 'medium' | 'high' | 'full' | 'none';
+export type TeachingFormat = 'studio' | 'online' | 'retreat' | 'private';
 
 export interface ClassSession {
   id: string;
@@ -78,6 +79,7 @@ export interface ClassRow {
   time: string;
   duration: string;
   instructor: string;
+  trainer_id: string | null;
   spots_total: number;
   spots_booked: number;
   price: number | null;
@@ -86,6 +88,50 @@ export interface ClassRow {
   image: string | null;
   location: string;
   intensity: number | null;
+}
+
+export interface TrainerRow {
+  id: string;
+  slug: string;
+  full_name: string;
+  short_name: string | null;
+  role_title: string;
+  bio_short: string;
+  bio_long: string | null;
+  quote: string | null;
+  avatar_url: string | null;
+  cover_image_url: string | null;
+  specialties: string[];
+  teaching_formats: TeachingFormat[];
+  experience_years: number | null;
+  instagram_url: string | null;
+  telegram_url: string | null;
+  sort_order: number;
+  is_featured: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TrainerCard {
+  id: string;
+  slug: string;
+  fullName: string;
+  roleTitle: string;
+  bioShort: string;
+  avatarUrl: string | null;
+  specialties: string[];
+  isFeatured: boolean;
+}
+
+export interface TrainerDetail extends TrainerCard {
+  bioLong: string | null;
+  quote: string | null;
+  coverImageUrl: string | null;
+  experienceYears: number | null;
+  teachingFormats: TeachingFormat[];
+  instagramUrl: string | null;
+  telegramUrl: string | null;
 }
 
 /** Row shape from `contacts` table */
