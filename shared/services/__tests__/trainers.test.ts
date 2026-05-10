@@ -1,10 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  createTrainer,
+  deleteTrainer,
   getTrainerBySlug,
+  listAdminTrainers,
   listClassesByTrainer,
   listPublicTrainers,
   mapTrainerRowToCard,
   mapTrainerRowToDetail,
+  updateTrainer,
 } from '../trainers';
 
 const queryResult = <T>(data: T, error: unknown = null) => ({ data, error });
@@ -122,7 +126,16 @@ describe('trainers service', () => {
 
   it('lists upcoming classes linked to a trainer', async () => {
     const classRows = [
-      { id: 'class-1', trainer_id: trainerRow.id, date: '2026-05-10', time: '10:00' },
+      {
+        id: 'class-1',
+        name: 'Утренний flow',
+        instructor: 'Лидия Кузина',
+        trainer_id: trainerRow.id,
+        date: '2026-05-10',
+        time: '10:00',
+        duration: '60 мин',
+        price: 1800,
+      },
     ];
     const orderTime = vi.fn().mockResolvedValue(queryResult(classRows));
     const orderDate = vi.fn().mockReturnValue({ order: orderTime });
@@ -139,6 +152,74 @@ describe('trainers service', () => {
     expect(gte).toHaveBeenCalledWith('date', '2026-05-09');
     expect(orderDate).toHaveBeenCalledWith('date', { ascending: true });
     expect(orderTime).toHaveBeenCalledWith('time', { ascending: true });
-    expect(result).toEqual(classRows);
+    expect(result).toEqual([
+      {
+        id: 'class-1',
+        title: 'Утренний flow',
+        instructor: 'Лидия Кузина',
+        trainerId: trainerRow.id,
+        date: '2026-05-10',
+        time: '10:00',
+        duration: '60 мин',
+        price: 1800,
+      },
+    ]);
+  });
+
+  it('lists trainers for admin editing', async () => {
+    const order = vi.fn().mockResolvedValue(queryResult([trainerRow]));
+    const select = vi.fn().mockReturnValue({ order });
+    mock.from.mockReturnValue({ select });
+
+    const result = await listAdminTrainers();
+
+    expect(mock.from).toHaveBeenCalledWith('trainers');
+    expect(select).toHaveBeenCalledWith('*');
+    expect(order).toHaveBeenCalledWith('sort_order', { ascending: true });
+    expect(result).toEqual([trainerRow]);
+  });
+
+  it('creates a trainer row', async () => {
+    const single = vi.fn().mockResolvedValue(queryResult(trainerRow));
+    const select = vi.fn().mockReturnValue({ single });
+    const insert = vi.fn().mockReturnValue({ select });
+    mock.from.mockReturnValue({ insert });
+
+    const result = await createTrainer({
+      slug: trainerRow.slug,
+      full_name: trainerRow.full_name,
+      role_title: trainerRow.role_title,
+      bio_short: trainerRow.bio_short,
+      specialties: trainerRow.specialties,
+      teaching_formats: ['studio'],
+    });
+
+    expect(insert).toHaveBeenCalled();
+    expect(result).toEqual(trainerRow);
+  });
+
+  it('updates a trainer row', async () => {
+    const single = vi.fn().mockResolvedValue(queryResult(trainerRow));
+    const select = vi.fn().mockReturnValue({ single });
+    const eq = vi.fn().mockReturnValue({ select });
+    const update = vi.fn().mockReturnValue({ eq });
+    mock.from.mockReturnValue({ update });
+
+    const result = await updateTrainer(trainerRow.id, { bio_short: 'Новое короткое описание' });
+
+    expect(update).toHaveBeenCalledWith({ bio_short: 'Новое короткое описание' });
+    expect(eq).toHaveBeenCalledWith('id', trainerRow.id);
+    expect(result).toEqual(trainerRow);
+  });
+
+  it('deletes a trainer row', async () => {
+    const eq = vi.fn().mockResolvedValue(queryResult(null));
+    const deleteFn = vi.fn().mockReturnValue({ eq });
+    mock.from.mockReturnValue({ delete: deleteFn });
+
+    await deleteTrainer(trainerRow.id);
+
+    expect(deleteFn).toHaveBeenCalled();
+    expect(eq).toHaveBeenCalledWith('id', trainerRow.id);
   });
 });
