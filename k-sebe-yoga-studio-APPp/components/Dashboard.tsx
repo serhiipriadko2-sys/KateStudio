@@ -3,7 +3,6 @@ import {
   IMAGES,
   supabase,
   uploadFile,
-  DailyRecommendation,
   StreakCalendar,
   useGamification,
   useIsAdmin,
@@ -307,10 +306,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
 
     if (result.status === 'auth_required') {
-      showToast(
-        'Чтобы отменить синхронизированную запись, нужно снова войти в аккаунт.',
-        'error'
-      );
+      showToast('Чтобы отменить синхронизированную запись, нужно снова войти в аккаунт.', 'error');
       return;
     }
 
@@ -331,9 +327,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       setUser(updatedUser);
       setIsEditingProfile(false);
       showToast(
-        result.status === 'degraded'
-          ? getProfileSavedMessage(result.reason)
-          : 'Профиль обновлен',
+        result.status === 'degraded' ? getProfileSavedMessage(result.reason) : 'Профиль обновлен',
         result.status === 'degraded' ? 'info' : 'success'
       );
       return;
@@ -361,9 +355,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         if (result.ok) {
           setUser(updatedUser);
           showToast(
-            result.status === 'degraded'
-              ? getAvatarSavedMessage(result.reason)
-              : 'Фото обновлено',
+            result.status === 'degraded' ? getAvatarSavedMessage(result.reason) : 'Фото обновлено',
             result.status === 'degraded' ? 'info' : 'success'
           );
           return;
@@ -635,9 +627,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                                 </h4>
                               </div>
                               <div className="text-right">
-                                <div className="text-2xl font-medium text-brand-text">
-                                  {b.time}
-                                </div>
+                                <div className="text-2xl font-medium text-brand-text">{b.time}</div>
                                 <div className="text-xs text-stone-400">{b.date}</div>
                               </div>
                             </div>
@@ -961,7 +951,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               onClick={() => setActiveTab(item.id)}
               className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-300 min-w-[60px] relative ${isActive ? 'text-brand-green' : 'text-stone-400'}`}
             >
-              <div className={`transition-transform duration-300 ${isActive ? '-translate-y-1' : ''}`}>
+              <div
+                className={`transition-transform duration-300 ${isActive ? '-translate-y-1' : ''}`}
+              >
                 {item.icon}
               </div>
               <span
