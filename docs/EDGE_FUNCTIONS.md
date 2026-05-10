@@ -1,291 +1,108 @@
 # Edge Functions Reference | KateStudio
 
-> **Обновлено:** 15 марта 2026
-> Все функции в `supabase/functions/`. Runtime: Deno, `npm:` imports.
+> **Обновлено:** 10 мая 2026 | **Версия:** 3.0.0
+> Ниже разделены repo inventory и live inventory. Их смешивать больше нельзя.
 
 ---
 
-## Обзор (7 функций)
+## 1. Repo inventory
 
-| Функция | Endpoint | Auth | Статус |
+В `supabase/functions/` на `main` сейчас находятся **9** function folders:
+
+| Function | Repo status | Notes |
+| --- | --- | --- |
+| `cancel-subscription` | present | operational / non-AI |
+| `create-payment` | present | payment flow |
+| `create-yookassa-checkout` | present | payment naming split / legacy-or-alt path |
+| `cron-maintenance` | present | ops |
+| `gemini-proxy` | present | repo AI contour |
+| `payment-webhook` | present | payment callback |
+| `send-push` | present | notifications |
+| `subscribe-newsletter` | present | public marketing/signup path |
+| `yookassa-webhook` | present | payment naming split / legacy-or-alt path |
+
+---
+
+## 2. Live inventory
+
+Live Supabase project `qkaycdcbstjobacmuaro` currently reports **9 active functions**:
+
+| Function | JWT | Version | Live status |
 | --- | --- | --- | --- |
-| `gemini-proxy` | `POST /functions/v1/gemini-proxy` | JWT | ✅ |
-| `create-payment` | `POST /functions/v1/create-payment` | JWT + Service Role | 🔄 (нет YooKassa ключей) |
-| `payment-webhook` | `POST /functions/v1/payment-webhook` | HMAC secret | ✅ |
-| `cancel-subscription` | `POST /functions/v1/cancel-subscription` | JWT + Service Role | ✅ |
-| `cron-maintenance` | `POST /functions/v1/cron-maintenance` | CRON_SECRET | ✅ |
-| `send-push` | `POST /functions/v1/send-push` | Service Role | ✅ |
-| `subscribe-newsletter` | `POST /functions/v1/subscribe-newsletter` | Public | ✅ |
-
-**CORS**: все функции ограничены `ksebe-studio.ru`, `app.ksebe-studio.ru`, `localhost` (dev).
-
----
-
-## Общие правила
-
-- **AI-контур frozen**: `gemini-proxy` не меняется без явного разрешения Семёна.
-- **Секреты**: только через Supabase Vault (`supabase secrets set KEY=VALUE`).
-- **Service Role Key**: никогда не передавать в браузер.
-- **Deno runtime**: импорты через `npm:package@version` или `https://deno.land/std@...`.
+| `ai-run` | true | 4 | ACTIVE |
+| `ai-embeddings` | true | 4 | ACTIVE |
+| `create-payment` | true | 2 | ACTIVE |
+| `payment-webhook` | false | 2 | ACTIVE |
+| `cancel-subscription` | true | 2 | ACTIVE |
+| `cron-maintenance` | false | 2 | ACTIVE |
+| `send-push` | false | 2 | ACTIVE |
+| `subscribe-newsletter` | false | 2 | ACTIVE |
+| `gemini-proxy` | true | 2 | ACTIVE |
 
 ---
 
-## 1. `gemini-proxy`
+## 3. Drift map
 
-**Назначение:** Единственная точка входа для всех AI-операций. Хранит `GEMINI_API_KEY` на сервере.
+### Present in both repo and live
 
-**Auth:** JWT (Supabase anon token) → проверяется через `supabase.auth.getUser()`.
+- `create-payment`
+- `payment-webhook`
+- `cancel-subscription`
+- `cron-maintenance`
+- `send-push`
+- `subscribe-newsletter`
+- `gemini-proxy`
 
-**Требуемые секреты:**
+### Live-only
 
-```sh
-GEMINI_API_KEY              # ⚠️ не установлен — AI не работает
-SUPABASE_URL
-SUPABASE_ANON_KEY
-```
+- `ai-run`
+- `ai-embeddings`
 
-**Поддерживаемые операции** (`op` field, Zod discriminated union):
+### Repo-only
 
-| `op` | Описание | Модель |
-| --- | --- | --- |
-| `chat` | AI-чат с опциональной геолокацией | Gemini Flash |
-| `thinking` | Расширенное рассуждение | Gemini Flash Thinking |
-| `generateSpeech` | Текст → аудио (TTS) | Gemini |
-| `generateMeditationScript` | Генерация медитации | Gemini Flash |
-| `createMeditation` | Создание медитации с параметрами | Gemini Flash |
-| `generateYogaImage` | Генерация изображения йоги (Imagen 3) | Imagen 3 |
-| `generatePersonalProgram` | Персональная программа практик | Gemini Flash |
-| `transcribeDiaryEntry` | Транскрипция аудио-дневника | Gemini |
-| `analyzeYogaVideo` | Анализ видео асаны | Gemini |
-| `analyzeMedia` | Анализ изображения/видео | Gemini |
-| `analyzeImageContent` | Анализ изображения | Gemini |
-| `editYogaImage` | Редактирование изображения (Imagen 3 edit) | Imagen 3 |
-| `generateYogaVideo` | Генерация видео (Veo) | Veo |
-
-**Rate limiting:** in-memory Map (per-user). Для production scale нужен KV/Redis.
-
-**Request:**
-
-```typescript
-const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy`;
-const response = await fetch(url, {
-  method: 'POST',
-  headers: {
-    'content-type': 'application/json',
-    apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-    authorization: `Bearer ${jwtToken}`,
-  },
-  body: JSON.stringify({ op: 'chat', message: 'Hello' }),
-});
-```
-
-> Note: current client code calls Edge Functions via `fetch` to `/functions/v1/...`; `gemini-proxy` is not wired to ChatWidget (KB fallback).
+- `create-yookassa-checkout`
+- `yookassa-webhook`
 
 ---
 
-## 2. `create-payment`
+## 4. Meaning of the drift
 
-**Назначение:** Создание платежа YooKassa для оформления подписки.
+This is no longer the old state where repo functions simply were not deployed. The current state is more subtle:
 
-**Auth:** JWT (пользователь) + Service Role Key (для записи в БД).
+- live has the repo non-AI deployment wave;
+- live also keeps a separate AI contour (`ai-run`, `ai-embeddings`);
+- repo still carries two YooKassa-named functions that do not appear in live inventory.
 
-**Требуемые секреты:**
-
-```sh
-SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
-YOOKASSA_SHOP_ID     # ⚠️ не установлен
-YOOKASSA_SECRET_KEY  # ⚠️ не установлен
-```
-
-**Тело запроса (Zod-валидированное):**
-
-```typescript
-{
-  plan: 'free' | 'premium' | 'vip',
-  returnUrl?: string  // URL или app scheme (ksebe:, capacitor:)
-}
-```
-
-**Статус:** 🔄 Реализована, но платежи не live — нет YooKassa ключей.
+So the problem is not "deployment absent", but "operational function canon is ambiguous".
 
 ---
 
-## 3. `payment-webhook`
+## 5. Operational rules
 
-**Назначение:** Обработка вебхуков от YooKassa. Обновляет статус подписки в БД.
-
-**Auth:** HMAC-подпись (`PAYMENT_WEBHOOK_SECRET`). Запрос без валидной подписи → 401.
-
-**Требуемые секреты:**
-
-```sh
-PAYMENT_WEBHOOK_SECRET
-SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
-```
-
-**Поток:**
-
-```text
-YooKassa → POST /payment-webhook
-  ├─ Verify HMAC signature
-  ├─ Parse event (payment.succeeded | payment.canceled)
-  ├─ Update subscriptions table (Service Role)
-  └─ 200 OK
-```
+1. Do not assume a repo folder means a live endpoint exists.
+2. Do not assume a live endpoint is represented one-to-one by repo naming.
+3. AI changes require an explicit decision because live AI and repo AI shapes are not identical.
+4. Payment docs must distinguish active live payment endpoints from repo-only YooKassa variants.
 
 ---
 
-## 4. `cancel-subscription`
+## 6. Documentation correction
 
-**Назначение:** Отмена активной подписки текущего пользователя. Использует Service Role для обхода RLS (пользователи не могут менять свой статус напрямую).
+Older docs that say "repo 7 / live 2" are now outdated.
 
-**Auth:** JWT (Bearer token пользователя).
+Current truth:
 
-**Требуемые секреты:**
-
-```sh
-SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
-```
-
-**Тело запроса:** пустое (пользователь идентифицируется по JWT).
-
-**Ответ:** `{ success: true, subscription_id: string }` или `{ error: string }`.
+- repo functions: **9**
+- live functions: **9**
+- inventories: **not identical**
 
 ---
 
-## 5. `cron-maintenance`
+## 7. Next verification step
 
-**Назначение:** Плановое обслуживание БД. Запускается ежедневно через `cron.yml` (GitHub Actions) или `pg_cron`.
+Before any function-level refactor or deployment:
 
-**Auth:** `Authorization: Bearer <CRON_SECRET>`.
-
-**Требуемые секреты:**
-
-```sh
-SUPABASE_SERVICE_ROLE_KEY
-YOOKASSA_SHOP_ID      # для recover_payments
-YOOKASSA_SECRET_KEY   # для recover_payments
-CRON_SECRET
-```
-
-**Задачи:**
-
-| Задача | Описание |
-| --- | --- |
-| `expire_subscriptions` | Переводит просроченные подписки в `past_due` |
-| `recover_payments` | Проверяет YooKassa для pending платежей >30 мин |
-| `cleanup_analytics` | Удаляет `analytics_events` старше 90 дней |
-
-**Запрос:**
-
-```sh
-# Все задачи
-POST /functions/v1/cron-maintenance
-Authorization: Bearer <CRON_SECRET>
-
-# Конкретная задача
-Body: { "tasks": ["expire_subscriptions"] }
-```
-
----
-
-## 6. `send-push`
-
-**Назначение:** Отправка Firebase Cloud Messaging (FCM) push-уведомлений одному или нескольким пользователям.
-
-**Auth:** `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>` — только внутреннее использование (проверяется явно в коде функции).
-
-**Требуемые секреты:**
-
-```sh
-SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
-FIREBASE_PROJECT_ID
-FIREBASE_SERVICE_ACCOUNT_JSON  # полный JSON service account
-```
-
-**Тело запроса:**
-
-```typescript
-{
-  userIds: string[],              // Supabase auth user IDs
-  title: string,
-  body: string,
-  data?: Record<string, string>,  // кастомный payload
-  imageUrl?: string,
-}
-```
-
-**Поток:**
-
-```text
-→ Получить FCM токены из таблицы user_push_tokens (по userIds)
-→ Для каждого токена: POST к FCM API
-→ Удалить невалидные токены (registration-token-not-registered)
-→ Вернуть { sent: N, failed: M }
-```
-
----
-
-## 7. `subscribe-newsletter`
-
-**Назначение:** Подписка email-адреса на Mailchimp audience list.
-
-**Auth:** Public (без JWT). Rate limiting на уровне Mailchimp.
-
-**Требуемые секреты:**
-
-```sh
-MAILCHIMP_API_KEY   # формат: "...key...-dc21" (datacenter парсится из суффикса)
-MAILCHIMP_LIST_ID   # ID аудитории из Mailchimp dashboard
-```
-
-**Тело запроса:**
-
-```typescript
-{ email: string; name?: string }
-```
-
-**Ответы:**
-
-| Код | Тело | Причина |
-| --- | --- | --- |
-| 200 | `{ success: true }` | Подписан |
-| 400 | `{ error: 'missing_email' \| 'invalid_email' }` | Невалидный email |
-| 409 | `{ error: 'already_subscribed' }` | Уже подписан |
-| 500 | `{ error: 'server_error' }` | Ошибка Mailchimp |
-
----
-
-## Деплой
-
-```bash
-# Деплой одной функции
-node_modules/supabase/bin/supabase.exe functions deploy gemini-proxy
-
-# Деплой всех функций
-node_modules/supabase/bin/supabase.exe functions deploy
-
-# Установка секрета
-node_modules/supabase/bin/supabase.exe secrets set GEMINI_API_KEY=<value>
-
-# Просмотр логов
-node_modules/supabase/bin/supabase.exe functions logs gemini-proxy
-```
-
-Supabase CLI установлен как devDependency: `node_modules/supabase/bin/supabase.exe`.
-
----
-
-## Неустановленные секреты (блокеры)
-
-| Секрет | Блокирует | Действие |
-| --- | --- | --- |
-| `GEMINI_API_KEY` | Все AI features | Получить у Семёна → Vault |
-| `YOOKASSA_SHOP_ID` | Платежи | YooKassa dashboard |
-| `YOOKASSA_SECRET_KEY` | Платежи | YooKassa dashboard |
-| `MAILCHIMP_API_KEY` | Newsletter | Mailchimp dashboard |
-| `MAILCHIMP_LIST_ID` | Newsletter | Mailchimp dashboard |
+1. map each client caller to concrete endpoint names,
+2. map each secret contract to the currently active live function,
+3. decide whether `ai-run` / `ai-embeddings` remain canonical or are transitional beside `gemini-proxy`,
+4. decide whether `create-yookassa-checkout` / `yookassa-webhook` are historical debris or planned replacements.
