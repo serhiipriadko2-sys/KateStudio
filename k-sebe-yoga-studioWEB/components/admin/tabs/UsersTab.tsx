@@ -75,6 +75,25 @@ const STATUS_COLORS: Record<string, string> = {
   trialing: 'bg-purple-100 text-purple-600',
 };
 
+const isMissingPaymentsSchemaError = (message: string | undefined): boolean =>
+  Boolean(
+    message &&
+      /(payment_orders|user_passes|amount_cents|visits_total|valid_days|is_payable)/i.test(message)
+  );
+
+async function safeOptionalTableQuery<T>(
+  query: Promise<{ data: T[] | null; error: { message?: string } | null }>,
+  label: string
+): Promise<T[]> {
+  const { data, error } = await query;
+  if (!error) return (data ?? []) as T[];
+  if (isMissingPaymentsSchemaError(error.message)) {
+    console.warn(`[admin_users] ${label} disabled until payment migrations are live`, error);
+    return [];
+  }
+  throw error;
+}
+
 export const UsersTab: React.FC<AdminTabProps> = ({ toast }) => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
@@ -88,33 +107,39 @@ export const UsersTab: React.FC<AdminTabProps> = ({ toast }) => {
     queryKey: ['admin_users'],
     queryFn: async () => {
       if (!supabase) throw new Error('Supabase not configured');
-      const [profilesRes, subsRes, ordersRes, passesRes] = await Promise.all([
+
+      const [profilesRes, subsRes, paymentOrders, userPasses] = await Promise.all([
         supabase
           .from('profiles')
           .select('user_id, name, phone, city, created_at')
           .order('created_at', { ascending: false })
           .limit(200),
         supabase.from('subscriptions').select('*'),
-        supabase.from('payment_orders').select('*').order('created_at', { ascending: false }),
-        supabase.from('user_passes').select('*').order('valid_until', { ascending: false }),
+        safeOptionalTableQuery<PaymentOrderRow>(
+          supabase.from('payment_orders').select('*').order('created_at', { ascending: false }),
+          'payment_orders'
+        ),
+        safeOptionalTableQuery<UserPassRow>(
+          supabase.from('user_passes').select('*').order('valid_until', { ascending: false }),
+          'user_passes'
+        ),
       ]);
+
       if (profilesRes.error) throw profilesRes.error;
       if (subsRes.error) throw subsRes.error;
-      if (ordersRes.error) throw ordersRes.error;
-      if (passesRes.error) throw passesRes.error;
+
       const subMap = new Map<string, SubscriptionRow>(
         (subsRes.data ?? []).map((s) => [s.user_id, s as SubscriptionRow])
       );
       const ordersByUser = new Map<string, PaymentOrderRow[]>();
-      (ordersRes.data ?? []).forEach((order) => {
-        const row = order as PaymentOrderRow;
-        ordersByUser.set(row.user_id, [...(ordersByUser.get(row.user_id) ?? []), row]);
+      paymentOrders.forEach((order) => {
+        ordersByUser.set(order.user_id, [...(ordersByUser.get(order.user_id) ?? []), order]);
       });
       const passesByUser = new Map<string, UserPassRow[]>();
-      (passesRes.data ?? []).forEach((pass) => {
-        const row = pass as UserPassRow;
-        passesByUser.set(row.user_id, [...(passesByUser.get(row.user_id) ?? []), row]);
+      userPasses.forEach((pass) => {
+        passesByUser.set(pass.user_id, [...(passesByUser.get(pass.user_id) ?? []), pass]);
       });
+
       return (profilesRes.data ?? [])
         .filter(
           (
