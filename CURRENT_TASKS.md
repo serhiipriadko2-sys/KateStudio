@@ -1,147 +1,100 @@
 # Текущие задачи
 
-> **Обновлено:** 2 мая 2026 | **Версия:** 4.2.0
-> Источник истины: код + `package.json` + миграции + live Supabase metadata audit.
-> Текущий режим: audit-first completion. Production mutation и AI scope changes запрещены без отдельного решения.
-
-> **2026-05-05 branch-remediation update:** Supabase MCP re-auth/access works, but creating dev branch `p0-live-rls-governance-catchup` is blocked by Supabase plan eligibility: `PaymentRequiredException`, `Branching is supported only on the Pro plan or above`. Production remains unchanged.
+> **Обновлено:** 10 мая 2026 | **Версия:** 5.0.0
+> Источник истины: GitHub `main` + live Supabase metadata/advisors.
+> Текущий режим: audit-first governance. Production mutation без отдельного разрешения не выполнялась.
 
 ---
 
-## Верифицированные метрики (2 мая 2026)
+## Верифицированный снимок состояния
 
-| Метрика | Значение | Как проверено |
+| Метрика | Значение | Основание |
 | --- | --- | --- |
-| Tests passing | **489** | `npm run test:run` |
-| Test files | **64** | `npm run test:run` |
-| TypeScript errors | **0** | `npm run typecheck` |
-| Lint | **PASS** | `npm run lint` |
-| Web build | **PASS** | `npm run build:web` |
-| App build | **PASS** | `npm run build:app` |
-| Repo Edge Functions | **7** | `supabase/functions/` |
-| Live Edge Functions | **2** | Supabase MCP `_list_edge_functions` |
-| Repo migrations | **37** | `supabase/migrations/` |
-| Live applied migrations | **12** | Supabase MCP `_list_migrations` |
-| Public tables live | **27** | metadata-only SQL |
+| Repo migrations | **42** | дерево `supabase/migrations` в `main` |
+| Live applied migrations | **14** | Supabase MCP `list_migrations` |
+| Repo Edge Functions | **9** | дерево `supabase/functions` в `main` |
+| Live Edge Functions | **9** | Supabase MCP `list_edge_functions` |
+| Public/live tables | **27** | Supabase MCP schema inventory |
+| Latest repo-stated tests | **489 / 64** | `CURRENT_TASKS.md` в репозитории от 2026-05-02 |
+| Typecheck status | **repo-stated PASS** | `CURRENT_TASKS.md` / `LAUNCH_CHECKLIST.md` |
+| Lint status | **repo-stated PASS** | `CURRENT_TASKS.md` / `LAUNCH_CHECKLIST.md` |
+| Web/App builds | **repo-stated PASS** | `CURRENT_TASKS.md` / `LAUNCH_CHECKLIST.md` |
 
-Сборки проходят, но обе Vite-сборки предупреждают о крупном чанке `assets/index-DlAt0FZ_.js` около `357.68 kB`.
+Ключевое изменение относительно майского канона: live больше не равен снимку "2 функции / 12 миграций". На 10 мая 2026 live уже содержит 9 функций и 14 applied migrations, но production governance по-прежнему не сведена к одному воспроизводимому baseline.
 
 ---
 
-## 🔴 P0 — Блокеры запуска
+## 🔴 P0 — Блокеры рабочего канона
+
+| # | Задача | Статус | Почему это P0 |
+| --- | --- | --- | --- |
+| 1 | Убрать public policy `Allow public read/write profiles` | ⛔ | Policy всё ещё `ALL` с `USING true` и `WITH CHECK true` |
+| 2 | Свести repo/live migration truth к воспроизводимому baseline | ⛔ | Repo: 42 SQL files, live: 14 applied migrations |
+| 3 | Разрешить function drift между repo и live | ⛔ | Repo-only: `create-yookassa-checkout`, `yookassa-webhook`; live-only: `ai-run`, `ai-embeddings` |
+| 4 | Зафиксировать admin/data contract вокруг `profiles` | ⛔ | Live `profiles` всё ещё содержит legacy `is_admin`; patch path подготовлен, но не подтверждён в staging |
+
+---
+
+## 🟠 P1 — Безопасность и управляемость
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 1 | **`profiles` RLS** — убрать public `ALL true/true` policy | ⛔ | Repo catch-up migration prepared; live policy still active; Supabase branch creation blocked by plan |
-| 2 | **Migration drift** — reconcile live schema vs repo | ⛔ | 12 applied migrations live vs 37 SQL files repo; branch-first apply blocked until Pro/staging path |
-| 3 | **Edge Functions drift** — решить live/repo split | ⛔ | Live: `ai-run`, `ai-embeddings`; repo 7 functions not deployed |
-| 4 | **AI contour frozen** | 🔒 | Не менять `gemini-proxy`, `ai-run`, `ai-embeddings`, prompts/model routing/env contracts |
-| 5 | **YooKassa live path** | 🔄 | Требует non-AI function deployment + secrets validation |
-
-> GitHub Secrets и production secret values не проверялись в этом audit-first pass. Секреты не читать и не печатать.
+| 5 | Закрыть `dialogue` ambiguity | ⏳ | RLS enabled, policies отсутствуют |
+| 6 | Pin `search_path` и пересмотреть executable functions | ⏳ | Advisors flag `is_admin`, `set_updated_at`, `touch_push_token_updated_at`, `trigger_set_timestamp`, `get_admin_analytics` |
+| 7 | Harden storage bucket `images` | ⏳ | broad listing policy, нет MIME allowlist/size limit live |
+| 8 | Перепроверить GraphQL exposure | ⏳ | Many tables discoverable by `anon` / `authenticated` |
+| 9 | Включить leaked password protection | ⏳ | Supabase advisor still warns |
 
 ---
 
-## 🟠 P1 — Launch blockers after P0
+## 🟡 P2 — Контракты и производительность
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 6 | `database.types.ts` align/regenerate from reconciled schema | 🔄 | Current TS contract patched for known live/app drift; final regeneration still after branch apply |
-| 7 | RLS policy consolidation | ⏳ | `profiles` 8 policies, `bookings` 9, `app_settings` 4 |
-| 8 | `dialogue` decision | ⏳ | RLS enabled, 0 policies |
-| 9 | Function hardening | ⏳ | mutable `search_path` advisors |
-| 10 | SECURITY DEFINER execute review | ⏳ | `rls_auto_enable`, `get_admin_analytics` exposed by advisors |
-| 11 | Storage hardening | ⏳ | `images` no MIME/size limits, broad listing; `interf` undocumented |
-| 12 | Non-AI Edge Function deployment plan | ⏳ | payments, webhook, push, cron, newsletter, cancel-subscription |
+| 10 | Regenerate `shared/types/database.types.ts` после schema reconciliation | ⏳ | Current file частично patched, но не auto-generated from current live truth |
+| 11 | Закрыть unindexed FK findings | ⏳ | `ai_jobs`, `api_logs`, `bookings`, `prompt_requests` |
+| 12 | Свести duplicate permissive policies | ⏳ | `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos`, others |
+| 13 | Перевести RLS auth calls на initplan-friendly form | ⏳ | repeated `auth.uid()` / auth helpers in policies |
+| 14 | Разобрать large bundle warning | ⏳ | latest repo docs still mention Vite large chunk warning |
 
 ---
 
-## 🟡 P2 — Cleanup / Performance
+## 🔵 P3 — Product / domain expansion
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 13 | Unindexed FK cleanup | ⏳ | advisors: `ai_jobs`, `api_logs`, `bookings`, `prompt_requests` |
-| 14 | RLS initplan optimization | ⏳ | wrap `auth.uid()`/auth functions as `(select auth.uid())` where appropriate |
-| 15 | Multiple permissive policies cleanup | ⏳ | advisors across `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos` |
-| 16 | Bundle split / chunk warning | ⏳ | Vite chunk warning over 250 kB |
-| 17 | Test coverage increase | ⏳ | target remains 70%+ |
+| 15 | Довести trainers domain до полного operational docs coverage | 🔄 | live уже содержит `trainers`, repo получил trainer migrations 2026-05-09/10 |
+| 16 | Уточнить платежный contour | 🔄 | repo теперь содержит legacy/new YooKassa function names одновременно |
+| 17 | Перевести старые audit docs в historical status | 🔄 | рабочий канон устарел быстрее, чем архив был промаркирован |
 
 ---
 
-## 🔵 P3 — Product Backlog
+## Что изменилось с 2026-05-02
 
-| # | Задача | Статус |
-| --- | --- | --- |
-| 18 | Verify/replace real VideoLibrary URLs through approved content workflow | ⏳ |
-| 19 | `PersonalProgram` 7-day programs | ⏳ |
-| 20 | Activate Retreats section in WEB (`App.tsx`) | ⏳ |
-| 21 | Activate AI Subscription in WEB after AI decision | ⏳ |
-| 22 | i18n support | ⏳ |
-| 23 | Storybook for components | ⏳ |
-| 24 | Lighthouse 90+ | ⏳ |
-| 25 | Analytics integration (Mixpanel/GA) | ⏳ |
+- Live applied migrations: `12 → 14`.
+- Live Edge Functions: `2 → 9`.
+- Repo migrations: `37 → 42`.
+- Repo functions: `7 → 9`.
+- Live database now includes active `trainers` domain objects and `classes.trainer_id`.
+- Главный риск сместился: это уже не "ничего не развернуто", а "частично развернуто, но канон кода, миграций и live inventory расходится".
 
 ---
 
-## Тесты
+## Ближайший рабочий шаг
 
-| Метрика | Текущее | Цель |
-| --- | --- | --- |
-| Tests passing | **489** | 600+ |
-| Test files | **64** | 80+ |
-| Coverage | ~35%+ | 70% |
-
-Динамика: 208 (янв) → 368 (фев) → 473 (март) → **489 (май)**.
+1. Подготовить approved non-production target.
+2. Сравнить repo SQL baseline против live 14-applied state.
+3. Проверить catch-up migration path для `profiles` / admin boundary.
+4. Отдельно принять решение по AI/YooKassa function naming split.
 
 ---
 
-## Production Readiness
-
-Числовой score временно снят с канона. Пока live Supabase имеет P0 drift, честный статус:
+## Честный статус
 
 | Домен | Статус |
 | --- | --- |
-| Local code health | PASS |
-| Security governance | FAIL |
-| Schema reproducibility | FAIL |
-| Edge Functions launch path | FAIL |
-| AI boundary | FROZEN |
+| Repo documentation coherence | FAIL |
+| Live Supabase governance | FAIL |
+| Function inventory clarity | FAIL |
+| Local code health | LAST KNOWN PASS, not re-run in this audit |
 | Overall launch readiness | **FAIL** |
-
-Branch remediation evidence, 2026-05-05:
-
-- MCP project access: PASS for `qkaycdcbstjobacmuaro` / `kate`.
-- Branch cost: `0.01344` hourly, confirmed through MCP.
-- Branch create: FAIL, `PaymentRequiredException`; Supabase branching requires Pro plan or above.
-- Catch-up migration apply: NOT RUN because no branch was created.
-- Production merge/hotfix: NOT RUN; production unchanged by design.
-- 2026-05-05 implementation follow-up: local migration governance note added for
-  `profiles.is_admin` drop; project remained `ACTIVE_HEALTHY`, org plan remained
-  `free`, branch retry still failed with `PaymentRequiredException`.
-
----
-
-## Ключевые команды
-
-```bash
-npm run check:migrations
-npm run typecheck
-npm run lint
-npm run test:run       # 489 tests / 64 files
-npm run build:web
-npm run build:app
-```
-
-Источник команд: `package.json` (не старые доки).
-
----
-
-## Текущий audit artifact
-
-- [docs/SUPABASE_AUDIT_LIVE_2026_05_02.md](./docs/SUPABASE_AUDIT_LIVE_2026_05_02.md)
-- [docs/LAUNCH_CHECKLIST.md](./docs/LAUNCH_CHECKLIST.md)
-- [supabase/migrations/20260502095933_p0_live_rls_governance_catchup.sql](./supabase/migrations/20260502095933_p0_live_rls_governance_catchup.sql)
-
----
-
-> Обновляй таблицы по мере выполнения: ✅ / 🔄 / ⏳ / ⛔ / 🔒
