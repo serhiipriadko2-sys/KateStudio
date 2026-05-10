@@ -269,4 +269,4 @@ export const Pricing: React.FC = () => {
       </div>
     </section>
   );
-}
+};
