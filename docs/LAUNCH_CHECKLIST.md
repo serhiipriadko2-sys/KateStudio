@@ -1,195 +1,91 @@
 # Launch Checklist & Gap Analysis
 
-> **Обновлено:** 2 мая 2026
-> **Верифицировано:** local checks + Supabase metadata-only audit.
-> **Текущий verdict:** local PASS, production launch readiness **FAIL** до снятия P0 Supabase drift.
+> **Обновлено:** 10 мая 2026
+> **Вердикт:** production launch readiness **FAIL**
 
 ---
 
-## 1. Verification Snapshot
+## 1. Current release truth
 
-| Проверка | Статус | Evidence |
+| Area | Status | Why |
 | --- | --- | --- |
-| `npm run check:migrations` | PASS | 37 migration files, 0 timestamp collision groups, 1 legacy short timestamp |
-| `npm run typecheck` | PASS | 0 TypeScript errors |
-| `npm run lint` | PASS | command completed successfully |
-| `npm run test:run` | PASS | 489 tests / 64 files |
-| `npm run build:web` | PASS | Vite build succeeds, large chunk warning remains |
-| `npm run build:app` | PASS | Vite build succeeds, same large chunk warning |
-| Supabase metadata audit | PASS as audit | no user-row reads, no production mutation |
-| Launch readiness | FAIL | P0 live Supabase blockers remain |
-
-Primary evidence file: [SUPABASE_AUDIT_LIVE_2026_05_02.md](./SUPABASE_AUDIT_LIVE_2026_05_02.md).
+| Repo documentation truth | FAIL | multiple operational docs lag behind live state |
+| Local code health | LAST KNOWN PASS | latest pass is repo-stated, not re-run in this audit |
+| Supabase security governance | FAIL | `profiles` open policy remains |
+| Schema reproducibility | FAIL | repo/live migration histories are not reconciled |
+| Function deployment clarity | FAIL | counts match, inventories differ |
+| Trainers rollout documentation | PARTIAL | live and repo have trainers, docs do not fully reflect it |
 
 ---
 
-## 2. Database / Migrations
+## 2. Hard blockers
 
-| Area | Status | Evidence / Note |
+| Priority | Blocker | Current fact |
 | --- | --- | --- |
-| Repo migrations | PASS local integrity | 37 SQL files |
-| Live applied migrations | FAIL governance | 12 applied migrations |
-| Repo migrations | PASS local integrity | 37 SQL files after P0 catch-up migration |
-| Schema reproducibility | PARTIAL local PASS / live FAIL | 37 migrations replay in isolated local Supabase; live still has 12 applied migrations and P0 drift |
-| `contacts` | Live exists, migration governance drift | earlier "missing CREATE" should be read as baseline mismatch, not absence in live |
-| `classes` | Live exists, migration governance drift | local type does not match live columns |
-| `profiles` | FAIL live / patch ready | public `ALL` policy still active in live; catch-up migration removes it |
-| `dialogue` | FAIL | RLS enabled, 0 policies |
-| `database.types.ts` | FAIL contract | hand-crafted types drift from live schema |
-
-Required action: use staging or production-approved path to reconcile live schema, then regenerate committed types from that reconciled target.
-
-Prepared repo patch:
-
-- `supabase/migrations/20260502095933_p0_live_rls_governance_catchup.sql`
-- `k-sebe-yoga-studioWEB/components/admin/tabs/UsersTab.tsx`
-- `shared/types/database.types.ts`
-- `shared/types/index.ts`
+| P0 | `profiles` public write/read policy | still active live |
+| P0 | migration truth split | 42 repo migrations vs 14 live applied |
+| P0 | function canon split | repo-only and live-only functions coexist |
+| P0 | admin contract ambiguity | live still keeps `profiles.is_admin`; repo remediation path is prepared but not validated here |
 
 ---
 
-## 3. Security (P0/P1)
+## 3. Security checklist
 
-| Component | Problem | Status |
-| --- | --- | --- |
-| `profiles` RLS | `Allow public read/write profiles`, `ALL`, public, `true/true` | P0 FAIL |
-| `profiles.is_admin` | legacy admin flag still present live | P0/P1 until open policy is removed |
-| `dialogue` | RLS enabled, no policies | P1 FAIL |
-| Function `search_path` | `is_admin`, timestamp triggers, `get_admin_analytics` mutable | P1 FAIL |
-| SECURITY DEFINER execute | `rls_auto_enable`, `get_admin_analytics` advisor warnings | P1 FAIL |
-| Permissive inserts | `analytics_events`, `contacts`, `ai_jobs`, `api_logs` | P1 review |
-| Storage `images` | public listing policy, no MIME/size limits | P1 FAIL |
-| GraphQL exposure | many public tables visible to anon/authenticated roles | P1 review |
-| Leaked password protection | disabled | P1 FAIL |
+- `dialogue` has RLS enabled with no policy resolution in live.
+- live advisors still flag mutable `search_path` functions.
+- `images` bucket still needs explicit listing/constraint review as an operational surface.
+- leaked password protection remains disabled.
+- GraphQL schema exposure remains broad for many public tables.
 
-Security score is no longer tracked as a numeric value here. The truthful status is simpler: production launch remains blocked while P0 policies and drift exist.
+Status: **not ready for launch sign-off**.
 
 ---
 
-## 4. Edge Functions
+## 4. Data / migration checklist
 
-| Function | Repo | Live | Status |
-| --- | --- | --- | --- |
-| `ai-run` | no | yes, v3 ACTIVE | AI frozen, inventory only |
-| `ai-embeddings` | no | yes, v3 ACTIVE | AI frozen, inventory only |
-| `gemini-proxy` | yes | no | frozen AI scope, do not deploy/change without decision |
-| `create-payment` | yes | no | launch blocker for YooKassa |
-| `payment-webhook` | yes | no | launch blocker for payments |
-| `cancel-subscription` | yes | no | not live |
-| `cron-maintenance` | yes | no | not live |
-| `send-push` | yes | no | not live |
-| `subscribe-newsletter` | yes | no | not live |
+- [ ] establish a reproducible non-production reconciliation target
+- [ ] compare 42 repo migrations against 14 live-applied records
+- [ ] verify whether 2026-05-09 and 2026-05-10 trainer rollout migrations are fully represented in repo + live
+- [ ] regenerate DB types only after baseline reconciliation
 
-Required action: decide non-AI deployment path separately from AI architecture. AI functions and model routing remain frozen until explicit approval.
+Status: **not complete**.
 
 ---
 
-## 5. Content / Assets
+## 5. Function checklist
 
-| Asset | Problem | Status |
-| --- | --- | --- |
-| WEB images | local asset migration previously completed | not re-audited in this pass |
-| APP images | prior grep found Unsplash placeholders removed | not re-audited in this pass |
-| VideoLibrary URLs | content quality requires validation through safe workflow | open |
-| PWA icons / og-image | previously completed | not re-audited in this pass |
+- [ ] decide canonical AI contour: `ai-run` / `ai-embeddings` vs `gemini-proxy` responsibilities
+- [ ] decide fate of repo-only `create-yookassa-checkout` and `yookassa-webhook`
+- [ ] verify client callers against active function names
+- [ ] confirm payment/public endpoints that are intended to stay live
 
-No live `videos` rows were read in this audit. Treat video readiness as an open content task until verified through an approved content review path.
+Status: **not complete**.
 
 ---
 
-## 6. Deploy / Infrastructure
+## 6. Testing / build checklist
 
-| Element | Status | Note |
-| --- | --- | --- |
-| Local env files | manual | create from `.env.example`; never commit secrets |
-| GitHub Secrets | partial/unknown in this audit | not re-read here |
-| Firebase deploy workflow | repo-present | not run in this audit |
-| Web/App builds | PASS | both build successfully |
-| Capacitor native path | repo-present | no native release artifact produced here |
-| Supabase production | FAIL launch readiness | branch-first remediation required |
+These items remain last-known-good from repo documentation, not freshly executed in this audit:
 
----
+- `npm run check:migrations`
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test:run`
+- `npm run build:web`
+- `npm run build:app`
 
-## 7. Native / Mobile
-
-| Element | Status | Note |
-| --- | --- | --- |
-| App build | PASS | `npm run build:app` |
-| Android/iOS signed release | open | depends on signing secrets and release workflow verification |
-| Native runtime QA | not run | outside audit-first scope |
+Status: **historically green, not re-run here**.
 
 ---
 
-## 8. Current Open Blockers
+## 7. Launch PASS definition
 
-| Priority | Blocker | Required action |
-| --- | --- | --- |
-| P0 | `profiles` public `ALL true/true` policy | remove on branch/remediation path, verify anon/auth/admin behavior |
-| P0 | Migration drift: 12 live applied vs 37 repo SQL | baseline/reconcile schema in branch or local reproduction target |
-| P0 | Edge Functions drift | decide/deploy non-AI functions; handle AI separately |
-| P1 | `database.types.ts` live schema drift | regenerate after schema baseline, then fix app type mismatches |
-| P1 | Mutable function `search_path` / exposed SECURITY DEFINER | pin/revoke after branch verification |
-| P1 | Storage bucket hardening | MIME allowlist, size limit, listing review, `interf` decision |
-| P1 | YooKassa not live | deploy payment functions after secrets and branch/staging validation |
-| P2 | Performance advisors | unindexed FKs, RLS initplan, multiple permissive policies |
-| P3 | Product/content backlog | videos, coverage, Lighthouse, mobile release QA |
+Launch PASS requires all of the following:
 
----
+1. `profiles` public `ALL true/true` policy removed and verified.
+2. repo/live migration baseline reconciled.
+3. function inventory drift intentionally resolved or explicitly accepted.
+4. operational docs updated inside the repo canon, not only in external notes.
+5. local verification rerun after the reconciliation path.
 
-## 9. Next Steps
-
-1. Provide an approved staging target or explicit production-hotfix approval; Supabase branches require Pro.
-2. Generate/commit a live schema baseline in the approved target.
-3. Apply the prepared P0 migration and verify `profiles` access contexts.
-4. Consolidate RLS policies and pin function `search_path`.
-5. Harden storage buckets.
-6. Decide non-AI Edge Function deployment path.
-7. Regenerate DB types from reconciled schema.
-8. Re-run advisors and local verification.
-
----
-
-## 10. Definition Of Launch PASS
-
-Launch PASS requires:
-
-- local checks still pass: migrations, typecheck, lint, tests, web build, app build;
-- P0 Supabase advisors/drift cleared or explicitly accepted by owner;
-- production schema reproducible from repo baseline/migrations;
-- Edge Function live status intentionally matches launch architecture;
-- AI scope remains frozen unless separately approved;
-- no secrets exposed and no user data read for verification beyond approved operational checks.
-
----
-
-## 11. Branch Remediation Status - 2026-05-05
-
-Attempted branch-first execution through Supabase MCP:
-
-| Step | Status | Evidence |
-| --- | --- | --- |
-| MCP project access | PASS | `qkaycdcbstjobacmuaro`, org `lwydigvmulkaunbosesd`, `ACTIVE_HEALTHY` |
-| Branch cost check | PASS | `branch`, `0.01344` hourly |
-| Cost confirmation | PASS | MCP returned confirmation id |
-| Create branch | FAIL blocked | `PaymentRequiredException`: branching requires Pro plan or above |
-| Apply catch-up migration | NOT RUN | no branch was created |
-| Production mutation | NOT RUN | production intentionally unchanged |
-| Governance note | PASS local | `profiles.is_admin` drop now has migration-note and rollback note |
-
-Current launch verdict remains **FAIL**. The prepared P0 migration can only be validated after either Supabase branching is enabled or an explicitly approved staging project is provided.
-
-Follow-up implementation attempt on 2026-05-05 rechecked project `qkaycdcbstjobacmuaro` as `ACTIVE_HEALTHY`, confirmed organization `lwydigvmulkaunbosesd` is still on the `free` plan, reconfirmed branch cost `0.01344` hourly, and retried branch creation. The result remained `PaymentRequiredException`, so the catch-up migration, generated DB types, and production state were not changed.
-
-## 12. Local Reproduction Status - 2026-05-05
-
-An isolated temporary local Supabase project was created outside the repo and run on non-default ports while the existing `iskra` stack remained separate.
-
-| Step | Status | Evidence |
-| --- | --- | --- |
-| Migration timestamp collisions | PASS fixed | renamed duplicate migration timestamps; checker now reports `0 known collision group(s)` |
-| From-scratch replay | PASS local | 37 migrations applied through `20260502095933` |
-| Local DB lint | PASS | `npx supabase db lint` reported no schema errors |
-| P0 metadata checks | PASS local | no `profiles` open policy, no `profiles.is_admin`, `images` bucket constrained |
-| Generated types smoke | PASS temp | generated temporary TypeScript types; committed app types unchanged |
-
-This does not make production launch-ready. It proves the repo migration chain can now replay locally; live Supabase still requires staging/prod remediation.
+Until then, any "launch-ready" claim would be decorative, not true.
