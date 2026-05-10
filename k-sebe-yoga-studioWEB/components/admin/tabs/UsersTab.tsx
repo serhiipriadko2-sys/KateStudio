@@ -82,7 +82,7 @@ const isMissingPaymentsSchemaError = (message: string | undefined): boolean =>
   );
 
 async function safeOptionalTableQuery<T>(
-  query: Promise<{ data: T[] | null; error: { message?: string } | null }>,
+  query: PromiseLike<{ data: T[] | null; error: { message?: string } | null }>,
   label: string
 ): Promise<T[]> {
   const { data, error } = await query;
