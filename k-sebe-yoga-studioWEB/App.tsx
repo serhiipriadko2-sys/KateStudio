@@ -13,8 +13,6 @@ import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { About } from './components/About';
 import { BookingModal } from './components/BookingModal';
-// ChatWidget hidden — re-enable after launch
-// import { ChatWidget } from './components/ChatWidget';
 import { Contact } from './components/Contact';
 import { Directions } from './components/Directions';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -27,13 +25,11 @@ import { Logo } from './components/Logo';
 import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
 import { Pricing } from './components/Pricing';
-// Retreats component available from './components/Retreats' when needed
 import { ResetPasswordModal } from './components/ResetPasswordModal';
 import { Reviews } from './components/Reviews';
 import { Schedule } from './components/Schedule';
 import { SEO } from './components/SEO';
-// SubscriptionProfile hidden — re-enable after launch
-// import { SubscriptionProfile } from './components/SubscriptionProfile';
+import { TrainersPreview } from './components/TrainersPreview';
 import { registerServiceWorker } from './services/serviceWorker';
 import { loadTheme, applyTheme, saveTheme, ThemeColors } from './services/theme';
 import { BookingDetails } from './types';
@@ -43,6 +39,12 @@ const AdminPanel = lazy(() =>
 );
 const LegalModals = lazy(() =>
   import('./components/LegalModals').then((m) => ({ default: m.LegalModals }))
+);
+const TrainersPage = lazy(() =>
+  import('./components/TrainersPage').then((m) => ({ default: m.TrainersPage }))
+);
+const TrainerProfilePage = lazy(() =>
+  import('./components/TrainerProfilePage').then((m) => ({ default: m.TrainerProfilePage }))
 );
 
 function App() {
@@ -65,7 +67,6 @@ function App() {
   );
   const scrollRAF = useRef<number>(0);
 
-  // Global Booking State
   const [bookingModalData, setBookingModalData] = useState<{
     isOpen: boolean;
     details: BookingDetails;
@@ -86,13 +87,10 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Initialize Theme & Settings from DB
   useEffect(() => {
-    // 1. Load local theme immediately to prevent FOUC
     const theme = loadTheme();
     applyTheme(theme);
 
-    // 2. Fetch fresh settings from DB
     const syncSettings = async () => {
       if (!isSupabaseConfigured || !supabase) return;
 
@@ -101,18 +99,15 @@ function App() {
         if (data) {
           data.forEach((setting) => {
             if (setting.key === 'theme') {
-              const theme = setting.value as unknown as ThemeColors;
-              applyTheme(theme);
-              // Save to local storage using the correct key (handled by saveTheme)
-              // We use saveTheme but it also reapplies theme which is fine
-              saveTheme(theme);
+              const nextTheme = setting.value as unknown as ThemeColors;
+              applyTheme(nextTheme);
+              saveTheme(nextTheme);
             }
             if (setting.key === 'image_map') {
               const map = setting.value as Record<string, string>;
               Object.entries(map).forEach(([k, v]) => {
                 localStorage.setItem(`ksebe-img-${k}`, v);
               });
-              // Dispatch storage event to notify Image components
               window.dispatchEvent(new Event('storage'));
             }
           });
@@ -125,7 +120,6 @@ function App() {
     syncSettings();
   }, []);
 
-  // Service Worker registration for offline/update support
   useEffect(() => {
     registerServiceWorker({
       onUpdate: (registration) => {
@@ -133,15 +127,11 @@ function App() {
         setUpdateAvailable(true);
       },
       onControllerChange: () => {
-        // SW has taken control (after skipWaiting), reload to get new content.
-        // The hadController guard inside registerServiceWorker prevents
-        // this from firing on fresh installs.
         window.location.reload();
       },
     });
   }, []);
 
-  // Online/offline listener
   useEffect(() => {
     const handleNetworkChange = () => {
       setIsOffline(!navigator.onLine);
@@ -155,7 +145,6 @@ function App() {
     };
   }, []);
 
-  // Scroll Listener for Smart Header
   useEffect(() => {
     const handleScroll = () => {
       if (scrollRAF.current) return;
@@ -171,7 +160,6 @@ function App() {
     };
   }, []);
 
-  // Keyboard shortcut to toggle Admin Panel (Ctrl + Shift + Y)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -191,7 +179,6 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMenuOpen, bookingModalData.isOpen, navigate]);
 
-  // Lock body scroll when menu is open or loading
   useEffect(() => {
     if (isMenuOpen || loading) {
       document.body.style.overflow = 'hidden';
@@ -214,15 +201,33 @@ function App() {
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E")
   `;
 
-  return (
+  const HomePage = () => (
     <>
       <SEO />
+      <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
+      <Marquee />
+      <About />
+      <Philosophy />
+      <Directions onBook={(type) => openBooking({ type })} />
+      <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
+      <Gallery />
+      <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
+      <TrainersPreview />
+      <Schedule onBook={(details) => openBooking(details)} />
+      <InstagramFeed />
+      <Reviews />
+      <FAQ />
+      <Contact />
+    </>
+  );
+
+  return (
+    <>
       {loading && <Preloader onComplete={() => setLoading(false)} />}
 
       <div
         className={`min-h-screen bg-brand-light font-sans selection:bg-brand-green selection:text-white relative flex flex-col transition-opacity duration-700 ${loading ? 'opacity-0' : 'opacity-100'}`}
       >
-        {/* Skip Links for Accessibility */}
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-brand-green focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none"
@@ -236,7 +241,6 @@ function App() {
           Перейти к подвалу
         </a>
 
-        {/* Texture Overlay */}
         <div
           className="fixed inset-0 z-[5] pointer-events-none opacity-[0.05] mix-blend-multiply"
           style={{ backgroundImage: noiseBg }}
@@ -244,7 +248,6 @@ function App() {
 
         <ScrollProgress />
 
-        {/* --- Smart Glass Navigation Bar --- */}
         <nav
           className={`fixed top-0 left-0 right-0 z-50 flex justify-between items-center transition-all duration-500 ease-in-out pointer-events-none
             ${isScrolled ? 'py-3 px-6 bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20' : 'py-6 px-6 bg-transparent'}
@@ -262,7 +265,6 @@ function App() {
           </button>
 
           <div className="flex items-center gap-2 z-50 pointer-events-auto">
-            {/* Menu Button */}
             <button
               onClick={toggleMenu}
               aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
@@ -333,7 +335,6 @@ function App() {
           </div>
         )}
 
-        {/* --- Full Screen Menu Overlay --- */}
         {isMenuOpen && (
           <div
             id="mobile-menu"
@@ -353,12 +354,17 @@ function App() {
                 'Галерея',
                 'Стоимость',
                 'Расписание',
+                'Тренеры',
                 'Отзывы',
                 'Контакты',
               ].map((item, i) => (
                 <a
                   key={item}
-                  href={`#${item === 'Обо мне' ? 'about' : item === 'Направления' ? 'directions' : item === 'Галерея' ? 'gallery' : item === 'Стоимость' ? 'pricing' : item === 'Расписание' ? 'schedule' : item === 'Отзывы' ? 'reviews' : 'contact'}`}
+                  href={
+                    item === 'Тренеры'
+                      ? '/trainers'
+                      : `#${item === 'Обо мне' ? 'about' : item === 'Направления' ? 'directions' : item === 'Галерея' ? 'gallery' : item === 'Стоимость' ? 'pricing' : item === 'Расписание' ? 'schedule' : item === 'Отзывы' ? 'reviews' : 'contact'}`
+                  }
                   onClick={toggleMenu}
                   className="text-3xl md:text-5xl font-serif text-stone-800 hover:text-brand-green hover:scale-105 transition-all duration-300 focus:outline-none focus:text-brand-green"
                   style={{
@@ -390,31 +396,26 @@ function App() {
           </div>
         )}
 
-        {/* Main Content Flow */}
         <main id="main-content" tabIndex={-1} className="flex-1">
-          <Hero onBook={() => openBooking({ type: 'Пробное занятие' })} />
-          <Marquee />
-          {/* Временно скрыто: блок преимуществ */}
-          {/* <Benefits /> */}
-          <About />
-          <Philosophy />
-          <Directions onBook={(type) => openBooking({ type })} />
-          <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
-          <Gallery />
-          <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-          {/* SubscriptionProfile hidden — re-enable after launch */}
-          {/* <SubscriptionProfile
-            onRequestPlan={(plan) =>
-              openBooking({ type: `AI Подписка: ${plan.toUpperCase()}`, price: 'от 990 ₽/мес' })
-            }
-          /> */}
-          {/* Retreats temporarily hidden - no upcoming retreat info */}
-          {/* <Retreats onBook={(type) => openBooking({ type })} /> */}
-          <Schedule onBook={(details) => openBooking(details)} />
-          <InstagramFeed />
-          <Reviews />
-          <FAQ />
-          <Contact />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route
+              path="/trainers"
+              element={
+                <Suspense fallback={null}>
+                  <TrainersPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/trainers/:slug"
+              element={
+                <Suspense fallback={null}>
+                  <TrainerProfilePage />
+                </Suspense>
+              }
+            />
+          </Routes>
           <Footer
             onOpenAdmin={() => navigate('/admin')}
             onOpenLegal={(type) => setLegalModalType(type)}
@@ -422,18 +423,14 @@ function App() {
         </main>
 
         <BackToTop />
-        {/* ChatWidget hidden — re-enable after launch */}
-        {/* <ChatWidget /> */}
         <CookieBanner />
 
-        {/* Global Booking Modal */}
         <BookingModal
           isOpen={bookingModalData.isOpen}
           onClose={closeBooking}
           details={bookingModalData.details}
         />
 
-        {/* Route-based panels (lazy loaded) */}
         <Routes>
           <Route
             path="/admin"
@@ -447,10 +444,8 @@ function App() {
           />
         </Routes>
 
-        {/* Password Reset Modal (triggered by Supabase recovery link) */}
         {showResetPassword && <ResetPasswordModal onClose={() => setShowResetPassword(false)} />}
 
-        {/* Legal Modals (lazy loaded) */}
         {legalModalType && (
           <Suspense fallback={null}>
             <LegalModals type={legalModalType} onClose={() => setLegalModalType(null)} />

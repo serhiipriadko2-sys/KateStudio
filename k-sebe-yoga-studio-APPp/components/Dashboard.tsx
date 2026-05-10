@@ -21,7 +21,6 @@ import {
   Trophy,
   ChevronRight,
   User,
-  // Sparkles, // AI tab hidden вЂ” re-enable after launch
   Loader2,
   X,
   Edit2,
@@ -42,46 +41,41 @@ import { subscriptionService } from '../services/subscriptionService';
 import { Booking, Subscription } from '../types';
 import { Achievements } from './Achievements';
 import { AdminPanel } from './AdminPanel';
-// import { AICoach } from './AICoach'; // AI hidden вЂ” re-enable after launch
 import { Breathwork } from './Breathwork';
 import { DeveloperSettings } from './DeveloperSettings';
 import { Image } from './Image';
 import { Logo } from './Logo';
-// Paywall hidden вЂ” re-enable after launch
-// import { Paywall } from './Paywall';
 import { Pricing } from './Pricing';
 import { Schedule } from './Schedule';
+import { TrainersScreen } from './TrainersScreen';
 import { VideoLibrary } from './VideoLibrary';
 
 interface DashboardProps {
   onBack: () => void;
-  initialTab?: 'overview' | 'schedule' | 'pricing' | 'videos' | 'breath' | 'profile' | 'dev';
+  initialTab?:
+    | 'overview'
+    | 'schedule'
+    | 'trainers'
+    | 'pricing'
+    | 'videos'
+    | 'breath'
+    | 'profile'
+    | 'dev';
 }
-
-// Subscription labels hidden — re-enable after launch
-// const subscriptionStatusLabels: Record<SubscriptionStatus, string> = { ... };
-// const subscriptionPlanLabels: Record<SubscriptionPlan, string> = { ... };
 
 export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'overview' }) => {
   const { user, setUser, logout, authStatus, isSupabaseConfigured } = useAuth();
   const { isAdmin } = useIsAdmin();
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'schedule' | 'pricing' | 'videos' | 'breath' | 'profile' | 'dev'
+    'overview' | 'schedule' | 'trainers' | 'pricing' | 'videos' | 'breath' | 'profile' | 'dev'
   >(initialTab);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [activePasses, setActivePasses] = useState<UserPass[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedQr, setExpandedQr] = useState<string | null>(null);
-
-  // Subscription State (hidden вЂ” re-enable after launch)
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [, setSubscriptionLoading] = useState(false);
-  // subscriptionActionLoading, showPaywall вЂ” hidden, re-enable after launch
-  // const [subscriptionActionLoading, setSubscriptionActionLoading] = useState(false);
-  // const [showPaywall, setShowPaywall] = useState(false);
-
-  // Profile Edit State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState('');
   const [editCity, setEditCity] = useState('');
@@ -89,15 +83,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bookingsNoticeRef = useRef<string | null>(null);
   const hasLoadedBookingsRef = useRef(false);
-
-  // Daily recommendation
   const [dailyRec, setDailyRec] = useState<DailyRecommendationType | null>(null);
   const [dailyRecLoading, setDailyRecLoading] = useState(false);
-
-  // Streak calendar practice data
   const [practiceData, setPracticeData] = useState<Record<string, StreakCalendarDay>>({});
   const { currentStreak, isLoading: gamificationLoading } = useGamification(user?.id);
-
   const { showToast } = useToast();
 
   const getProfileSavedMessage = (reason?: string) =>
@@ -174,7 +163,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     setActivePasses(passes);
   }, [authStatus, isSupabaseConfigured]);
 
-  // Initial bookings load
   useEffect(() => {
     void fetchBookings(true);
   }, [fetchBookings]);
@@ -187,7 +175,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     void loadActivePasses();
   }, [loadActivePasses]);
 
-  // Real-time subscription stays stable across booking list updates.
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user?.id) {
       return;
@@ -215,7 +202,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     };
   }, [authStatus, user?.id, fetchBookings, showToast]);
 
-  // Load daily recommendation (client-side generation, no AI call needed for basic version)
   useEffect(() => {
     if (authStatus !== 'authenticated') {
       setDailyRec(null);
@@ -233,7 +219,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           setDailyRecLoading(false);
           return;
         } catch {
-          /* regenerate */
+          // fall through and regenerate
         }
       }
 
@@ -243,7 +229,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           title: 'Утренний Inside Flow',
           duration: 30,
           type: 'inside-flow',
-          reason: 'Рдеально для начала дня — активирует энергию и улучшает настрой',
+          reason: 'Идеально для начала дня — активирует энергию и улучшает настрой',
           matchScore: 92,
           musicMood: 'Uplifting',
           generatedAt: new Date().toISOString(),
@@ -280,7 +266,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     };
   }, [authStatus]);
 
-  // Load practice data for StreakCalendar from bookings
   useEffect(() => {
     if (bookings.length === 0) {
       setPracticeData({});
@@ -305,12 +290,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     showToast('Вы вышли из системы', 'info');
   };
 
-  // handleSubscribePlan hidden — re-enable after launch
-  // const handleSubscribePlan = async (plan: SubscriptionPlan) => { ... };
-
-  // handleCancelSubscription hidden вЂ” re-enable after launch
-  // const handleCancelSubscription = async () => { ... };
-
   const handleCancelBooking = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!window.confirm('Вы уверены, что хотите отменить запись?')) return;
@@ -321,27 +300,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       showToast(
         result.source === 'cache'
           ? 'Локальная запись отменена. Синхронизация с сервером не потребовалась.'
-          : 'Р—Р°РїРёСЃСЊ РѕС‚РСРµРЅРµРЅР°',
+          : 'Запись отменена',
         result.source === 'cache' ? 'info' : 'success'
       );
       return;
-      /*
-      showToast('Запись отменена', 'success');
-      */
-    } else {
-      if (result.status === 'auth_required') {
-        showToast(
-          'Чтобы отменить синхронизированную запись, нужно снова войти в аккаунт.',
-          'error'
-        );
-        return;
-      }
-      showToast('Не удалось отменить запись. Сервер временно недоступен.', 'error');
-      return;
-      /*
-      showToast('Не удалось отменить запись', 'error');
-      */
     }
+
+    if (result.status === 'auth_required') {
+      showToast(
+        'Чтобы отменить синхронизированную запись, нужно снова войти в аккаунт.',
+        'error'
+      );
+      return;
+    }
+
+    showToast('Не удалось отменить запись. Сервер временно недоступен.', 'error');
   };
 
   const handleStartEditProfile = () => {
@@ -360,13 +333,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
       showToast(
         result.status === 'degraded'
           ? getProfileSavedMessage(result.reason)
-          : 'РџСЂРѕС„РёР»СЊ РѕР±РЅРѕРІР»РµРЅ',
+          : 'Профиль обновлен',
         result.status === 'degraded' ? 'info' : 'success'
       );
       return;
-    } else {
-      showToast('Ошибка при обновлении профиля', 'error');
     }
+    showToast('Ошибка при обновлении профиля', 'error');
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -391,13 +363,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           showToast(
             result.status === 'degraded'
               ? getAvatarSavedMessage(result.reason)
-              : 'Р¤РѕС‚Рѕ РѕР±РЅРѕРІР»РµРЅРѕ',
+              : 'Фото обновлено',
             result.status === 'degraded' ? 'info' : 'success'
           );
           return;
-        } else {
-          showToast('Не удалось сохранить ссылку', 'error');
         }
+        showToast('Не удалось сохранить ссылку', 'error');
       } else {
         const reader = new FileReader();
         reader.onloadend = async () => {
@@ -409,12 +380,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             showToast(
               result.status === 'degraded'
                 ? getAvatarSavedMessage(result.reason)
-                : 'Р¤РѕС‚Рѕ РѕР±РЅРѕРІР»РµРЅРѕ',
+                : 'Фото обновлено',
               result.status === 'degraded' ? 'info' : 'success'
             );
             return;
           }
-          showToast('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ С„РѕС‚Рѕ', 'error');
+          showToast('Не удалось сохранить фото', 'error');
         };
         reader.readAsDataURL(file);
       }
@@ -426,14 +397,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     }
   };
 
-  type DashboardTab = 'overview' | 'schedule' | 'pricing' | 'videos' | 'breath' | 'profile' | 'dev';
+  type DashboardTab =
+    | 'overview'
+    | 'schedule'
+    | 'trainers'
+    | 'pricing'
+    | 'videos'
+    | 'breath'
+    | 'profile'
+    | 'dev';
+
   const navItems: { id: DashboardTab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'Главная', icon: <LayoutDashboard className="w-6 h-6" /> },
     { id: 'schedule', label: 'Расписание', icon: <Calendar className="w-6 h-6" /> },
+    { id: 'trainers', label: 'Тренеры', icon: <User className="w-6 h-6" /> },
     { id: 'pricing', label: 'Оплата', icon: <CreditCard className="w-6 h-6" /> },
     { id: 'videos', label: 'Практики', icon: <Video className="w-6 h-6" /> },
     { id: 'breath', label: 'Дыхание', icon: <Wind className="w-6 h-6" /> },
-    // { id: 'ai', label: 'AI Тренер', icon: <Sparkles className="w-6 h-6" /> }, // hidden — re-enable after launch
     { id: 'profile', label: 'Профиль', icon: <User className="w-6 h-6" /> },
   ];
 
@@ -446,7 +426,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
   return (
     <div className="h-[100dvh] bg-[#FDFBF7] flex overflow-hidden">
-      {/* Desktop Sidebar */}
       <aside className="w-72 bg-white border-r border-stone-100 hidden md:flex flex-col p-8 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <div className="mb-12 pl-2">
           <Logo className="w-16 h-16" color="#57a773" />
@@ -479,9 +458,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         </button>
       </aside>
 
-      {/* Main Content Area */}
       <main className="flex-1 relative flex flex-col h-full overflow-hidden">
-        {/* Mobile Header */}
         <div className="md:hidden flex justify-between items-center px-6 py-4 bg-white/80 backdrop-blur-md border-b border-stone-100 z-20 sticky top-0">
           <Logo className="w-10 h-10" color="#57a773" />
           <div className="flex items-center gap-3">
@@ -495,9 +472,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
           </div>
         </div>
 
-        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide p-6 md:p-12 pb-28 md:pb-12 bg-[#F8F9FA]">
-          {/* --- Overview Tab --- */}
           {activeTab === 'overview' && (
             <div className="max-w-4xl mx-auto">
               <header className="flex justify-between items-end mb-8 md:mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -512,7 +487,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               </header>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-                {/* Stats Card */}
                 <div
                   className="bg-white p-6 rounded-[2rem] shadow-sm border border-stone-100 flex flex-col justify-between h-40 md:h-48 relative overflow-hidden group animate-in zoom-in-95 duration-500 fill-mode-backwards"
                   style={{ animationDelay: '100ms' }}
@@ -529,7 +503,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   </div>
                 </div>
 
-                {/* Status Card */}
                 <div
                   className="bg-brand-dark p-6 rounded-[2rem] shadow-xl shadow-stone-200 flex flex-col justify-between h-40 md:h-48 text-white relative overflow-hidden animate-in zoom-in-95 duration-500 fill-mode-backwards"
                   style={{ animationDelay: '200ms' }}
@@ -548,7 +521,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   </div>
                 </div>
 
-                {/* Next Class Card */}
                 <div
                   className="bg-brand-green p-6 rounded-[2rem] shadow-xl shadow-brand-green/20 flex flex-col justify-between h-40 md:h-48 text-white relative overflow-hidden cursor-pointer group hover:scale-[1.02] transition-transform animate-in zoom-in-95 duration-500 fill-mode-backwards"
                   style={{ animationDelay: '300ms' }}
@@ -596,7 +568,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 </div>
               </div>
 
-              {/* Daily Recommendation */}
               {authStatus === 'authenticated' && (
                 <div
                   className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-600"
@@ -605,22 +576,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   <DailyRecommendation
                     recommendation={dailyRec}
                     isLoading={dailyRecLoading}
-                    onStart={(_id) => {
+                    onStart={() => {
                       setActiveTab('videos');
-                      showToast(`Открываем практику…`, 'success');
+                      showToast('Открываем практику…', 'success');
                     }}
                     onRefresh={() => {
                       localStorage.removeItem(`ksebe_daily_rec_${new Date().toDateString()}`);
                       setDailyRec(null);
                       setDailyRecLoading(true);
-                      // retrigger effect by toggling a transient key
                       setTimeout(() => setDailyRecLoading(false), 800);
                     }}
                   />
                 </div>
               )}
 
-              {/* Booking History / Tickets */}
               <div
                 className="mb-24 md:mb-0 animate-in fade-in slide-in-from-bottom-8 duration-700"
                 style={{ animationDelay: '400ms' }}
@@ -643,14 +612,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                       return (
                         <div
                           key={b.id}
-                          className={`relative bg-white rounded-[2rem] border transition-all duration-300 overflow-hidden flex flex-col md:flex-row ${isFuture ? 'border-brand-green/30 shadow-md hover:shadow-lg' : 'border-stone-100 opacity-80 grayscale hover:grayscale-0'}`}
+                          className={`relative bg-white rounded-[2rem] border transition-all duration-300 overflow-hidden flex flex-col md:flex-row ${
+                            isFuture
+                              ? 'border-brand-green/30 shadow-md hover:shadow-lg'
+                              : 'border-stone-100 opacity-80 grayscale hover:grayscale-0'
+                          }`}
                         >
-                          {/* Left: Content */}
                           <div className="flex-1 p-6 md:p-8 flex flex-col justify-center relative z-10">
                             <div className="flex justify-between items-start mb-4">
                               <div>
                                 <span
-                                  className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2 inline-block ${isFuture ? 'bg-brand-mint text-brand-green' : 'bg-stone-100 text-stone-400'}`}
+                                  className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2 inline-block ${
+                                    isFuture
+                                      ? 'bg-brand-mint text-brand-green'
+                                      : 'bg-stone-100 text-stone-400'
+                                  }`}
                                 >
                                   {isFuture ? 'Активен' : 'Завершен'}
                                 </span>
@@ -659,7 +635,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                                 </h4>
                               </div>
                               <div className="text-right">
-                                <div className="text-2xl font-medium text-brand-text">{b.time}</div>
+                                <div className="text-2xl font-medium text-brand-text">
+                                  {b.time}
+                                </div>
                                 <div className="text-xs text-stone-400">{b.date}</div>
                               </div>
                             </div>
@@ -683,7 +661,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                             </div>
                           </div>
 
-                          {/* Right: QR Stub */}
                           <div className="relative w-full md:w-32 bg-stone-50 flex items-center justify-center p-4 border-t md:border-t-0 md:border-l border-dashed border-stone-300">
                             <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8F9FA] rounded-full hidden md:block"></div>
                             <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8F9FA] rounded-full hidden md:block"></div>
@@ -727,6 +704,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             </div>
           )}
 
+          {activeTab === 'trainers' && (
+            <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
+              <TrainersScreen />
+            </div>
+          )}
+
           {activeTab === 'pricing' && (
             <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
               <Pricing />
@@ -755,22 +738,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
             </div>
           )}
 
-          {/* AI Тренер tab hidden — re-enable after launch */}
-          {/* {activeTab === 'ai' && (
-            <div className="max-w-2xl mx-auto h-[80vh] flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-500 pb-24">
-              <header className="mb-6">
-                <h1 className="text-2xl md:text-3xl font-serif text-brand-text mb-1">AI Тренер</h1>
-                <p className="text-stone-400 font-light text-sm">Анализ асан, чат и творчество.</p>
-              </header>
-              <AICoach />
-            </div>
-          )} */}
-
           {activeTab === 'profile' && (
             <div className="max-w-md mx-auto animate-in fade-in slide-in-from-bottom-8 duration-500 pb-24">
-              {/* AI Subscription hidden вЂ” re-enable after launch */}
-              {/* <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6"> ... AI Subscription block ... </div> */}
-
               <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
                 <h3 className="font-serif text-xl mb-4 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-brand-green" />
@@ -806,7 +775,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
 
               <Achievements />
 
-              {/* Streak Calendar */}
               <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-stone-100 mb-6">
                 <StreakCalendar
                   practiceData={practiceData}
@@ -834,7 +802,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                     </div>
                   ) : null}
 
-                  {/* Overlay for upload hint */}
                   {isEditingProfile && !isAvatarUploading && (
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity z-10">
                       <Camera className="w-8 h-8 text-white" />
@@ -880,7 +847,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       className="w-full p-2 text-center border border-stone-200 rounded-lg text-lg font-serif focus:outline-none focus:border-brand-green"
-                      placeholder="Рмя"
+                      placeholder="Имя"
                     />
                     <input
                       type="text"
@@ -958,15 +925,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         </div>
       </main>
 
-      {/* Paywall hidden — re-enable after launch */}
-      {/* {showPaywall && (
-        <Paywall
-          onClose={() => setShowPaywall(false)}
-          onSubscribe={(plan) => handleSubscribePlan(plan as SubscriptionPlan)}
-        />
-      )} */}
-
-      {/* QR Modal */}
       {expandedQr && (
         <div
           role="dialog"
@@ -994,7 +952,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
         </div>
       )}
 
-      {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-stone-200/50 pb-safe z-50 flex justify-around items-center px-1 py-3 shadow-[0_-5px_20px_rgba(0,0,0,0.03)] safe-area-bottom">
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
@@ -1004,9 +961,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
               onClick={() => setActiveTab(item.id)}
               className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-300 min-w-[60px] relative ${isActive ? 'text-brand-green' : 'text-stone-400'}`}
             >
-              <div
-                className={`transition-transform duration-300 ${isActive ? '-translate-y-1' : ''}`}
-              >
+              <div className={`transition-transform duration-300 ${isActive ? '-translate-y-1' : ''}`}>
                 {item.icon}
               </div>
               <span
