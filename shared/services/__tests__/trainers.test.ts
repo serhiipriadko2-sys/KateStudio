@@ -158,7 +158,12 @@ describe('trainers service', () => {
         date: '2026-05-10',
         time: '10:00',
         duration: '60 мин',
+        spots_total: 12,
+        spots_booked: 3,
         price: 1800,
+        location: 'РЎС‚Р°РЅС†РёРѕРЅРЅР°СЏ СѓР»., 5Р‘',
+        intensity: 2,
+        is_online: false,
       },
     ];
     const orderTime = vi.fn().mockResolvedValue(queryResult(classRows));
@@ -185,7 +190,12 @@ describe('trainers service', () => {
         date: '2026-05-10',
         time: '10:00',
         duration: '60 мин',
+        spotsTotal: 12,
+        spotsBooked: 3,
         price: 1800,
+        location: 'РЎС‚Р°РЅС†РёРѕРЅРЅР°СЏ СѓР»., 5Р‘',
+        intensity: 2,
+        isOnline: false,
       },
     ]);
   });

@@ -37,6 +37,7 @@ import {
   ReviewsTab,
   ScheduleTab,
   SettingsTab,
+  TrainersTab,
   UsersTab,
   VideoTab,
 } from './admin/tabs';
@@ -235,6 +236,7 @@ const TAB_GROUPS: TabGroup[] = [
       { id: 'schedule', icon: <CalendarDays className="w-4 h-4" />, label: 'Расписание' },
       { id: 'bookings', icon: <ClipboardList className="w-4 h-4" />, label: 'Записи' },
       { id: 'contacts', icon: <MessageSquare className="w-4 h-4" />, label: 'Обращения' },
+      { id: 'trainers', icon: <Users className="w-4 h-4" />, label: 'Тренеры' },
     ],
   },
   {
@@ -401,6 +403,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             {activeTab === 'schedule' && <ScheduleTab toast={toast} />}
             {activeTab === 'bookings' && <BookingsTab toast={toast} />}
             {activeTab === 'contacts' && <ContactsTab toast={toast} />}
+            {activeTab === 'trainers' && <TrainersTab toast={toast} />}
             {activeTab === 'reviews' && <ReviewsTab toast={toast} />}
             {activeTab === 'pricing' && <PricingTab toast={toast} />}
             {activeTab === 'articles' && <ArticlesTab toast={toast} />}

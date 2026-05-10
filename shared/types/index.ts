@@ -91,6 +91,7 @@ export interface ClassRow {
   image: string | null;
   location: string;
   intensity: number | null;
+  is_online: boolean | null;
 }
 
 export interface TrainerRow {

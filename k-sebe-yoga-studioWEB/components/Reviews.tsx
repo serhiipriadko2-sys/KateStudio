@@ -6,7 +6,7 @@ import { FadeIn } from './FadeIn';
 import { Image } from './Image';
 
 interface TestimonialProps {
-  id: number | string;
+  id?: number | string;
   name: string;
   text: string;
   image: string;
@@ -55,7 +55,7 @@ export const defaultTestimonials = [
   },
 ];
 
-const TestimonialCard: React.FC<TestimonialProps> = ({ id, name, text, image }) => (
+const TestimonialCard: React.FC<TestimonialProps> = ({ name, text, image }) => (
   <div className="relative mt-12 mb-8 mx-4 flex-shrink-0 w-80 md:w-[28rem] snap-center group">
     <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-brand-green/10 h-full flex flex-col justify-between group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500 relative overflow-hidden">
       {/* Decorative Quote Icon */}
@@ -85,7 +85,6 @@ const TestimonialCard: React.FC<TestimonialProps> = ({ id, name, text, image }) 
       <Image
         src={image}
         alt={name}
-        storageKey={`review-avatar-${id}`}
         containerClassName="w-full h-full"
         className="w-full h-full object-cover"
       />

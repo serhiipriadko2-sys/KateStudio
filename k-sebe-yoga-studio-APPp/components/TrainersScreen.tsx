@@ -1,23 +1,53 @@
 import { getTrainerBySlug, listClassesByTrainer, listPublicTrainers } from '@ksebe/shared';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
+import type { ClassSession } from '../types';
+import { BookingModal } from './BookingModal';
+import { getTrainerImageObjectPosition } from './trainerImagePresentation';
 
 export const TrainersScreen: React.FC = () => {
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<ClassSession | null>(null);
+
   const { data: trainers = [], isLoading } = useQuery({
     queryKey: ['app_trainers'],
     queryFn: listPublicTrainers,
   });
+
   const { data: trainer } = useQuery({
     queryKey: ['app_trainer_detail', activeSlug],
     queryFn: () => getTrainerBySlug(activeSlug!),
     enabled: !!activeSlug,
   });
-  const { data: classes = [] } = useQuery({
+
+  const { data: classes = [], refetch: refetchClasses } = useQuery({
     queryKey: ['app_trainer_classes', trainer?.id],
     queryFn: () => listClassesByTrainer(trainer!.id),
     enabled: !!trainer?.id,
   });
+
+  const openBooking = (item: (typeof classes)[number]) => {
+    if (!trainer || !item.date || !item.time) return;
+
+    const normalizedIntensity = [1, 2, 3].includes(item.intensity ?? 0)
+      ? (item.intensity as 1 | 2 | 3)
+      : 2;
+
+    setSelectedClass({
+      id: item.id,
+      dateStr: item.date,
+      time: item.time,
+      name: item.title,
+      instructor: item.instructor ?? trainer.fullName,
+      duration: item.duration ?? '60 мин',
+      spotsTotal: item.spotsTotal ?? 12,
+      spotsBooked: item.spotsBooked ?? 0,
+      location: item.location ?? 'Станционная ул., 5Б',
+      intensity: normalizedIntensity,
+      price: item.price ?? 700,
+      isOnline: item.isOnline ?? false,
+    });
+  };
 
   if (isLoading) {
     return <div className="max-w-3xl mx-auto text-stone-400">Загрузка тренеров...</div>;
@@ -38,12 +68,26 @@ export const TrainersScreen: React.FC = () => {
             {trainers.map((item) => (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => setActiveSlug(item.slug)}
-                className="bg-white text-left rounded-[2rem] p-5 border border-stone-100 shadow-sm transition-transform duration-300 hover:-translate-y-1"
+                className="bg-white text-left rounded-[2rem] border border-stone-100 shadow-sm transition-transform duration-300 hover:-translate-y-1 overflow-hidden"
               >
-                <div className="text-xl font-serif text-brand-text">{item.fullName}</div>
-                <div className="text-sm text-brand-green mt-1">{item.roleTitle}</div>
-                <div className="text-sm text-stone-500 mt-3">{item.bioShort}</div>
+                {item.avatarUrl && (
+                  <div className="aspect-[16/7] overflow-hidden bg-stone-100">
+                    <img
+                      src={item.avatarUrl}
+                      alt={item.fullName}
+                      className="h-full w-full object-cover"
+                      style={{ objectPosition: getTrainerImageObjectPosition(item.slug) }}
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <div className="p-5">
+                  <div className="text-xl font-serif text-brand-text">{item.fullName}</div>
+                  <div className="text-sm text-brand-green mt-1">{item.roleTitle}</div>
+                  <div className="text-sm text-stone-500 mt-3">{item.bioShort}</div>
+                </div>
               </button>
             ))}
           </div>
@@ -61,6 +105,7 @@ export const TrainersScreen: React.FC = () => {
                   src={trainer.coverImageUrl}
                   alt={trainer.fullName}
                   className="h-full w-full object-cover"
+                  style={{ objectPosition: getTrainerImageObjectPosition(trainer.slug) }}
                   loading="lazy"
                 />
               </div>
@@ -87,12 +132,18 @@ export const TrainersScreen: React.FC = () => {
 
           <div className="space-y-3">
             {classes.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl p-4 border border-stone-100">
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => openBooking(item)}
+                className="w-full text-left bg-white rounded-2xl p-4 border border-stone-100 transition-colors hover:border-brand-green/30 hover:shadow-sm"
+              >
                 <div className="font-medium text-brand-text">{item.title}</div>
                 <div className="text-sm text-stone-500 mt-1">
                   {item.date} · {item.time}
                 </div>
-              </div>
+                <div className="mt-3 text-sm font-medium text-brand-green">Записаться</div>
+              </button>
             ))}
             {!classes.length && (
               <div className="text-sm text-stone-400">Ближайших занятий пока нет.</div>
@@ -101,6 +152,15 @@ export const TrainersScreen: React.FC = () => {
         </div>
       ) : (
         <div className="text-stone-400">Профиль тренера не найден.</div>
+      )}
+
+      {selectedClass && (
+        <BookingModal
+          isOpen={true}
+          onClose={() => setSelectedClass(null)}
+          classDetails={selectedClass}
+          onSuccess={() => void refetchClasses()}
+        />
       )}
     </div>
   );

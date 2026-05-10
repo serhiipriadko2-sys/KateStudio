@@ -71,7 +71,12 @@ export const listClassesByTrainer = async (
     date: string | null;
     time: string | null;
     duration: string | null;
+    spotsTotal: number | null;
+    spotsBooked: number | null;
     price: number | null;
+    location: string | null;
+    intensity: number | null;
+    isOnline: boolean | null;
   }>
 > => {
   const { data, error } = await supabase
@@ -91,7 +96,12 @@ export const listClassesByTrainer = async (
     date: row.date,
     time: row.time,
     duration: row.duration,
+    spotsTotal: row.spots_total,
+    spotsBooked: row.spots_booked,
     price: row.price,
+    location: row.location,
+    intensity: row.intensity,
+    isOnline: row.is_online,
   }));
 };
 
