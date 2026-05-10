@@ -3,6 +3,7 @@ export type AdminTab =
   | 'schedule'
   | 'bookings'
   | 'contacts'
+  | 'trainers'
   | 'reviews'
   | 'articles'
   | 'videos'
@@ -73,6 +74,29 @@ export interface FAQItem {
   category?: string;
   order_index: number;
   created_at: string;
+}
+
+export interface TrainerAdminRow {
+  id: string;
+  slug: string;
+  full_name: string;
+  short_name: string | null;
+  role_title: string;
+  bio_short: string;
+  bio_long: string | null;
+  quote: string | null;
+  avatar_url: string | null;
+  cover_image_url: string | null;
+  specialties: string[];
+  teaching_formats: Array<'studio' | 'online' | 'retreat' | 'private'>;
+  experience_years: number | null;
+  instagram_url: string | null;
+  telegram_url: string | null;
+  sort_order: number;
+  is_featured: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AdminTabProps {
