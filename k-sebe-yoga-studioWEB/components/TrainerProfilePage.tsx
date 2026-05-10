@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { SEO } from './SEO';
+import { getTrainerImageObjectPosition } from './trainerImagePresentation';
 
 export const TrainerProfilePage: React.FC = () => {
   const { slug = '' } = useParams();
@@ -56,6 +57,7 @@ export const TrainerProfilePage: React.FC = () => {
                   src={heroImage}
                   alt={trainer.fullName}
                   className="h-full w-full object-cover"
+                  style={{ objectPosition: getTrainerImageObjectPosition(trainer.slug) }}
                   loading="eager"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
@@ -80,6 +82,7 @@ export const TrainerProfilePage: React.FC = () => {
                       src={trainer.avatarUrl}
                       alt={trainer.fullName}
                       className="h-full w-full object-cover"
+                      style={{ objectPosition: getTrainerImageObjectPosition(trainer.slug) }}
                       loading="lazy"
                     />
                   </div>

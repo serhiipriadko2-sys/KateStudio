@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { SEO } from './SEO';
+import { getTrainerImageObjectPosition } from './trainerImagePresentation';
 
 export const TrainersPage: React.FC = () => {
   const { data: trainers = [], isLoading } = useQuery({
@@ -47,6 +48,7 @@ export const TrainersPage: React.FC = () => {
                         src={trainer.avatarUrl}
                         alt={trainer.fullName}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        style={{ objectPosition: getTrainerImageObjectPosition(trainer.slug) }}
                         loading="lazy"
                       />
                     ) : (

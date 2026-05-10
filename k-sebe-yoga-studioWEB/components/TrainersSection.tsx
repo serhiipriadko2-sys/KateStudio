@@ -2,6 +2,7 @@ import { listPublicTrainers } from '@ksebe/shared';
 import type { TrainerCard } from '@ksebe/shared';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { getTrainerImageObjectPosition } from './trainerImagePresentation';
 
 type TrainersSectionProps = {
   onOpenTrainer?: (slug: string) => void;
@@ -89,6 +90,7 @@ export const TrainersSection = ({ onOpenTrainer }: TrainersSectionProps) => {
                     src={trainer.avatarUrl}
                     alt={trainer.fullName}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    style={{ objectPosition: getTrainerImageObjectPosition(trainer.slug) }}
                     loading="lazy"
                   />
                 ) : (

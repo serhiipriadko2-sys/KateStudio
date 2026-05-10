@@ -2,6 +2,7 @@ import { listPublicTrainers } from '@ksebe/shared';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { getTrainerImageObjectPosition } from './trainerImagePresentation';
 
 export const TrainersPreview: React.FC = () => {
   const { data: trainers = [] } = useQuery({
@@ -22,8 +23,8 @@ export const TrainersPreview: React.FC = () => {
             Практику ведут люди, у которых есть собственная глубина и ритм.
           </h2>
           <p className="mt-5 text-base text-stone-500 md:text-lg">
-            Познакомьтесь с преподавателями заранее и выберите того, чей голос и подход
-            откликаются именно вам.
+            Познакомьтесь с преподавателями заранее и выберите того, чей голос и подход откликаются
+            именно вам.
           </p>
         </div>
 
@@ -40,6 +41,7 @@ export const TrainersPreview: React.FC = () => {
                     src={trainer.avatarUrl}
                     alt={trainer.fullName}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    style={{ objectPosition: getTrainerImageObjectPosition(trainer.slug) }}
                     loading="lazy"
                   />
                 ) : (
@@ -77,15 +79,6 @@ export const TrainersPreview: React.FC = () => {
               </div>
             </Link>
           ))}
-        </div>
-
-        <div className="mt-8">
-          <Link
-            to="/trainers"
-            className="inline-flex items-center rounded-full border border-brand-green px-6 py-3 text-sm font-medium text-brand-green transition-colors hover:bg-brand-green hover:text-white"
-          >
-            Смотреть всех тренеров
-          </Link>
         </div>
       </div>
     </section>
