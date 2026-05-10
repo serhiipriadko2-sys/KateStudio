@@ -17,6 +17,20 @@ import {
 import React, { useMemo, useState } from 'react';
 import { ClassRow, ClassFormData, TrainerAdminRow } from '../types';
 
+interface ScheduleMutationData {
+  date: string;
+  time: string;
+  name: string;
+  instructor: string;
+  trainer_id: string | null;
+  duration: string;
+  spots_total: number;
+  location: string;
+  intensity: 1 | 2 | 3;
+  is_online: boolean;
+  price: number | null;
+}
+
 const EMPTY_CLASS: ClassFormData = {
   date: new Date().toISOString().slice(0, 10),
   time: '09:00',
@@ -133,7 +147,7 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
   const saveMutation = useMutation({
     mutationFn: async (payload: {
       id?: string;
-      data: Omit<ClassFormData, 'repeat_weeks'> & { trainer_id: string | null; price: number | null };
+      data: ScheduleMutationData;
       repeatWeeks: number;
     }) => {
       if (!supabase) throw new Error('Supabase not initialized');
@@ -248,7 +262,7 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
   const handleSave = () => {
     if (!form.name.trim()) return toast('Укажите название', 'error');
 
-    const base = {
+    const base: ScheduleMutationData = {
       date: form.date,
       time: form.time,
       name: form.name.trim(),
