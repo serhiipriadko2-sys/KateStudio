@@ -1,267 +1,150 @@
 # Архитектура экосистемы KateStudio
 
-> **Обновлено:** 15 марта 2026 | **Версия:** 2.0.0
+> **Обновлено:** 10 мая 2026 | **Версия:** 3.0.0
+> Этот документ описывает не идеальную схему, а текущую реальную систему с отмеченными разломами между repo и live.
 
-## 1) Контекст и цель
+---
 
-Экосистема состоит из двух клиентских приложений (WEB + APP/PWA) и общей
-библиотеки `shared`, которые вместе реализуют:
+## 1. Контур системы
 
-- маркетинг/лендинг (WEB),
-- мобильный опыт и личный кабинет (APP),
-- общий UI/утилиты/интеграции (shared),
-- серверную логику через Supabase Edge Functions.
+KateStudio — monorepo с двумя клиентскими поверхностями, общей библиотекой и Supabase backend:
 
-## 2) Структура репозитория
+- `k-sebe-yoga-studioWEB/` — маркетинговый сайт + admin surfaces.
+- `k-sebe-yoga-studio-APPp/` — пользовательское приложение, PWA + Capacitor wrapper.
+- `shared/` — общие типы, UI, сервисы, хуки и утилиты.
+- `supabase/` — migrations и Edge Functions.
 
-```text
-KateStudio/
-├── shared/                        # @ksebe/shared — дизайн/компоненты/хуки/сервисы
-│   ├── components/                # Reusable React компоненты
-│   │   └── Image/                 # Image компонент (разбит на подкомпоненты)
-│   ├── hooks/                     # useGamification, useAchievements, useIsAdmin, ...
-│   ├── services/                  # supabase.ts, analytics.ts, monitoring.ts
-│   ├── types/                     # index.ts, database.types.ts
-│   ├── utils/                     # cn, formatDate, formatPrice, logger, ...
-│   └── constants/                 # images.ts, BRAND, COLORS, SUBSCRIPTION_PLANS, ...
-│
-├── k-sebe-yoga-studioWEB/         # WEB (маркетинг + Admin Panel)
-│   ├── components/                # WEB-специфичные компоненты (Landing, Admin)
-│   ├── services/                  # assistantService, subscriptionService, ...
-│   ├── context/                   # AuthContext
-│   └── hooks/                     # useContentData, useStudioContacts, ...
-│
-├── k-sebe-yoga-studio-APPp/       # APP (PWA + Capacitor native wrapper)
-│   ├── components/                # Dashboard, VideoLibrary, AICoach, Achievements, ...
-│   ├── services/                  # dataService, gamificationService, videoService, ...
-│   ├── context/                   # AuthContext, ToastContext
-│   ├── hooks/                     # useStreak, usePracticeCompletions, useNative, ...
-│   ├── native/                    # platform.ts, plugins.ts, index.ts
-│   └── capacitor.config.ts        # SplashScreen, StatusBar config
-│
-├── supabase/
-│   ├── functions/                 # 7 Edge Functions (см. секцию 4)
-│   └── migrations/                # 20+ SQL миграций
-│
-└── .github/workflows/             # CI/CD (ci.yml, deploy-pages.yml, firebase-deploy.yml)
-```
+---
 
-## 3) Контейнерная модель (C4 Level 2)
-
-### Акторы
-
-| Актор | Описание |
-| --- | --- |
-| **App User** | Клиент студии — бронирует занятия, смотрит видео, взаимодействует с APP |
-| **Studio Admin** | Сотрудник студии — управляет расписанием и данными через WEB |
-
-### Контейнеры и их ответственность
-
-| Контейнер | Технология | Ответственность |
-| --- | --- | --- |
-| **WEB** | React 19, Vite, Tailwind | Маркетинг, лендинг, admin panel. Собственная auth boundary для администратора. |
-| **APP** | React 19, Vite, Capacitor | Личный кабинет пользователя, видео, расписание, бронирование. PWA + нативные обёртки. |
-| **shared** | TypeScript library | Переиспользуемые компоненты, хуки, сервисы, типы. Не деплоится отдельно. |
-| **Supabase DB** | PostgreSQL + RLS | Единственное хранилище данных. Row-level security изолирует записи по `user_id`. |
-| **Supabase Auth** | GoTrue (OTP) | Аутентификация пользователей и администраторов. JWT выдаётся клиенту. |
-| **Edge Functions** | Deno (TypeScript) | Все операции, требующие секретов: AI, платежи, push, обслуживание. |
-
-### Внешние системы
-
-| Система | Роль | Достигается через |
-| --- | --- | --- |
-| **Gemini API** | AI-операции | `gemini-proxy` Edge Function (ключ хранится в Vault) |
-| **YooKassa** | Приём платежей | `create-payment` + `payment-webhook` Edge Functions |
-| **Firebase FCM** | Push-уведомления | `send-push` Edge Function |
-| **Mailchimp** | Email-рассылки | `subscribe-newsletter` Edge Function |
-| **Sentry** | Мониторинг ошибок | `shared/services/monitoring.ts` (public DSN) |
-
-### Trust boundaries
+## 2. Runtime topology
 
 ```text
-┌────────────────────────────────────────────────────────┐
-│                    BROWSER / DEVICE                    │
-│                                                        │
-│  WEB (admin)          APP (user)                       │
-│  – public anon key    – public anon key                │
-│  – no secrets         – no secrets                     │
-└───────────────────────┬────────────────────────────────┘
-                        │  HTTPS · JWT · anon key
-                   ─────┼─────  ← trust boundary
-                        │
-┌───────────────────────▼────────────────────────────────┐
-│                     SUPABASE                           │
-│                                                        │
-│  Auth (JWT validation)   DB (RLS policies)             │
-│                                                        │
-│              Edge Functions                            │
-│  – hold all secrets (Vault)                            │
-│  – service role key (never leaves server)              │
-│  – call external APIs (Gemini, YooKassa, FCM)          │
-└────────────────────────────────────────────────────────┘
+WEB (GitHub Pages / ksebe-studio.ru)
+APP (Firebase Hosting / preview + Capacitor mobile shell)
+        │
+        └── Supabase Auth + Postgres + RLS + Storage + Edge Functions
+                │
+                ├── AI contour
+                │   ├── live: ai-run, ai-embeddings
+                │   └── repo: gemini-proxy
+                │
+                ├── Payments contour
+                │   ├── repo/live overlap: create-payment, payment-webhook
+                │   └── repo-only legacy/new pair: create-yookassa-checkout, yookassa-webhook
+                │
+                └── Ops contour
+                    ├── cancel-subscription
+                    ├── cron-maintenance
+                    ├── send-push
+                    └── subscribe-newsletter
 ```
 
-**Что граница означает на практике:**
+---
 
-- Клиент передаёт только JWT + тело запроса. Никаких серверных ключей.
-- Edge Functions проверяют JWT, извлекают `user_id`, применяют business logic.
-- Supabase RLS гарантирует, что даже при прямом SQL-запросе пользователь не увидит чужие строки.
-- Admin boundary: права администратора хранятся в таблице `admins` и проверяются в Edge Functions; обычный пользователь не может эскалировать права через клиентский код.
+## 3. Repository topology
 
-## 3.1) Runtime-архитектура
+### Root level
 
-```text
-[Пользователь]
-  ├─> WEB (GitHub Pages / ksebe-studio.ru)
-  │     ├─ UI (React 19 / Vite 6)
-  │     ├─ Supabase Auth (Admin Login, OTP)
-  │     └─ Edge Functions (create-payment, gemini-proxy, subscribe-newsletter)
-  │
-  └─> APP (Firebase Hosting / app.ksebe-studio.ru)
-        ├─ UI (React 19 / Vite 6)
-        ├─ Offline cache (IndexedDB / localStorage через localCache.ts)
-        ├─ Supabase Auth (OTP / Magic Link)
-        ├─ Edge Functions (все 7 функций доступны)
-        └─> [Опционально] Capacitor (Android / iOS)
-              ├─ native/platform.ts  — isNative, isIOS, isAndroid, getPlatform
-              ├─ native/plugins.ts   — StatusBar, SplashScreen, Keyboard,
-              │                        Haptics, Network, App lifecycle
-              └─ native/index.ts     — initNative() / nativeReady()
-```
+- `package.json` defines npm workspaces and shared scripts for lint, typecheck, tests, builds, and migration integrity checks.
+- `.github/workflows/` contains 5 workflows: `ci.yml`, `deploy-pages.yml`, `firebase-deploy.yml`, `capacitor-build.yml`, `cron.yml`.
+- `supabase/migrations/` currently contains **42** migration files.
+- `supabase/functions/` currently contains **9** function folders plus a local README.
 
-## 4) Edge Functions (7 штук)
+### Important repo growth since early May 2026
 
-Все функции в `supabase/functions/`. Подробно: [EDGE_FUNCTIONS.md](./EDGE_FUNCTIONS.md).
+- New payment-related migration: `20260507172615_yookassa_app_payments.sql`
+- New trainers domain migrations:
+  - `20260509185524_trainers_phase1.sql`
+  - `20260510100000_trainers_domain.sql`
+  - `20260510101000_seed_trainers.sql`
+  - `20260510143000_publish_new_trainers_schedule.sql`
 
-| Функция | Назначение | Auth |
-| --- | --- | --- |
-| `gemini-proxy` | AI операции (12 типов), Zod validation, rate limiting | JWT |
-| `create-payment` | Создание платежа YooKassa | JWT + Service Role |
-| `payment-webhook` | HMAC-верификация вебхуков YooKassa | HMAC secret |
-| `cancel-subscription` | Отмена подписки | JWT + Service Role |
-| `cron-maintenance` | Плановое обслуживание БД | CRON_SECRET |
-| `send-push` | FCM push-уведомления | Service Role |
-| `subscribe-newsletter` | Подписка на рассылку (Mailchimp) | Public |
+---
 
-**Правило:** AI-контур (`gemini-proxy`) — **frozen by default**. Изменения только с явного разрешения Семёна.
+## 4. Database domain surfaces
 
-## 5) База данных (Supabase)
+### Stable core surfaces
 
-### Ключевые таблицы
+- `profiles`
+- `bookings`
+- `classes`
+- `subscriptions`
+- `contacts`
+- `analytics_events`
+- `admins`
+- `app_settings`
+- `videos`
+- `reviews`
+- `faq_items`
+- `site_images`
+- `retreats`
 
-| Таблица | Описание |
-| --- | --- |
-| `profiles` | Профили пользователей (user_id → auth.users) |
-| `bookings` | Записи на занятия |
-| `subscriptions` | Подписки пользователей |
-| `analytics_events` | События аналитики |
-| `user_push_tokens` | FCM токены для push-уведомлений |
-| `faq_items` | FAQ (с марта 2026) |
-| `site_images` | Управление изображениями сайта |
-| `retreats` | Таблица ретритов (с марта 2026) |
-| `admins` | Таблица администраторов |
+### New or newly confirmed active surfaces
 
-### Последние ключевые миграции (не полный список)
+- `trainers`
+- `classes.trainer_id`
+- AI-supporting tables: `prompt_requests`, `model_metadata`, `ai_jobs`, `api_logs`, `embeddings`
+- Retention/gamification surfaces: `practice_events`, `user_preferences`, `app_events`, `user_progress`, `user_achievements`
 
-Ниже показана выборка ключевых миграций марта 2026; полный перечень см. в директории supabase/migrations/.
+---
 
-```text
-supabase/migrations/
-├── 20260308000000_secure_video_select_policy.sql
-├── 20260308000000_unify_admin_roles.sql
-├── 20260308000001_contact_rate_limit.sql
-├── 20260308000002_secure_storage.sql
-├── 20260308000003_secure_gamification.sql
-├── 20260309000000_push_tokens.sql
-├── 20260309000001_fix_analytics_rls.sql          # admins.id → admins.user_id
-├── 20260309000002_fix_profiles_update_policy.sql  # убрана ref на is_admin
-├── 20260312000001_faq_items.sql
-├── 20260312000002_site_images.sql
-├── 20260315000000_retreats_table.sql
-├── 20260315000001_admin_subscriptions_rls.sql
-├── 20260315000002_analytics_rpc.sql
-└── 20260315000003_grant_is_admin_execute.sql
-```
+## 5. Repo vs live truth
 
-> SQL checklist moved to `docs/sql/admin_checklist.sql` and excluded from `supabase/migrations/`.
-> CI guard: `npm run check:migrations` validates migration filenames and blocks new timestamp collisions.
+| Surface | Repo | Live | Meaning |
+| --- | --- | --- | --- |
+| Migrations | 42 files | 14 applied | repo truth is ahead of recorded live history |
+| Edge Functions | 9 folders | 9 active functions | counts match, inventories do not |
+| Trainers domain | present in repo | present in live | rollout is underway, but docs lag |
+| `profiles` hardening patch | prepared in repo | not confirmed applied | main security blocker persists |
 
-## 6) Конфигурация окружения
+This is the architectural center of gravity right now: the system is not “missing backend”, it is partially converged and partially forked.
 
-Источник: `.env` (локально) + Secrets (GitHub / Supabase Vault).
+---
 
-### Клиентские переменные (WEB + APP)
+## 6. Deployment surfaces
 
-```env
-VITE_SUPABASE_URL=https://qkaycdcbstjobacmuaro.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon key>
-```
+### CI
 
-### Серверные секреты (Supabase Vault, никогда не в браузере)
+`ci.yml` runs:
 
-```sh
-GEMINI_API_KEY           — AI (⚠️ не установлен, нужен)
-SUPABASE_SERVICE_ROLE_KEY
-CRON_SECRET
-PAYMENT_WEBHOOK_SECRET
-FIREBASE_SERVICE_ACCOUNT_JSON
-YOOKASSA_SHOP_ID         — (⚠️ платежи не live)
-YOOKASSA_SECRET_KEY      — (⚠️ платежи не live)
-```
+1. migration integrity check
+2. lint + format check
+3. typecheck
+4. tests
+5. WEB build
+6. APP build
 
-### GitHub Secrets (CI/CD)
+### Web deploy
 
-```sh
-VITE_SUPABASE_URL         ✅
-VITE_SUPABASE_ANON_KEY    ✅
-FIREBASE_SERVICE_ACCOUNT  ✅
-CRON_SECRET               ✅
-SUPABASE_URL              ✅
-```
+- `deploy-pages.yml`
+- target: GitHub Pages
+- custom domain support through `k-sebe-yoga-studioWEB/public/CNAME`
 
-## 7) CI/CD
+### App deploy
 
-`.github/workflows/ci.yml` — основной pipeline:
+- `firebase-deploy.yml`
+- target: Firebase Hosting project `artful-striker-476211-h4`
 
-```text
-push/PR → main, develop
-  ├─ lint        (ESLint Flat Config)
-  ├─ format:check (Prettier)
-  ├─ typecheck    (tsc --noEmit, все 3 workspace-а)
-  ├─ test:run     (Vitest, 473 тестов)
-  ├─ build:web    (только после lint+typecheck+test ✅)
-  └─ build:app    (только после lint+typecheck+test ✅)
-```
+### Backend deploy
 
-Deploy pipelines:
+- Supabase functions are deployed independently from GitHub Pages/Firebase
+- This is why repo/live function inventories can diverge even when frontend deploys are green
 
-- `deploy-pages.yml` — WEB → GitHub Pages (только `main`)
-- `firebase-deploy.yml` — APP → Firebase Hosting (только `main`)
-- `capacitor-build.yml` — Capacitor сборка (mobile)
-- `cron.yml` — запуск `cron-maintenance` Edge Function
+---
 
-## 8) Технические решения (ADR)
+## 7. Active architectural risks
 
-1. **Edge Functions для всех чувствительных операций** — AI, платежи, push. Секреты никогда не передаются в браузер.
-2. **Offline-First APP** — `localCache.ts` (IndexedDB/localStorage) синхронизируется при подключении.
-3. **Monorepo + npm workspaces** — `shared/` предотвращает дублирование кода между WEB и APP.
-4. **Capacitor-over-PWA** — native wrapper добавляет хаптику, статус-бар, splash screen без переписывания React-кода.
-5. **Zod на Edge Functions** — все входящие запросы валидируются `ProxyRequestSchema` (discriminated union по `op`).
-6. **Rate limiting в gemini-proxy** — in-memory Map (для production scale нужен KV/Redis).
-7. **HMAC webhook verification** — `payment-webhook` отклоняет запросы без корректной подписи.
+1. **Security truth split**: repo has catch-up hardening patch, live still exposes `profiles` broadly.
+2. **Function naming split**: live AI contour and repo AI contour are not the same implementation shape.
+3. **Migration history split**: live has meaningful schema that is not fully represented by applied migration history.
+4. **Type contract split**: `shared/types/database.types.ts` is not yet a generated authoritative mirror of live.
 
-## 9) Правила работы с нативным кодом
+---
 
-- Все импорты нативных API — только через `./native` (не напрямую из `@capacitor/*` в компонентах)
-- `hapticFn()` всегда `void hapticFn()`, никогда `await` в рендере
-- `isNative()` — guard для всего нативного кода
-- Нативные проекты (`android/`, `ios/`) в `.gitignore`, собираются локально
+## 8. Architectural conclusion
 
-## 10) Архитектурные ограничения
+KateStudio is not in greenfield mode and not in clean steady-state either. It is in convergence mode:
 
-- **AI-контур frozen**: `gemini-proxy`, model routing, prompt contracts не меняются без явного разрешения
-- **Circular dependencies** запрещены
-- **`@capacitor/*`** не импортируются напрямую в компонентах — только через `native/`
-- **Service Role Key** не передаётся в браузер
-- **CORS**: ограничен `ksebe-studio.ru`, `app.ksebe-studio.ru`, `localhost`
-- **shared/** изменения затрагивают оба workspace — нужен review в обоих
+- frontend/workflow scaffolding is mature;
+- backend capability set is richer than old docs imply;
+- governance and reproducibility are the actual bottlenecks.
