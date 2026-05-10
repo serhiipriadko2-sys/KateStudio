@@ -10,5 +10,6 @@ export { RetreatsTab } from './RetreatsTab';
 export { ReviewsTab } from './ReviewsTab';
 export { ScheduleTab } from './ScheduleTab';
 export { SettingsTab } from './SettingsTab';
+export { TrainersTab } from './TrainersTab';
 export { UsersTab } from './UsersTab';
 export { VideoTab } from './VideoTab';
