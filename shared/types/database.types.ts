@@ -109,7 +109,7 @@ export interface TrainerRow {
 }
 
 export interface ProfileRow {
-  user_id: string | null;
+  user_id: string;
   name: string | null;
   phone: string | null;
   city: string | null;
