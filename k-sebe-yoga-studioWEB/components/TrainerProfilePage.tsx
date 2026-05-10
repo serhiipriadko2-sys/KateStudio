@@ -34,6 +34,8 @@ export const TrainerProfilePage: React.FC = () => {
     );
   }
 
+  const heroImage = trainer.coverImageUrl ?? trainer.avatarUrl;
+
   return (
     <>
       <SEO
@@ -42,32 +44,60 @@ export const TrainerProfilePage: React.FC = () => {
         url={`/trainers/${trainer.slug}`}
       />
       <main className="min-h-screen bg-brand-light px-6 py-24 md:py-32">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <Link to="/trainers" className="inline-block text-sm text-brand-green">
             Ко всем тренерам
           </Link>
 
-          <div className="mt-6 bg-white rounded-[2.5rem] border border-stone-100 shadow-sm overflow-hidden">
+          <div className="mt-6 overflow-hidden rounded-[2.5rem] border border-stone-100 bg-white shadow-sm">
+            {heroImage && (
+              <div className="relative aspect-[16/8] overflow-hidden bg-brand-mint/20">
+                <img
+                  src={heroImage}
+                  alt={trainer.fullName}
+                  className="h-full w-full object-cover"
+                  loading="eager"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+              </div>
+            )}
+
             <div className="px-8 py-10 md:px-12 md:py-14">
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-brand-green">
-                Профиль тренера
-              </p>
-              <h1 className="mt-4 text-4xl md:text-6xl font-serif text-brand-text">
-                {trainer.fullName}
-              </h1>
-              <p className="text-brand-green mt-3">{trainer.roleTitle}</p>
+              <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-brand-green">
+                    Профиль тренера
+                  </p>
+                  <h1 className="mt-4 text-4xl font-serif text-brand-text md:text-6xl">
+                    {trainer.fullName}
+                  </h1>
+                  <p className="mt-3 text-brand-green">{trainer.roleTitle}</p>
+                </div>
+
+                {trainer.avatarUrl && (
+                  <div className="h-28 w-28 shrink-0 overflow-hidden rounded-[2rem] border border-white/70 bg-stone-100 shadow-md md:h-32 md:w-32 md:-mt-20">
+                    <img
+                      src={trainer.avatarUrl}
+                      alt={trainer.fullName}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+              </div>
+
               {trainer.quote && (
-                <p className="italic text-stone-500 mt-6 text-lg leading-relaxed">
+                <p className="mt-6 text-lg italic leading-relaxed text-stone-500">
                   {trainer.quote}
                 </p>
               )}
               {trainer.bioLong && (
-                <p className="text-stone-600 mt-8 whitespace-pre-line leading-8">
+                <p className="mt-8 whitespace-pre-line leading-8 text-stone-600">
                   {trainer.bioLong}
                 </p>
               )}
 
-              <div className="flex flex-wrap gap-2 mt-8">
+              <div className="mt-8 flex flex-wrap gap-2">
                 {trainer.specialties.map((item) => (
                   <span
                     key={item}
@@ -81,20 +111,20 @@ export const TrainerProfilePage: React.FC = () => {
           </div>
 
           <section className="mt-12">
-            <h2 className="text-2xl md:text-3xl font-serif text-brand-text">Ближайшие занятия</h2>
+            <h2 className="text-2xl font-serif text-brand-text md:text-3xl">Ближайшие занятия</h2>
             {classes.length ? (
-              <div className="grid gap-3 mt-4">
+              <div className="mt-4 grid gap-3">
                 {classes.map((item) => (
-                  <div key={item.id} className="bg-white rounded-2xl p-4 border border-stone-100">
+                  <div key={item.id} className="rounded-2xl border border-stone-100 bg-white p-4">
                     <div className="font-medium text-brand-text">{item.title}</div>
-                    <div className="text-sm text-stone-500 mt-1">
+                    <div className="mt-1 text-sm text-stone-500">
                       {item.date} · {item.time}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-stone-500 mt-4">
+              <p className="mt-4 text-stone-500">
                 Ближайшие занятия пока не опубликованы, но профиль уже активен.
               </p>
             )}
