@@ -265,7 +265,7 @@ export const dataService = {
             city: user.city,
             // Only set created_at if not exists (handled by DB default usually, but good to pass if table structure supports it)
           },
-          { onConflict: 'phone' }
+          { onConflict: 'user_id' }
         )
         .select()
         .single();
