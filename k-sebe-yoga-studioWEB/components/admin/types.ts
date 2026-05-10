@@ -22,6 +22,9 @@ export interface ClassRow {
   name: string;
   instructor: string | null;
   trainer_id: string | null;
+  recurring_rule_id: string | null;
+  series_index: number | null;
+  generated_from_rule_at: string | null;
   duration: string | null;
   spots_total: number | null;
   spots_booked: number | null;
@@ -92,6 +95,7 @@ export interface TrainerAdminRow {
   quote: string | null;
   avatar_url: string | null;
   cover_image_url: string | null;
+  gallery_image_urls: string[];
   specialties: string[];
   teaching_formats: Array<'studio' | 'online' | 'retreat' | 'private'>;
   experience_years: number | null;

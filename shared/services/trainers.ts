@@ -1,9 +1,11 @@
 import type { ClassRow, TrainerCard, TrainerDetail, TrainerRow } from '../types';
-import { getTrainerImageFallbacks } from './trainerImageFallbacks';
 import { supabase } from './supabase';
+import { getTrainerImageFallbacks } from './trainerImageFallbacks';
 
 export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
   const imageFallbacks = getTrainerImageFallbacks(row.slug);
+  const fallbackGallery =
+    imageFallbacks && 'galleryImageUrls' in imageFallbacks ? imageFallbacks.galleryImageUrls : [];
 
   return {
     id: row.id,
@@ -12,6 +14,7 @@ export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
     roleTitle: row.role_title,
     bioShort: row.bio_short,
     avatarUrl: row.avatar_url ?? imageFallbacks?.avatarUrl ?? null,
+    galleryImageUrls: row.gallery_image_urls ?? fallbackGallery,
     specialties: row.specialties,
     isFeatured: row.is_featured,
   };
@@ -102,6 +105,7 @@ export interface TrainerAdminPayload {
   quote?: string | null;
   avatar_url?: string | null;
   cover_image_url?: string | null;
+  gallery_image_urls?: string[];
   specialties: string[];
   teaching_formats: Array<'studio' | 'online' | 'retreat' | 'private'>;
   experience_years?: number | null;

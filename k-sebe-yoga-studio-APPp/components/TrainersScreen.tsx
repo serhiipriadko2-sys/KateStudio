@@ -55,10 +55,34 @@ export const TrainersScreen: React.FC = () => {
           </button>
 
           <div className="bg-white rounded-[2rem] p-6 border border-stone-100 shadow-sm">
+            {trainer.coverImageUrl && (
+              <div className="-mx-2 -mt-2 mb-5 aspect-[4/3] overflow-hidden rounded-[1.5rem] bg-stone-100">
+                <img
+                  src={trainer.coverImageUrl}
+                  alt={trainer.fullName}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            )}
             <h2 className="text-3xl font-serif text-brand-text">{trainer.fullName}</h2>
             <p className="text-brand-green mt-2">{trainer.roleTitle}</p>
             {trainer.quote && <p className="italic text-stone-500 mt-4">{trainer.quote}</p>}
             {trainer.bioLong && <p className="text-stone-600 mt-4">{trainer.bioLong}</p>}
+            {trainer.galleryImageUrls.length > 0 && (
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                {trainer.galleryImageUrls.slice(0, 2).map((url, index) => (
+                  <div key={url} className="aspect-square overflow-hidden rounded-2xl bg-stone-100">
+                    <img
+                      src={url}
+                      alt={`${trainer.fullName}, фото ${index + 1}`}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">

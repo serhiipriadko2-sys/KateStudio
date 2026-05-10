@@ -10,7 +10,7 @@ import {
   WifiOff,
   Hand,
 } from 'lucide-react';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { dataService } from '../services/dataService';
 import { ClassSession } from '../types';
 import { BookingModal } from './BookingModal';
@@ -64,7 +64,7 @@ export const Schedule: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<ClassSession | null>(null);
 
   // Real data state
-  const [classes, setClasses] = useState<ClassSession[]>([]);
+  const [monthClasses, setMonthClasses] = useState<ClassSession[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [scheduleNotice, setScheduleNotice] = useState<ScheduleNotice | null>(null);
@@ -79,12 +79,16 @@ export const Schedule: React.FC = () => {
     sessionStorage.setItem('ksebe_schedule_tab', activeTab);
   }, [activeTab]);
 
-  // Construct full Date object for selected day
-  const getSelectedDate = useCallback(() => {
-    const d = new Date(currentMonth);
-    d.setDate(selectedDateNum);
-    return d;
-  }, [currentMonth, selectedDateNum]);
+  const selectedDateStr = useMemo(
+    () =>
+      `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(selectedDateNum).padStart(2, '0')}`,
+    [currentMonth, selectedDateNum]
+  );
+
+  const classes = useMemo(
+    () => monthClasses.filter((session) => session.dateStr === selectedDateStr),
+    [monthClasses, selectedDateStr]
+  );
 
   // Fetch Logic extracted for reuse
   const fetchClasses = useCallback(
@@ -92,9 +96,12 @@ export const Schedule: React.FC = () => {
       if (showLoading) setLoading(true);
       setError(false);
       try {
-        const date = getSelectedDate();
-        const classesResult = await dataService.getClassesForDate(date, activeTab);
-        setClasses(classesResult.data);
+        const classesResult = await dataService.getClassesForMonth(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth(),
+          activeTab
+        );
+        setMonthClasses(classesResult.data);
         setScheduleNotice(classesResult.degraded ? getScheduleNotice(classesResult.reason) : null);
       } catch (e) {
         console.error('Failed to load schedule', e);
@@ -104,7 +111,7 @@ export const Schedule: React.FC = () => {
         if (showLoading) setLoading(false);
       }
     },
-    [getSelectedDate, activeTab]
+    [currentMonth, activeTab]
   );
 
   useEffect(() => {
@@ -234,8 +241,19 @@ export const Schedule: React.FC = () => {
     for (let i = 1; i <= daysInCurrentMonth; i++) {
       const isSelected = selectedDateNum === i;
       const isToday = isCurrentMonth && today.getDate() === i;
-      const dayOfWeek = new Date(year, month, i).getDay();
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+      const dayClasses = monthClasses.filter((session) => session.dateStr === dateStr);
+
+      let statusClass = 'bg-white border border-stone-100 text-brand-text';
+      if (dayClasses.length > 0) {
+        const totalSpots = dayClasses.reduce((sum, item) => sum + item.spotsTotal, 0);
+        const bookedSpots = dayClasses.reduce((sum, item) => sum + item.spotsBooked, 0);
+        const load = totalSpots > 0 ? bookedSpots / totalSpots : 0;
+
+        if (load >= 1) statusClass = 'bg-rose-400 text-white shadow-md shadow-rose-200';
+        else if (load > 0.7) statusClass = 'bg-amber-400 text-white shadow-md shadow-amber-200';
+        else statusClass = 'bg-emerald-400 text-white shadow-md shadow-emerald-200';
+      }
 
       days.push(
         <button
@@ -243,16 +261,14 @@ export const Schedule: React.FC = () => {
           onClick={() => selectDate(i, 0)}
           className={`
             relative p-1 md:p-2 rounded-xl md:rounded-2xl transition-all duration-300 flex flex-col items-center justify-center h-10 md:h-12
-            ${isSelected ? 'bg-brand-green text-white shadow-lg shadow-brand-green/30 scale-105 z-10' : ''}
-            ${!isSelected ? 'hover:bg-stone-50 bg-white border border-stone-100 text-brand-text' : ''}
+            ${isSelected && dayClasses.length === 0 ? 'bg-brand-green text-white shadow-lg shadow-brand-green/30' : statusClass}
+            ${isSelected ? 'ring-2 ring-brand-green ring-offset-2 scale-105 z-10' : 'hover:scale-105'}
             ${!isSelected && isToday ? 'ring-1 ring-brand-green ring-offset-1' : ''}
           `}
         >
           <span className={`text-sm font-medium ${isSelected ? 'text-white' : ''}`}>{i}</span>
-          {!isSelected && (
-            <div
-              className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full mx-auto mt-0.5 md:mt-1 ${isWeekend ? 'bg-emerald-400' : 'bg-amber-400 opacity-0'}`}
-            ></div>
+          {dayClasses.length > 1 && (
+            <span className="text-[9px] leading-none">{dayClasses.length}</span>
           )}
         </button>
       );
@@ -367,6 +383,17 @@ export const Schedule: React.FC = () => {
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-1.5 md:gap-3">{renderCalendar()}</div>
+              <div className="flex flex-wrap items-center justify-center gap-3 mt-5 text-[10px] text-stone-400">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span> свободно
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-amber-400"></span> заполняется
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-rose-400"></span> почти нет мест
+                </span>
+              </div>
 
               {/* Visual Swipe Hint */}
               <div className="md:hidden flex justify-center mt-6">

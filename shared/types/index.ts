@@ -80,6 +80,9 @@ export interface ClassRow {
   duration: string;
   instructor: string;
   trainer_id: string | null;
+  recurring_rule_id?: string | null;
+  series_index?: number | null;
+  generated_from_rule_at?: string | null;
   spots_total: number;
   spots_booked: number;
   price: number | null;
@@ -101,6 +104,7 @@ export interface TrainerRow {
   quote: string | null;
   avatar_url: string | null;
   cover_image_url: string | null;
+  gallery_image_urls: string[];
   specialties: string[];
   teaching_formats: TeachingFormat[];
   experience_years: number | null;
@@ -120,6 +124,7 @@ export interface TrainerCard {
   roleTitle: string;
   bioShort: string;
   avatarUrl: string | null;
+  galleryImageUrls: string[];
   specialties: string[];
   isFeatured: boolean;
 }

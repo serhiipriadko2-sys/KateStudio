@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Schedule } from '../Schedule';
 
-const mockGetClassesForDate = vi.fn();
+const mockGetClassesForMonth = vi.fn();
 
 vi.mock('@ksebe/shared', () => ({
   supabase: {
@@ -17,7 +17,7 @@ vi.mock('@ksebe/shared', () => ({
 
 vi.mock('../../services/dataService', () => ({
   dataService: {
-    getClassesForDate: (...args: unknown[]) => mockGetClassesForDate(...args),
+    getClassesForMonth: (...args: unknown[]) => mockGetClassesForMonth(...args),
   },
 }));
 
@@ -29,9 +29,14 @@ vi.mock('../FadeIn', () => ({
   FadeIn: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
+const todayDateStr = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 const baseClass = {
   id: 'class-1',
-  dateStr: '2030-01-01',
+  dateStr: todayDateStr(),
   time: '09:00',
   name: 'Inside Flow',
   instructor: 'Teacher',
@@ -51,7 +56,7 @@ describe('Schedule', () => {
   });
 
   it('does not show a notice when schedule data is healthy', async () => {
-    mockGetClassesForDate.mockResolvedValue({
+    mockGetClassesForMonth.mockResolvedValue({
       data: [baseClass],
       source: 'server',
       degraded: false,
@@ -66,7 +71,7 @@ describe('Schedule', () => {
   });
 
   it('loads the current schedule only once on initial render', async () => {
-    mockGetClassesForDate.mockResolvedValue({
+    mockGetClassesForMonth.mockResolvedValue({
       data: [baseClass],
       source: 'server',
       degraded: false,
@@ -78,11 +83,11 @@ describe('Schedule', () => {
       expect(screen.getByText('Inside Flow')).toBeInTheDocument();
     });
 
-    expect(mockGetClassesForDate).toHaveBeenCalledTimes(1);
+    expect(mockGetClassesForMonth).toHaveBeenCalledTimes(1);
   });
 
   it('shows a seat-count notice when live booking counts are unavailable', async () => {
-    mockGetClassesForDate.mockResolvedValue({
+    mockGetClassesForMonth.mockResolvedValue({
       data: [baseClass],
       source: 'server',
       degraded: true,
@@ -98,7 +103,7 @@ describe('Schedule', () => {
   });
 
   it('shows a degraded data banner when schedule falls back to mock data', async () => {
-    mockGetClassesForDate.mockResolvedValue({
+    mockGetClassesForMonth.mockResolvedValue({
       data: [baseClass],
       source: 'mock',
       degraded: true,

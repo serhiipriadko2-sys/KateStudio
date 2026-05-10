@@ -40,6 +40,7 @@ const trainerRow = {
   quote: 'К себе нежно.',
   avatar_url: 'https://example.com/lidia.jpg',
   cover_image_url: 'https://example.com/lidia-cover.jpg',
+  gallery_image_urls: ['https://example.com/lidia-1.jpg', 'https://example.com/lidia-2.jpg'],
   specialties: ['хатха-йога', 'виньяса-флоу'],
   teaching_formats: ['studio'],
   experience_years: 10,
@@ -65,6 +66,7 @@ describe('trainers service', () => {
       roleTitle: 'Преподаватель хатха-йоги и виньяса-флоу',
       bioShort: 'Сертифицированный мастер хатха-йоги и виньяса-флоу.',
       avatarUrl: 'https://example.com/lidia.jpg',
+      galleryImageUrls: ['https://example.com/lidia-1.jpg', 'https://example.com/lidia-2.jpg'],
       specialties: ['хатха-йога', 'виньяса-флоу'],
       isFeatured: true,
     });
@@ -73,6 +75,7 @@ describe('trainers service', () => {
   it('uses fallback trainer photo when avatar is empty', () => {
     const result = mapTrainerRowToCard({
       ...trainerRow,
+      slug: 'elizaveta-belonogova',
       avatar_url: null,
       cover_image_url: null,
     });
@@ -96,6 +99,7 @@ describe('trainers service', () => {
   it('uses fallback cover when trainer cover is empty', () => {
     const result = mapTrainerRowToDetail({
       ...trainerRow,
+      slug: 'elizaveta-belonogova',
       avatar_url: null,
       cover_image_url: null,
     });

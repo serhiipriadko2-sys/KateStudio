@@ -31,6 +31,14 @@ interface ScheduleMutationData {
   price: number | null;
 }
 
+interface RecurringRuleMutationData extends Omit<ScheduleMutationData, 'date'> {
+  weekday: number;
+  start_date: string;
+  end_date: string;
+  timezone: string;
+  status: 'active';
+}
+
 const EMPTY_CLASS: ClassFormData = {
   date: new Date().toISOString().slice(0, 10),
   time: '09:00',
@@ -86,6 +94,11 @@ const addWeeksToDate = (dateStr: string, weeks: number) => {
   const nextDate = new Date(dateStr + 'T00:00:00');
   nextDate.setDate(nextDate.getDate() + weeks * 7);
   return nextDate.toISOString().slice(0, 10);
+};
+
+const getIsoWeekday = (dateStr: string) => {
+  const jsDay = new Date(dateStr + 'T00:00:00').getDay();
+  return jsDay === 0 ? 7 : jsDay;
 };
 
 const clampRepeatWeeks = (value: number) => Math.min(24, Math.max(1, value));
@@ -158,10 +171,35 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
         return;
       }
 
+      let recurringRuleId: string | null = null;
+
+      if (payload.repeatWeeks > 1) {
+        const { date: startDate, ...ruleBase } = payload.data;
+        const rule: RecurringRuleMutationData = {
+          ...ruleBase,
+          weekday: getIsoWeekday(startDate),
+          start_date: startDate,
+          end_date: addWeeksToDate(startDate, payload.repeatWeeks - 1),
+          timezone: 'Europe/Moscow',
+          status: 'active',
+        };
+        const { data: ruleRow, error: ruleError } = await supabase
+          .from('class_recurring_rules')
+          .insert(rule)
+          .select('id')
+          .single();
+
+        if (ruleError) throw ruleError;
+        recurringRuleId = ruleRow.id;
+      }
+
       const rows = Array.from({ length: payload.repeatWeeks }, (_, index) => ({
         ...payload.data,
         date: addWeeksToDate(payload.data.date, index),
         spots_booked: 0,
+        recurring_rule_id: recurringRuleId,
+        series_index: recurringRuleId ? index : null,
+        generated_from_rule_at: recurringRuleId ? new Date().toISOString() : null,
       }));
 
       const { error } = await supabase.from('classes').insert(rows);
@@ -602,7 +640,9 @@ export const ScheduleTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                       <Users className="w-3 h-3" />
                       {cls.instructor || '—'}
                     </span>
-                    {trainerName && <span className="text-brand-green font-medium">профиль: {trainerName}</span>}
+                    {trainerName && (
+                      <span className="text-brand-green font-medium">профиль: {trainerName}</span>
+                    )}
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {cls.duration || '60 мин'}

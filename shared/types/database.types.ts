@@ -24,6 +24,7 @@ export type ContactStatus = 'new' | 'read' | 'processed' | 'spam';
 export type PricingCategory = 'yoga' | 'personal' | 'sound' | 'massage';
 export type PushTokenPlatform = 'web' | 'android' | 'ios';
 export type TeachingFormatDb = 'studio' | 'online' | 'retreat' | 'private';
+export type ClassRecurringRuleStatus = 'draft' | 'active' | 'paused' | 'archived';
 
 // ============================================
 // ROW TYPES (one per table)
@@ -54,8 +55,33 @@ export interface ClassRow {
   is_online: boolean | null;
   price: number | null;
   description: string | null;
+  recurring_rule_id: string | null;
+  series_index: number | null;
+  generated_from_rule_at: string | null;
   created_at: string;
   updated_at: string | null;
+}
+
+export interface ClassRecurringRuleRow {
+  id: string;
+  trainer_id: string | null;
+  name: string;
+  instructor: string;
+  duration: string;
+  spots_total: number;
+  location: string;
+  intensity: number;
+  is_online: boolean;
+  price: number | null;
+  description: string | null;
+  weekday: number;
+  time: string;
+  start_date: string;
+  end_date: string | null;
+  timezone: string;
+  status: ClassRecurringRuleStatus;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface TrainerRow {
@@ -69,6 +95,7 @@ export interface TrainerRow {
   quote: string | null;
   avatar_url: string | null;
   cover_image_url: string | null;
+  gallery_image_urls: string[];
   specialties: string[];
   teaching_formats: TeachingFormatDb[];
   experience_years: number | null;
@@ -299,6 +326,10 @@ export type DBUserAchievement = UserAchievementRow;
 
 export type ContactInsert = Omit<ContactRow, 'id' | 'created_at'>;
 export type ClassInsert = Omit<ClassRow, 'id' | 'created_at' | 'updated_at'>;
+export type ClassRecurringRuleInsert = Omit<
+  ClassRecurringRuleRow,
+  'id' | 'created_at' | 'updated_at'
+>;
 export type ProfileInsert = Omit<ProfileRow, 'created_at' | 'updated_at'>;
 export type BookingInsert = Omit<BookingRow, 'id' | 'created_at'>;
 export type SubscriptionInsert = Omit<SubscriptionRow, 'id' | 'created_at' | 'updated_at'>;
@@ -320,6 +351,7 @@ export type AppEventInsert = Omit<AppEventRow, 'id' | 'created_at'>;
 // ============================================
 
 export type ClassUpdate = Partial<ClassInsert>;
+export type ClassRecurringRuleUpdate = Partial<ClassRecurringRuleInsert>;
 export type ProfileUpdate = Partial<Omit<ProfileInsert, 'user_id'>>;
 export type SubscriptionUpdate = Partial<Omit<SubscriptionInsert, 'user_id'>>;
 export type ReviewUpdate = Partial<ReviewInsert>;
@@ -346,6 +378,12 @@ export interface Database {
         Row: ClassRow;
         Insert: ClassInsert;
         Update: ClassUpdate;
+        Relationships: [];
+      };
+      class_recurring_rules: {
+        Row: ClassRecurringRuleRow;
+        Insert: ClassRecurringRuleInsert;
+        Update: ClassRecurringRuleUpdate;
         Relationships: [];
       };
       profiles: {

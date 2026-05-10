@@ -16,6 +16,7 @@ const fallbackTrainers: TrainerCard[] = [
     bioShort:
       'Специалист по физической реабилитации с 10-летним опытом. Ведет умную растяжку и практики для здорового позвоночника.',
     avatarUrl: null,
+    galleryImageUrls: [],
     specialties: ['Smart Stretching', 'здоровый позвоночник', 'мягкая растяжка'],
     isFeatured: true,
   },
@@ -27,6 +28,7 @@ const fallbackTrainers: TrainerCard[] = [
     bioShort:
       'Сертифицированный мастер хатха-йоги и виньяса-флоу с более чем 10-летним опытом личной практики.',
     avatarUrl: null,
+    galleryImageUrls: [],
     specialties: ['хатха-йога', 'виньяса-флоу', 'пранаяма'],
     isFeatured: true,
   },
@@ -70,7 +72,8 @@ export const TrainersSection = ({ onOpenTrainer }: TrainersSectionProps) => {
             Пространство держат люди
           </h2>
           <p className="text-lg md:text-xl text-stone-500 font-light leading-relaxed">
-            Познакомьтесь с проводниками студии «К себе»: каждый преподаватель бережно сопровождает вас в практике, движении и возвращении к телу.
+            Познакомьтесь с проводниками студии «К себе»: каждый преподаватель бережно сопровождает
+            вас в практике, движении и возвращении к телу.
           </p>
         </div>
 

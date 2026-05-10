@@ -1,9 +1,4 @@
-import {
-  createTrainer,
-  deleteTrainer,
-  listAdminTrainers,
-  updateTrainer,
-} from '@ksebe/shared';
+import { createTrainer, deleteTrainer, listAdminTrainers, updateTrainer } from '@ksebe/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Edit2, Loader2, Plus, Save, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
@@ -19,6 +14,7 @@ interface TrainerFormState {
   quote: string;
   avatar_url: string;
   cover_image_url: string;
+  gallery_image_urls_text: string;
   specialties_text: string;
   teaching_formats_text: string;
   experience_years: string;
@@ -39,6 +35,7 @@ const EMPTY_FORM: TrainerFormState = {
   quote: '',
   avatar_url: '',
   cover_image_url: '',
+  gallery_image_urls_text: '',
   specialties_text: '',
   teaching_formats_text: 'studio',
   experience_years: '',
@@ -59,6 +56,7 @@ const toFormState = (trainer: TrainerAdminRow): TrainerFormState => ({
   quote: trainer.quote ?? '',
   avatar_url: trainer.avatar_url ?? '',
   cover_image_url: trainer.cover_image_url ?? '',
+  gallery_image_urls_text: trainer.gallery_image_urls.join('\n'),
   specialties_text: trainer.specialties.join(', '),
   teaching_formats_text: trainer.teaching_formats.join(', '),
   experience_years: trainer.experience_years?.toString() ?? '',
@@ -85,6 +83,7 @@ const toPayload = (form: TrainerFormState) => ({
   quote: form.quote.trim() || null,
   avatar_url: form.avatar_url.trim() || null,
   cover_image_url: form.cover_image_url.trim() || null,
+  gallery_image_urls: normalizeList(form.gallery_image_urls_text.replace(/\n/g, ',')),
   specialties: normalizeList(form.specialties_text),
   teaching_formats: normalizeList(form.teaching_formats_text) as Array<
     'studio' | 'online' | 'retreat' | 'private'
@@ -246,9 +245,7 @@ export const TrainersTab: React.FC<AdminTabProps> = ({ toast }) => {
           </div>
 
           <label className="block">
-            <span className="block text-xs font-medium text-stone-500 mb-1">
-              Короткое описание
-            </span>
+            <span className="block text-xs font-medium text-stone-500 mb-1">Короткое описание</span>
             <textarea
               value={formData.bio_short}
               onChange={(e) => setFormData({ ...formData, bio_short: e.target.value })}
@@ -333,6 +330,23 @@ export const TrainersTab: React.FC<AdminTabProps> = ({ toast }) => {
                 placeholder="https://..."
               />
             </label>
+          </div>
+
+          <label className="block">
+            <span className="block text-xs font-medium text-stone-500 mb-1">
+              Дополнительные фото, URL с новой строки
+            </span>
+            <textarea
+              value={formData.gallery_image_urls_text}
+              onChange={(e) =>
+                setFormData({ ...formData, gallery_image_urls_text: e.target.value })
+              }
+              className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:border-brand-green outline-none min-h-[96px]"
+              placeholder="https://.../photo-1.jpg&#10;https://.../photo-2.jpg"
+            />
+          </label>
+
+          <div className="grid md:grid-cols-2 gap-4">
             <label className="block">
               <span className="block text-xs font-medium text-stone-500 mb-1">Instagram URL</span>
               <input

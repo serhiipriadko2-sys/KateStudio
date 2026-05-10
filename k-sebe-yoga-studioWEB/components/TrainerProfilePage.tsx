@@ -107,6 +107,24 @@ export const TrainerProfilePage: React.FC = () => {
                   </span>
                 ))}
               </div>
+
+              {trainer.galleryImageUrls.length > 0 && (
+                <div className="mt-10 grid gap-3 md:grid-cols-2">
+                  {trainer.galleryImageUrls.slice(0, 2).map((url, index) => (
+                    <div
+                      key={url}
+                      className="aspect-[4/3] overflow-hidden rounded-[1.5rem] bg-stone-100"
+                    >
+                      <img
+                        src={url}
+                        alt={`${trainer.fullName}, фото ${index + 1}`}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
