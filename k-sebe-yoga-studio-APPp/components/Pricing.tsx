@@ -22,11 +22,11 @@ type PricingPlanRow = {
   features: string[] | null;
   is_popular: boolean | null;
   is_dark: boolean | null;
-  amount_cents: number | null;
-  currency: 'RUB' | null;
-  visits_total: number | null;
-  valid_days: number | null;
-  is_payable: boolean | null;
+  amount_cents?: number | null;
+  currency?: 'RUB' | null;
+  visits_total?: number | null;
+  valid_days?: number | null;
+  is_payable?: boolean | null;
 };
 
 const toPricingOption = (plan: PricingPlanRow): SharedPricingOption => ({
@@ -38,11 +38,13 @@ const toPricingOption = (plan: PricingPlanRow): SharedPricingOption => ({
   features: plan.features || [],
   isPopular: Boolean(plan.is_popular),
   isDark: Boolean(plan.is_dark),
-  amountCents: plan.amount_cents,
+  amountCents: plan.amount_cents ?? null,
   currency: plan.currency ?? 'RUB',
-  visitsTotal: plan.visits_total,
-  validDays: plan.valid_days,
-  isPayable: Boolean(plan.is_payable && plan.amount_cents && plan.visits_total && plan.valid_days),
+  visitsTotal: plan.visits_total ?? null,
+  validDays: plan.valid_days ?? null,
+  isPayable: Boolean(
+    plan.is_payable && plan.amount_cents && plan.visits_total && plan.valid_days
+  ),
 });
 
 async function fetchPricingData(): Promise<SharedPricingData> {
@@ -50,9 +52,7 @@ async function fetchPricingData(): Promise<SharedPricingData> {
 
   const { data, error } = await supabase
     .from('pricing_plans')
-    .select(
-      'id, category, title, price, description, features, is_popular, is_dark, amount_cents, currency, visits_total, valid_days, is_payable'
-    )
+    .select('*')
     .eq('is_active', true)
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: false });
@@ -269,4 +269,4 @@ export const Pricing: React.FC = () => {
       </div>
     </section>
   );
-};
+}
