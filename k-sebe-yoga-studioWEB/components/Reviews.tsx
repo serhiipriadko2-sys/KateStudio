@@ -123,7 +123,7 @@ export const Reviews: React.FC = () => {
         return defaultTestimonials;
       }
     },
-    initialData: defaultTestimonials,
+    placeholderData: defaultTestimonials,
     staleTime: 1000 * 60 * 5,
     retry: false,
   });
