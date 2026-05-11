@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import {
   IMAGES,
+  DailyRecommendation,
   supabase,
   uploadFile,
   StreakCalendar,
