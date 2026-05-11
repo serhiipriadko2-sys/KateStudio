@@ -46,7 +46,7 @@ jobs:
           cat k-sebe-yoga-studioWEB/public/CNAME 2>/dev/null || echo "No CNAME file"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --legacy-peer-deps
 
       - name: Type check
         run: npm run typecheck
