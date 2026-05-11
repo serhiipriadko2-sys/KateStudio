@@ -14,7 +14,7 @@ import {
   Phone,
   Mail,
   Globe,
-  Instagram,
+  AtSign,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useStudioContacts, StudioContacts } from '../../../hooks/useStudioContacts';
@@ -398,7 +398,7 @@ export const ContactsTab: React.FC<{ toast: (m: string, t?: 'success' | 'error')
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-stone-500 flex items-center gap-1">
-                      <Instagram className="w-3 h-3" /> Instagram
+                      <AtSign className="w-3 h-3" /> Instagram
                     </label>
                     <input
                       type="text"

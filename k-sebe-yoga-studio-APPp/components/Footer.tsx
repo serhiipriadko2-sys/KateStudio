@@ -1,5 +1,5 @@
 import { subscribeNewsletter } from '@ksebe/shared';
-import { Instagram, Send, MapPin } from 'lucide-react';
+import { AtSign, Send, MapPin } from 'lucide-react';
 import React from 'react';
 import { Logo } from './Logo';
 
@@ -75,7 +75,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
                 aria-label="Instagram"
                 className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-green transition-colors"
               >
-                <Instagram className="w-5 h-5" />
+                <AtSign className="w-5 h-5" />
               </a>
               <a
                 href="https://t.me/k_sebe_dubna"
@@ -155,7 +155,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <Instagram className="w-5 h-5 text-brand-green shrink-0" />
+                <AtSign className="w-5 h-5 text-brand-green shrink-0" />
                 <a
                   href="https://instagram.com/kate_gabran"
                   target="_blank"
