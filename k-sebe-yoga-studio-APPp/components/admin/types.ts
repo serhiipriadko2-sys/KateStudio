@@ -21,12 +21,17 @@ export interface ClassRow {
   time: string;
   name: string;
   instructor: string | null;
+  trainer_id: string | null;
+  recurring_rule_id: string | null;
+  series_index: number | null;
+  generated_from_rule_at: string | null;
   duration: string | null;
   spots_total: number | null;
   spots_booked: number | null;
   location: string | null;
   intensity: number | null;
   is_online: boolean | null;
+  price: number | null;
 }
 
 export interface ClassFormData {
@@ -34,11 +39,14 @@ export interface ClassFormData {
   time: string;
   name: string;
   instructor: string;
+  trainer_id: string;
   duration: string;
   spots_total: number;
   location: string;
   intensity: 1 | 2 | 3;
   is_online: boolean;
+  price: number;
+  repeat_weeks: number;
 }
 
 export interface BookingRow {
