@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import {
-  IMAGES,
   DailyRecommendation,
+  IMAGES,
   supabase,
   uploadFile,
   StreakCalendar,
@@ -86,6 +86,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const [dailyRec, setDailyRec] = useState<DailyRecommendationType | null>(null);
   const [dailyRecLoading, setDailyRecLoading] = useState(false);
   const [practiceData, setPracticeData] = useState<Record<string, StreakCalendarDay>>({});
+  const showDailyRecommendation = false;
   const { currentStreak, isLoading: gamificationLoading } = useGamification(user?.id);
   const { showToast } = useToast();
 
@@ -561,7 +562,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                 </div>
               </div>
 
-              {authStatus === 'authenticated' && (
+              {showDailyRecommendation ? (
                 <div
                   className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-600"
                   style={{ animationDelay: '350ms' }}
@@ -581,7 +582,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                     }}
                   />
                 </div>
-              )}
+              ) : null}
 
               <div
                 className="mb-24 md:mb-0 animate-in fade-in slide-in-from-bottom-8 duration-700"

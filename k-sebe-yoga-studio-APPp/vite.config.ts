@@ -15,11 +15,15 @@ function swBuildId(): PluginOption {
     closeBundle() {
       const swPath = path.resolve(__dirname, 'dist', 'sw.js');
       if (!fs.existsSync(swPath)) return;
-      const buildId = `b${Date.now()}`;
-      const content = fs.readFileSync(swPath, 'utf-8');
-      fs.writeFileSync(swPath, content.replaceAll('__BUILD_ID__', buildId));
-      // eslint-disable-next-line no-console
-      console.log(`[sw-build-id] Stamped sw.js with BUILD_ID=${buildId}`);
+      try {
+        const buildId = `b${Date.now()}`;
+        const content = fs.readFileSync(swPath, 'utf-8');
+        fs.writeFileSync(swPath, content.replaceAll('__BUILD_ID__', buildId));
+        // eslint-disable-next-line no-console
+        console.log(`[sw-build-id] Stamped sw.js with BUILD_ID=${buildId}`);
+      } catch (error) {
+        console.warn('[sw-build-id] Failed to stamp sw.js', error);
+      }
     },
   };
 }

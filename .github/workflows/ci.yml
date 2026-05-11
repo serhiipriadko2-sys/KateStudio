@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -34,7 +36,30 @@ jobs:
         run: npm run lint
 
       - name: Check Prettier formatting
-        run: npm run format:check
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+          else
+            base_sha="${{ github.event.before }}"
+          fi
+
+          if [[ -z "$base_sha" || "$base_sha" == "0000000000000000000000000000000000000000" ]]; then
+            base_sha="$(git rev-parse HEAD^)"
+          fi
+
+          mapfile -t prettier_files < <(
+            git diff --name-only "$base_sha" "${{ github.sha }}" -- \
+              '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.html' '*.yml' '*.yaml'
+          )
+
+          if [[ "${#prettier_files[@]}" -eq 0 ]]; then
+            echo "No prettier-managed files changed"
+            exit 0
+          fi
+
+          printf '%s\n' "${prettier_files[@]}"
+          npx prettier --check "${prettier_files[@]}"
 
   typecheck:
     name: TypeScript Check

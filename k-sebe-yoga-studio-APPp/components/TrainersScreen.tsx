@@ -3,7 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import type { ClassSession } from '../types';
 import { BookingModal } from './BookingModal';
-import { getTrainerImageObjectPosition } from './trainerImagePresentation';
+import {
+  getTrainerGalleryImageObjectPosition,
+  getTrainerImageObjectPosition,
+} from './trainerImagePresentation';
 
 export const TrainersScreen: React.FC = () => {
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
@@ -122,6 +125,9 @@ export const TrainersScreen: React.FC = () => {
                       src={url}
                       alt={`${trainer.fullName}, фото ${index + 1}`}
                       className="h-full w-full object-cover"
+                      style={{
+                        objectPosition: getTrainerGalleryImageObjectPosition(trainer.slug, index),
+                      }}
                       loading="lazy"
                     />
                   </div>

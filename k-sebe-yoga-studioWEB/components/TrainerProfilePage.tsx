@@ -3,7 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { SEO } from './SEO';
-import { getTrainerImageObjectPosition } from './trainerImagePresentation';
+import {
+  getTrainerGalleryImageObjectPosition,
+  getTrainerImageObjectPosition,
+} from './trainerImagePresentation';
 
 export const TrainerProfilePage: React.FC = () => {
   const { slug = '' } = useParams();
@@ -122,6 +125,9 @@ export const TrainerProfilePage: React.FC = () => {
                         src={url}
                         alt={`${trainer.fullName}, фото ${index + 1}`}
                         className="h-full w-full object-cover"
+                        style={{
+                          objectPosition: getTrainerGalleryImageObjectPosition(trainer.slug, index),
+                        }}
                         loading="lazy"
                       />
                     </div>

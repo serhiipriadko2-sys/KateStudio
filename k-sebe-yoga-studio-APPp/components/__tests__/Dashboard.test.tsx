@@ -117,8 +117,9 @@ describe('Dashboard', () => {
 
     await waitFor(() => {
       expect(mockGetBookings).toHaveBeenCalled();
-      expect(screen.getByText('DailyRecommendation Component')).toBeInTheDocument();
     });
+
+    expect(screen.queryByText('DailyRecommendation Component')).not.toBeInTheDocument();
   });
 
   it('shows an info toast when bookings load in degraded mode', async () => {

@@ -39,14 +39,14 @@ export interface ClassFormData {
   time: string;
   name: string;
   instructor: string;
-  trainer_id: string;
+  trainer_id?: string;
   duration: string;
   spots_total: number;
   location: string;
   intensity: 1 | 2 | 3;
   is_online: boolean;
-  price: number;
-  repeat_weeks: number;
+  price?: number;
+  repeat_weeks?: number;
 }
 
 export interface BookingRow {
