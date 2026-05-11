@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@capacitor/android": "8.1.0",
-    "@capacitor/cli": "8.1.0",
+    "@capacitor/cli": "8.3.3",
     "@capacitor/ios": "8.1.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^25.3.3",
