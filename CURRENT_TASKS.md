@@ -1,8 +1,8 @@
 # Текущие задачи
 
-> **Обновлено:** 10 мая 2026 | **Версия:** 5.0.0
+> **Обновлено:** 11 мая 2026 | **Версия:** 5.1.0
 > Источник истины: GitHub `main` + live Supabase metadata/advisors.
-> Текущий режим: audit-first governance. Production mutation без отдельного разрешения не выполнялась.
+> Текущий режим: controlled production hardening. 11 мая 2026 были выполнены только узкие live-изменения с низким риском и они сразу записаны в `main`.
 
 ---
 
@@ -10,28 +10,37 @@
 
 | Метрика | Значение | Основание |
 | --- | --- | --- |
-| Repo migrations | **42** | дерево `supabase/migrations` в `main` |
-| Live applied migrations | **14** | Supabase MCP `list_migrations` |
-| Repo Edge Functions | **9** | дерево `supabase/functions` в `main` |
+| Live applied migrations | **25** | Supabase MCP `list_migrations` after 2026-05-11 hardening pass |
 | Live Edge Functions | **9** | Supabase MCP `list_edge_functions` |
 | Public/live tables | **27** | Supabase MCP schema inventory |
-| Latest repo-stated tests | **489 / 64** | `CURRENT_TASKS.md` в репозитории от 2026-05-02 |
-| Typecheck status | **repo-stated PASS** | `CURRENT_TASKS.md` / `LAUNCH_CHECKLIST.md` |
-| Lint status | **repo-stated PASS** | `CURRENT_TASKS.md` / `LAUNCH_CHECKLIST.md` |
-| Web/App builds | **repo-stated PASS** | `CURRENT_TASKS.md` / `LAUNCH_CHECKLIST.md` |
+| 2026-05-11 new live migrations recorded in repo | **3** | committed to `supabase/migrations/` in `main` during this pass |
+| Latest repo-stated tests | **489 / 64** | previous repo documentation; not re-run in this pass |
+| Typecheck status | **last known PASS** | repo-stated, not freshly re-run now |
+| Lint status | **last known PASS** | repo-stated, not freshly re-run now |
+| Web/App builds | **last known PASS** | repo-stated, not freshly re-run now |
 
-Ключевое изменение относительно майского канона: live больше не равен снимку "2 функции / 12 миграций". На 10 мая 2026 live уже содержит 9 функций и 14 applied migrations, но production governance по-прежнему не сведена к одному воспроизводимому baseline.
+Главное изменение: production state больше не находится в точке старого security emergency around `profiles`. Этот контур закрыт. Текущий риск сместился в сторону release discipline: function naming drift, GraphQL discoverability, auth hardening, and missing final verification on repo head.
 
 ---
 
-## 🔴 P0 — Блокеры рабочего канона
+## ✅ Что уже закрыто
+
+| # | Задача | Статус | Что изменилось |
+| --- | --- | --- | --- |
+| 1 | Убрать dangerous `profiles` public drift | DONE | legacy `profiles` public policy / legacy `is_admin` drift были закрыты ранее и в этой сессии не resurfaced in advisors |
+| 2 | Закрыть dead permissive AI insert policies | DONE | removed `ai_jobs_service_insert` and `api_logs_insert_service` |
+| 3 | Закрыть unindexed FK findings on current AI + bookings path | DONE | added indexes for `ai_jobs`, `api_logs`, `bookings`, `prompt_requests` |
+| 4 | Снизить RLS planner churn on hot self-access tables | DONE | initplan-friendly rewrites applied to `profiles`, `bookings`, `practice_events`, `user_preferences`, `app_events`, `subscriptions`, `user_progress`, `user_achievements`, `classes`, `retreats`, `user_push_tokens` |
+| 5 | Сохранить live 2026-05-11 hardening steps в repo canon | DONE | 3 new migration files committed to `main` |
+
+---
+
+## 🔴 P0 — Оставшиеся launch blockers
 
 | # | Задача | Статус | Почему это P0 |
 | --- | --- | --- | --- |
-| 1 | Убрать public policy `Allow public read/write profiles` | ⛔ | Policy всё ещё `ALL` с `USING true` и `WITH CHECK true` |
-| 2 | Свести repo/live migration truth к воспроизводимому baseline | ⛔ | Repo: 42 SQL files, live: 14 applied migrations |
-| 3 | Разрешить function drift между repo и live | ⛔ | Repo-only: `create-yookassa-checkout`, `yookassa-webhook`; live-only: `ai-run`, `ai-embeddings` |
-| 4 | Зафиксировать admin/data contract вокруг `profiles` | ⛔ | Live `profiles` всё ещё содержит legacy `is_admin`; patch path подготовлен, но не подтверждён в staging |
+| 6 | Разрешить function drift между repo и live | ⛔ | live keeps `ai-run` / `ai-embeddings`, repo still carries `create-yookassa-checkout` / `yookassa-webhook` |
+| 7 | Прогнать финальный verification suite на текущем repo head | ⛔ | no fresh `lint` / `typecheck` / `test:run` / `build:web` / `build:app` in this pass |
 
 ---
 
@@ -39,53 +48,30 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 5 | Закрыть `dialogue` ambiguity | ⏳ | RLS enabled, policies отсутствуют |
-| 6 | Pin `search_path` и пересмотреть executable functions | ⏳ | Advisors flag `is_admin`, `set_updated_at`, `touch_push_token_updated_at`, `trigger_set_timestamp`, `get_admin_analytics` |
-| 7 | Harden storage bucket `images` | ⏳ | broad listing policy, нет MIME allowlist/size limit live |
-| 8 | Перепроверить GraphQL exposure | ⏳ | Many tables discoverable by `anon` / `authenticated` |
-| 9 | Включить leaked password protection | ⏳ | Supabase advisor still warns |
+| 8 | Перепроверить GraphQL exposure | ⏳ | advisor still flags many `anon` / `authenticated` visible tables; some may be intentional public content, some may need narrowing |
+| 9 | Включить leaked password protection | ⏳ | Supabase auth advisor still warns |
+| 10 | Разобрать `vector` extension placement | ⏳ | security advisor still flags `vector` in `public` |
+| 11 | Проверить storage bucket `images` как operational surface | ⏳ | earlier concern remains worth one explicit review even though it is not the current top warning |
 
 ---
 
-## 🟡 P2 — Контракты и производительность
+## 🟡 P2 — Техническая чистка после релизного прохода
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 10 | Regenerate `shared/types/database.types.ts` после schema reconciliation | ⏳ | Current file частично patched, но не auto-generated from current live truth |
-| 11 | Закрыть unindexed FK findings | ⏳ | `ai_jobs`, `api_logs`, `bookings`, `prompt_requests` |
-| 12 | Свести duplicate permissive policies | ⏳ | `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos`, others |
-| 13 | Перевести RLS auth calls на initplan-friendly form | ⏳ | repeated `auth.uid()` / auth helpers in policies |
-| 14 | Разобрать large bundle warning | ⏳ | latest repo docs still mention Vite large chunk warning |
-
----
-
-## 🔵 P3 — Product / domain expansion
-
-| # | Задача | Статус | Примечание |
-| --- | --- | --- | --- |
-| 15 | Довести trainers domain до полного operational docs coverage | 🔄 | live уже содержит `trainers`, repo получил trainer migrations 2026-05-09/10 |
-| 16 | Уточнить платежный contour | 🔄 | repo теперь содержит legacy/new YooKassa function names одновременно |
-| 17 | Перевести старые audit docs в historical status | 🔄 | рабочий канон устарел быстрее, чем архив был промаркирован |
-
----
-
-## Что изменилось с 2026-05-02
-
-- Live applied migrations: `12 → 14`.
-- Live Edge Functions: `2 → 9`.
-- Repo migrations: `37 → 42`.
-- Repo functions: `7 → 9`.
-- Live database now includes active `trainers` domain objects and `classes.trainer_id`.
-- Главный риск сместился: это уже не "ничего не развернуто", а "частично развернуто, но канон кода, миграций и live inventory расходится".
+| 12 | Полностью reconcile older repo/live migration history | ⏳ | current pass recorded the new live mutations, but did not fully enumerate older drift |
+| 13 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after migration truth is intentionally settled |
+| 14 | Reduce duplicate permissive policies on content/admin tables | ⏳ | still noisy on `app_settings`, `articles`, `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos`, others |
+| 15 | Revisit unused-index noise after real traffic appears | ⏳ | current unused-index findings are not launch blockers on a near-empty dataset |
 
 ---
 
 ## Ближайший рабочий шаг
 
-1. Подготовить approved non-production target.
-2. Сравнить repo SQL baseline против live 14-applied state.
-3. Проверить catch-up migration path для `profiles` / admin boundary.
-4. Отдельно принять решение по AI/YooKassa function naming split.
+1. Fresh-run the repo verification suite on current `main`.
+2. Decide canonical function surface for AI and YooKassa.
+3. Enable leaked password protection in Supabase Auth.
+4. Make an explicit call on GraphQL discoverability: accept public-content exposure or reduce grants for sensitive tables.
 
 ---
 
@@ -93,8 +79,8 @@
 
 | Домен | Статус |
 | --- | --- |
-| Repo documentation coherence | FAIL |
-| Live Supabase governance | FAIL |
+| Repo documentation coherence | IMPROVED, not complete |
+| Live Supabase governance | PARTIAL PASS |
 | Function inventory clarity | FAIL |
-| Local code health | LAST KNOWN PASS, not re-run in this audit |
-| Overall launch readiness | **FAIL** |
+| Local code health | UNKNOWN on current head |
+| Overall launch readiness | **FAIL, but materially closer** |
