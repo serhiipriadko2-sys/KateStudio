@@ -15,6 +15,7 @@
     "allowJs": true,
     "jsx": "react-jsx",
     "allowImportingTsExtensions": true,
+    "ignoreDeprecations": "6.0",
     "noEmit": true,
 
     /* Strict Type Checking */
