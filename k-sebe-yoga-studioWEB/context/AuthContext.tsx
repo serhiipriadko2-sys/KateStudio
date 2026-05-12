@@ -1,4 +1,4 @@
-import { isSupabaseConfigured, supabase } from '@ksebe/shared';
+import { getSupabasePasswordPolicyMessage, isSupabaseConfigured, supabase } from '@ksebe/shared';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 export interface WebUserProfile {
@@ -163,7 +163,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
-      if (error.message.includes('already registered')) {
+      const passwordPolicyMessage = getSupabasePasswordPolicyMessage(error, 'signUp');
+      if (passwordPolicyMessage) {
+        setAuthError(passwordPolicyMessage);
+      } else if (error.message.includes('already registered')) {
         setAuthError('Пользователь с таким email уже зарегистрирован.');
       } else {
         setAuthError('Ошибка регистрации. Попробуйте позже.');
@@ -191,9 +194,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      const translatedMsg = error.message.includes('Invalid login')
-        ? 'Неверный email или пароль.'
-        : 'Ошибка входа. Попробуйте позже.';
+      const passwordPolicyMessage = getSupabasePasswordPolicyMessage(error, 'signIn');
+      const translatedMsg =
+        passwordPolicyMessage ||
+        (error.message.includes('Invalid login')
+          ? 'Неверный email или пароль.'
+          : 'Ошибка входа. Попробуйте позже.');
       setAuthError(translatedMsg);
       throw new Error(translatedMsg);
     }
