@@ -1,11 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
-import {
-  BUCKET_NAME,
-  deleteImageMapping,
-  getSavedImageUrl,
-  saveImageMapping,
-  uploadImage,
-} from '../services/imageStorage';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {
   const maybeSingleMock = vi
@@ -40,16 +33,29 @@ vi.mock('../services/supabase', () => ({
   uploadFile: mocks.uploadFileMock,
 }));
 
+const loadImageStorage = () => import('../services/imageStorage');
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.maybeSingleMock.mockResolvedValue({ data: { url: 'https://example.com/image.jpg' }, error: null });
+  mocks.uploadFileMock.mockResolvedValue('https://example.com/uploaded.jpg');
+});
+
 describe('imageStorage', () => {
   it('returns saved image url when present', async () => {
+    const { getSavedImageUrl } = await loadImageStorage();
+
     const result = await getSavedImageUrl('hero');
 
     expect(result).toBe('https://example.com/image.jpg');
-    expect(mocks.fromMock).toHaveBeenCalled();
+    expect(mocks.fromMock).toHaveBeenCalledWith('site_images');
     expect(mocks.selectMock).toHaveBeenCalledWith('url');
+    expect(mocks.eqMock).toHaveBeenCalledWith('key', 'hero');
   });
 
   it('stores and deletes mappings', async () => {
+    const { deleteImageMapping, saveImageMapping } = await loadImageStorage();
+
     await saveImageMapping('hero', 'https://example.com/hero.jpg');
     expect(mocks.upsertMock).toHaveBeenCalledWith({
       key: 'hero',
@@ -62,6 +68,7 @@ describe('imageStorage', () => {
   });
 
   it('uploads images via storage helper', async () => {
+    const { BUCKET_NAME, uploadImage } = await loadImageStorage();
     vi.spyOn(Date, 'now').mockReturnValue(123456);
 
     const file = new File(['data'], 'photo.png', { type: 'image/png' });
