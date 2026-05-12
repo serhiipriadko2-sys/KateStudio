@@ -10,7 +10,7 @@
 | Area | Status | Why |
 | --- | --- | --- |
 | Repo documentation truth | IMPROVED | the 2026-05-12 security delta is now recorded and the live baseline is closer to repo truth |
-| Local code health | LAST KNOWN PASS | build, lint, typecheck, and tests were not re-run in this pass |
+| Local code health | RED ON RELEASE PATH | merged PR `#492` has fresh CI evidence: `CI #1190` failed in `Run Tests`; lint and typecheck passed, builds were skipped |
 | Supabase security governance | STRONG PARTIAL PASS | GraphQL discoverability and `vector`-in-`public` warnings are now closed; only leaked-password protection remains |
 | Schema reproducibility | PARTIAL | the latest live delta is committed, but older repo/live history still needs one explicit reconciliation pass |
 | Function deployment clarity | FAIL | live and repo still differ around AI/payment naming contours |
@@ -36,7 +36,7 @@
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
 | P0 | function canon split | live still keeps `ai-run` / `ai-embeddings`, while repo-side naming drift has not been intentionally normalized |
-| P0 | launch verification gap | local `check:migrations` / `lint` / `typecheck` / `test:run` / `build:web` / `build:app` were not re-run in this pass |
+| P0 | failing CI on the current release path | fresh `CI #1190` for merged PR `#492` failed in `Run Tests`; builds did not run |
 | P0 | leaked password protection disabled | Supabase security advisor still warns |
 | P1 | runtime public smoke still not clean | recent live API logs still show remaining `401` / `406` / `404` probes even after the repo-side narrowing in PR `#492` |
 
@@ -68,16 +68,22 @@ Status: **not complete**.
 
 ## 6. Testing / build checklist
 
-These checks still need a fresh run against the current repo head:
+Current verified release-path evidence from merged PR `#492`:
 
-- `npm run check:migrations`
-- `npm run typecheck`
-- `npm run lint`
-- `npm run test:run`
-- `npm run build:web`
-- `npm run build:app`
+- `npm run check:migrations` → PASS via `Lint & Format Check`
+- `npm run lint` → PASS via `Lint & Format Check`
+- `npm run typecheck` → PASS via `TypeScript Check`
+- `npm run test:run` → FAIL in `CI #1190`
+- `npm run build:web` → SKIPPED because tests failed
+- `npm run build:app` → SKIPPED because tests failed
 
-Status: **required before launch sign-off**.
+Concrete failing test:
+
+- `shared/__tests__/imageStorage.test.ts`
+- case: `returns saved image url when present`
+- assertion: expected `https://example.com/image.jpg`, received `null`
+
+Status: **blocking until green**.
 
 ---
 
@@ -107,7 +113,7 @@ Status: **mixed, needs one more pass**.
 Launch PASS requires all of the following:
 
 1. AI/payment function naming drift is intentionally resolved or explicitly accepted.
-2. local verification is freshly green on the current repo head.
+2. CI is freshly green on the current release path, including tests and both builds.
 3. leaked password protection is enabled.
 4. remaining public smoke anomalies around generic `app_settings`, `image_map`, `site_images`, `payment_orders`, and `user_passes` are either fixed or explicitly accepted with evidence.
 5. remaining repo/live migration baseline drift is either reconciled or explicitly documented as accepted history.
