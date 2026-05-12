@@ -258,6 +258,73 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
+type SupabasePasswordPolicyContext = 'signIn' | 'signUp' | 'reset';
+type SupabasePasswordPolicyKind = 'weak_password' | 'compromised_password';
+
+function getSupabaseErrorMessage(error: unknown): string {
+  if (!error || typeof error !== 'object' || !('message' in error)) return '';
+
+  const { message } = error as { message?: unknown };
+  return typeof message === 'string' ? message : '';
+}
+
+export function getSupabasePasswordPolicyKind(
+  error: unknown
+): SupabasePasswordPolicyKind | null {
+  const message = getSupabaseErrorMessage(error).toLowerCase();
+  if (!message) return null;
+
+  if (
+    message.includes('compromised password') ||
+    message.includes('password has been leaked') ||
+    message.includes('password was leaked') ||
+    message.includes('leaked password') ||
+    message.includes('pwned password') ||
+    message.includes('haveibeenpwned') ||
+    message.includes('pwned')
+  ) {
+    return 'compromised_password';
+  }
+
+  if (
+    message.includes('weak password') ||
+    message.includes('weak_password') ||
+    message.includes('weakpassword') ||
+    message.includes('password should contain') ||
+    message.includes('password should be at least') ||
+    message.includes('password is too weak') ||
+    message.includes('password should be stronger') ||
+    message.includes('password must contain') ||
+    message.includes('password must be at least')
+  ) {
+    return 'weak_password';
+  }
+
+  return null;
+}
+
+export function getSupabasePasswordPolicyMessage(
+  error: unknown,
+  context: SupabasePasswordPolicyContext
+): string | null {
+  const kind = getSupabasePasswordPolicyKind(error);
+  if (!kind) return null;
+
+  if (context === 'signIn') {
+    if (kind === 'compromised_password') {
+      return 'Ваш пароль найден в известных утечках. Сбросьте пароль и задайте новый, уникальный.';
+    }
+
+    return 'Ваш пароль больше не соответствует требованиям безопасности. Сбросьте пароль и задайте новый.';
+  }
+
+  if (kind === 'compromised_password') {
+    return 'Этот пароль найден в известных утечках. Выберите другой, уникальный пароль.';
+  }
+
+  return 'Пароль слишком слабый. Используйте более длинный пароль с буквами разного регистра, цифрами и символами.';
+}
+
 /**
  * Storage helpers with JSON support
  */
