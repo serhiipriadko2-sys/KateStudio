@@ -1,4 +1,4 @@
-import { supabase } from '@ksebe/shared';
+import { getSupabasePasswordPolicyMessage, supabase } from '@ksebe/shared';
 import { Eye, EyeOff } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -44,7 +44,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ onClose 
     setErrorMsg('');
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
-      setErrorMsg(error.message);
+      setErrorMsg(getSupabasePasswordPolicyMessage(error, 'reset') || error.message);
       setStatus('ready');
     } else {
       setStatus('success');
