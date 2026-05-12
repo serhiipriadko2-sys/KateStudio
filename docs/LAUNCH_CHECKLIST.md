@@ -12,6 +12,7 @@
 | Repo documentation truth | IMPROVED | the 2026-05-12 security delta is now recorded and the live baseline is closer to repo truth |
 | Local code health | RED ON RELEASE PATH | merged PR `#492` has fresh CI evidence: `CI #1190` failed in `Run Tests`; lint and typecheck passed, builds were skipped |
 | Supabase security governance | STRONG PARTIAL PASS | GraphQL discoverability and `vector`-in-`public` warnings are now closed; only leaked-password protection remains |
+| Auth UX readiness for leaked-password enforcement | IMPROVED | WEB/APP/reset flows now distinguish weak and compromised password responses instead of collapsing them into generic auth failures |
 | Schema reproducibility | PARTIAL | the latest live delta is committed, but older repo/live history still needs one explicit reconciliation pass |
 | Function deployment clarity | FAIL | live and repo still differ around AI/payment naming contours |
 | Runtime public smoke | MIXED | recent live logs now show `200` for `studio_contacts`, but still show `401` on generic `app_settings`, `406` on `image_map`, repeated `406` on `site_images`, and repeated `404` on `payment_orders` / `user_passes` |
@@ -28,6 +29,7 @@
 - `vector` was moved from `public` to `extensions`.
 - security advisors now report only one remaining warning: leaked password protection disabled.
 - repo-side runtime probes for `app_settings` / `site_images` were narrowed in merged PR `#492`.
+- repo-side auth UX was hardened so weak and compromised password paths now have explicit user guidance before the live Supabase Auth toggle.
 
 ---
 
@@ -37,7 +39,7 @@
 | --- | --- | --- |
 | P0 | function canon split | live still keeps `ai-run` / `ai-embeddings`, while repo-side naming drift has not been intentionally normalized |
 | P0 | failing CI on the current release path | fresh `CI #1190` for merged PR `#492` failed in `Run Tests`; builds did not run |
-| P0 | leaked password protection disabled | Supabase security advisor still warns |
+| P0 | leaked password protection disabled in live Auth | Supabase security advisor still warns; repo-side UX hardening is already in place, but the live toggle is still off |
 | P1 | runtime public smoke still not clean | recent live API logs still show remaining `401` / `406` / `404` probes even after the repo-side narrowing in PR `#492` |
 
 ---
@@ -115,7 +117,8 @@ Launch PASS requires all of the following:
 1. AI/payment function naming drift is intentionally resolved or explicitly accepted.
 2. CI is freshly green on the current release path, including tests and both builds.
 3. leaked password protection is enabled.
-4. remaining public smoke anomalies around generic `app_settings`, `image_map`, `site_images`, `payment_orders`, and `user_passes` are either fixed or explicitly accepted with evidence.
-5. remaining repo/live migration baseline drift is either reconciled or explicitly documented as accepted history.
+4. weak signup, compromised reset, and sign-in with an old weak password are manually verified against the updated UX copy.
+5. remaining public smoke anomalies around generic `app_settings`, `image_map`, `site_images`, `payment_orders`, and `user_passes` are either fixed or explicitly accepted with evidence.
+6. remaining repo/live migration baseline drift is either reconciled or explicitly documented as accepted history.
 
 Until then, any "launch-ready" claim would still be decorative, not true.
