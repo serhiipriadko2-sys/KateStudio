@@ -38,6 +38,7 @@
 | 7 | Убрать `vector` extension из `public` | DONE | `vector` now lives in `extensions` |
 | 8 | Сохранить 2026-05-12 security delta в repo canon | DONE | `20260512062001_missing_security_deltas.sql` committed to `main` |
 | 9 | Подготовить repo-side auth UX к leaked-password enforcement | DONE | WEB/APP/reset flows now distinguish weak and compromised passwords instead of collapsing them into generic auth failures |
+| 10 | Stabilize `imageStorage` test drift | DONE | test now loads `imageStorage` after the mocked `supabase` boundary instead of relying on brittle import order |
 
 ---
 
@@ -45,9 +46,9 @@
 
 | # | Задача | Статус | Почему это P0 |
 | --- | --- | --- | --- |
-| 10 | Разрешить function drift между repo и live | ⛔ | live still keeps `ai-run` / `ai-embeddings`, while repo still carries repo-side payment/AI naming drift that has not been intentionally normalized |
-| 11 | Починить red CI на текущем release path | ⛔ | fresh `CI #1190` on merged PR #492 failed in `Run Tests`; `shared/__tests__/imageStorage.test.ts` expects a URL but receives `null` |
-| 12 | Включить leaked password protection в live Supabase Auth | ⛔ | the only remaining live security advisor warning is Supabase Auth leaked-password protection disabled; repo-side UX handling is now in place |
+| 11 | Разрешить payment/function canon split | ⛔ | APP `paymentService` is wired to repo-only `create-yookassa-checkout`, while live inventory exposes `create-payment`; live schema inventory also does not include `payment_orders` / `user_passes` |
+| 12 | Починить red CI на текущем release path | ⛔ | fresh `CI #1190` on merged PR #492 failed in `Run Tests`; `shared/__tests__/imageStorage.test.ts` expects a URL but receives `null` |
+| 13 | Включить leaked password protection в live Supabase Auth | ⛔ | the only remaining live security advisor warning is Supabase Auth leaked-password protection disabled; repo-side UX handling is now in place |
 
 ---
 
@@ -55,9 +56,9 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 13 | Разобрать remaining `app_settings` query drift | ⏳ | `studio_contacts` read now returns `200`, but live logs still show `401` on generic `select=key,value` and `406` on `key=eq.image_map` |
-| 14 | Разобрать repeated `site_images` misses | ⏳ | `site_images` still has `0` live rows and logs still show repeated `406` lookups across hero/gallery/avatar keys |
-| 15 | Разобрать stale client probes for absent tables | ⏳ | live API logs still show repeated `404` on `payment_orders` and `user_passes` from real browser traffic |
+| 14 | Разобрать remaining `app_settings` query drift | ⏳ | `studio_contacts` read now returns `200`, but live logs still show `401` on generic `select=key,value` and `406` on `key=eq.image_map` |
+| 15 | Разобрать repeated `site_images` misses | ⏳ | `site_images` still has `0` live rows and logs still show repeated `406` lookups across hero/gallery/avatar keys |
+| 16 | Разобрать stale client probes for absent tables | ⏳ | live API logs still show repeated `404` on `payment_orders` and `user_passes` from real browser traffic |
 
 ---
 
@@ -65,20 +66,20 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 16 | Полностью reconcile older repo/live migration history | ⏳ | current live baseline is now 30, but older history still deserves one explicit inventory pass |
-| 17 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after migration truth is intentionally settled |
-| 18 | Reduce duplicate permissive policies on content/admin tables | ⏳ | performance advisor still shows fan-out on `app_settings`, `articles`, `bookings`, `retreats`, `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos`, others |
-| 19 | Revisit unused-index noise after real traffic appears | ⏳ | current unused-index findings are not launch blockers on a low-traffic dataset |
+| 17 | Полностью reconcile older repo/live migration history | ⏳ | current live baseline is now 30, but older history still deserves one explicit inventory pass |
+| 18 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after migration truth is intentionally settled |
+| 19 | Reduce duplicate permissive policies on content/admin tables | ⏳ | performance advisor still shows fan-out on `app_settings`, `articles`, `bookings`, `retreats`, `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos`, others |
+| 20 | Revisit unused-index noise after real traffic appears | ⏳ | current unused-index findings are not launch blockers on a low-traffic dataset |
 
 ---
 
 ## Ближайший рабочий шаг
 
-1. Fix the failing test path around `shared/services/imageStorage` / `shared/__tests__/imageStorage.test.ts`.
-2. Re-run CI until `check:migrations`, `lint`, `typecheck`, `test:run`, `build:web`, and `build:app` are all green.
-3. Enable leaked password protection in Supabase Auth.
-4. Verify weak signup, compromised reset, and sign-in with an old weak password against the new UX copy.
-5. Decide canonical function surface for AI and payments.
+1. Re-run CI until `check:migrations`, `lint`, `typecheck`, `test:run`, `build:web`, and `build:app` are all green.
+2. Enable leaked password protection in Supabase Auth.
+3. Verify weak signup, compromised reset, and sign-in with an old weak password against the new UX copy.
+4. Decide payment canon: migrate APP from `create-yookassa-checkout` to `create-payment`, or explicitly accept YooKassa-only rollout and deploy the missing live functions/tables.
+5. Decide canonical AI surface and whether `ai-run` / `ai-embeddings` remain intentionally live-only beside dormant `gemini-proxy`.
 6. Triage the remaining public runtime probes: generic `app_settings`, missing `image_map`, empty `site_images`, and `404` probes for `payment_orders` / `user_passes`.
 
 ---
@@ -91,5 +92,5 @@
 | Live Supabase governance | STRONG PARTIAL PASS |
 | Live security advisors | **1 warning remaining** |
 | Public smoke signal | MIXED, narrower after PR #492 but still not clean |
-| Release-path CI | RED |
+| Release-path CI | RED until fresh green evidence exists |
 | Overall launch readiness | **FAIL** |
