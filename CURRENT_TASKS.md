@@ -16,12 +16,11 @@
 | Live performance advisors | **warnings remain** | mostly unused indexes + multiple permissive policy fan-out |
 | 2026-05-12 new live migration recorded in repo | **1** | `20260512062001_missing_security_deltas.sql` committed to `main` |
 | 2026-05-12 repo-side runtime fix merged | **PR #492** | `Fix/public settings site images drift` merged into `main` |
-| Latest repo-stated tests | **489 / 64** | previous repo documentation; not re-run in this pass |
-| Typecheck status | **last known PASS** | repo-stated, not freshly re-run now |
-| Lint status | **last known PASS** | repo-stated, not freshly re-run now |
-| Web/App builds | **last known PASS** | repo-stated, not freshly re-run now |
+| Fresh CI evidence on merged PR #492 | **RED** | workflow run `CI #1190` failed on `Run Tests`; lint and typecheck passed |
+| Concrete failing test | **1 failed / 512 passed** | `shared/__tests__/imageStorage.test.ts` → `returns saved image url when present` |
+| Web/App builds on PR #492 | **not reached** | `Build WEB` and `Build APP` were skipped because test job failed |
 
-Главное изменение: live больше не держит warnings around GraphQL discoverability or `vector` in `public`. После 2026-05-12 pass security surface materially tightened: `pg_graphql` removed, `vector` moved to `extensions`, and the remaining security warning is now only leaked password protection in Supabase Auth. Отдельно, PR #492 сузил repo-side runtime probes for `app_settings` and `site_images`, но live API logs всё ещё показывают остаточные `401` / `406` вне уже суженного happy path.
+Главное изменение: live больше не держит warnings around GraphQL discoverability or `vector` in `public`. После 2026-05-12 pass security surface materially tightened: `pg_graphql` removed, `vector` moved to `extensions`, and the remaining security warning is now only leaked password protection in Supabase Auth. Отдельно, PR #492 сузил repo-side runtime probes for `app_settings` and `site_images`, но live API logs всё ещё показывают остаточные `401` / `406` вне уже суженного happy path. Verification gap тоже уточнился: это уже не отсутствие данных, а подтвержденный red CI on the merged PR path.
 
 ---
 
@@ -45,7 +44,7 @@
 | # | Задача | Статус | Почему это P0 |
 | --- | --- | --- | --- |
 | 9 | Разрешить function drift между repo и live | ⛔ | live still keeps `ai-run` / `ai-embeddings`, while repo still carries repo-side payment/AI naming drift that has not been intentionally normalized |
-| 10 | Прогнать финальный verification suite на текущем repo head | ⛔ | no fresh `check:migrations` / `lint` / `typecheck` / `test:run` / `build:web` / `build:app` in this pass |
+| 10 | Починить red CI на текущем release path | ⛔ | fresh `CI #1190` on merged PR #492 failed in `Run Tests`; `shared/__tests__/imageStorage.test.ts` expects a URL but receives `null` |
 | 11 | Закрыть leaked password protection | ⛔ | the only remaining live security advisor warning is Supabase Auth leaked-password protection disabled |
 
 ---
@@ -73,10 +72,11 @@
 
 ## Ближайший рабочий шаг
 
-1. Fresh-run the repo verification suite on current `main`.
-2. Enable leaked password protection in Supabase Auth.
-3. Decide canonical function surface for AI and payments.
-4. Triage the remaining public runtime probes: generic `app_settings`, missing `image_map`, empty `site_images`, and `404` probes for `payment_orders` / `user_passes`.
+1. Fix the failing test path around `shared/services/imageStorage` / `shared/__tests__/imageStorage.test.ts`.
+2. Re-run CI until `check:migrations`, `lint`, `typecheck`, `test:run`, `build:web`, and `build:app` are all green.
+3. Enable leaked password protection in Supabase Auth.
+4. Decide canonical function surface for AI and payments.
+5. Triage the remaining public runtime probes: generic `app_settings`, missing `image_map`, empty `site_images`, and `404` probes for `payment_orders` / `user_passes`.
 
 ---
 
@@ -88,5 +88,5 @@
 | Live Supabase governance | STRONG PARTIAL PASS |
 | Live security advisors | **1 warning remaining** |
 | Public smoke signal | MIXED, narrower after PR #492 but still not clean |
-| Local code health | UNKNOWN on current head |
-| Overall launch readiness | **FAIL, but materially closer again** |
+| Release-path CI | RED |
+| Overall launch readiness | **FAIL** |
