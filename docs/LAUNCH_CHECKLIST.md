@@ -14,7 +14,8 @@
 | Supabase security governance | STRONG PARTIAL PASS | GraphQL discoverability and `vector`-in-`public` warnings are now closed; only leaked-password protection remains |
 | Auth UX readiness for leaked-password enforcement | IMPROVED | WEB/APP/reset flows now distinguish weak and compromised password responses instead of collapsing them into generic auth failures |
 | Schema reproducibility | PARTIAL | the latest live delta is committed, but older repo/live history still needs one explicit reconciliation pass |
-| Function deployment clarity | FAIL | APP payment path still points at repo-only `create-yookassa-checkout`, while live exposes `create-payment` and current live schema inventory does not include `payment_orders` / `user_passes` |
+| WEB payment posture | PASS AT MODEL LEVEL | current WEB model is storefront only: Telegram Katya + lead form, no direct checkout |
+| Function deployment clarity | FAIL | APP payment path points at repo-only `create-yookassa-checkout`, while live still exposes the older `create-payment` pair and current live schema inventory does not include `payment_orders` / `user_passes` |
 | Runtime public smoke | MIXED | recent live logs now show `200` for `studio_contacts`, but still show `401` on generic `app_settings`, `406` on `image_map`, repeated `406` on `site_images`, and repeated `404` on `payment_orders` / `user_passes` |
 
 ---
@@ -31,6 +32,7 @@
 - repo-side runtime probes for `app_settings` / `site_images` were narrowed in merged PR `#492`.
 - repo-side auth UX was hardened so weak and compromised password paths now have explicit user guidance before the live Supabase Auth toggle.
 - repo-side `imageStorage` test setup was stabilized to remove brittle mock/import order drift.
+- business payment model is now explicit: WEB is non-payment, APP owns YooKassa, RuStore is publication/proof layer.
 
 ---
 
@@ -38,7 +40,7 @@
 
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
-| P0 | payment/function canon split | APP `paymentService` still calls repo-only `create-yookassa-checkout`, while live inventory exposes `create-payment`; live schema inventory also lacks `payment_orders` and `user_passes` |
+| P0 | app payment cutover incomplete | APP `paymentService` calls repo-only `create-yookassa-checkout`, while live inventory still exposes `create-payment`; live schema inventory also lacks `payment_orders` and `user_passes` |
 | P0 | failing CI on the current release path | fresh `CI #1190` for merged PR `#492` failed in `Run Tests`; builds did not run |
 | P0 | leaked password protection disabled in live Auth | Supabase security advisor still warns; repo-side UX hardening is already in place, but the live toggle is still off |
 | P1 | runtime public smoke still not clean | recent live API logs still show remaining `401` / `406` / `404` probes even after the repo-side narrowing in PR `#492` |
@@ -53,6 +55,7 @@
 - [x] move `vector` extension out of `public`
 - [ ] perform a full repo/live migration inventory reconciliation across older history
 - [ ] regenerate DB types only after the broader baseline is intentionally accepted
+- [ ] apply the app-payment schema needed for `payment_orders` / `user_passes` before APP payment cutover
 
 Status: **partially complete**.
 
@@ -61,8 +64,9 @@ Status: **partially complete**.
 ## 5. Function checklist
 
 - [ ] decide canonical AI contour: `ai-run` / `ai-embeddings` vs repo-side alternatives
-- [ ] decide payment canon: `create-payment` vs `create-yookassa-checkout`
-- [ ] align APP callers with the accepted live payment surface
+- [x] decide business payment canon: WEB non-payment, APP payment, RuStore publication/proof layer
+- [ ] deploy APP YooKassa pair: `create-yookassa-checkout` + `yookassa-webhook`
+- [ ] align live APP callers and backend contracts with the accepted app-only payment surface
 - [ ] resolve whether `payment_orders` / `user_passes` are intended live tables or stale app/runtime probes
 - [ ] confirm which payment/public endpoints are intentionally exposed in production
 
@@ -103,6 +107,7 @@ Recent live API evidence supports these passes:
 - [x] public `trainers` reads respond `200`
 - [x] public `app_settings?key=studio_contacts` reads respond `200`
 - [x] public analytics writes respond `201`
+- [x] WEB onboarding can remain on Telegram / lead-form model without direct checkout rollout
 - [ ] generic public `app_settings` reads stop returning `401`
 - [ ] `app_settings?key=image_map` stops returning `406`
 - [ ] `site_images` lookups stop returning repeated `406`
@@ -116,7 +121,7 @@ Status: **mixed, needs one more pass**.
 
 Launch PASS requires all of the following:
 
-1. payment canon is intentionally resolved: either APP moves to `create-payment`, or the YooKassa-only path is intentionally deployed and documented in live.
+1. WEB remains non-payment by design, and APP-only YooKassa cutover is intentionally resolved in live.
 2. CI is freshly green on the current release path, including tests and both builds.
 3. leaked password protection is enabled.
 4. weak signup, compromised reset, and sign-in with an old weak password are manually verified against the updated UX copy.
