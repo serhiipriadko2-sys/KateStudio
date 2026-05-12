@@ -224,28 +224,41 @@ export function App() {
       }
 
       if (isSupabaseConfigured && supabase) {
-        try {
-          const { data } = await supabase
+        const fetchOptionalSetting = async (key: 'theme' | 'image_map') => {
+          const { data, error } = await supabase
             .from('app_settings')
-            .select('key, value');
-            
-          if (data) {
-            data.forEach((setting) => {
-              if (setting.key === 'theme') {
-                const colors = setting.value as Record<string, string>;
-                Object.entries(colors).forEach(([key, value]) => {
-                  document.documentElement.style.setProperty(key, String(value));
-                });
-                localStorage.setItem('ksebe_theme_config', JSON.stringify(colors));
-              }
-              if (setting.key === 'image_map') {
-                const map = setting.value as Record<string, string>;
-                Object.entries(map).forEach(([k, v]) => {
-                  localStorage.setItem(`ksebe-img-${k}`, v);
-                });
-                window.dispatchEvent(new Event('storage'));
-              }
+            .select('value')
+            .eq('key', key)
+            .maybeSingle();
+
+          if (error) {
+            console.warn(`Failed to sync ${key}`, error);
+            return null;
+          }
+
+          return data?.value ?? null;
+        };
+
+        try {
+          const [themeValue, imageMapValue] = await Promise.all([
+            fetchOptionalSetting('theme'),
+            fetchOptionalSetting('image_map'),
+          ]);
+
+          if (themeValue && typeof themeValue === 'object' && !Array.isArray(themeValue)) {
+            const colors = themeValue as Record<string, string>;
+            Object.entries(colors).forEach(([key, value]) => {
+              document.documentElement.style.setProperty(key, String(value));
             });
+            localStorage.setItem('ksebe_theme_config', JSON.stringify(colors));
+          }
+
+          if (imageMapValue && typeof imageMapValue === 'object' && !Array.isArray(imageMapValue)) {
+            const map = imageMapValue as Record<string, string>;
+            Object.entries(map).forEach(([k, v]) => {
+              localStorage.setItem(`ksebe-img-${k}`, v);
+            });
+            window.dispatchEvent(new Event('storage'));
           }
         } catch (e) {
           console.warn('Theme/Image sync failed', e);
