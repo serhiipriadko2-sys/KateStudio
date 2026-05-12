@@ -9,9 +9,9 @@
 
 | Area | Status | Why |
 | --- | --- | --- |
-| Repo documentation truth | IMPROVED | the 2026-05-12 security delta is now recorded and the live baseline is closer to repo truth |
+| Repo documentation truth | IMPROVED | docs are now anchored to the canonical live snapshot `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` instead of mixed `14/30` migration baselines |
 | Local code health | RED ON RELEASE PATH | merged PR `#492` has fresh CI evidence: `CI #1190` failed in `Run Tests`; lint and typecheck passed, builds were skipped |
-| Supabase security governance | STRONG PARTIAL PASS | GraphQL discoverability and `vector`-in-`public` warnings are now closed; only leaked-password protection remains |
+| Supabase security governance | STRONG PARTIAL PASS | `profiles` hardening is reflected in live history, GraphQL discoverability and `vector`-in-`public` warnings are closed, and only leaked-password protection remains |
 | Auth UX readiness for leaked-password enforcement | IMPROVED | WEB/APP/reset flows now distinguish weak and compromised password responses instead of collapsing them into generic auth failures |
 | Schema reproducibility | PARTIAL | the latest live delta is committed, but older repo/live history still needs one explicit reconciliation pass |
 | WEB payment posture | PASS AT MODEL LEVEL | current WEB model is storefront only: Telegram Katya + lead form, no direct checkout |
@@ -22,10 +22,11 @@
 
 ## 2. What was closed in this pass
 
-- live Supabase now reports **30 applied migrations**.
+- live Supabase now reports **37 applied migrations**.
 - live Supabase still reports **9 active Edge Functions**.
 - one additional live hardening migration from 2026-05-12 was executed and recorded in the repo canon:
   - `20260512062001_missing_security_deltas`
+- `profiles` hardening is now confirmed in live history rather than treated as a pending repo-only patch.
 - `pg_graphql` was removed from live because the project evidence currently points to REST usage, not GraphQL usage.
 - `vector` was moved from `public` to `extensions`.
 - security advisors now report only one remaining warning: leaked password protection disabled.
@@ -33,6 +34,7 @@
 - repo-side auth UX was hardened so weak and compromised password paths now have explicit user guidance before the live Supabase Auth toggle.
 - repo-side `imageStorage` test setup was stabilized to remove brittle mock/import order drift.
 - business payment model is now explicit: WEB is non-payment, APP owns YooKassa, RuStore is publication/proof layer.
+- canonical docs now point to `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` instead of mixing older live baselines.
 
 ---
 
@@ -53,6 +55,7 @@
 - [x] record the 2026-05-12 `missing_security_deltas` live migration in `main`
 - [x] remove GraphQL discoverability by disabling unused `pg_graphql`
 - [x] move `vector` extension out of `public`
+- [x] align current operational docs to the 2026-05-12 live baseline
 - [ ] perform a full repo/live migration inventory reconciliation across older history
 - [ ] regenerate DB types only after the broader baseline is intentionally accepted
 - [ ] apply the app-payment schema needed for `payment_orders` / `user_passes` before APP payment cutover
