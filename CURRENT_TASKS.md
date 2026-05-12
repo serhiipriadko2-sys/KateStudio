@@ -15,12 +15,13 @@
 | Live security advisors | **1 warning** | after `missing_security_deltas`, only leaked-password protection remains |
 | Live performance advisors | **warnings remain** | mostly unused indexes + multiple permissive policy fan-out |
 | 2026-05-12 new live migration recorded in repo | **1** | `20260512062001_missing_security_deltas.sql` committed to `main` |
+| 2026-05-12 repo-side runtime fix merged | **PR #492** | `Fix/public settings site images drift` merged into `main` |
 | Latest repo-stated tests | **489 / 64** | previous repo documentation; not re-run in this pass |
 | Typecheck status | **last known PASS** | repo-stated, not freshly re-run now |
 | Lint status | **last known PASS** | repo-stated, not freshly re-run now |
 | Web/App builds | **last known PASS** | repo-stated, not freshly re-run now |
 
-Главное изменение: live больше не держит warnings around GraphQL discoverability or `vector` in `public`. После 2026-05-12 pass security surface materially tightened: `pg_graphql` removed, `vector` moved to `extensions`, and the remaining security warning is now only leaked password protection in Supabase Auth.
+Главное изменение: live больше не держит warnings around GraphQL discoverability or `vector` in `public`. После 2026-05-12 pass security surface materially tightened: `pg_graphql` removed, `vector` moved to `extensions`, and the remaining security warning is now only leaked password protection in Supabase Auth. Отдельно, PR #492 сузил repo-side runtime probes for `app_settings` and `site_images`, но live API logs всё ещё показывают остаточные `401` / `406` вне уже суженного happy path.
 
 ---
 
@@ -34,7 +35,7 @@
 | 4 | Снизить RLS planner churn on hot self-access tables | DONE | initplan-friendly rewrites applied on the current hot path |
 | 5 | Сохранить live 2026-05-11 hardening steps в repo canon | DONE | previous live hardening migrations recorded in `main` |
 | 6 | Убрать GraphQL discoverability surface | DONE | `pg_graphql` removed from live and the warning set collapsed |
-| 7 | Убрать `vector` extension from `public` | DONE | `vector` now lives in `extensions` |
+| 7 | Убрать `vector` extension из `public` | DONE | `vector` now lives in `extensions` |
 | 8 | Сохранить 2026-05-12 security delta в repo canon | DONE | `20260512062001_missing_security_deltas.sql` committed to `main` |
 
 ---
@@ -53,9 +54,9 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 12 | Разобрать public `app_settings` failures | ⏳ | recent live API logs still show repeated `401` on `rest/v1/app_settings` requests from real browsers |
-| 13 | Разобрать repeated `site_images` misses | ⏳ | recent live API logs still show repeated `406` lookups on `rest/v1/site_images` keys used by the site |
-| 14 | Проверить storage bucket `images` как operational surface | ⏳ | public storage reads are succeeding, but the app still appears to fall back through DB-key lookups first |
+| 12 | Разобрать remaining `app_settings` query drift | ⏳ | `studio_contacts` read now returns `200`, but live logs still show `401` on generic `select=key,value` and `406` on `key=eq.image_map` |
+| 13 | Разобрать repeated `site_images` misses | ⏳ | `site_images` still has `0` live rows and logs still show repeated `406` lookups across hero/gallery/avatar keys |
+| 14 | Разобрать stale client probes for absent tables | ⏳ | live API logs still show repeated `404` on `payment_orders` and `user_passes` from real browser traffic |
 
 ---
 
@@ -75,7 +76,7 @@
 1. Fresh-run the repo verification suite on current `main`.
 2. Enable leaked password protection in Supabase Auth.
 3. Decide canonical function surface for AI and payments.
-4. Triage the repeated `app_settings` `401` and `site_images` `406` smoke findings from live API logs.
+4. Triage the remaining public runtime probes: generic `app_settings`, missing `image_map`, empty `site_images`, and `404` probes for `payment_orders` / `user_passes`.
 
 ---
 
@@ -86,6 +87,6 @@
 | Repo documentation coherence | IMPROVED, closer to live truth |
 | Live Supabase governance | STRONG PARTIAL PASS |
 | Live security advisors | **1 warning remaining** |
-| Public smoke signal | MIXED |
+| Public smoke signal | MIXED, narrower after PR #492 but still not clean |
 | Local code health | UNKNOWN on current head |
 | Overall launch readiness | **FAIL, but materially closer again** |
