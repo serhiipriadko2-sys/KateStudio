@@ -1,0 +1,1 @@
+drop policy if exists "Allow public read/write profiles" on public.profiles;
