@@ -1,6 +1,6 @@
 # Архитектура экосистемы KateStudio
 
-> **Обновлено:** 10 мая 2026 | **Версия:** 3.0.0
+> **Обновлено:** 12 мая 2026 | **Версия:** 3.1.0
 > Этот документ описывает не идеальную схему, а текущую реальную систему с отмеченными разломами между repo и live.
 
 ---
@@ -9,10 +9,11 @@
 
 KateStudio — monorepo с двумя клиентскими поверхностями, общей библиотекой и Supabase backend:
 
-- `k-sebe-yoga-studioWEB/` — маркетинговый сайт + admin surfaces.
-- `k-sebe-yoga-studio-APPp/` — пользовательское приложение, PWA + Capacitor wrapper.
+- `k-sebe-yoga-studioWEB/` — маркетинговый сайт, витрина и входной фильтр через Telegram Кати и lead form; не является каноничной payment surface.
+- `k-sebe-yoga-studio-APPp/` — пользовательское приложение, PWA + Capacitor wrapper, закрытая поверхность для допущенных пользователей и целевая YooKassa payment surface.
 - `shared/` — общие типы, UI, сервисы, хуки и утилиты.
 - `supabase/` — migrations и Edge Functions.
+- `RuStore` — внешний канал публикации Android-приложения и публичная точка подтверждения существования app для внешних проверок; не является обязательным платежным каноном для текущей модели.
 
 ---
 
@@ -20,7 +21,18 @@ KateStudio — monorepo с двумя клиентскими поверхнос�
 
 ```text
 WEB (GitHub Pages / ksebe-studio.ru)
+  └── storefront only
+      ├── Telegram Katya
+      └── lead form
+
 APP (Firebase Hosting / preview + Capacitor mobile shell)
+  └── approved users only
+      └── YooKassa payment flow
+
+RuStore
+  └── Android publication + proof-of-app-existence surface
+
+APP / WEB runtime
         │
         └── Supabase Auth + Postgres + RLS + Storage + Edge Functions
                 │
@@ -29,8 +41,8 @@ APP (Firebase Hosting / preview + Capacitor mobile shell)
                 │   └── repo: gemini-proxy
                 │
                 ├── Payments contour
-                │   ├── repo/live overlap: create-payment, payment-webhook
-                │   └── repo-only legacy/new pair: create-yookassa-checkout, yookassa-webhook
+                │   ├── legacy/shared live overlap: create-payment, payment-webhook
+                │   └── app-target repo-only pair: create-yookassa-checkout, yookassa-webhook
                 │
                 └── Ops contour
                     ├── cancel-subscription
@@ -61,7 +73,29 @@ APP (Firebase Hosting / preview + Capacitor mobile shell)
 
 ---
 
-## 4. Database domain surfaces
+## 4. Commercial operating model
+
+### WEB canon
+
+- WEB is a storefront, not a direct checkout surface.
+- User journey on WEB is intentional pre-qualification: Telegram with Katya or lead form.
+- Any direct payment affordance on WEB is out of model unless explicitly re-approved.
+
+### APP canon
+
+- APP is the operational surface for approved users.
+- YooKassa belongs to APP, not to the public WEB funnel.
+- Payment backend changes must be reviewed as app-only unless a broader business change is explicitly approved.
+
+### RuStore role
+
+- RuStore is part of distribution and external verification.
+- RuStore publication may be needed to show that the Android app exists as a real public product during partner/payment-provider onboarding.
+- RuStore monetization is a separate capability and is not required for the current KateStudio business model.
+
+---
+
+## 5. Database domain surfaces
 
 ### Stable core surfaces
 
@@ -88,7 +122,7 @@ APP (Firebase Hosting / preview + Capacitor mobile shell)
 
 ---
 
-## 5. Repo vs live truth
+## 6. Repo vs live truth
 
 | Surface | Repo | Live | Meaning |
 | --- | --- | --- | --- |
@@ -101,7 +135,7 @@ This is the architectural center of gravity right now: the system is not “miss
 
 ---
 
-## 6. Deployment surfaces
+## 7. Deployment surfaces
 
 ### CI
 
@@ -132,19 +166,21 @@ This is the architectural center of gravity right now: the system is not “miss
 
 ---
 
-## 7. Active architectural risks
+## 8. Active architectural risks
 
 1. **Security truth split**: repo has catch-up hardening patch, live still exposes `profiles` broadly.
 2. **Function naming split**: live AI contour and repo AI contour are not the same implementation shape.
 3. **Migration history split**: live has meaningful schema that is not fully represented by applied migration history.
 4. **Type contract split**: `shared/types/database.types.ts` is not yet a generated authoritative mirror of live.
+5. **Payment cutover split**: business canon is now clear, but live APP payment infrastructure still lags behind the repo-side app-only YooKassa model.
 
 ---
 
-## 8. Architectural conclusion
+## 9. Architectural conclusion
 
 KateStudio is not in greenfield mode and not in clean steady-state either. It is in convergence mode:
 
-- frontend/workflow scaffolding is mature;
-- backend capability set is richer than old docs imply;
-- governance and reproducibility are the actual bottlenecks.
+- WEB canon is now clear: storefront only;
+- APP is the intended transactional surface;
+- RuStore is distribution and proof, not the mandatory billing canon;
+- governance and reproducibility remain the actual bottlenecks.
