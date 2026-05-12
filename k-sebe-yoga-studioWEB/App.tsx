@@ -94,23 +94,39 @@ function App() {
     const syncSettings = async () => {
       if (!isSupabaseConfigured || !supabase) return;
 
+      const fetchOptionalSetting = async (key: 'theme' | 'image_map') => {
+        const { data, error } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', key)
+          .maybeSingle();
+
+        if (error) {
+          console.warn(`Failed to sync ${key}`, error);
+          return null;
+        }
+
+        return data?.value ?? null;
+      };
+
       try {
-        const { data } = await supabase.from('app_settings').select('key, value');
-        if (data) {
-          data.forEach((setting) => {
-            if (setting.key === 'theme') {
-              const nextTheme = setting.value as unknown as ThemeColors;
-              applyTheme(nextTheme);
-              saveTheme(nextTheme);
-            }
-            if (setting.key === 'image_map') {
-              const map = setting.value as Record<string, string>;
-              Object.entries(map).forEach(([k, v]) => {
-                localStorage.setItem(`ksebe-img-${k}`, v);
-              });
-              window.dispatchEvent(new Event('storage'));
-            }
+        const [themeValue, imageMapValue] = await Promise.all([
+          fetchOptionalSetting('theme'),
+          fetchOptionalSetting('image_map'),
+        ]);
+
+        if (themeValue && typeof themeValue === 'object' && !Array.isArray(themeValue)) {
+          const nextTheme = themeValue as ThemeColors;
+          applyTheme(nextTheme);
+          saveTheme(nextTheme);
+        }
+
+        if (imageMapValue && typeof imageMapValue === 'object' && !Array.isArray(imageMapValue)) {
+          const map = imageMapValue as Record<string, string>;
+          Object.entries(map).forEach(([k, v]) => {
+            localStorage.setItem(`ksebe-img-${k}`, v);
           });
+          window.dispatchEvent(new Event('storage'));
         }
       } catch (err) {
         console.warn('Failed to sync settings', err);
