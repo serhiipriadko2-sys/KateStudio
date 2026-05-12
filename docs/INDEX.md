@@ -21,6 +21,7 @@
 | `docs/ARCHITECTURE.md` | структура monorepo, runtime contour, repo/live split |
 | `docs/EDGE_FUNCTIONS.md` | function inventory и drift map |
 | `docs/LAUNCH_CHECKLIST.md` | release readiness и blockers |
+| `docs/ANDROID_STORE_READINESS.md` | Android publish path для Google Play и RuStore |
 | `docs/TESTING.md` | test truth и ограничения проверки |
 | `docs/SUPABASE_AUDIT_LIVE_2026_05_10.md` | полный live Supabase audit |
 
