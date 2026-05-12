@@ -1,8 +1,8 @@
 # Текущие задачи
 
-> **Обновлено:** 11 мая 2026 | **Версия:** 5.1.0
-> Источник истины: GitHub `main` + live Supabase metadata/advisors.
-> Текущий режим: controlled production hardening. 11 мая 2026 были выполнены только узкие live-изменения с низким риском и они сразу записаны в `main`.
+> **Обновлено:** 12 мая 2026 | **Версия:** 5.2.0
+> Источник истины: GitHub `main` + live Supabase metadata/advisors/logs.
+> Текущий режим: controlled production hardening. 12 мая 2026 был выполнен узкий live security pass и сразу записан в `main`.
 
 ---
 
@@ -10,16 +10,17 @@
 
 | Метрика | Значение | Основание |
 | --- | --- | --- |
-| Live applied migrations | **25** | Supabase MCP `list_migrations` after 2026-05-11 hardening pass |
+| Live applied migrations | **30** | Supabase MCP `list_migrations` after 2026-05-12 pass |
 | Live Edge Functions | **9** | Supabase MCP `list_edge_functions` |
-| Public/live tables | **27** | Supabase MCP schema inventory |
-| 2026-05-11 new live migrations recorded in repo | **3** | committed to `supabase/migrations/` in `main` during this pass |
+| Live security advisors | **1 warning** | after `missing_security_deltas`, only leaked-password protection remains |
+| Live performance advisors | **warnings remain** | mostly unused indexes + multiple permissive policy fan-out |
+| 2026-05-12 new live migration recorded in repo | **1** | `20260512062001_missing_security_deltas.sql` committed to `main` |
 | Latest repo-stated tests | **489 / 64** | previous repo documentation; not re-run in this pass |
 | Typecheck status | **last known PASS** | repo-stated, not freshly re-run now |
 | Lint status | **last known PASS** | repo-stated, not freshly re-run now |
 | Web/App builds | **last known PASS** | repo-stated, not freshly re-run now |
 
-Главное изменение: production state больше не находится в точке старого security emergency around `profiles`. Этот контур закрыт. Текущий риск сместился в сторону release discipline: function naming drift, GraphQL discoverability, auth hardening, and missing final verification on repo head.
+Главное изменение: live больше не держит warnings around GraphQL discoverability or `vector` in `public`. После 2026-05-12 pass security surface materially tightened: `pg_graphql` removed, `vector` moved to `extensions`, and the remaining security warning is now only leaked password protection in Supabase Auth.
 
 ---
 
@@ -27,11 +28,14 @@
 
 | # | Задача | Статус | Что изменилось |
 | --- | --- | --- | --- |
-| 1 | Убрать dangerous `profiles` public drift | DONE | legacy `profiles` public policy / legacy `is_admin` drift были закрыты ранее и в этой сессии не resurfaced in advisors |
+| 1 | Убрать dangerous `profiles` public drift | DONE | legacy `profiles` public policy / legacy `is_admin` drift were closed earlier and still do not resurface |
 | 2 | Закрыть dead permissive AI insert policies | DONE | removed `ai_jobs_service_insert` and `api_logs_insert_service` |
 | 3 | Закрыть unindexed FK findings on current AI + bookings path | DONE | added indexes for `ai_jobs`, `api_logs`, `bookings`, `prompt_requests` |
-| 4 | Снизить RLS planner churn on hot self-access tables | DONE | initplan-friendly rewrites applied to `profiles`, `bookings`, `practice_events`, `user_preferences`, `app_events`, `subscriptions`, `user_progress`, `user_achievements`, `classes`, `retreats`, `user_push_tokens` |
-| 5 | Сохранить live 2026-05-11 hardening steps в repo canon | DONE | 3 new migration files committed to `main` |
+| 4 | Снизить RLS planner churn on hot self-access tables | DONE | initplan-friendly rewrites applied on the current hot path |
+| 5 | Сохранить live 2026-05-11 hardening steps в repo canon | DONE | previous live hardening migrations recorded in `main` |
+| 6 | Убрать GraphQL discoverability surface | DONE | `pg_graphql` removed from live and the warning set collapsed |
+| 7 | Убрать `vector` extension from `public` | DONE | `vector` now lives in `extensions` |
+| 8 | Сохранить 2026-05-12 security delta в repo canon | DONE | `20260512062001_missing_security_deltas.sql` committed to `main` |
 
 ---
 
@@ -39,19 +43,19 @@
 
 | # | Задача | Статус | Почему это P0 |
 | --- | --- | --- | --- |
-| 6 | Разрешить function drift между repo и live | ⛔ | live keeps `ai-run` / `ai-embeddings`, repo still carries `create-yookassa-checkout` / `yookassa-webhook` |
-| 7 | Прогнать финальный verification suite на текущем repo head | ⛔ | no fresh `lint` / `typecheck` / `test:run` / `build:web` / `build:app` in this pass |
+| 9 | Разрешить function drift между repo и live | ⛔ | live still keeps `ai-run` / `ai-embeddings`, while repo still carries repo-side payment/AI naming drift that has not been intentionally normalized |
+| 10 | Прогнать финальный verification suite на текущем repo head | ⛔ | no fresh `check:migrations` / `lint` / `typecheck` / `test:run` / `build:web` / `build:app` in this pass |
+| 11 | Закрыть leaked password protection | ⛔ | the only remaining live security advisor warning is Supabase Auth leaked-password protection disabled |
 
 ---
 
-## 🟠 P1 — Безопасность и управляемость
+## 🟠 P1 — Smoke findings and operational follow-up
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 8 | Перепроверить GraphQL exposure | ⏳ | advisor still flags many `anon` / `authenticated` visible tables; some may be intentional public content, some may need narrowing |
-| 9 | Включить leaked password protection | ⏳ | Supabase auth advisor still warns |
-| 10 | Разобрать `vector` extension placement | ⏳ | security advisor still flags `vector` in `public` |
-| 11 | Проверить storage bucket `images` как operational surface | ⏳ | earlier concern remains worth one explicit review even though it is not the current top warning |
+| 12 | Разобрать public `app_settings` failures | ⏳ | recent live API logs still show repeated `401` on `rest/v1/app_settings` requests from real browsers |
+| 13 | Разобрать repeated `site_images` misses | ⏳ | recent live API logs still show repeated `406` lookups on `rest/v1/site_images` keys used by the site |
+| 14 | Проверить storage bucket `images` как operational surface | ⏳ | public storage reads are succeeding, but the app still appears to fall back through DB-key lookups first |
 
 ---
 
@@ -59,19 +63,19 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 12 | Полностью reconcile older repo/live migration history | ⏳ | current pass recorded the new live mutations, but did not fully enumerate older drift |
-| 13 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after migration truth is intentionally settled |
-| 14 | Reduce duplicate permissive policies on content/admin tables | ⏳ | still noisy on `app_settings`, `articles`, `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos`, others |
-| 15 | Revisit unused-index noise after real traffic appears | ⏳ | current unused-index findings are not launch blockers on a near-empty dataset |
+| 15 | Полностью reconcile older repo/live migration history | ⏳ | current live baseline is now 30, but older history still deserves one explicit inventory pass |
+| 16 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after migration truth is intentionally settled |
+| 17 | Reduce duplicate permissive policies on content/admin tables | ⏳ | performance advisor still shows fan-out on `app_settings`, `articles`, `bookings`, `retreats`, `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos`, others |
+| 18 | Revisit unused-index noise after real traffic appears | ⏳ | current unused-index findings are not launch blockers on a low-traffic dataset |
 
 ---
 
 ## Ближайший рабочий шаг
 
 1. Fresh-run the repo verification suite on current `main`.
-2. Decide canonical function surface for AI and YooKassa.
-3. Enable leaked password protection in Supabase Auth.
-4. Make an explicit call on GraphQL discoverability: accept public-content exposure or reduce grants for sensitive tables.
+2. Enable leaked password protection in Supabase Auth.
+3. Decide canonical function surface for AI and payments.
+4. Triage the repeated `app_settings` `401` and `site_images` `406` smoke findings from live API logs.
 
 ---
 
@@ -79,8 +83,9 @@
 
 | Домен | Статус |
 | --- | --- |
-| Repo documentation coherence | IMPROVED, not complete |
-| Live Supabase governance | PARTIAL PASS |
-| Function inventory clarity | FAIL |
+| Repo documentation coherence | IMPROVED, closer to live truth |
+| Live Supabase governance | STRONG PARTIAL PASS |
+| Live security advisors | **1 warning remaining** |
+| Public smoke signal | MIXED |
 | Local code health | UNKNOWN on current head |
-| Overall launch readiness | **FAIL, but materially closer** |
+| Overall launch readiness | **FAIL, but materially closer again** |
