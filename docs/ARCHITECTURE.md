@@ -1,6 +1,6 @@
 # Архитектура экосистемы KateStudio
 
-> **Обновлено:** 12 мая 2026 | **Версия:** 3.1.0
+> **Обновлено:** 12 мая 2026 | **Версия:** 3.2.0
 > Этот документ описывает не идеальную схему, а текущую реальную систему с отмеченными разломами между repo и live.
 
 ---
@@ -116,6 +116,7 @@ APP / WEB runtime
 ### New or newly confirmed active surfaces
 
 - `trainers`
+- `class_recurring_rules`
 - `classes.trainer_id`
 - AI-supporting tables: `prompt_requests`, `model_metadata`, `ai_jobs`, `api_logs`, `embeddings`
 - Retention/gamification surfaces: `practice_events`, `user_preferences`, `app_events`, `user_progress`, `user_achievements`
@@ -126,10 +127,10 @@ APP / WEB runtime
 
 | Surface | Repo | Live | Meaning |
 | --- | --- | --- | --- |
-| Migrations | 42 files | 14 applied | repo truth is ahead of recorded live history |
+| Migrations | 42 files | 37 applied | repo truth is still ahead of recorded live history, but the live baseline advanced materially after the 2026-05-10 snapshot |
 | Edge Functions | 9 folders | 9 active functions | counts match, inventories do not |
-| Trainers domain | present in repo | present in live | rollout is underway, but docs lag |
-| `profiles` hardening patch | prepared in repo | not confirmed applied | main security blocker persists |
+| Trainers domain | present in repo | present in live | rollout is underway and no longer just repo intent |
+| `profiles` hardening | recorded in repo | confirmed applied in live | this is no longer a pending-only repo security patch |
 
 This is the architectural center of gravity right now: the system is not “missing backend”, it is partially converged and partially forked.
 
@@ -168,11 +169,11 @@ This is the architectural center of gravity right now: the system is not “miss
 
 ## 8. Active architectural risks
 
-1. **Security truth split**: repo has catch-up hardening patch, live still exposes `profiles` broadly.
+1. **Migration baseline split**: several operational docs were still speaking from older live checkpoints; the current live baseline is 37 applied migrations, not 14 or 30.
 2. **Function naming split**: live AI contour and repo AI contour are not the same implementation shape.
-3. **Migration history split**: live has meaningful schema that is not fully represented by applied migration history.
-4. **Type contract split**: `shared/types/database.types.ts` is not yet a generated authoritative mirror of live.
-5. **Payment cutover split**: business canon is now clear, but live APP payment infrastructure still lags behind the repo-side app-only YooKassa model.
+3. **Type contract split**: `shared/types/database.types.ts` is not yet a generated authoritative mirror of the accepted live baseline.
+4. **Payment cutover split**: business canon is now clear, but live APP payment infrastructure still lags behind the repo-side app-only YooKassa model.
+5. **Security tail risk**: `profiles` hardening is already reflected live, but leaked-password protection is still disabled in Supabase Auth.
 
 ---
 
