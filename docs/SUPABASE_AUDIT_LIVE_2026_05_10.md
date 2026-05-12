@@ -4,6 +4,7 @@
 > **Метод:** GitHub repo inspection + Supabase MCP metadata, schema inventory, migrations, function inventory, security/performance advisors
 > **Граница:** без чтения пользовательских строк, без production mutation
 > **Вердикт:** **FAIL for launch-ready**
+> **Статус документа:** historical snapshot only. For current present-tense live truth, use `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md`.
 
 ---
 
