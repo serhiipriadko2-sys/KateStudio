@@ -16,11 +16,12 @@
 | Live performance advisors | **warnings remain** | mostly unused indexes + multiple permissive policy fan-out |
 | 2026-05-12 new live migration recorded in repo | **1** | `20260512062001_missing_security_deltas.sql` committed to `main` |
 | 2026-05-12 repo-side runtime fix merged | **PR #492** | `Fix/public settings site images drift` merged into `main` |
+| 2026-05-12 auth UX hardening for weak/leaked passwords | **DONE in repo** | WEB/APP/reset flows now surface explicit password-policy guidance before the Supabase Auth toggle |
 | Fresh CI evidence on merged PR #492 | **RED** | workflow run `CI #1190` failed on `Run Tests`; lint and typecheck passed |
 | Concrete failing test | **1 failed / 512 passed** | `shared/__tests__/imageStorage.test.ts` → `returns saved image url when present` |
 | Web/App builds on PR #492 | **not reached** | `Build WEB` and `Build APP` were skipped because test job failed |
 
-Главное изменение: live больше не держит warnings around GraphQL discoverability or `vector` in `public`. После 2026-05-12 pass security surface materially tightened: `pg_graphql` removed, `vector` moved to `extensions`, and the remaining security warning is now only leaked password protection in Supabase Auth. Отдельно, PR #492 сузил repo-side runtime probes for `app_settings` and `site_images`, но live API logs всё ещё показывают остаточные `401` / `406` вне уже суженного happy path. Verification gap тоже уточнился: это уже не отсутствие данных, а подтвержденный red CI on the merged PR path.
+Главное изменение: live больше не держит warnings around GraphQL discoverability or `vector` in `public`. После 2026-05-12 pass security surface materially tightened: `pg_graphql` removed, `vector` moved to `extensions`, and the remaining security warning is now only leaked password protection in Supabase Auth. Отдельно, repo-side auth flows now surface explicit weak/leaked password guidance, so the remaining gap on this security axis is the live Supabase Auth toggle itself rather than mixed repo/runtime ambiguity. PR #492 сузил repo-side runtime probes for `app_settings` and `site_images`, но live API logs всё ещё показывают остаточные `401` / `406` вне уже суженного happy path. Verification gap тоже уточнился: это уже не отсутствие данных, а подтвержденный red CI on the merged PR path.
 
 ---
 
@@ -36,6 +37,7 @@
 | 6 | Убрать GraphQL discoverability surface | DONE | `pg_graphql` removed from live and the warning set collapsed |
 | 7 | Убрать `vector` extension из `public` | DONE | `vector` now lives in `extensions` |
 | 8 | Сохранить 2026-05-12 security delta в repo canon | DONE | `20260512062001_missing_security_deltas.sql` committed to `main` |
+| 9 | Подготовить repo-side auth UX к leaked-password enforcement | DONE | WEB/APP/reset flows now distinguish weak and compromised passwords instead of collapsing them into generic auth failures |
 
 ---
 
@@ -43,9 +45,9 @@
 
 | # | Задача | Статус | Почему это P0 |
 | --- | --- | --- | --- |
-| 9 | Разрешить function drift между repo и live | ⛔ | live still keeps `ai-run` / `ai-embeddings`, while repo still carries repo-side payment/AI naming drift that has not been intentionally normalized |
-| 10 | Починить red CI на текущем release path | ⛔ | fresh `CI #1190` on merged PR #492 failed in `Run Tests`; `shared/__tests__/imageStorage.test.ts` expects a URL but receives `null` |
-| 11 | Закрыть leaked password protection | ⛔ | the only remaining live security advisor warning is Supabase Auth leaked-password protection disabled |
+| 10 | Разрешить function drift между repo и live | ⛔ | live still keeps `ai-run` / `ai-embeddings`, while repo still carries repo-side payment/AI naming drift that has not been intentionally normalized |
+| 11 | Починить red CI на текущем release path | ⛔ | fresh `CI #1190` on merged PR #492 failed in `Run Tests`; `shared/__tests__/imageStorage.test.ts` expects a URL but receives `null` |
+| 12 | Включить leaked password protection в live Supabase Auth | ⛔ | the only remaining live security advisor warning is Supabase Auth leaked-password protection disabled; repo-side UX handling is now in place |
 
 ---
 
@@ -53,9 +55,9 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 12 | Разобрать remaining `app_settings` query drift | ⏳ | `studio_contacts` read now returns `200`, but live logs still show `401` on generic `select=key,value` and `406` on `key=eq.image_map` |
-| 13 | Разобрать repeated `site_images` misses | ⏳ | `site_images` still has `0` live rows and logs still show repeated `406` lookups across hero/gallery/avatar keys |
-| 14 | Разобрать stale client probes for absent tables | ⏳ | live API logs still show repeated `404` on `payment_orders` and `user_passes` from real browser traffic |
+| 13 | Разобрать remaining `app_settings` query drift | ⏳ | `studio_contacts` read now returns `200`, but live logs still show `401` on generic `select=key,value` and `406` on `key=eq.image_map` |
+| 14 | Разобрать repeated `site_images` misses | ⏳ | `site_images` still has `0` live rows and logs still show repeated `406` lookups across hero/gallery/avatar keys |
+| 15 | Разобрать stale client probes for absent tables | ⏳ | live API logs still show repeated `404` on `payment_orders` and `user_passes` from real browser traffic |
 
 ---
 
@@ -63,10 +65,10 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 15 | Полностью reconcile older repo/live migration history | ⏳ | current live baseline is now 30, but older history still deserves one explicit inventory pass |
-| 16 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after migration truth is intentionally settled |
-| 17 | Reduce duplicate permissive policies on content/admin tables | ⏳ | performance advisor still shows fan-out on `app_settings`, `articles`, `bookings`, `retreats`, `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos`, others |
-| 18 | Revisit unused-index noise after real traffic appears | ⏳ | current unused-index findings are not launch blockers on a low-traffic dataset |
+| 16 | Полностью reconcile older repo/live migration history | ⏳ | current live baseline is now 30, but older history still deserves one explicit inventory pass |
+| 17 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after migration truth is intentionally settled |
+| 18 | Reduce duplicate permissive policies on content/admin tables | ⏳ | performance advisor still shows fan-out on `app_settings`, `articles`, `bookings`, `retreats`, `reviews`, `site_images`, `subscriptions`, `user_push_tokens`, `videos`, others |
+| 19 | Revisit unused-index noise after real traffic appears | ⏳ | current unused-index findings are not launch blockers on a low-traffic dataset |
 
 ---
 
@@ -75,8 +77,9 @@
 1. Fix the failing test path around `shared/services/imageStorage` / `shared/__tests__/imageStorage.test.ts`.
 2. Re-run CI until `check:migrations`, `lint`, `typecheck`, `test:run`, `build:web`, and `build:app` are all green.
 3. Enable leaked password protection in Supabase Auth.
-4. Decide canonical function surface for AI and payments.
-5. Triage the remaining public runtime probes: generic `app_settings`, missing `image_map`, empty `site_images`, and `404` probes for `payment_orders` / `user_passes`.
+4. Verify weak signup, compromised reset, and sign-in with an old weak password against the new UX copy.
+5. Decide canonical function surface for AI and payments.
+6. Triage the remaining public runtime probes: generic `app_settings`, missing `image_map`, empty `site_images`, and `404` probes for `payment_orders` / `user_passes`.
 
 ---
 
