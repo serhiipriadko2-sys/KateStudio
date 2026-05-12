@@ -26,9 +26,20 @@ grant insert on table public.contacts, public.analytics_events to anon, authenti
 grant select, insert, update on table public.profiles to authenticated;
 grant select, insert, update, delete on table public.bookings to authenticated;
 grant select, insert, update, delete on table public.subscriptions to authenticated;
-grant select, insert, update on table public.practice_events to authenticated;
-grant select, insert, update on table public.user_preferences to authenticated;
-grant select, insert on table public.app_events to authenticated;
+do $$
+begin
+  if to_regclass('public.practice_events') is not null then
+    execute 'grant select, insert, update on table public.practice_events to authenticated';
+  end if;
+
+  if to_regclass('public.user_preferences') is not null then
+    execute 'grant select, insert, update on table public.user_preferences to authenticated';
+  end if;
+
+  if to_regclass('public.app_events') is not null then
+    execute 'grant select, insert on table public.app_events to authenticated';
+  end if;
+end $$;
 grant select, insert, update on table public.user_progress to authenticated;
 grant select, insert, update on table public.user_achievements to authenticated;
 grant select, insert, update, delete on table public.user_push_tokens to authenticated;
@@ -52,11 +63,29 @@ grant select, insert, update, delete on table
 to authenticated;
 
 -- Internal AI / logging / shadow surfaces: no direct client access.
-revoke all privileges on table
-  public.ai_jobs,
-  public.api_logs,
-  public.prompt_requests,
-  public.embeddings,
-  public.model_metadata,
-  public.dialogue
-from anon, authenticated;
+do $$
+begin
+  if to_regclass('public.ai_jobs') is not null then
+    execute 'revoke all privileges on table public.ai_jobs from anon, authenticated';
+  end if;
+
+  if to_regclass('public.api_logs') is not null then
+    execute 'revoke all privileges on table public.api_logs from anon, authenticated';
+  end if;
+
+  if to_regclass('public.prompt_requests') is not null then
+    execute 'revoke all privileges on table public.prompt_requests from anon, authenticated';
+  end if;
+
+  if to_regclass('public.embeddings') is not null then
+    execute 'revoke all privileges on table public.embeddings from anon, authenticated';
+  end if;
+
+  if to_regclass('public.model_metadata') is not null then
+    execute 'revoke all privileges on table public.model_metadata from anon, authenticated';
+  end if;
+
+  if to_regclass('public.dialogue') is not null then
+    execute 'revoke all privileges on table public.dialogue from anon, authenticated';
+  end if;
+end $$;
