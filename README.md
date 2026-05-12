@@ -1,10 +1,9 @@
 # K Sebe Yoga Studio Ecosystem
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![TypeScript](https://img.shields.io/badge/typescript-100%25-blue.svg)
-![Tests](https://img.shields.io/badge/tests-473%20passing-brightgreen.svg)
-![Production Readiness](https://img.shields.io/badge/production--readiness-82%2F100-yellow.svg)
+![Monorepo](https://img.shields.io/badge/repo-npm_workspaces-informational.svg)
+![Supabase](https://img.shields.io/badge/backend-Supabase-3ecf8e.svg)
 
 **"К себе" (To Yourself)** is a comprehensive digital ecosystem for the K Sebe
 Yoga Studio (Dubna, Russia).
@@ -20,9 +19,9 @@ Yoga Studio (Dubna, Russia).
        ▼                   ▼
 ┌─────────────┐     ┌─────────────────────┐
 │     WEB     │     │         APP         │
-│ ksebe-      │     │ app.ksebe-studio.ru  │
-│ studio.ru   │     │ PWA + Capacitor      │
-│ GitHub Pages│     │ Firebase Hosting     │
+│ ksebe-      │     │ app.ksebe-studio.ru │
+│ studio.ru   │     │ PWA + Capacitor     │
+│ GitHub Pages│     │ Firebase Hosting    │
 └──────┬──────┘     └──────┬──────────────┘
        │                   │
        └─────────┬─────────┘
@@ -36,9 +35,8 @@ Yoga Studio (Dubna, Russia).
                 ▼
        ┌─────────────────────────────────┐
        │         Edge Functions          │
-       │  gemini-proxy  create-payment   │
-       │  payment-webhook  send-push     │
-       │  cancel-subscription  cron ...  │
+       │  repo/live split is explicit    │
+       │  payments, AI, push, ops        │
        └────────┬────────────────────────┘
                 │
        ┌────────┴────────┐
@@ -70,7 +68,8 @@ Yoga Studio (Dubna, Russia).
 | [CHANGELOG.md](./CHANGELOG.md) | Version history |
 | [docs/INDEX.md](./docs/INDEX.md) | Central documentation index |
 | [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | System architecture |
-| [docs/EDGE_FUNCTIONS.md](./docs/EDGE_FUNCTIONS.md) | Edge Functions reference (7 functions) |
+| [docs/EDGE_FUNCTIONS.md](./docs/EDGE_FUNCTIONS.md) | Edge Functions reference (repo/live split) |
+| [docs/SUPABASE_AUDIT_LIVE_2026_05_12.md](./docs/SUPABASE_AUDIT_LIVE_2026_05_12.md) | Canonical live Supabase snapshot |
 | [docs/TESTING.md](./docs/TESTING.md) | Testing architecture and patterns |
 | [docs/LAUNCH_CHECKLIST.md](./docs/LAUNCH_CHECKLIST.md) | Pre-launch gap analysis |
 
@@ -109,13 +108,18 @@ npm run dev:app    # Mobile PWA / APP
 ### Testing & Quality
 
 ```bash
-npm run test:run       # Run all tests (Vitest) — 473 passing / 60 suites
-npm run typecheck      # TypeScript strict check (0 errors)
-npm run lint           # ESLint (0 errors)
+npm run test:run       # Run the Vitest suite
+npm run typecheck      # TypeScript strict check
+npm run lint           # ESLint
 npm run format:check   # Prettier check
 npm run build:web      # Build WEB
 npm run build:app      # Build APP
 ```
+
+For current release-path truth, use [CURRENT_TASKS.md](./CURRENT_TASKS.md),
+[docs/LAUNCH_CHECKLIST.md](./docs/LAUNCH_CHECKLIST.md), and
+[docs/SUPABASE_AUDIT_LIVE_2026_05_12.md](./docs/SUPABASE_AUDIT_LIVE_2026_05_12.md)
+instead of relying on hardcoded snapshot numbers in the README.
 
 ## 📱 Mobile Build (Capacitor)
 
@@ -158,7 +162,7 @@ npm run cap:open:ios           # Open Xcode
 | Stage | Where |
 | --- | --- |
 | Local checks | `npm run lint` · `typecheck` · `test:run` · `build:web` · `build:app` |
-| CI gate | GitHub Actions — lint → typecheck → test → build (all must pass) |
+| CI gate | GitHub Actions — migration check → lint/format → typecheck → test → build |
 | WEB deploy | Push to `main` → `deploy-pages.yml` → GitHub Pages (`ksebe-studio.ru`) |
 | APP deploy | Push to `main` → `firebase-deploy.yml` → Firebase Hosting (`app.ksebe-studio.ru`) |
 | Backend | Supabase Edge Functions deployed via Supabase CLI (`supabase functions deploy`) |
