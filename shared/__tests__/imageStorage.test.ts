@@ -8,10 +8,10 @@ import {
 } from '../services/imageStorage';
 
 const mocks = vi.hoisted(() => {
-  const singleMock = vi
+  const maybeSingleMock = vi
     .fn()
     .mockResolvedValue({ data: { url: 'https://example.com/image.jpg' }, error: null });
-  const eqMock = vi.fn(() => ({ single: singleMock }));
+  const eqMock = vi.fn(() => ({ maybeSingle: maybeSingleMock }));
   const selectMock = vi.fn(() => ({ eq: eqMock }));
   const deleteEqMock = vi.fn();
   const deleteMock = vi.fn(() => ({ eq: deleteEqMock }));
@@ -24,7 +24,7 @@ const mocks = vi.hoisted(() => {
   const uploadFileMock = vi.fn().mockResolvedValue('https://example.com/uploaded.jpg');
 
   return {
-    singleMock,
+    maybeSingleMock,
     eqMock,
     selectMock,
     deleteEqMock,
