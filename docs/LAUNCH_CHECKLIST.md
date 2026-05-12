@@ -14,7 +14,7 @@
 | Supabase security governance | STRONG PARTIAL PASS | GraphQL discoverability and `vector`-in-`public` warnings are now closed; only leaked-password protection remains |
 | Auth UX readiness for leaked-password enforcement | IMPROVED | WEB/APP/reset flows now distinguish weak and compromised password responses instead of collapsing them into generic auth failures |
 | Schema reproducibility | PARTIAL | the latest live delta is committed, but older repo/live history still needs one explicit reconciliation pass |
-| Function deployment clarity | FAIL | live and repo still differ around AI/payment naming contours |
+| Function deployment clarity | FAIL | APP payment path still points at repo-only `create-yookassa-checkout`, while live exposes `create-payment` and current live schema inventory does not include `payment_orders` / `user_passes` |
 | Runtime public smoke | MIXED | recent live logs now show `200` for `studio_contacts`, but still show `401` on generic `app_settings`, `406` on `image_map`, repeated `406` on `site_images`, and repeated `404` on `payment_orders` / `user_passes` |
 
 ---
@@ -30,6 +30,7 @@
 - security advisors now report only one remaining warning: leaked password protection disabled.
 - repo-side runtime probes for `app_settings` / `site_images` were narrowed in merged PR `#492`.
 - repo-side auth UX was hardened so weak and compromised password paths now have explicit user guidance before the live Supabase Auth toggle.
+- repo-side `imageStorage` test setup was stabilized to remove brittle mock/import order drift.
 
 ---
 
@@ -37,7 +38,7 @@
 
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
-| P0 | function canon split | live still keeps `ai-run` / `ai-embeddings`, while repo-side naming drift has not been intentionally normalized |
+| P0 | payment/function canon split | APP `paymentService` still calls repo-only `create-yookassa-checkout`, while live inventory exposes `create-payment`; live schema inventory also lacks `payment_orders` and `user_passes` |
 | P0 | failing CI on the current release path | fresh `CI #1190` for merged PR `#492` failed in `Run Tests`; builds did not run |
 | P0 | leaked password protection disabled in live Auth | Supabase security advisor still warns; repo-side UX hardening is already in place, but the live toggle is still off |
 | P1 | runtime public smoke still not clean | recent live API logs still show remaining `401` / `406` / `404` probes even after the repo-side narrowing in PR `#492` |
@@ -60,8 +61,9 @@ Status: **partially complete**.
 ## 5. Function checklist
 
 - [ ] decide canonical AI contour: `ai-run` / `ai-embeddings` vs repo-side alternatives
-- [ ] decide canonical payment function naming and remove stale repo/live drift
-- [ ] verify client callers against active function names
+- [ ] decide payment canon: `create-payment` vs `create-yookassa-checkout`
+- [ ] align APP callers with the accepted live payment surface
+- [ ] resolve whether `payment_orders` / `user_passes` are intended live tables or stale app/runtime probes
 - [ ] confirm which payment/public endpoints are intentionally exposed in production
 
 Status: **not complete**.
@@ -104,7 +106,7 @@ Recent live API evidence supports these passes:
 - [ ] generic public `app_settings` reads stop returning `401`
 - [ ] `app_settings?key=image_map` stops returning `406`
 - [ ] `site_images` lookups stop returning repeated `406`
-- [ ] stale browser probes to `payment_orders` / `user_passes` stop returning repeated `404`
+- [ ] app/runtime probes to `payment_orders` / `user_passes` stop returning repeated `404`
 
 Status: **mixed, needs one more pass**.
 
@@ -114,7 +116,7 @@ Status: **mixed, needs one more pass**.
 
 Launch PASS requires all of the following:
 
-1. AI/payment function naming drift is intentionally resolved or explicitly accepted.
+1. payment canon is intentionally resolved: either APP moves to `create-payment`, or the YooKassa-only path is intentionally deployed and documented in live.
 2. CI is freshly green on the current release path, including tests and both builds.
 3. leaked password protection is enabled.
 4. weak signup, compromised reset, and sign-in with an old weak password are manually verified against the updated UX copy.
