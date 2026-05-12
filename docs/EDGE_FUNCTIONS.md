@@ -1,6 +1,6 @@
 # Edge Functions Reference | KateStudio
 
-> **Обновлено:** 10 мая 2026 | **Версия:** 3.0.0
+> **Обновлено:** 12 мая 2026 | **Версия:** 3.1.0
 > Ниже разделены repo inventory и live inventory. Их смешивать больше нельзя.
 
 ---
@@ -12,14 +12,14 @@
 | Function | Repo status | Notes |
 | --- | --- | --- |
 | `cancel-subscription` | present | operational / non-AI |
-| `create-payment` | present | payment flow |
-| `create-yookassa-checkout` | present | payment naming split / legacy-or-alt path |
+| `create-payment` | present | legacy/shared payment flow |
+| `create-yookassa-checkout` | present | app-target YooKassa checkout |
 | `cron-maintenance` | present | ops |
 | `gemini-proxy` | present | repo AI contour |
-| `payment-webhook` | present | payment callback |
+| `payment-webhook` | present | legacy/shared payment callback |
 | `send-push` | present | notifications |
 | `subscribe-newsletter` | present | public marketing/signup path |
-| `yookassa-webhook` | present | payment naming split / legacy-or-alt path |
+| `yookassa-webhook` | present | app-target YooKassa callback |
 
 ---
 
@@ -67,13 +67,14 @@ Live Supabase project `qkaycdcbstjobacmuaro` currently reports **9 active functi
 
 ## 4. Meaning of the drift
 
-This is no longer the old state where repo functions simply were not deployed. The current state is more subtle:
+The function split is no longer just a deployment lag. The business model is now explicit:
 
-- live has the repo non-AI deployment wave;
-- live also keeps a separate AI contour (`ai-run`, `ai-embeddings`);
-- repo still carries two YooKassa-named functions that do not appear in live inventory.
+- WEB is storefront-only and should not be treated as a direct payment surface.
+- APP is the intended YooKassa payment surface for approved users.
+- live still exposes the older shared payment pair (`create-payment`, `payment-webhook`).
+- repo carries the app-target pair (`create-yookassa-checkout`, `yookassa-webhook`) that is not yet deployed live.
 
-So the problem is not "deployment absent", but "operational function canon is ambiguous".
+So the real problem is not "which name sounds better". The real problem is that the app-only payment canon is decided at the business level, but not yet promoted to live backend truth.
 
 ---
 
@@ -83,18 +84,21 @@ So the problem is not "deployment absent", but "operational function canon is am
 2. Do not assume a live endpoint is represented one-to-one by repo naming.
 3. AI changes require an explicit decision because live AI and repo AI shapes are not identical.
 4. Payment docs must distinguish active live payment endpoints from repo-only YooKassa variants.
+5. WEB should not gain a direct checkout path unless the business operating model is explicitly changed.
+6. APP payment work should treat `create-yookassa-checkout` + `yookassa-webhook` as the target pair, but not as live canon until migration + deploy evidence exists.
 
 ---
 
 ## 6. Documentation correction
 
-Older docs that say "repo 7 / live 2" are now outdated.
+Older docs that imply WEB is a direct payment surface are now incorrect.
 
 Current truth:
 
 - repo functions: **9**
 - live functions: **9**
 - inventories: **not identical**
+- business canon: WEB non-payment, APP payment, RuStore publication/proof layer
 
 ---
 
@@ -102,7 +106,8 @@ Current truth:
 
 Before any function-level refactor or deployment:
 
-1. map each client caller to concrete endpoint names,
-2. map each secret contract to the currently active live function,
-3. decide whether `ai-run` / `ai-embeddings` remain canonical or are transitional beside `gemini-proxy`,
-4. decide whether `create-yookassa-checkout` / `yookassa-webhook` are historical debris or planned replacements.
+1. keep WEB on Telegram / lead-form onboarding only,
+2. map APP callers to `create-yookassa-checkout`,
+3. deploy the app-target YooKassa pair only together with the required schema,
+4. keep `create-payment` / `payment-webhook` documented as legacy/shared live paths until cutover is complete,
+5. decide whether `ai-run` / `ai-embeddings` remain canonical or are transitional beside `gemini-proxy`.
