@@ -6,7 +6,11 @@ export const TABLE_NAME = 'site_images';
 export const getSavedImageUrl = async (key: string): Promise<string | null> => {
   if (!supabase) return null;
   try {
-    const { data, error } = await supabase.from(TABLE_NAME).select('url').eq('key', key).single();
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .select('url')
+      .eq('key', key)
+      .maybeSingle();
 
     if (error) return null;
     return data?.url || null;
