@@ -1,4 +1,4 @@
-import { isSupabaseConfigured, supabase } from '@ksebe/shared';
+import { getSupabasePasswordPolicyMessage, isSupabaseConfigured, supabase } from '@ksebe/shared';
 import React, { createContext, useContext, useRef, useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
 import { retentionService } from '../services/retentionService';
@@ -139,7 +139,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAuthStatus('phone_otp_sent');
       }
     } catch (e) {
-      if (method === 'email') {
+      const passwordPolicyMessage = getSupabasePasswordPolicyMessage(e, 'signUp');
+      if (passwordPolicyMessage) {
+        setAuthError(passwordPolicyMessage);
+      } else if (method === 'email') {
         setAuthError('Не удалось зарегистрироваться. Проверьте email и попробуйте снова.');
       } else {
         setAuthError('Не удалось отправить код. Проверьте номер и попробуйте снова.');
@@ -166,10 +169,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       // onAuthStateChange handles setUser and setAuthStatus
     } catch (e) {
+      const passwordPolicyMessage = getSupabasePasswordPolicyMessage(e, 'signIn');
       const msg =
-        e instanceof Error && e.message === 'CONFIG_MISSING'
+        passwordPolicyMessage ||
+        (e instanceof Error && e.message === 'CONFIG_MISSING'
           ? 'Приложение не настроено. Обратитесь к администратору.'
-          : 'Неверный логин или пароль. Попробуйте ещё раз.';
+          : 'Неверный логин или пароль. Попробуйте ещё раз.');
       setAuthError(msg);
       throw e;
     } finally {
