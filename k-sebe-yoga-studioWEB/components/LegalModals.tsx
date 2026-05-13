@@ -1,87 +1,209 @@
-import { X, Shield, FileText } from 'lucide-react';
-import React from 'react';
+import { X, Shield, FileText, ReceiptText, Info } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useScrollLock } from '../hooks/useScrollLock';
 
+export type LegalModalType = 'privacy' | 'offer' | 'requisites' | 'howToGetService';
+
 interface LegalModalProps {
-  type: 'privacy' | 'offer' | null;
+  type: LegalModalType | null;
   onClose: () => void;
 }
 
+const TABS: Array<{ id: LegalModalType; label: string }> = [
+  { id: 'privacy', label: 'Политика' },
+  { id: 'offer', label: 'Оферта' },
+  { id: 'requisites', label: 'Реквизиты' },
+  { id: 'howToGetService', label: 'Как получить услугу' },
+];
+
 export const LegalModals: React.FC<LegalModalProps> = ({ type, onClose }) => {
   useScrollLock(!!type);
+  const [activeType, setActiveType] = useState<LegalModalType>('privacy');
+
+  useEffect(() => {
+    if (type) {
+      setActiveType(type);
+    }
+  }, [type]);
+
+  const contentMap = useMemo(
+    () => ({
+      privacy: {
+        title: 'Политика конфиденциальности',
+        icon: <Shield className="w-6 h-6 text-brand-green" />,
+        text: (
+          <div className="space-y-4 text-stone-600 text-sm leading-relaxed">
+            <p>
+              <strong>1. Общие положения</strong>
+              <br />
+              Настоящая политика обработки персональных данных составлена в соответствии с
+              требованиями Федерального закона от 27.07.2006 №152-ФЗ «О персональных данных» и
+              определяет порядок обработки персональных данных и меры по обеспечению безопасности
+              персональных данных, предпринимаемые Исполнителем.
+            </p>
+            <p>
+              <strong>2. Какие данные мы собираем</strong>
+              <br />
+              Мы можем собирать имя, номер телефона, адрес электронной почты, а также технические
+              данные, передаваемые браузером, включая cookie-файлы, если это необходимо для
+              корректной работы сайта и обработки заявок.
+            </p>
+            <p>
+              <strong>3. Цели обработки данных</strong>
+              <br />
+              Персональные данные используются для обратной связи, обработки заявок, записи на
+              занятия, предоставления доступа в приложение, информирования об услугах и исполнения
+              обязательств перед клиентом.
+            </p>
+            <p>
+              <strong>4. Защита данных</strong>
+              <br />
+              Исполнитель принимает необходимые организационные и технические меры для защиты
+              персональных данных Пользователя от неправомерного доступа, изменения, раскрытия или
+              уничтожения.
+            </p>
+          </div>
+        ),
+      },
+      offer: {
+        title: 'Договор оферты',
+        icon: <FileText className="w-6 h-6 text-brand-green" />,
+        text: (
+          <div className="space-y-4 text-stone-600 text-sm leading-relaxed">
+            <p>
+              <strong>1. Общие положения</strong>
+              <br />
+              Индивидуальный предприниматель Габран Екатерина Викторовна, ИНН 501005884694, ОГРНИП
+              326508100178360, именуемая в дальнейшем «Исполнитель», настоящим предлагает любому
+              дееспособному физическому лицу, именуемому в дальнейшем «Заказчик», заключить договор
+              на оказание услуг на условиях настоящей публичной оферты.
+            </p>
+            <p>
+              <strong>2. Предмет договора</strong>
+              <br />
+              Исполнитель оказывает Заказчику услуги по проведению занятий и иных сопутствующих
+              услуг, указанных на сайте и/или в приложении Исполнителя, а Заказчик обязуется
+              ознакомиться с условиями оказания услуг и оплатить выбранный тариф.
+            </p>
+            <p>
+              <strong>3. Порядок оформления, записи и оплаты услуг</strong>
+              <br />
+              Сайт https://ksebe-studio.ru/ используется как публичная витрина услуг, описание
+              тарифов и точка первичного контакта с Исполнителем. Прямая оплата на сайте не
+              осуществляется. Заказчик оставляет заявку через форму на сайте либо связывается с
+              Исполнителем через Telegram. После подтверждения обращения Заказчику предоставляется
+              доступ в закрытый контур приложения, где происходят запись на занятия и оплата услуг
+              через платежный сервис YooKassa по серверной API-интеграции.
+            </p>
+            <p>
+              <strong>4. Стоимость услуг и расчеты</strong>
+              <br />
+              Стоимость услуг определяется в соответствии с тарифами, размещенными на сайте и/или в
+              приложении Исполнителя. Исполнитель вправе изменять стоимость услуг в одностороннем
+              порядке. Новая стоимость применяется к услугам, не оплаченным на момент публикации
+              изменений.
+            </p>
+            <p>
+              <strong>5. Условия участия и ответственность</strong>
+              <br />
+              Заказчик подтверждает, что самостоятельно оценивает состояние своего здоровья и не
+              имеет противопоказаний для участия в занятиях либо принимает на себя риск участия при
+              наличии ограничений. Исполнитель не несет ответственности за последствия сокрытия
+              информации о состоянии здоровья и несоблюдения рекомендаций по участию в занятиях.
+            </p>
+            <p>
+              <strong>6. Отмена записи и возврат</strong>
+              <br />
+              Если иное не указано отдельно, при отмене записи менее чем за 24 часа до начала
+              занятия услуга считается забронированной, а денежные средства не возвращаются.
+              Возврат, если он предусмотрен, осуществляется в порядке, установленном действующим
+              законодательством Российской Федерации и правилами платежного сервиса.
+            </p>
+          </div>
+        ),
+      },
+      requisites: {
+        title: 'Реквизиты',
+        icon: <ReceiptText className="w-6 h-6 text-brand-green" />,
+        text: (
+          <div className="space-y-4 text-stone-600 text-sm leading-relaxed">
+            <p>
+              <strong>Исполнитель</strong>
+              <br />
+              Индивидуальный предприниматель Габран Екатерина Викторовна
+            </p>
+            <p>
+              <strong>ИНН</strong>
+              <br />
+              501005884694
+            </p>
+            <p>
+              <strong>ОГРНИП</strong>
+              <br />
+              326508100178360
+            </p>
+            <p>
+              <strong>Контакты</strong>
+              <br />
+              Email: shamshina-91@mail.ru
+              <br />
+              Телефон: +7 909 946-89-72
+            </p>
+            <p>
+              <strong>Информация для клиентов</strong>
+              <br />
+              Сайт ksebe-studio.ru используется как публичная витрина услуг, описание тарифов и
+              точка первичного контакта. Прямая оплата на сайте не осуществляется. После обращения
+              через форму на сайте или через Telegram клиент получает доступ в приложение, где
+              происходят запись на занятия и оплата услуг.
+            </p>
+          </div>
+        ),
+      },
+      howToGetService: {
+        title: 'Как получить услугу',
+        icon: <Info className="w-6 h-6 text-brand-green" />,
+        text: (
+          <div className="space-y-4 text-stone-600 text-sm leading-relaxed">
+            <p>
+              <strong>1. Выберите подходящую услугу</strong>
+              <br />
+              Ознакомьтесь с описанием занятий и тарифов на сайте ksebe-studio.ru.
+            </p>
+            <p>
+              <strong>2. Оставьте заявку</strong>
+              <br />
+              Заполните форму на сайте или свяжитесь с нами через Telegram, чтобы обсудить
+              подходящий формат занятий.
+            </p>
+            <p>
+              <strong>3. Получите доступ в приложение</strong>
+              <br />
+              После подтверждения обращения вам будет предоставлен доступ в закрытый контур
+              приложения.
+            </p>
+            <p>
+              <strong>4. Запишитесь и оплатите</strong>
+              <br />
+              В приложении доступны запись на занятия и оплата услуг. Оплата производится через
+              YooKassa по серверной API-интеграции.
+            </p>
+            <p>
+              <strong>Важно</strong>
+              <br />
+              Публичный сайт является витриной услуг и точкой первичного контакта. Прямая оплата на
+              сайте не осуществляется.
+            </p>
+          </div>
+        ),
+      },
+    }),
+    []
+  );
 
   if (!type) return null;
 
-  const content =
-    type === 'privacy'
-      ? {
-          title: 'Политика конфиденциальности',
-          icon: <Shield className="w-6 h-6 text-brand-green" />,
-          text: (
-            <div className="space-y-4 text-stone-600 text-sm leading-relaxed">
-              <p>
-                <strong>1. Общие положения</strong>
-                <br />
-                Настоящая политика обработки персональных данных составлена в соответствии с
-                требованиями Федерального закона от 27.07.2006. №152-ФЗ «О персональных данных» и
-                определяет порядок обработки персональных данных и меры по обеспечению безопасности
-                персональных данных, предпринимаемые Студией йоги «К себе».
-              </p>
-              <p>
-                <strong>2. Сбор данных</strong>
-                <br />
-                Мы собираем следующие данные: Имя, Номер телефона, данные cookie-файлов. Сбор
-                происходит через формы обратной связи на сайте.
-              </p>
-              <p>
-                <strong>3. Цели обработки</strong>
-                <br />
-                Цель обработки персональных данных Пользователя — информирование посредством
-                отправки электронных писем; запись на занятия; уточнение деталей заказа.
-              </p>
-              <p>
-                <strong>4. Безопасность</strong>
-                <br />
-                Мы принимаем необходимые организационные и технические меры для защиты персональных
-                данных Пользователя от неправомерного или случайного доступа.
-              </p>
-            </div>
-          ),
-        }
-      : {
-          title: 'Договор оферты',
-          icon: <FileText className="w-6 h-6 text-brand-green" />,
-          text: (
-            <div className="space-y-4 text-stone-600 text-sm leading-relaxed">
-              <p>
-                <strong>1. Предмет договора</strong>
-                <br />
-                Исполнитель обязуется оказать Заказчику услуги по проведению занятий йогой, а
-                Заказчик обязуется оплатить эти услуги.
-              </p>
-              <p>
-                <strong>2. Порядок расчетов</strong>
-                <br />
-                Оплата услуг производится в соответствии с тарифами, указанными на сайте в разделе
-                «Стоимость».
-              </p>
-              <p>
-                <strong>3. Техника безопасности</strong>
-                <br />
-                Заказчик подтверждает, что не имеет медицинских противопоказаний для занятий
-                физической культурой и спортом. Исполнитель не несет ответственности за вред,
-                связанный с ухудшением здоровья, если состояние здоровья Заказчика ухудшилось в
-                результате острого заболевания или обострения травмы.
-              </p>
-              <p>
-                <strong>4. Возврат средств</strong>
-                <br />
-                При отмене записи менее чем за 24 часа, занятие считается проведенным и оплата не
-                возвращается.
-              </p>
-            </div>
-          ),
-        };
+  const content = contentMap[activeType];
 
   return (
     <div
@@ -97,7 +219,7 @@ export const LegalModals: React.FC<LegalModalProps> = ({ type, onClose }) => {
       aria-labelledby="legal-modal-title"
     >
       <div
-        className="bg-white w-full max-w-2xl max-h-[80vh] rounded-[2rem] shadow-2xl flex flex-col animate-in slide-in-from-bottom-10 duration-300 relative"
+        className="bg-white w-full max-w-2xl max-h-[85vh] rounded-[2rem] shadow-2xl flex flex-col animate-in slide-in-from-bottom-10 duration-300 relative"
         onClick={(e) => e.stopPropagation()}
         role="document"
         onKeyDown={(e) => e.stopPropagation()}
@@ -118,6 +240,25 @@ export const LegalModals: React.FC<LegalModalProps> = ({ type, onClose }) => {
           </button>
         </div>
 
+        <div className="px-6 md:px-8 pt-4 border-b border-stone-100">
+          <div className="flex flex-wrap gap-2 pb-4">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveType(tab.id)}
+                className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                  activeType === tab.id
+                    ? 'bg-brand-green text-white'
+                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">{content.text}</div>
 
         <div className="p-6 border-t border-stone-100 bg-stone-50 rounded-b-[2rem] flex justify-end">
@@ -132,3 +273,5 @@ export const LegalModals: React.FC<LegalModalProps> = ({ type, onClose }) => {
     </div>
   );
 };
+
+export default LegalModals;
