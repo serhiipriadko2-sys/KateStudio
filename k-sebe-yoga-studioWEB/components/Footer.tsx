@@ -2,11 +2,12 @@ import { subscribeNewsletter } from '@ksebe/shared';
 import { Send, MapPin, Terminal, Phone } from 'lucide-react';
 import React from 'react';
 import { useStudioContacts } from '../hooks/useStudioContacts';
+import { LegalModalType } from './LegalModals';
 import { Logo } from './Logo';
 
 interface FooterProps {
   onOpenAdmin?: () => void;
-  onOpenLegal?: (type: 'privacy' | 'offer') => void;
+  onOpenLegal?: (type: LegalModalType) => void;
 }
 
 // NewsletterForm hidden — re-enable after launch
@@ -67,10 +68,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
       className="bg-brand-dark text-white pt-20 pb-10 px-6 rounded-t-[3rem] -mt-10 relative z-10"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Newsletter Banner hidden — re-enable after launch */}
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16 border-b border-white/10 pb-12">
-          {/* Brand */}
           <div className="flex flex-col items-start">
             <Logo className="w-20 h-20 mb-6" color="#fff" />
             <p className="text-white/50 text-sm leading-relaxed mb-6">
@@ -93,7 +91,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
             </div>
           </div>
 
-          {/* Navigation */}
           <div>
             <h4 className="text-lg font-serif mb-6 text-brand-green">Меню</h4>
             <ul className="space-y-3 text-sm text-white/70">
@@ -117,12 +114,9 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
                   Цены
                 </a>
               </li>
-              {/* Ретриты — временно скрыто */}
-              {/* Блог — временно скрыто */}
             </ul>
           </div>
 
-          {/* Contacts */}
           <div>
             <h4 className="text-lg font-serif mb-6 text-brand-green">Контакты</h4>
             <ul className="space-y-4 text-sm text-white/70">
@@ -202,7 +196,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/20">
           <p>© {new Date().getFullYear()} Катя Габран. Все права защищены.</p>
-          <div className="flex gap-6 items-center">
+          <div className="flex flex-wrap gap-6 items-center justify-center">
             <button
               onClick={() => onOpenLegal?.('privacy')}
               className="hover:text-white/50 transition-colors"
@@ -214,6 +208,18 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
               className="hover:text-white/50 transition-colors"
             >
               Оферта
+            </button>
+            <button
+              onClick={() => onOpenLegal?.('requisites')}
+              className="hover:text-white/50 transition-colors"
+            >
+              Реквизиты
+            </button>
+            <button
+              onClick={() => onOpenLegal?.('howToGetService')}
+              className="hover:text-white/50 transition-colors"
+            >
+              Как получить услугу
             </button>
             {onOpenAdmin && (
               <button
