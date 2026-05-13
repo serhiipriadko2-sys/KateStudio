@@ -32,6 +32,7 @@ const {
 
 vi.mock('@ksebe/shared', () => ({
   isSupabaseConfigured: true,
+  getSupabasePasswordPolicyMessage: vi.fn().mockReturnValue(null),
   supabase: {
     auth: {
       getSession: mockGetSession,
