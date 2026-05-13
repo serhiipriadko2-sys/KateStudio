@@ -21,6 +21,7 @@ import { Footer } from './components/Footer';
 import { Gallery } from './components/Gallery';
 import { Hero } from './components/Hero';
 import { InstagramFeed } from './components/InstagramFeed';
+import { LegalModalType } from './components/LegalModals';
 import { Logo } from './components/Logo';
 import { Philosophy } from './components/Philosophy';
 import { Preloader } from './components/Preloader';
@@ -37,9 +38,7 @@ import { BookingDetails } from './types';
 const AdminPanel = lazy(() =>
   import('./components/AdminPanel').then((m) => ({ default: m.AdminPanel }))
 );
-const LegalModals = lazy(() =>
-  import('./components/LegalModals').then((m) => ({ default: m.LegalModals }))
-);
+const LegalModals = lazy(() => import('./components/LegalModals'));
 const TrainersPage = lazy(() =>
   import('./components/TrainersPage').then((m) => ({ default: m.TrainersPage }))
 );
@@ -55,7 +54,7 @@ function App() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [legalModalType, setLegalModalType] = useState<'privacy' | 'offer' | null>(null);
+  const [legalModalType, setLegalModalType] = useState<LegalModalType | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOffline, setIsOffline] = useState(
     typeof navigator !== 'undefined' ? !navigator.onLine : false
@@ -432,10 +431,7 @@ function App() {
               }
             />
           </Routes>
-          <Footer
-            onOpenAdmin={() => navigate('/admin')}
-            onOpenLegal={(type) => setLegalModalType(type)}
-          />
+          <Footer onOpenAdmin={() => navigate('/admin')} onOpenLegal={setLegalModalType} />
         </main>
 
         <BackToTop />
