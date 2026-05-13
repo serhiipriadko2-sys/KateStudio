@@ -64,6 +64,38 @@
 
 ---
 
+## Builder runtime vs repo automation
+
+KateStudio now has two distinct skill layers:
+
+### 1. Repo-side automation skills
+
+These are the machine-readable repo skills in:
+- `skills/registry.json`
+- `skills/*.yaml`
+
+They describe repo-native automation, checks, policy, CI-facing or tooling-facing behavior.
+
+### 2. Builder runtime skills
+
+These are ChatGPT Agent Builder runtime artifacts used by the active KateStudio agent.
+
+They are documented in:
+- `docs/CHATGPT_AGENT_RUNTIME.md`
+
+They are **not** the same thing as repo-native YAML skills and must not be inferred from `skills/*.yaml` alone.
+
+### Governance rule
+
+If an audit, review, or drift-analysis touches the KateStudio agent itself, it must inspect both layers:
+
+1. repo governance layer
+2. builder runtime layer
+
+A repo-only review is incomplete if it ignores builder runtime instructions, attached skills, attached files, Memory policy, and connected app behavior.
+
+---
+
 ## 4) File roles
 
 ### `ISKRA_CODER.md`
