@@ -30,6 +30,14 @@
 
 ---
 
+## Agent governance
+
+| Document | Purpose |
+| --- | --- |
+| [docs/CHATGPT_AGENT_RUNTIME.md](./CHATGPT_AGENT_RUNTIME.md) | Canonical builder-runtime governance for the ChatGPT KateStudio agent |
+
+---
+
 ## Что считать историческим, а не текущим operational truth
 
 Следующие документы остаются полезными как история, но не должны считаться текущим operational truth без fresh check:

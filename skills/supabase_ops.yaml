@@ -1,22 +1,79 @@
-skill: 'supabase_ops'
-version: '1.0.0'
-description: 'Manages Supabase database migrations and Edge Function deployments.'
+skill: "supabase_ops"
+version: "2.0.0"
+description: "Manages Supabase migrations, branches, advisors, logs, docs checks, and Edge Function governance."
+
 trigger:
-  event: 'push'
-  paths: ['supabase/migrations/*.sql', 'supabase/functions/**']
+  event: "push"
+  paths:
+    - "supabase/migrations/*.sql"
+    - "supabase/functions/**"
 
 rules:
+  source_of_truth:
+    repo_migrations: "Git-tracked reproducibility truth"
+    live_supabase: "Live backend truth"
+    drift_rule: "Live change is not closed until it has a Git-tracked reconciliation path or is explicitly documented as intentional live-only drift"
+
   migrations:
-    naming_convention: 'YYYYMMDDHHMMSS_description.sql'
-    forbidden_keywords: ['DROP TABLE', 'DROP COLUMN'] # Requires manual review
+    naming_convention: "YYYYMMDDHHMMSS_description.sql"
+    forbidden_keywords:
+      - "DROP TABLE"
+      - "DROP COLUMN"
+    require_manual_review_for_destructive: true
+    require_reconciliation_if_live_only: true
+
+  branches:
+    require_cost_disclosure_before_creation: true
+    require_explicit_confirmation_before_creation: true
+    require_branch_first_for_risky_schema_work: true
+
+  advisors:
+    require_security_check: true
+    require_performance_check_when_schema_changes: true
+
+  logs:
+    allow_runtime_log_review: true
+    never_treat_logs_as_schema_truth: true
+
+  docs_search:
+    require_search_docs_before_risky_changes:
+      - "branch operations"
+      - "migration operations"
+      - "verify_jwt changes"
+      - "RLS changes"
+      - "security remediation"
+      - "edge function auth changes"
+
   functions:
-    forbidden_files: ['.env']
+    forbidden_files:
+      - ".env"
     max_size_mb: 10
+    verify_jwt_false_allowed_only_for:
+      - "documented webhook endpoints"
+      - "explicitly public functions with documented custom auth"
+
+  secrets:
+    never_print:
+      - "service_role"
+      - "jwt secrets"
+      - "api keys"
+      - "tokens"
 
 actions:
-  - type: 'lint_sql'
-    files: 'supabase/migrations/*.sql'
-  - type: 'check_migration_conflicts'
-  - type: 'deploy_function'
-    when: 'path_changed(supabase/functions/{{function_name}})'
-    command: 'supabase functions deploy {{function_name}} --no-verify-jwt'
+  - type: "lint_sql"
+    files: "supabase/migrations/*.sql"
+
+  - type: "check_migration_conflicts"
+
+  - type: "check_supabase_advisors"
+    when: "path_changed(supabase/migrations/*.sql)"
+
+  - type: "check_supabase_logs"
+    when: "path_changed(supabase/functions/**)"
+
+  - type: "check_reconciliation_path"
+    when: "path_changed(supabase/migrations/*.sql) or path_changed(supabase/functions/**)"
+
+  - type: "deploy_function"
+    when: "path_changed(supabase/functions/{{function_name}})"
+    command: "supabase functions deploy {{function_name}}"

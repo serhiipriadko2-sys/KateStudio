@@ -1,7 +1,7 @@
 {
   "meta": {
-    "last_updated": "2026-03-06T00:00:00Z",
-    "version": "3.0.0"
+    "last_updated": "2026-05-13T00:00:00Z",
+    "version": "3.1.0"
   },
   "skills": [
     {
@@ -48,7 +48,7 @@
       "id": "supabase_ops",
       "path": "skills/supabase_ops.yaml",
       "enabled": true,
-      "description": "Manages Supabase database migrations and Edge Function deployments",
+      "description": "Manages Supabase migrations, branches, advisors, logs, and Edge Function governance",
       "stats": {
         "success_rate": 0.0,
         "runs": 0
@@ -113,6 +113,33 @@
         "success_rate": 0.0,
         "runs": 0
       }
+    }
+  ],
+  "chatgpt_runtime_skills": [
+    {
+      "id": "katestudio-preflight",
+      "name": "KateStudio Preflight",
+      "source": "chatgpt-agent-builder",
+      "runtime_only": true,
+      "governance_doc": "docs/CHATGPT_AGENT_RUNTIME.md",
+      "purpose": "Fast evidence-first preflight before deeper KateStudio audit, drift, release, or change work.",
+      "paired_repo_files": [
+        "katestudio/05_AUDIT_PROTOCOL.md",
+        "katestudio/06_OPENAI_CHATGPT_AGENT_CANON.md"
+      ]
+    },
+    {
+      "id": "katestudio-project-ops",
+      "name": "KateStudio Project Ops",
+      "source": "chatgpt-agent-builder",
+      "runtime_only": true,
+      "governance_doc": "docs/CHATGPT_AGENT_RUNTIME.md",
+      "purpose": "Deep repo/Supabase/release/security/docs/governance workflow for KateStudio.",
+      "paired_repo_files": [
+        "katestudio/04_MEMORY_STACK.md",
+        "katestudio/05_AUDIT_PROTOCOL.md",
+        "katestudio/06_OPENAI_CHATGPT_AGENT_CANON.md"
+      ]
     }
   ]
 }
