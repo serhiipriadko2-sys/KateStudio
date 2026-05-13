@@ -1,112 +1,58 @@
 # Custom Instructions — KateStudio (К себе)
 
-> **Обновлено:** 16 февраля 2026
+> **Обновлено:** 13 мая 2026
+> **Статус документа:** historical operator note, not present-tense project canon.
+>
+> Для всех текущих статусов, live counters, release claims, auth reality, runtime symptoms и launch blockers используйте:
+>
+> - `CURRENT_TASKS.md`
+> - `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md`
+>
+> Этот файл оставлен как слой рабочих предпочтений для code-assistance, но больше не является источником истины по состоянию проекта.
 
-Ты — инженер-лид/рефакторинг-ассистент для монорепозитория KateStudio. Цель:
-довести проект до запуска. На старте ИИ-функции НЕ развиваем: ассистент — только
-навигация/контакты (rule-based).
+---
 
-## 0) Контекст репо (считать истиной структуру кода)
+## Что в этом файле больше нельзя читать как current truth
 
-- Monorepo (npm workspaces):
-  - k-sebe-yoga-studioWEB/ — публичный сайт (GitHub Pages, домен
-    ksebe-studio.ru)
-  - k-sebe-yoga-studio-APPp/ — PWA приложение (Firebase deploy)
-  - shared/ — общая библиотека @ksebe/shared
-  - supabase/ — Edge Functions + migrations
-- **Текущий статус**: 174 теста, 100% TypeScript, 0 lint errors
-- **Security P0**: Все критические блокеры устранены (CORS, RLS, Webhook, API
-  key)
-- Запуск без AI: ChatWidget должен работать без Gemini, отвечая по локальной
-  базе знаний.
+Следующие старые claims считать историческими и не использовать как present-tense истину:
 
-## 1) Негативные ограничения (нельзя)
+- `174 теста`, `100% TypeScript`, `0 lint errors`
+- `Все критические блокеры устранены`
+- `ChatWidget должен работать без Gemini` как текущий operational canon
+- старые приоритеты по `create-payment` как payment default
+- любые статусы из февраля 2026 без fresh check против repo/live
 
-- Нельзя коммитить секреты (.env, ключи).
-- Нельзя использовать SUPABASE_SERVICE_ROLE_KEY в браузере.
-- Нельзя оставлять Edge Functions с CORS '\*' и "опциональным" webhook secret.
-- Нельзя делать большие переписывания без причины: приоритет — маленькие
-  безопасные PR.
-- Нельзя ослаблять TypeScript strict mode.
+---
 
-## 2) Приоритеты (в порядке)
+## Что здесь остаётся полезным
 
-P0 (Оставшиеся блокеры):
+- работать минимальными безопасными change-set'ами
+- не коммитить секреты
+- не использовать `SUPABASE_SERVICE_ROLE_KEY` в браузере
+- не менять AI contour без явного запроса
+- после substantive changes обновлять текущий operational canon
+- проверять изменения через `test:run`, `lint`, `typecheck`, `build:web`, `build:app`, когда это уместно
 
-1. Создать production .env файлы (Root, WEB, APP)
-2. Установить GitHub Secrets
-3. Заменить оставшиеся Unsplash изображения в APP
+---
 
-P1 Security/Backend:
+## Stable repo orientation
 
-4. Input validation (Zod) для Edge Functions
-5. Rate limiting в Redis/KV для gemini-proxy
-6. YooKassa интеграция (полная) для create-payment
+- Monorepo на npm workspaces
+- `k-sebe-yoga-studioWEB/` — WEB surface
+- `k-sebe-yoga-studio-APPp/` — APP surface
+- `shared/` — общая библиотека
+- `supabase/` — migrations и Edge Functions
 
-P1 Data/Schema:
+Эта структура читается из кода и остаётся стабильной ориентацией.
 
-7. Добавить миграции для таблиц, которые реально используются:
-   - contacts (WEB Contact)
-   - classes (WEB Schedule)
-   - bookings или booking_requests (WEB booking flow)
-   - profiles (APP)
-   - включить RLS и политики
+---
 
-P1 Product (без AI):
+## Ссылки
 
-8. Сделать ChatWidget "навигационным":
-   - вынести KB в отдельный файл (contacts/address/schedule/pricing/faq)
-   - ответы детерминированные (keyword/rule routing), без вызова Gemini.
+- [CURRENT_TASKS.md](../CURRENT_TASKS.md) — единственный present-tense operational canon
+- [SUPABASE_AUDIT_LIVE_2026_05_12.md](./SUPABASE_AUDIT_LIVE_2026_05_12.md) — live Supabase canon
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — system shape
+- [EDGE_FUNCTIONS.md](./EDGE_FUNCTIONS.md) — repo/live function drift map
+- [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) — release gate
 
-9. Schedule на WEB: fallback на локальный контент, если Supabase не настроен.
-
-P2 Content:
-
-10. Заменить Unsplash плейсхолдеры в APP на локальные ассеты.
-11. Оптимизировать изображения (WebP) по мере готовности.
-
-## 3) Рабочий протокол (как ты отвечаешь/работаешь)
-
-- Всегда начинай с короткого "что я увидел в репо" + план 1-3 шагов.
-- Всегда делай изменения через минимальные патчи:
-  1. найти точные файлы
-  2. предложить diff
-  3. добавить/обновить тесты (Vitest) если логика изменилась
-  4. обновить docs/LAUNCH_CHECKLIST.md или CURRENT_TASKS.md
-- После кода — команды проверки (что запускать локально):
-  - npm run test:run
-  - npm run lint
-  - npm run typecheck
-  - npm run build:web / npm run build:app
-- Если есть неопределённость — делай разумное допущение, помечай его явно и
-  предлагай быстрый способ проверить.
-
-## 4) Стиль изменений
-
-- TypeScript строгий, не ослаблять типы.
-- Не добавлять новые зависимости без необходимости.
-- UX: все деградации должны быть "мягкими" (понятное сообщение, а не падение).
-- Prefer named exports over default exports.
-- Keep components under 300 lines.
-
-## 5) Definition of Done для каждого PR
-
-PASS, если:
-
-- сборка/тесты проходят (`npm run build:all && npm run test:run`),
-- нет секретов в git,
-- Edge Functions закрыты (CORS whitelist + обязательные секреты),
-- миграции воспроизводят нужные таблицы,
-- TypeScript strict mode проходит (`npm run typecheck`),
-- ассистент работает без AI ключей и отвечает по KB.
-
-FAIL, если любое из этого не выполнено.
-
-## 6) Ссылки
-
-- [CLAUDE.md](../CLAUDE.md) — основные инструкции для AI-агентов
-- [AGENTS.md](../AGENTS.md) — мульти-агентная архитектура
-- [CURRENT_TASKS.md](../CURRENT_TASKS.md) — текущие задачи
-- [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) — чеклист запуска
-- [SECURITY_REPORT_2026_02_11.md](./SECURITY_REPORT_2026_02_11.md) — аудит
-  безопасности
+Если этот файл расходится с repo/live evidence, он автоматически проигрывает более свежему источнику истины.
