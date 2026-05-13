@@ -36,6 +36,7 @@ vi.mock('../services/supabase', () => ({
 const loadImageStorage = () => import('../services/imageStorage');
 
 beforeEach(() => {
+  vi.resetModules();
   vi.clearAllMocks();
   mocks.maybeSingleMock.mockResolvedValue({ data: { url: 'https://example.com/image.jpg' }, error: null });
   mocks.uploadFileMock.mockResolvedValue('https://example.com/uploaded.jpg');
