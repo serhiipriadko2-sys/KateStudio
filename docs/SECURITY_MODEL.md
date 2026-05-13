@@ -1,47 +1,45 @@
 # Security Model | KateStudio
 
-> **Обновлено:** 15 марта 2026
-> Role narrative — кто, что видит и почему.
+> **Обновлено:** 13 мая 2026
+> Этот документ описывает security model и текущие подтверждённые security deltas.
+> Для present-tense launch/status claims используйте `CURRENT_TASKS.md` и `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md`.
 
 ---
 
 ## Роли и границы доступа
 
-### App User (клиент студии)
+### App User
 
-- Аутентифицируется через Supabase Auth (OTP/Magic Link).
-- Видит **только свои** записи: профиль, бронирования, подписку, историю практик.
-- Isolation механизм: RLS политика `auth.uid() = user_id` на каждой чувствительной таблице.
-- Не может обновить свой статус подписки напрямую — только через Edge Function (service role обходит RLS контролируемо).
-- Не имеет доступа к таблице `admins`, расписанию других пользователей, аналитике.
+- Аутентифицируется через Supabase Auth.
+- Видит только свои записи: профиль, бронирования, подписку, пользовательские события и прогресс.
+- Изоляция строится на RLS по `auth.uid() = user_id` на чувствительных таблицах.
+- Не получает admin-права через клиентский код или публичный API.
 
-### Studio Admin (сотрудник студии)
+> Важно: не считать APP auth OTP-only или Magic-Link-only каноном. Текущие live auth logs уже подтверждают password и refresh-token сессии с WEB referer `https://ksebe-studio.ru/`.
 
-- Работает через WEB (`ksebe-studio.ru`), **отдельная auth boundary** от APP.
-- Права администратора хранятся в таблице `admins` (`user_id` → `auth.users`).
-- Проверка прав происходит на сервере (Edge Functions / RLS `is_admin()` function).
-- Клиентский код **не определяет** admin-права — только читает флаг, полученный с сервера.
-- Доступ к административным операциям: управление расписанием, просмотр аналитики, управление подписками.
+### Studio Admin
 
-### Edge Functions (серверный периметр)
+- Работает через отдельную admin boundary в WEB.
+- Права администратора хранятся в таблице `admins` и проверяются серверной логикой.
+- Клиент не должен выводить admin-права из JWT claims или публичных полей профиля.
 
-- Единственное место, где хранятся и используются секреты: `GEMINI_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `YOOKASSA_*`, `FIREBASE_SERVICE_ACCOUNT_JSON`.
-- Все чувствительные операции проходят через Edge Functions — AI, платежи, push, обслуживание.
-- Каждая функция проверяет auth самостоятельно: JWT validation, HMAC verification, CRON_SECRET.
-- Service Role Key используется только внутри Edge Functions для операций, которые пользователь не может выполнить напрямую (обход RLS контролируемо).
+### Edge Functions
+
+- Хранят и используют секреты server-side: `SUPABASE_SERVICE_ROLE_KEY`, `YOOKASSA_*`, `GEMINI_API_KEY`, `FIREBASE_SERVICE_ACCOUNT_JSON`, прочие webhook/ops secrets.
+- Закрывают чувствительные операции: платежи, AI, push, cron/maintenance.
+- Должны проверять auth, webhook secret или ops secret в зависимости от контура.
 
 ---
 
-## Что клиент получает, а что — нет
+## Что клиент получает, а что нет
 
-| | Browser / Device |
+| Surface | Статус |
 | --- | --- |
-| ✅ Получает | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (публичные, безопасны) |
-| ✅ Получает | JWT токен своего сеанса (истекает, не даёт admin-прав) |
-| ❌ Не получает | `SUPABASE_SERVICE_ROLE_KEY` |
-| ❌ Не получает | `GEMINI_API_KEY` |
-| ❌ Не получает | `YOOKASSA_SECRET_KEY`, `PAYMENT_WEBHOOK_SECRET` |
-| ❌ Не получает | `FIREBASE_SERVICE_ACCOUNT_JSON` |
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | публично допустимо |
+| Session JWT текущего пользователя | допустимо, но не даёт admin-прав |
+| `SUPABASE_SERVICE_ROLE_KEY` | никогда не уходит в клиент |
+| `GEMINI_API_KEY`, `YOOKASSA_SECRET_KEY`, webhook secrets | никогда не уходит в клиент |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | никогда не уходит в клиент |
 
 ---
 
@@ -49,14 +47,28 @@
 
 | Механизм | Что закрывает |
 | --- | --- |
-| **Supabase RLS** | Изоляция пользовательских данных (`auth.uid() = user_id`) |
-| **`admins` table** | Административные права хранятся на сервере, не в JWT claims |
-| **HMAC webhook** | `payment-webhook` отклоняет запросы без валидной подписи YooKassa |
-| **JWT validation** | Все Edge Functions проверяют токен через `supabase.auth.getUser()` |
-| **Zod validation** | `gemini-proxy` валидирует каждый входящий запрос (discriminated union по `op`) |
-| **CORS allowlist** | `ksebe-studio.ru`, `app.ksebe-studio.ru`, `localhost` — остальные отклоняются |
-| **Rate limiting** | `gemini-proxy` — in-memory лимиты per user (дорогие операции требуют auth) |
-| **CRON_SECRET** | `cron-maintenance` — недоступна без bearer token |
+| Supabase RLS | изоляция пользовательских данных |
+| `admins` table + server-side checks | отдельная admin boundary |
+| HMAC/basic-secret webhook verification | защита payment callback / ops callback контуров |
+| JWT validation | закрытые Edge Function endpoints |
+| Zod/input validation | валидация входов в Edge Functions |
+| CORS allowlists | ограничение browser-facing function origins |
+| Rate limiting | защита AI и дорогих операций |
+| Ops secrets (`CRON_SECRET` etc.) | maintenance/admin automation paths |
+
+> Точный domain allowlist не держите в голове по этому документу. Для present-tense значений смотрите код конкретной функции и deployment evidence. Старые списки доменов в документации не считаются сами по себе каноном.
+
+---
+
+## Текущие подтверждённые security deltas
+
+| Домен | Подтверждённое состояние |
+| --- | --- |
+| Live security advisors | остался `1 warning` |
+| Current warning | leaked password protection disabled |
+| GraphQL discoverability | снят из live canonical snapshot |
+| `vector` in `public` | снят; extension moved out of public surface |
+| `profiles` public drift | historical blocker closed in current live migration history |
 
 ---
 
@@ -64,15 +76,15 @@
 
 | Риск | Статус |
 | --- | --- |
-| `GEMINI_API_KEY` не установлен в Vault | ⏳ AI features не работают |
-| `YOOKASSA_*` не установлены | ⏳ Платежи не live |
-| Rate limiting in-memory (не persistent) | ⚠️ Для production scale нужен KV/Redis |
-| `contacts` / `classes` — нет CREATE миграции | ⚠️ Таблицы существуют, но без явной схемы |
+| leaked password protection в live Auth | open |
+| APP payment cutover drift (`create-yookassa-checkout` vs current live payment pair) | open |
+| in-memory rate limiting для `gemini-proxy` | open for scale risk |
+| repo/live drift по function/domain contracts | open |
 
 ---
 
 ## Правило для разработчиков
 
-> Секреты живут только в Supabase Vault и GitHub Secrets.
-> В `.env.example` — только публичные переменные с placeholder-значениями.
-> Никакой секретный ключ не попадает в `VITE_*` переменные для production.
+> Секреты живут только в Vault, deployment secrets и server-side runtime.
+> `.env.example` не должен содержать настоящих секретов.
+> Любой present-tense security verdict проверяйте по `CURRENT_TASKS.md` и `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md`, а не по старым narrative docs.
