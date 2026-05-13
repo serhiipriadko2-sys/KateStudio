@@ -1,9 +1,15 @@
 # APP-Only YooKassa Cutover Plan | KateStudio
 
-> **Дата:** 12 мая 2026
+> **Дата:** 13 мая 2026
 > **Режим:** SECURITY / RELEASE / SUPABASE
 > **Статус:** review-only, no production mutation performed by this document
-> **Вердикт:** `PARTIAL` — business canon is now clear, but live backend is not yet aligned to the app-only YooKassa model.
+> **Вердикт:** `PARTIAL` — business canon is clear, but live backend is still not aligned to the app-only YooKassa model.
+>
+> Для present-tense operational status используйте:
+>
+> - `CURRENT_TASKS.md`
+> - `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md`
+> - `docs/LAUNCH_CHECKLIST.md`
 
 ---
 
@@ -21,9 +27,11 @@ This is a cutover plan, not an approval to deploy.
 
 ## 2. Current live evidence
 
-### Live Supabase on 12 May 2026
+### Live Supabase baseline used by this plan
 
-- applied migrations: **30**
+Synced against the canonical live snapshot dated 12 May 2026:
+
+- applied migrations: **37**
 - active functions: **9**
 - current live payment functions:
   - `create-payment`
@@ -31,7 +39,7 @@ This is a cutover plan, not an approval to deploy.
 - current live app-target functions missing:
   - `create-yookassa-checkout`
   - `yookassa-webhook`
-- current live schema inventory does **not** confirm:
+- current live public schema inventory does **not** confirm:
   - `payment_orders`
   - `user_passes`
 

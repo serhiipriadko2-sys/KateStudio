@@ -1,7 +1,14 @@
 # Testing Architecture | KateStudio
 
-> **Обновлено:** 10 мая 2026
-> Этот документ разделяет две вещи: test architecture и last known verification snapshot.
+> **Обновлено:** 13 мая 2026
+> Этот документ разделяет две вещи: stable test architecture и current evidence discipline.
+>
+> Для present-tense release status используйте:
+>
+> - `CURRENT_TASKS.md`
+> - `docs/LAUNCH_CHECKLIST.md`
+>
+> Этот файл не должен сам по себе объявлять release path green.
 
 ---
 
@@ -15,45 +22,45 @@
 - DOM environment: jsdom
 - shared runner covers all workspaces from root config
 
-These facts are stable and remain consistent with repo configuration references in existing docs.
-
-### Latest documented verification snapshot
-
-The freshest verified counts available in the repo canon are from `CURRENT_TASKS.md` dated 2026-05-02:
-
-| Metric | Last documented value |
-| --- | --- |
-| Passed tests | 489 |
-| Test files / suites | 64 |
-| TypeScript errors | 0 |
-| Lint | PASS |
-
-Older `docs/TESTING.md` values (`473 / 60`) are outdated.
+These facts are stable and remain consistent with repo configuration references in code and workflow files.
 
 ---
 
-## 2. What is not claimed here
+## 2. Current evidence discipline
 
-This audit did **not** re-run the test suite locally, because the repository was inspected remotely through GitHub and Supabase tooling rather than through a full local checkout with dependencies installed.
+### What the repo canon can currently support
 
-So this document does **not** claim a new execution result for 2026-05-10. It records the latest trustworthy repo-stated snapshot and flags the gap.
+The current repo canon supports these statements:
+
+- the release path includes `npm run test:run`, `npm run typecheck`, `npm run lint`, `npm run build:web`, and `npm run build:app`
+- `CURRENT_TASKS.md` and `docs/LAUNCH_CHECKLIST.md` are the present-tense status documents
+- a red release-path snapshot was explicitly recorded on 12 May 2026 for `CI #1190`
+- a narrow test-only fix for `shared/__tests__/imageStorage.test.ts` was merged later the same day in PR `#494`
+
+### What this document must not claim
+
+This document must not claim:
+
+- a current test count as if it were freshly re-run today
+- a green release path without fresh GitHub Actions or local execution evidence
+- old snapshots such as `489 / 64` as if they were still the current repo state
 
 ---
 
-## 3. Working rule
+## 3. Working rule for test claims
 
-Use the following phrasing in project docs until tests are re-run:
+Use one of these two phrasings only:
 
-- `last verified in repo snapshot: 489 tests / 64 files as of 2026-05-02`
-- not `currently verified today`
+- `present-tense status: see CURRENT_TASKS.md and docs/LAUNCH_CHECKLIST.md`
+- `historical snapshot: explicitly date the evidence and avoid present-tense wording`
 
-This keeps documentation honest.
+This keeps testing docs honest when the repo is being inspected remotely rather than through a fresh local execution pass.
 
 ---
 
-## 4. Next step
+## 4. Next verification step
 
-After a full local checkout is available, rerun:
+After a full local checkout or fresh Actions run is available, verify:
 
 ```bash
 npm run test:run
@@ -63,4 +70,4 @@ npm run build:web
 npm run build:app
 ```
 
-Then replace all "last documented" language with fresh run evidence.
+Then update `CURRENT_TASKS.md` and `docs/LAUNCH_CHECKLIST.md` first, and only after that refresh any derived testing narrative.
