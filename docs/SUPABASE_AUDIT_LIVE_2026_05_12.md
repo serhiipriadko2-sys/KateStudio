@@ -20,9 +20,9 @@
 - recent logs show real live traffic through the app-target payment contour
 - security advisors still collapse to **1 remaining warning**: leaked password protection disabled
 
-[INTERP] The highest-value correction is no longer “docs should stop saying 14 or 30”. That work was already needed on 12 May. The current correction is stricter: docs must stop saying that live still lacks the APP payment schema/function surface.
+[INTERP] The highest-value correction is no longer “docs should stop saying 14 or 30”. That work was already needed on 12 May. The current correction is stricter: docs must stop describing the APP payment schema/function surface as still pre-live.
 
-[INTERP] The active risk has changed shape. It is now **dual payment contour + unverified fresh CI**, not “repo wants app-only YooKassa but live does not”.
+[INTERP] The active risk has changed shape. It is now **dual payment contour + unverified fresh CI**, not the older repo/live gap where the new APP payment surface had not yet reached production.
 
 ---
 
@@ -92,17 +92,15 @@ The current live history now includes these late-stage versions, including the p
 
 ---
 
-## 3. Stale claims that this file now rejects
+## 3. Stale narratives that this file now rejects
 
-The following claims are now stale and should not appear in present-tense operational docs:
+The following narratives are now stale and should not appear in present-tense operational docs:
 
-- live has **37** migrations
-- live has **9** functions
-- live lacks `payment_orders`
-- live lacks `user_passes`
-- live lacks `create-yookassa-checkout`
-- live lacks `yookassa-webhook`
-- app payment cutover is still blocked only because the new live payment surface is absent
+- the older **37-migration** live baseline
+- the older **9-function** live baseline
+- any present-tense wording that treats the APP payment tables as still undeployed in live
+- any present-tense wording that treats the app-target YooKassa pair as still repo-only
+- any launch blocker framing that depends only on the absence of the new live payment surface
 
 ---
 
@@ -135,7 +133,7 @@ The following claims are now stale and should not appear in present-tense operat
 ## 5. Safe documentation rule after this update
 
 1. Treat this file as a bridge canon updated through 2026-05-16 until a renamed live audit file exists.
-2. Do not use it to claim that the APP payment surface is still missing in live.
+2. Do not use it to describe the APP payment surface as still pre-live.
 3. Use `CURRENT_TASKS.md`, `docs/LAUNCH_CHECKLIST.md`, and `docs/EDGE_FUNCTIONS.md` together with this file so they all reflect the same 38/11/payment-present baseline.
 4. Keep the payment risk framed as dual contour + unverified fresh CI.
 
