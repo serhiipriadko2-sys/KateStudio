@@ -1,6 +1,6 @@
 # Edge Functions Reference | KateStudio
 
-> **Обновлено:** 16 мая 2026 | **Версия:** 3.2.0
+> **Обновлено:** 16 мая 2026 | **Версия:** 3.2.1
 > Ниже разделены repo inventory и live inventory. Их смешивать по-прежнему нельзя, но stale claim про missing APP payment pair в live больше недопустим.
 
 ---
@@ -79,8 +79,9 @@ Current framing:
 - live has **both** the legacy shared payment pair (`create-payment`, `payment-webhook`) and the app-target pair (`create-yookassa-checkout`, `yookassa-webhook`)
 - repo still documents APP as the intended YooKassa payment surface
 - live AI and repo AI contours are still not identical because `ai-run` and `ai-embeddings` remain live-only
+- fresh release-path green CI is still unverified in the current baseline review
 
-So the real payment problem is no longer missing deployment. The real problem is dual payment contour governance: which pair is canonical now, how long both may coexist, and what retirement rule applies to the legacy pair.
+So the real payment problem is no longer missing deployment. The active launch risk is now **dual payment contour + unverified fresh CI**: function surfaces are present, but canonical ownership and current release proof are still not settled.
 
 ---
 
@@ -92,7 +93,8 @@ So the real payment problem is no longer missing deployment. The real problem is
 4. Payment docs must distinguish between legacy live payment endpoints and app-target live payment endpoints.
 5. WEB should remain on Telegram / lead-form onboarding unless the business operating model changes explicitly.
 6. APP payment work should treat dual-contour ownership as the active governance risk until one pair is clearly marked primary and the other is either transitional or retired.
-7. AI changes still require an explicit decision because live AI and repo AI shapes are not identical.
+7. Do not present function-side cleanup as launch proof until a fresh green release-path CI run is actually verified.
+8. AI changes still require an explicit decision because live AI and repo AI shapes are not identical.
 
 ---
 
@@ -120,4 +122,4 @@ Before any function-level refactor or retirement:
 3. decide whether the dual payment contour is an accepted transition window or an unwanted overlap,
 4. if transition is accepted, document expiry criteria for the legacy pair,
 5. if transition is not accepted, prepare a controlled retirement path for `create-payment` / `payment-webhook`,
-6. decide whether `ai-run` / `ai-embeddings` remain canonical or transitional beside `gemini-proxy`.
+6. decide whether `ai-run` / `ai-embeddings` remain canonical or transitional beside `gemini-proxy`. 
