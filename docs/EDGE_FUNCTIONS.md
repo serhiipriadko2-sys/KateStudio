@@ -1,6 +1,6 @@
 # Edge Functions Reference | KateStudio
 
-> **Обновлено:** 16 мая 2026 | **Версия:** 3.2.1
+> **Обновлено:** 16 мая 2026 | **Версия:** 3.2.2
 > Ниже разделены repo inventory и live inventory. Их смешивать по-прежнему нельзя, но stale claim про missing APP payment pair в live больше недопустим.
 
 ---
@@ -73,7 +73,7 @@ Live Supabase project `qkaycdcbstjobacmuaro` currently reports **11 active funct
 The key drift changed shape.
 
 Old framing that is now stale:
-- repo has the APP YooKassa pair but live does not.
+- the APP-target YooKassa pair was previously treated as repo-only / not-yet-live.
 
 Current framing:
 - live has **both** the legacy shared payment pair (`create-payment`, `payment-webhook`) and the app-target pair (`create-yookassa-checkout`, `yookassa-webhook`)
@@ -89,7 +89,7 @@ So the real payment problem is no longer missing deployment. The active launch r
 
 1. Do not assume a repo folder means a live endpoint exists.
 2. Do not assume a live endpoint is represented one-to-one by repo naming.
-3. Do not claim that live lacks `create-yookassa-checkout` or `yookassa-webhook`; that statement is now stale.
+3. Do not describe the app-target YooKassa pair as repo-only or not-yet-live; that wording is now stale.
 4. Payment docs must distinguish between legacy live payment endpoints and app-target live payment endpoints.
 5. WEB should remain on Telegram / lead-form onboarding unless the business operating model changes explicitly.
 6. APP payment work should treat dual-contour ownership as the active governance risk until one pair is clearly marked primary and the other is either transitional or retired.
