@@ -1,7 +1,7 @@
 # Edge Functions Reference | KateStudio
 
-> **Обновлено:** 12 мая 2026 | **Версия:** 3.1.0
-> Ниже разделены repo inventory и live inventory. Их смешивать больше нельзя.
+> **Обновлено:** 16 мая 2026 | **Версия:** 3.2.0
+> Ниже разделены repo inventory и live inventory. Их смешивать по-прежнему нельзя, но stale claim про missing APP payment pair в live больше недопустим.
 
 ---
 
@@ -25,19 +25,21 @@
 
 ## 2. Live inventory
 
-Live Supabase project `qkaycdcbstjobacmuaro` currently reports **9 active functions**:
+Live Supabase project `qkaycdcbstjobacmuaro` currently reports **11 active functions**:
 
 | Function | JWT | Version | Live status |
 | --- | --- | --- | --- |
-| `ai-run` | true | 4 | ACTIVE |
-| `ai-embeddings` | true | 4 | ACTIVE |
-| `create-payment` | true | 2 | ACTIVE |
-| `payment-webhook` | false | 2 | ACTIVE |
-| `cancel-subscription` | true | 2 | ACTIVE |
-| `cron-maintenance` | false | 2 | ACTIVE |
-| `send-push` | false | 2 | ACTIVE |
-| `subscribe-newsletter` | false | 2 | ACTIVE |
-| `gemini-proxy` | true | 2 | ACTIVE |
+| `ai-run` | true | 7 | ACTIVE |
+| `ai-embeddings` | true | 7 | ACTIVE |
+| `create-payment` | true | 5 | ACTIVE |
+| `payment-webhook` | false | 5 | ACTIVE |
+| `cancel-subscription` | true | 5 | ACTIVE |
+| `cron-maintenance` | false | 5 | ACTIVE |
+| `send-push` | false | 5 | ACTIVE |
+| `subscribe-newsletter` | false | 5 | ACTIVE |
+| `gemini-proxy` | true | 5 | ACTIVE |
+| `create-yookassa-checkout` | true | 7 | ACTIVE |
+| `yookassa-webhook` | false | 5 | ACTIVE |
 
 ---
 
@@ -45,13 +47,15 @@ Live Supabase project `qkaycdcbstjobacmuaro` currently reports **9 active functi
 
 ### Present in both repo and live
 
-- `create-payment`
-- `payment-webhook`
 - `cancel-subscription`
+- `create-payment`
+- `create-yookassa-checkout`
 - `cron-maintenance`
+- `gemini-proxy`
+- `payment-webhook`
 - `send-push`
 - `subscribe-newsletter`
-- `gemini-proxy`
+- `yookassa-webhook`
 
 ### Live-only
 
@@ -60,21 +64,23 @@ Live Supabase project `qkaycdcbstjobacmuaro` currently reports **9 active functi
 
 ### Repo-only
 
-- `create-yookassa-checkout`
-- `yookassa-webhook`
+- none on the payment surface
 
 ---
 
 ## 4. Meaning of the drift
 
-The function split is no longer just a deployment lag. The business model is now explicit:
+The key drift changed shape.
 
-- WEB is storefront-only and should not be treated as a direct payment surface.
-- APP is the intended YooKassa payment surface for approved users.
-- live still exposes the older shared payment pair (`create-payment`, `payment-webhook`).
-- repo carries the app-target pair (`create-yookassa-checkout`, `yookassa-webhook`) that is not yet deployed live.
+Old framing that is now stale:
+- repo has the APP YooKassa pair but live does not.
 
-So the real problem is not "which name sounds better". The real problem is that the app-only payment canon is decided at the business level, but not yet promoted to live backend truth.
+Current framing:
+- live has **both** the legacy shared payment pair (`create-payment`, `payment-webhook`) and the app-target pair (`create-yookassa-checkout`, `yookassa-webhook`)
+- repo still documents APP as the intended YooKassa payment surface
+- live AI and repo AI contours are still not identical because `ai-run` and `ai-embeddings` remain live-only
+
+So the real payment problem is no longer missing deployment. The real problem is dual payment contour governance: which pair is canonical now, how long both may coexist, and what retirement rule applies to the legacy pair.
 
 ---
 
@@ -82,32 +88,36 @@ So the real problem is not "which name sounds better". The real problem is that 
 
 1. Do not assume a repo folder means a live endpoint exists.
 2. Do not assume a live endpoint is represented one-to-one by repo naming.
-3. AI changes require an explicit decision because live AI and repo AI shapes are not identical.
-4. Payment docs must distinguish active live payment endpoints from repo-only YooKassa variants.
-5. WEB should not gain a direct checkout path unless the business operating model is explicitly changed.
-6. APP payment work should treat `create-yookassa-checkout` + `yookassa-webhook` as the target pair, but not as live canon until migration + deploy evidence exists.
+3. Do not claim that live lacks `create-yookassa-checkout` or `yookassa-webhook`; that statement is now stale.
+4. Payment docs must distinguish between legacy live payment endpoints and app-target live payment endpoints.
+5. WEB should remain on Telegram / lead-form onboarding unless the business operating model changes explicitly.
+6. APP payment work should treat dual-contour ownership as the active governance risk until one pair is clearly marked primary and the other is either transitional or retired.
+7. AI changes still require an explicit decision because live AI and repo AI shapes are not identical.
 
 ---
 
 ## 6. Documentation correction
 
-Older docs that imply WEB is a direct payment surface are now incorrect.
-
 Current truth:
 
 - repo functions: **9**
-- live functions: **9**
-- inventories: **not identical**
+- live functions: **11**
+- APP-target payment pair: **present in both repo and live**
+- legacy payment pair: **still live**
+- inventories: **not identical overall because of live-only AI functions**
 - business canon: WEB non-payment, APP payment, RuStore publication/proof layer
+
+That means operational docs must no longer speak as if the APP payment pair is still repo-only.
 
 ---
 
 ## 7. Next verification step
 
-Before any function-level refactor or deployment:
+Before any function-level refactor or retirement:
 
 1. keep WEB on Telegram / lead-form onboarding only,
-2. map APP callers to `create-yookassa-checkout`,
-3. deploy the app-target YooKassa pair only together with the required schema,
-4. keep `create-payment` / `payment-webhook` documented as legacy/shared live paths until cutover is complete,
-5. decide whether `ai-run` / `ai-embeddings` remain canonical or are transitional beside `gemini-proxy`.
+2. obtain fresh release-path CI proof,
+3. decide whether the dual payment contour is an accepted transition window or an unwanted overlap,
+4. if transition is accepted, document expiry criteria for the legacy pair,
+5. if transition is not accepted, prepare a controlled retirement path for `create-payment` / `payment-webhook`,
+6. decide whether `ai-run` / `ai-embeddings` remain canonical or transitional beside `gemini-proxy`.
