@@ -6,18 +6,40 @@ const RequestSchema = z.object({
   returnUrl: z.string().url().optional(),
 });
 
-const allowedOrigins = [
+const defaultAllowedOrigins = [
   'https://ksebe-studio.ru',
   'https://app.ksebe-studio.ru',
-  ...(Deno.env.get('ENVIRONMENT') !== 'production'
-    ? ['http://localhost:3000', 'http://localhost:5173']
-    : []),
+  'https://artful-striker-476211-h4.web.app',
 ];
 
-const allowedReturnHosts = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
+function normalizeOrigin(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  try {
+    const parsed = trimmed.includes('://') ? new URL(trimmed) : new URL(`https://${trimmed}`);
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    return null;
+  }
+}
+
+const configuredAllowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
   .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
+  .map(normalizeOrigin)
+  .filter((origin): origin is string => Boolean(origin));
+
+const allowedOrigins = Array.from(
+  new Set([
+    ...defaultAllowedOrigins,
+    ...configuredAllowedOrigins,
+    ...(Deno.env.get('ENVIRONMENT') !== 'production'
+      ? ['http://localhost:3000', 'http://localhost:5173']
+      : []),
+  ])
+);
+
+const allowedReturnHosts = new Set(allowedOrigins.map((origin) => new URL(origin).hostname));
 
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get('origin') || '';
@@ -26,6 +48,7 @@ function getCorsHeaders(req: Request) {
     'access-control-allow-origin': allowOrigin,
     'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type',
     'access-control-allow-methods': 'POST, OPTIONS',
+    vary: 'Origin',
   };
 }
 
@@ -46,7 +69,7 @@ function isAllowedReturnUrl(url: string): boolean {
     const parsed = new URL(url);
     if (['ksebe:', 'capacitor:'].includes(parsed.protocol)) return true;
     if (parsed.hostname === 'localhost') return true;
-    return allowedReturnHosts.includes(parsed.hostname);
+    return allowedReturnHosts.has(parsed.hostname);
   } catch {
     return false;
   }
