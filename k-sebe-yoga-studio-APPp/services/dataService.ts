@@ -24,6 +24,11 @@ export type DataServiceMutationStatus =
   | 'degraded'
   | 'auth_required'
   | 'duplicate'
+  | 'no_access'
+  | 'pass_expired'
+  | 'no_visits_left'
+  | 'class_full'
+  | 'class_not_found'
   | 'server_error';
 
 export interface DataServiceMutationResult {
@@ -31,6 +36,22 @@ export interface DataServiceMutationResult {
   status: DataServiceMutationStatus;
   source: 'server' | 'cache';
   reason?: Extract<DataServiceReadReason, 'auth_required' | 'server_unavailable'>;
+}
+
+interface BookClassRpcResult {
+  ok: boolean;
+  code:
+    | 'success'
+    | 'auth_required'
+    | 'duplicate'
+    | 'no_access'
+    | 'pass_expired'
+    | 'no_visits_left'
+    | 'class_full'
+    | 'class_not_found';
+  booking_id: string | null;
+  pass_id: string | null;
+  visits_remaining: number | null;
 }
 
 export const DATA_SOURCES = {
@@ -89,6 +110,60 @@ const buildMutationResult = (
   source,
   ...(reason ? { reason } : {}),
 });
+
+const mapRpcBookingStatus = (code: BookClassRpcResult['code']): DataServiceMutationStatus => {
+  switch (code) {
+    case 'success':
+      return 'success';
+    case 'auth_required':
+      return 'auth_required';
+    case 'duplicate':
+      return 'duplicate';
+    case 'no_access':
+      return 'no_access';
+    case 'pass_expired':
+      return 'pass_expired';
+    case 'no_visits_left':
+      return 'no_visits_left';
+    case 'class_full':
+      return 'class_full';
+    case 'class_not_found':
+      return 'class_not_found';
+    default:
+      return 'server_error';
+  }
+};
+
+const isTerminalPendingBookingStatus = (status: DataServiceMutationStatus) =>
+  status === 'duplicate' ||
+  status === 'no_access' ||
+  status === 'pass_expired' ||
+  status === 'no_visits_left' ||
+  status === 'class_full' ||
+  status === 'class_not_found';
+
+const callBookClassRpc = async (params: {
+  classId: string;
+  className: string;
+  date: string;
+  time: string;
+  location: string;
+  timestamp: number;
+}): Promise<BookClassRpcResult | null> => {
+  const { data, error } = await supabase
+    .rpc('book_class_with_access', {
+      p_class_id: params.classId,
+      p_class_name: params.className,
+      p_class_date: params.date,
+      p_class_time: params.time,
+      p_class_location: params.location,
+      p_class_timestamp: params.timestamp,
+    })
+    .single();
+
+  if (error) throw error;
+  return (data ?? null) as BookClassRpcResult | null;
+};
 
 // In-memory cache: key = "YYYY-MM-type" → array of ClassSessions for the whole month
 const monthCache = new Map<string, DataServiceReadResult<ClassSession[]>>();
@@ -635,16 +710,13 @@ export const dataService = {
   },
 
   bookClass: async (cls: ClassSession, user: UserProfile): Promise<DataServiceMutationResult> => {
-    // Auth-first: real bookings require authenticated user_id (RLS).
-    // If user.id is not a UUID, treat as unauthenticated.
+    // Auth-first: real bookings require authenticated user_id.
     const authUserId = await getAuthenticatedUserId(user.id);
     if (!authUserId) {
-      // Keep local profile cached for UX, but don't attempt DB booking.
       await cacheAdapter.setUser({ ...user, isRegistered: true });
       return buildMutationResult(false, 'auth_required', 'cache', 'auth_required');
     }
 
-    // Ensure profile exists server-side (best-effort).
     await dataService.registerUser(user.name, user.phone ?? '', authUserId);
 
     const existingLocal = await cacheAdapter.findBookingByClassId(user.phone ?? '', cls.id);
@@ -652,53 +724,41 @@ export const dataService = {
       return buildMutationResult(false, 'duplicate', 'cache');
     }
 
-    const bookingPayload = {
-      user_id: authUserId,
-      phone: user.phone,
-      class_id: cls.id,
-      class_name: cls.name,
-      date: cls.dateStr,
-      time: cls.time,
-      location: cls.location,
-      timestamp: Date.now(),
-    };
-
     try {
-      // 2. Check for duplicate booking
-      const { data: existing, error: existingError } = await supabase
-        .from('bookings')
-        .select('id')
-        .eq('user_id', authUserId)
-        .eq('class_id', cls.id);
+      const rpcResult = await callBookClassRpc({
+        classId: cls.id,
+        className: cls.name,
+        date: cls.dateStr,
+        time: cls.time,
+        location: cls.location,
+        timestamp: Date.now(),
+      });
 
-      if (existingError) throw existingError;
-
-      if (existing && existing.length > 0) {
-        return buildMutationResult(false, 'duplicate', 'server');
+      if (!rpcResult) {
+        return buildMutationResult(false, 'server_error', 'server');
       }
 
-      // 3. Insert Booking
-      const { data, error } = await supabase
-        .from('bookings')
-        .insert(bookingPayload)
-        .select()
-        .single();
-
-      if (error) throw error;
-      if (data) {
-        const cachedBooking: CachedBooking = {
-          id: data.id,
-          classId: data.class_id,
-          className: data.class_name,
-          date: data.date,
-          time: data.time,
-          location: data.location,
-          timestamp: data.timestamp,
-          phone: user.phone ?? '',
-          status: 'synced',
-        };
-        await cacheAdapter.upsertBookings([cachedBooking]);
+      const status = mapRpcBookingStatus(rpcResult.code);
+      if (!rpcResult.ok || status !== 'success') {
+        return buildMutationResult(false, status, 'server');
       }
+
+      if (!rpcResult.booking_id) {
+        return buildMutationResult(false, 'server_error', 'server');
+      }
+
+      const cachedBooking: CachedBooking = {
+        id: rpcResult.booking_id,
+        classId: cls.id,
+        className: cls.name,
+        date: cls.dateStr,
+        time: cls.time,
+        location: cls.location,
+        timestamp: Date.now(),
+        phone: user.phone ?? '',
+        status: 'synced',
+      };
+      await cacheAdapter.upsertBookings([cachedBooking]);
 
       invalidateMonthCache();
       return buildMutationResult(true, 'success', 'server');
@@ -737,7 +797,6 @@ export const dataService = {
   },
 
   syncPendingBookings: async (user: UserProfile): Promise<void> => {
-    // Only sync when we have a real authenticated user id.
     const authUserId = await getAuthenticatedUserId(user.id);
     if (!authUserId) return;
 
@@ -747,40 +806,46 @@ export const dataService = {
     await Promise.all(
       pending.map(async (booking) => {
         try {
-          const { data, error } = await supabase
-            .from('bookings')
-            .insert({
-              user_id: authUserId,
-              phone: booking.phone,
-              class_id: booking.classId,
-              class_name: booking.className,
-              date: booking.date,
-              time: booking.time,
-              location: booking.location,
-              timestamp: booking.timestamp,
-            })
-            .select()
-            .single();
+          const rpcResult = await callBookClassRpc({
+            classId: booking.classId,
+            className: booking.className,
+            date: booking.date,
+            time: booking.time,
+            location: booking.location,
+            timestamp: booking.timestamp,
+          });
 
-          if (error) throw error;
-
-          if (data) {
-            const synced: CachedBooking = {
-              id: data.id,
-              classId: data.class_id,
-              className: data.class_name,
-              date: data.date,
-              time: data.time,
-              location: data.location,
-              timestamp: data.timestamp,
-              phone: booking.phone,
-              status: 'synced',
-            };
-            await cacheAdapter.removeBooking(booking.id);
-            await cacheAdapter.upsertBookings([synced]);
+          if (!rpcResult) {
+            return;
           }
+
+          const status = mapRpcBookingStatus(rpcResult.code);
+          if (!rpcResult.ok || status !== 'success') {
+            if (isTerminalPendingBookingStatus(status)) {
+              await cacheAdapter.removeBooking(booking.id);
+            }
+            return;
+          }
+
+          if (!rpcResult.booking_id) {
+            return;
+          }
+
+          const synced: CachedBooking = {
+            id: rpcResult.booking_id,
+            classId: booking.classId,
+            className: booking.className,
+            date: booking.date,
+            time: booking.time,
+            location: booking.location,
+            timestamp: booking.timestamp,
+            phone: booking.phone,
+            status: 'synced',
+          };
+          await cacheAdapter.removeBooking(booking.id);
+          await cacheAdapter.upsertBookings([synced]);
         } catch {
-          // keep pending for next attempt
+          // keep pending for next attempt when the server is unavailable
         }
       })
     );
