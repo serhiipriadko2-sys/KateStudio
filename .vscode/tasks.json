@@ -91,6 +91,52 @@
       "group": "test"
     },
     {
+      "label": "Test: Run",
+      "type": "npm",
+      "script": "test:run",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      },
+      "group": "test"
+    },
+    {
+      "label": "Supabase: Start",
+      "type": "shell",
+      "command": "npx supabase start",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Supabase: Stop",
+      "type": "shell",
+      "command": "npx supabase stop",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Firebase: Hosting Emulator",
+      "type": "shell",
+      "command": "firebase emulators:start --only hosting",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Start Local Stack",
+      "dependsOn": ["Supabase: Start", "Dev: WEB", "Dev: APP"],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
       "label": "Install Dependencies",
       "type": "npm",
       "script": "install",

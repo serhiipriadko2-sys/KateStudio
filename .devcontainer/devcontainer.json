@@ -1,0 +1,63 @@
+{
+  "name": "KateStudio Local",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": "..",
+    "target": "development"
+  },
+  "remoteUser": "root",
+  "workspaceFolder": "/workspaces/KateStudio",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/KateStudio,type=bind,consistency=cached",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
+  },
+  "forwardPorts": [5173, 5174, 54321, 54322, 54323, 54324, 54327, 4000, 5000],
+  "portsAttributes": {
+    "5173": {
+      "label": "WEB Dev"
+    },
+    "5174": {
+      "label": "APP Dev"
+    },
+    "54323": {
+      "label": "Supabase Studio"
+    },
+    "4000": {
+      "label": "Firebase Emulator UI"
+    },
+    "5000": {
+      "label": "Firebase Hosting Emulator"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode-remote.remote-wsl",
+        "ms-vscode.remote-repositories",
+        "ms-azuretools.vscode-docker",
+        "ms-playwright.playwright",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "GitHub.vscode-github-actions"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "files.eol": "\n",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "remote.autoForwardPorts": true
+      }
+    }
+  },
+  "postCreateCommand": "npm install && npx playwright install --with-deps || true",
+  "postStartCommand": "bash ./.vscode/post-start-hint.sh 2>/dev/null || true"
+}
