@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { dataService } from '../dataService';
 
-const { mockFrom, mockGetSession } = vi.hoisted(() => ({
+const { mockFrom, mockGetSession, mockRpc } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
   mockGetSession: vi.fn(),
+  mockRpc: vi.fn(),
 }));
 
 vi.mock('@ksebe/shared', () => ({
   supabase: {
     from: mockFrom,
+    rpc: mockRpc,
     auth: {
       getSession: mockGetSession,
     },
@@ -60,25 +62,16 @@ const createBookingDeleteQuery = (result: { error: unknown }) => ({
   eq: vi.fn().mockResolvedValue(result),
 });
 
-const createBookingDuplicateQuery = (result: { data: unknown; error: unknown }) => ({
-  select: vi.fn().mockReturnValue({
-    eq: vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue(result),
-    }),
-  }),
-});
-
-const createBookingInsertQuery = (result: { data: unknown; error: unknown }) => ({
-  insert: vi.fn().mockReturnValue({
-    select: vi.fn().mockReturnValue({
-      single: vi.fn().mockResolvedValue(result),
-    }),
-  }),
+const createBookClassRpcQuery = (result: { data: unknown; error: unknown }) => ({
+  single: vi.fn().mockResolvedValue(result),
 });
 
 describe('dataService', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    mockFrom.mockReset();
+    mockRpc.mockReset();
+    mockGetSession.mockReset();
     localStorage.clear();
     dataService.logout();
     mockGetSession.mockResolvedValue(authenticatedSession);
@@ -346,9 +339,15 @@ describe('dataService', () => {
 
     it('returns duplicate when booking already exists on server', async () => {
       vi.spyOn(dataService, 'registerUser').mockResolvedValue(user);
-      mockFrom.mockReturnValue(
-        createBookingDuplicateQuery({
-          data: [{ id: 'existing' }],
+      mockRpc.mockReturnValue(
+        createBookClassRpcQuery({
+          data: {
+            ok: false,
+            code: 'duplicate',
+            booking_id: null,
+            pass_id: null,
+            visits_remaining: null,
+          },
           error: null,
         })
       );
@@ -359,6 +358,14 @@ describe('dataService', () => {
         ok: false,
         status: 'duplicate',
         source: 'server',
+      });
+      expect(mockRpc).toHaveBeenCalledWith('book_class_with_access', {
+        p_class_id: cls.id,
+        p_class_name: cls.name,
+        p_class_date: cls.dateStr,
+        p_class_time: cls.time,
+        p_class_location: cls.location,
+        p_class_timestamp: expect.any(Number),
       });
     });
 
@@ -392,22 +399,18 @@ describe('dataService', () => {
       await dataService.getClassesForMonth(2024, 1, 'offline');
       expect(mockFrom).toHaveBeenCalledTimes(2);
 
-      mockFrom
-        .mockReturnValueOnce(createBookingDuplicateQuery({ data: [], error: null }))
-        .mockReturnValueOnce(
-          createBookingInsertQuery({
-            data: {
-              id: 'booking-1',
-              class_id: cls.id,
-              class_name: cls.name,
-              date: cls.dateStr,
-              time: cls.time,
-              location: cls.location,
-              timestamp: 1234,
-            },
-            error: null,
-          })
-        );
+      mockRpc.mockReturnValue(
+        createBookClassRpcQuery({
+          data: {
+            ok: true,
+            code: 'success',
+            booking_id: 'booking-1',
+            pass_id: 'pass-1',
+            visits_remaining: 4,
+          },
+          error: null,
+        })
+      );
 
       const bookingResult = await dataService.bookClass(cls, user);
       expect(bookingResult).toMatchObject({
@@ -441,7 +444,8 @@ describe('dataService', () => {
         .mockReturnValueOnce(createBookingsInQuery({ data: [], error: null }));
 
       await dataService.getClassesForMonth(2024, 1, 'offline');
-      expect(mockFrom).toHaveBeenCalledTimes(6);
+      expect(mockRpc).toHaveBeenCalledTimes(1);
+      expect(mockFrom).toHaveBeenCalledTimes(4);
     });
   });
 
