@@ -1,6 +1,6 @@
 # Launch Checklist & Gap Analysis
 
-> **Обновлено:** 16 мая 2026
+> **Обновлено:** 23 мая 2026
 > **Вердикт:** production launch readiness **FAIL**
 
 ---
@@ -9,29 +9,28 @@
 
 | Area | Status | Why |
 | --- | --- | --- |
-| Repo documentation truth | PARTIAL | the 2026-05-16 live baseline is stronger than the 2026-05-12 canon and had to be re-synced explicitly |
-| Local code health | FRESH GREEN UNVERIFIED | this pass did not verify a fresh green current-main release run |
-| Latest directly observed repo-side CI signal | RED, but not current-main proof | PR `#498` shows a failing `AuthContext` test path and cannot substitute for a fresh release-path run |
-| Supabase security governance | STRONG PARTIAL PASS | only leaked-password protection remains in security advisors |
-| Auth UX readiness for leaked-password enforcement | IMPROVED | repo auth flows already distinguish weak vs compromised password messaging |
-| Schema reproducibility | PARTIAL | the latest live delta is tracked, but one broader parity pass still has value |
+| Repo documentation truth | PARTIAL | older 16 May baseline is stale relative to live 23 May state |
+| Local code health | PARTIAL | one fresh green CI signal exists, but not on the same current `main` ref |
+| Latest verified CI signal | GREEN, but PR-only | PR `#498`, workflow `CI #1246`, all release jobs green on PR head SHA `7bfcc466b08a5e2c4f097c7d5b4abadccbc37b73` |
+| Fresh current-main CI proof | UNVERIFIED | this pass did not obtain a fresh green run on the same release `main` SHA |
+| Supabase security governance | FAIL | live security advisors currently show two warnings: `book_class_with_access` exposure + leaked password protection disabled |
+| Schema reproducibility | FAIL | live now reports **41** applied migrations, but repo-confirmed tail is still partial |
 | WEB payment posture | PASS AT MODEL LEVEL | WEB remains storefront-only |
-| Function/payment deployment clarity | FAIL | live now exposes both legacy and app-target payment pairs, so the risk is dual ownership rather than missing deployment |
-| Runtime public smoke | MIXED | payment-table `404` claims are stale, but `app_settings` and empty `site_images` still need follow-up |
+| Function/payment deployment clarity | FAIL | live exposes both legacy and app-target payment pairs; canonical ownership remains unresolved |
+| Runtime public smoke | MIXED | prior `app_settings` / `site_images` follow-up remains open |
 
 ---
 
-## 2. What is newly confirmed on the 2026-05-16 baseline
+## 2. What is currently confirmed on the 2026-05-23 baseline
 
-- live Supabase now reports **38 applied migrations**.
+- live Supabase now reports **41 applied migrations**.
 - live Supabase now reports **11 active Edge Functions**.
-- live now includes migration `20260516182944_yookassa_app_payments_live_cutover`.
-- live function inventory now includes both `create-yookassa-checkout` and `yookassa-webhook`.
-- direct SQL confirms `payment_orders` and `user_passes` exist in `public`.
-- direct SQL confirms `payment_orders_rows = 1` and `user_passes_rows = 1` at the audit moment.
-- recent logs show successful live traffic through `create-yookassa-checkout`, `payment_orders`, and `user_passes`.
-- recent logs still show `401` for `app_settings?key=image_map` and `app_settings?key=theme`.
-- `site_images` exists and recent reads return `200`, but the table still has `0` rows.
+- live payment tables `payment_orders` and `user_passes` are present.
+- live function inventory still includes both `create-yookassa-checkout` and `yookassa-webhook`.
+- direct repo confirmation exists for migration `20260516182944_yookassa_app_payments_live_cutover`.
+- direct repo confirmation is still missing in the current evidence packet for live versions `20260516202546`, `20260516202845`, and `20260518205158`.
+- one fresh verified green CI run exists on PR `#498` / workflow `CI #1246`.
+- that green run is not yet a same-ref proof for the current `main` release SHA.
 
 ---
 
@@ -39,24 +38,27 @@
 
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
-| P0 | dual payment contour remains unresolved | live currently exposes both `create-payment` / `payment-webhook` and `create-yookassa-checkout` / `yookassa-webhook`; canonical ownership and retirement criteria are not yet explicit |
-| P0 | fresh green CI on the current release path is still unverified | this pass did not obtain a fresh current-main green proof |
-| P0 | leaked password protection is still disabled in live Auth | Supabase security advisor still warns |
-| P1 | runtime public smoke is still not fully clean | `app_settings` non-`studio_contacts` reads still fail, and `site_images` remains empty even though reads now return `200` |
+| P0 | `migration-sync` remains unresolved | live history reaches `20260518205158_create_dataset_runs_and_artifacts`, but repo-confirmed tail is still partial |
+| P0 | fresh green CI on the current release path is still unverified | PR-only green cannot substitute for same-ref release proof |
+| P0 | dual payment contour remains unresolved | live still exposes both `create-payment` / `payment-webhook` and `create-yookassa-checkout` / `yookassa-webhook` |
+| P0 | live security warnings remain | `book_class_with_access` is still callable as `SECURITY DEFINER` by `authenticated`; leaked password protection is still disabled |
+| P1 | runtime public smoke is still not fully clean | `app_settings` and `site_images` follow-up remains open in canon |
 
 ---
 
 ## 4. Data / migration checklist
 
-- [x] late-May governance/security migrations are tracked in repo and live history
-- [x] live payment cutover migration `20260516182944_yookassa_app_payments_live_cutover` is present
+- [x] live payment cutover migration `20260516182944_yookassa_app_payments_live_cutover` is present in repo and live
 - [x] `payment_orders` exists in live
 - [x] `user_passes` exists in live
 - [x] current docs stop claiming that live lacks the APP payment schema surface
-- [ ] perform one explicit historical repo/live migration inventory reconciliation across older history
+- [ ] confirm Git-tracked path for `20260516202546`
+- [ ] confirm Git-tracked path for `20260516202845`
+- [ ] confirm Git-tracked path for `20260518205158`
+- [ ] perform one explicit repo/live migration inventory reconciliation across older history
 - [ ] regenerate DB types only after the broader baseline is intentionally accepted
 
-Status: **partially complete**.
+Status: **blocking**.
 
 ---
 
@@ -67,7 +69,7 @@ Status: **partially complete**.
 - [x] confirm APP YooKassa pair is live
 - [ ] decide how long the legacy pair `create-payment` / `payment-webhook` remains intentionally live
 - [ ] document retirement or coexistence criteria for the dual payment contour
-- [ ] confirm which payment/public endpoints are intentionally exposed in production after the transition window
+- [ ] confirm which payment/public endpoints are intentionally exposed after the transition window
 
 Status: **not complete**.
 
@@ -77,39 +79,29 @@ Status: **not complete**.
 
 Current verified release-path truth for this document:
 
-- `npm run check:migrations` → not freshly re-verified in this pass
-- `npm run lint` → not freshly re-verified in this pass
-- `npm run typecheck` → not freshly re-verified in this pass
-- `npm run test:run` → fresh green unverified in this pass
-- `npm run build:web` → fresh green unverified in this pass
-- `npm run build:app` → fresh green unverified in this pass
+- `npm run check:migrations` → not freshly re-verified on current `main`
+- `npm run lint` → green on PR `#498` / `CI #1246`, current-main proof still missing
+- `npm run typecheck` → green on PR `#498` / `CI #1246`, current-main proof still missing
+- `npm run test:run` → green on PR `#498` / `CI #1246`, current-main proof still missing
+- `npm run build:web` → green on PR `#498` / `CI #1246`, current-main proof still missing
+- `npm run build:app` → green on PR `#498` / `CI #1246`, current-main proof still missing
 
-Latest directly observed repo-side CI signal available during this review:
-
-- PR `#498`
-- red test path in APP auth context coverage
-- useful as a risk signal, but not enough to declare the current release path red or green without a fresh current-main run
-
-Status: **blocking until fresh green evidence exists**.
+Status: **blocking until same-ref current-main proof exists**.
 
 ---
 
 ## 7. Smoke / runtime checklist
 
-Recent live evidence supports these passes:
+Recent grounded truth supports these passes:
 
-- [x] auth health endpoint responds `200`
-- [x] public `classes` reads respond `200`
-- [x] public `faq_items` reads respond `200`
-- [x] public `trainers` reads respond `200`
-- [x] public `site_images` reads now respond `200`
-- [x] public analytics writes respond `201`
-- [x] app payment reads/writes to `payment_orders` / `user_passes` are visible in recent logs
-- [ ] generic public `app_settings` reads outside `studio_contacts` stop returning `401`
+- [x] app-target payment contour is deployed in live
+- [x] payment-table surface exists in live
+- [x] one fresh verified green CI run exists for the release job set
+- [ ] generic public `app_settings` reads outside `studio_contacts` are explicitly accepted or fixed
 - [ ] empty `site_images` content is either populated or explicitly accepted as intentional
-- [ ] one fresh narrow smoke confirms the intended dual-or-legacy payment routing story
+- [ ] one same-ref release smoke confirms current `main` truth, not just PR truth
 
-Status: **mixed, needs one more pass**.
+Status: **mixed**.
 
 ---
 
@@ -117,12 +109,11 @@ Status: **mixed, needs one more pass**.
 
 Launch PASS requires all of the following:
 
-1. WEB remains non-payment by design.
-2. APP payment contour is not merely live, but canonically owned: either the dual contour is explicitly accepted for a transition window or the legacy pair is formally retired.
-3. CI is freshly green on the current release path, including tests and both builds.
-4. leaked password protection is enabled.
-5. weak signup, compromised reset, and sign-in with an old weak password are manually verified against the updated UX copy.
-6. remaining runtime anomalies around `app_settings` and `site_images` are either fixed or explicitly accepted with evidence.
-7. remaining repo/live migration baseline drift is either reconciled or explicitly documented as accepted history.
+1. current `main` has fresh green proof for migration check, lint, typecheck, tests, and both builds;
+2. live migration tail is fully Git-tracked or explicitly reconciled;
+3. WEB remains non-payment by design;
+4. APP payment contour is canonically owned: the dual contour is either explicitly transitional or the legacy pair is formally retired;
+5. live security warnings are resolved or explicitly accepted with evidence;
+6. remaining runtime anomalies around `app_settings` and `site_images` are either fixed or explicitly accepted.
 
-Until then, any "launch-ready" claim would still be decorative, not true.
+Until then, any `launch-ready` claim is still decorative, not true.
