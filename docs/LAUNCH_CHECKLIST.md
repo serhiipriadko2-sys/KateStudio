@@ -14,7 +14,7 @@
 | Latest verified CI signal | GREEN, but PR-only | PR `#498`, workflow `CI #1246`, all release jobs green on PR head SHA `7bfcc466b08a5e2c4f097c7d5b4abadccbc37b73` |
 | Fresh current-main CI proof | UNVERIFIED | this pass did not obtain a fresh green run on the same release `main` SHA |
 | Supabase security governance | FAIL | live security advisors currently show two warnings: `book_class_with_access` exposure + leaked password protection disabled |
-| Schema reproducibility | FAIL | live now reports **41** applied migrations; two late-May entries are semantically mapped to repo under different timestamps, and one live delta remains unresolved |
+| Schema reproducibility | FAIL | live now reports **41** applied migrations; two late-May entries are semantically mapped to repo under different timestamps, and one live delta is explicitly tracked but still unresolved |
 | WEB payment posture | PASS AT MODEL LEVEL | WEB remains storefront-only |
 | Function/payment deployment clarity | FAIL | live exposes both legacy and app-target payment pairs; canonical ownership remains unresolved |
 | Runtime public smoke | MIXED | prior `app_settings` / `site_images` follow-up remains open |
@@ -30,7 +30,7 @@
 - exact repo confirmation exists for migration `20260516182944_yookassa_app_payments_live_cutover`.
 - live `20260516202546 book_class_with_access` maps semantically to repo `supabase/migrations/20260516211000_book_class_with_access.sql`.
 - live `20260516202845 book_class_with_access_revoke_public_execute` maps semantically to repo `supabase/migrations/20260516214500_book_class_with_access_revoke_public_execute.sql`.
-- live `20260518205158 create_dataset_runs_and_artifacts` is still unresolved in the current GitHub evidence packet.
+- live `20260518205158 create_dataset_runs_and_artifacts` now has an explicit reconciliation artifact, but its repo origin is still unresolved.
 - one fresh verified green CI run exists on PR `#498` / workflow `CI #1246`.
 - that green run is not yet a same-ref proof for the current `main` release SHA.
 
@@ -40,7 +40,7 @@
 
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
-| P0 | unresolved live migration delta remains | live history reaches `20260518205158_create_dataset_runs_and_artifacts`, but that Git-tracked source is still not confirmed |
+| P0 | unresolved live migration delta remains | `20260518205158_create_dataset_runs_and_artifacts` is now explicitly tracked, but its Git-tracked source is still not confirmed |
 | P0 | fresh green CI on the current release path is still unverified | PR-only green cannot substitute for same-ref release proof |
 | P0 | dual payment contour remains unresolved | live still exposes both `create-payment` / `payment-webhook` and `create-yookassa-checkout` / `yookassa-webhook` |
 | P0 | live security warnings remain | `book_class_with_access` is still callable as `SECURITY DEFINER` by `authenticated`; leaked password protection is still disabled |
@@ -56,7 +56,8 @@
 - [x] `payment_orders` exists in live
 - [x] `user_passes` exists in live
 - [x] current docs stop claiming that live lacks the APP payment schema surface
-- [ ] find or reconstruct Git-tracked source for `20260518205158_create_dataset_runs_and_artifacts`
+- [x] explicit reconciliation artifact exists for `20260518205158_create_dataset_runs_and_artifacts`
+- [ ] find exact or semantic Git-tracked source for `20260518205158_create_dataset_runs_and_artifacts`, or intentionally move to additive reconstruction path
 - [ ] perform one explicit repo/live migration inventory reconciliation across older history
 - [ ] regenerate DB types only after the broader baseline is intentionally accepted
 
