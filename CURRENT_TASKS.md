@@ -1,8 +1,8 @@
 # Текущие задачи
 
-> **Обновлено:** 16 мая 2026 | **Версия:** 5.5.0
-> Источник истины: GitHub `main` + live Supabase metadata, SQL, advisors и recent logs.
-> Текущий режим: doc-sync after live drift check. Этот файл больше не должен говорить так, будто live всё ещё не имеет APP payment surface.
+> **Обновлено:** 23 мая 2026 | **Версия:** 5.6.0
+> Источник истины: GitHub `main` + live Supabase metadata, function inventory, advisors и проверенные CI артефакты.
+> Текущий режим: `release-hold` до закрытия migration-sync и current-main CI proof.
 
 ---
 
@@ -10,42 +10,42 @@
 
 | Метрика | Значение | Основание |
 | --- | --- | --- |
-| Live applied migrations | **38** | Supabase `list_migrations` on 2026-05-16 reaches `20260516182944_yookassa_app_payments_live_cutover` |
-| Live Edge Functions | **11** | Supabase `list_edge_functions` on 2026-05-16 |
-| Live security advisors | **1 warning** | leaked password protection remains disabled |
+| Live applied migrations | **41** | live `list_migrations` на 2026-05-23 reaches `20260518205158_create_dataset_runs_and_artifacts` |
+| Repo-confirmed live-tail migrations | **PARTIAL** | `20260516182944_yookassa_app_payments_live_cutover` подтверждён в GitHub `main`; `20260516202546`, `20260516202845`, `20260518205158` пока не подтверждены текущим evidence packet |
+| Live Edge Functions | **11** | Supabase `list_edge_functions` на 2026-05-23 |
+| Live security advisors | **2 warnings** | `authenticated_security_definer_function_executable` для `book_class_with_access` + leaked password protection disabled |
 | Live performance advisors | **warnings remain** | initplan + permissive-policy fan-out + unused indexes |
-| Live APP payment tables | **present** | direct SQL confirms `payment_orders` and `user_passes` exist |
-| Live APP payment traffic | **present** | recent logs show successful `create-yookassa-checkout`, `payment_orders`, `user_passes` activity |
+| Live APP payment tables | **present** | direct metadata confirms `payment_orders` and `user_passes` exist |
+| Live APP payment traffic | **present** | app-target payment contour remains deployed and active |
 | Live legacy payment pair | **still present** | `create-payment` and `payment-webhook` remain active |
 | Live app-target payment pair | **present** | `create-yookassa-checkout` and `yookassa-webhook` are active |
-| `site_images` live rows | **0** | direct SQL on 2026-05-16 |
-| `app_settings` live keys | **3** | `opening_hours`, `studio_contacts`, `studio_profile` |
-| Fresh green CI on current release path | **UNVERIFIED** | this pass did not obtain a fresh green current-main proof |
-| Latest directly observed repo-side CI signal | **RED, but not current-main proof** | PR `#498` reports failing `AuthContext` test path |
+| Fresh green CI on current `main` release path | **UNVERIFIED** | this pass did not obtain a fresh green run on the same current `main` ref |
+| Latest verified green CI signal | **PR-only green** | PR `#498`, workflow `CI #1246`, all jobs green on PR head SHA `7bfcc466b08a5e2c4f097c7d5b4abadccbc37b73` |
 
-Главное изменение по сравнению с canon от 12–13 мая 2026: live больше не находится в состоянии “repo wants app-only YooKassa, live does not”. Live уже содержит новые payment tables, новые APP-target functions и recent traffic on that path. Текущий риск сместился: теперь опаснее dual payment contour и отсутствие свежего green release proof, чем старый narrative про missing live payment surface.
+Главное изменение по сравнению с baseline 16 мая 2026: live Supabase уже на **41 migrations**, а repo docs больше не могут опираться на present-tense baseline `38`.
 
 ---
 
-## ✅ Что уже подтверждено
+## ✅ Что подтверждено
 
 | # | Задача | Статус | Что изменилось |
 | --- | --- | --- | --- |
-| 1 | Сохранить late-May live hardening в repo canon | DONE | late governance/security migrations are tracked in repo and live history |
-| 2 | Убрать старый payment-gap narrative | DONE | live now has `payment_orders`, `user_passes`, `create-yookassa-checkout`, `yookassa-webhook` |
-| 3 | Сузить security tail risk | DONE | only leaked password protection remains in security advisors |
-| 4 | Сохранить WEB non-payment canon | DONE | docs still keep WEB as storefront-only surface |
-| 5 | Подтвердить APP payment cutover in live | DONE | logs show successful live traffic through the app-target path |
+| 1 | Зафиксировать live baseline выше 16 мая | DONE | current live baseline is `41 migrations / 11 functions` |
+| 2 | Подтвердить app-target payment contour в live | DONE | `create-yookassa-checkout` + `yookassa-webhook` remain active |
+| 3 | Подтвердить repo/live совпадение по двум app-target payment functions | DONE | checked function code matches on inspected pair |
+| 4 | Подтвердить один свежий green CI signal | DONE | PR `#498` / `CI #1246` passed lint, typecheck, tests, build:web, build:app |
+| 5 | Сохранить WEB non-payment canon | DONE | docs still keep WEB as storefront-only surface |
 
 ---
 
-## 🔴 P0 — Текущие launch blockers
+## 🔴 P0 — Текущие blockers
 
 | # | Задача | Статус | Почему это P0 |
 | --- | --- | --- | --- |
-| 6 | Разрешить dual payment contour | ⛔ | live currently exposes both legacy `create-payment` / `payment-webhook` and app-target `create-yookassa-checkout` / `yookassa-webhook`; canonical ownership and deprecation path are still not explicit |
-| 7 | Получить fresh green CI на текущем release path | ⛔ | this pass did not verify a fresh green current-main run; latest directly observed repo-side signal is red, but it is not enough to stand in for current release proof |
-| 8 | Включить leaked password protection в live Supabase Auth | ⛔ | the only remaining live security advisor warning is still the Auth toggle |
+| 6 | Закрыть `migration-sync` для live tail | ⛔ | live `41` is ahead of repo-confirmed tail; three live versions still lack direct Git-tracked confirmation in the current evidence packet |
+| 7 | Получить fresh green CI на том же current `main` ref | ⛔ | PR-only green does not substitute for release-path proof on the same `main` SHA |
+| 8 | Разрешить dual payment contour | ⛔ | live still exposes both legacy and app-target payment pairs without explicit retirement criteria |
+| 9 | Снять current live security warnings | ⛔ | `book_class_with_access` remains exposed as `SECURITY DEFINER` to `authenticated`; leaked password protection remains disabled |
 
 ---
 
@@ -53,30 +53,29 @@
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 9 | Разобрать `app_settings` public reads outside `studio_contacts` | ⏳ | recent logs still show `401` on `key=eq.image_map` and `key=eq.theme` |
-| 10 | Разобрать empty `site_images` dataset | ⏳ | table exists and reads return `200`, but row count is still `0` |
-| 11 | Явно зафиксировать canonical AI contour | ⏳ | live keeps `ai-run` / `ai-embeddings` alongside `gemini-proxy` |
-| 12 | Обновить stale operational docs and memory | ⏳ | 12–13 May canon still understates live payment/function state until doc-sync lands everywhere |
+| 10 | Разобрать `app_settings` public reads outside `studio_contacts` | ⏳ | prior runtime symptom remains unclosed in the canon |
+| 11 | Разобрать empty `site_images` dataset | ⏳ | table exists, but operational intent is still not explicit |
+| 12 | Явно зафиксировать canonical AI contour | ⏳ | live keeps `ai-run` / `ai-embeddings` alongside `gemini-proxy` |
+| 13 | Обновить stale operational docs everywhere | ⏳ | older `38-migration` baseline must stop appearing as present-tense truth |
 
 ---
 
-## 🟡 P2 — Техническая чистка после синхронизации baseline
+## 🟡 P2 — Техническая чистка после baseline reconciliation
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 13 | Полностью reconcile older repo/live migration history | ⏳ | baseline is stronger now, but one explicit historical parity pass still has value |
-| 14 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this once the reconciled schema baseline is intentionally accepted |
-| 15 | Reduce permissive-policy fan-out and initplan noise | ⏳ | performance advisors still flag `payment_orders`, `user_passes`, `app_settings`, `site_images`, and other content tables |
+| 14 | Полностью reconcile older repo/live migration history | ⏳ | one explicit parity pass across historical migrations still has value |
+| 15 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after migration baseline is intentionally accepted |
+| 16 | Reduce permissive-policy fan-out and initplan noise | ⏳ | performance advisors still flag hot tables including `payment_orders` and `user_passes` |
 
 ---
 
 ## Ближайший рабочий шаг
 
-1. Run a narrow release gate against the 2026-05-16 live baseline.
-2. Prove a fresh green CI run on the current release path instead of relying on older red or branch-only evidence.
-3. Decide canonical payment ownership: keep dual contour intentionally for a transition window or mark one pair as legacy and document retirement criteria.
-4. Enable leaked password protection and verify the already-hardened auth UX against live behavior.
-5. Triage the remaining runtime symptoms around `app_settings` and empty `site_images`.
+1. Confirm Git-tracked existence for live versions `20260516202546`, `20260516202845`, and `20260518205158` on `main`.
+2. Obtain a fresh green CI run on the same current `main` SHA.
+3. Decide whether the dual payment contour is an accepted transition window or an unwanted overlap.
+4. Only after that, move from `FAIL` to `PARTIAL` or `PASS` in the release gate.
 
 ---
 
@@ -84,10 +83,9 @@
 
 | Домен | Статус |
 | --- | --- |
-| Repo/live docs coherence | PARTIAL until all operational surfaces adopt the 2026-05-16 baseline |
-| Live Supabase governance | STRONG PARTIAL PASS |
+| Repo/live docs coherence | PARTIAL |
+| Live Supabase governance | PARTIAL |
 | Live payment surface | PRESENT, but dual-contour |
-| Live security advisors | **1 warning remaining** |
-| Public smoke signal | MIXED, narrower than before |
-| Release-path CI | **UNVERIFIED fresh green** |
-| Overall launch readiness | **FAIL** until dual contour + fresh green CI + auth toggle are resolved or explicitly accepted |
+| Live security advisors | **2 warnings remaining** |
+| Fresh release-path CI | **UNVERIFIED on current `main`** |
+| Overall launch readiness | **FAIL** until migration-sync + current-main CI proof + payment/security decisions are resolved |
