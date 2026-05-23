@@ -1,6 +1,6 @@
 # Центральный индекс документации | KateStudio
 
-> **Обновлено:** 23 мая 2026 | **Версия:** 9.3.0
+> **Обновлено:** 23 мая 2026 | **Версия:** 9.3.2
 > Рабочий канон: GitHub `main` + live Supabase metadata + current operational docs.
 
 ---
@@ -9,6 +9,7 @@
 
 - `CURRENT_TASKS.md` — актуальный operational backlog и честный статус запуска
 - `docs/LAUNCH_CHECKLIST.md` — текущий go / no-go checklist
+- `docs/RELEASE_EXECUTION_PACKET_2026_05_23.md` — единый execution packet по migration, CI, governance, security и финальному release gate
 - `docs/EDGE_FUNCTIONS.md` — repo/live function inventory и drift map
 - `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` — historical bridge audit; не использовать как единственный current snapshot
 
@@ -22,6 +23,12 @@
 | `docs/ARCHITECTURE.md` | структура monorepo, runtime contour, repo/live split |
 | `docs/EDGE_FUNCTIONS.md` | function inventory и drift map |
 | `docs/LAUNCH_CHECKLIST.md` | release readiness и blockers |
+| `docs/RELEASE_EXECUTION_PACKET_2026_05_23.md` | пошаговый execution packet по текущим blockers |
+| `docs/MIGRATION_SYNC_2026_05_23.md` | Git-tracked reconciliation path по live migration tail |
+| `docs/PAYMENT_CONTOUR_DECISION_TEMPLATE.md` | template для решения по dual payment contour |
+| `docs/SECURITY_DECISION_TEMPLATE_BOOK_CLASS_WITH_ACCESS.md` | template для security decision note по RPC warning |
+| `docs/SECURITY_DECISION_TEMPLATE_LEAKED_PASSWORD_PROTECTION.md` | template для security decision note по Auth setting |
+| `docs/RELEASE_GATE_WORKSHEET_TEMPLATE.md` | one-pass worksheet для финального release gate |
 | `docs/APP_ONLY_YOOKASSA_CUTOVER_PLAN.md` | app-only payment cutover, rollback и verification order |
 | `docs/ANDROID_STORE_READINESS.md` | Android publish path для Google Play и RuStore |
 | `docs/TESTING.md` | test truth и ограничения проверки |
@@ -73,6 +80,6 @@
 
 1. GitHub `main` как truth по repo intent.
 2. Supabase live metadata как truth по deployed state.
-3. `CURRENT_TASKS.md` + `docs/LAUNCH_CHECKLIST.md` как текущий operational synthesis.
+3. `CURRENT_TASKS.md` + `docs/LAUNCH_CHECKLIST.md` + `docs/RELEASE_EXECUTION_PACKET_2026_05_23.md` как текущий operational synthesis.
 
 Если документ говорит о текущем live state, он должен быть совместим с live baseline `41` и явно не маскировать `migration-sync` / CI gaps. Иначе это исторический документ, а не present-tense truth.
