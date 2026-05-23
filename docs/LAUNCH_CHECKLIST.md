@@ -14,7 +14,7 @@
 | Latest verified CI signal | GREEN, but PR-only | PR `#498`, workflow `CI #1246`, all release jobs green on PR head SHA `7bfcc466b08a5e2c4f097c7d5b4abadccbc37b73` |
 | Fresh current-main CI proof | UNVERIFIED | this pass did not obtain a fresh green run on the same release `main` SHA |
 | Supabase security governance | FAIL | live security advisors currently show two warnings: `book_class_with_access` exposure + leaked password protection disabled |
-| Schema reproducibility | FAIL | live now reports **41** applied migrations, but repo-confirmed tail is still partial |
+| Schema reproducibility | FAIL | live now reports **41** applied migrations; two late-May entries are semantically mapped to repo under different timestamps, and one live delta remains unresolved |
 | WEB payment posture | PASS AT MODEL LEVEL | WEB remains storefront-only |
 | Function/payment deployment clarity | FAIL | live exposes both legacy and app-target payment pairs; canonical ownership remains unresolved |
 | Runtime public smoke | MIXED | prior `app_settings` / `site_images` follow-up remains open |
@@ -27,8 +27,10 @@
 - live Supabase now reports **11 active Edge Functions**.
 - live payment tables `payment_orders` and `user_passes` are present.
 - live function inventory still includes both `create-yookassa-checkout` and `yookassa-webhook`.
-- direct repo confirmation exists for migration `20260516182944_yookassa_app_payments_live_cutover`.
-- direct repo confirmation is still missing in the current evidence packet for live versions `20260516202546`, `20260516202845`, and `20260518205158`.
+- exact repo confirmation exists for migration `20260516182944_yookassa_app_payments_live_cutover`.
+- live `20260516202546 book_class_with_access` maps semantically to repo `supabase/migrations/20260516211000_book_class_with_access.sql`.
+- live `20260516202845 book_class_with_access_revoke_public_execute` maps semantically to repo `supabase/migrations/20260516214500_book_class_with_access_revoke_public_execute.sql`.
+- live `20260518205158 create_dataset_runs_and_artifacts` is still unresolved in the current GitHub evidence packet.
 - one fresh verified green CI run exists on PR `#498` / workflow `CI #1246`.
 - that green run is not yet a same-ref proof for the current `main` release SHA.
 
@@ -38,7 +40,7 @@
 
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
-| P0 | `migration-sync` remains unresolved | live history reaches `20260518205158_create_dataset_runs_and_artifacts`, but repo-confirmed tail is still partial |
+| P0 | unresolved live migration delta remains | live history reaches `20260518205158_create_dataset_runs_and_artifacts`, but that Git-tracked source is still not confirmed |
 | P0 | fresh green CI on the current release path is still unverified | PR-only green cannot substitute for same-ref release proof |
 | P0 | dual payment contour remains unresolved | live still exposes both `create-payment` / `payment-webhook` and `create-yookassa-checkout` / `yookassa-webhook` |
 | P0 | live security warnings remain | `book_class_with_access` is still callable as `SECURITY DEFINER` by `authenticated`; leaked password protection is still disabled |
@@ -49,12 +51,12 @@
 ## 4. Data / migration checklist
 
 - [x] live payment cutover migration `20260516182944_yookassa_app_payments_live_cutover` is present in repo and live
+- [x] live `20260516202546 book_class_with_access` is semantically mapped to repo `20260516211000_book_class_with_access.sql`
+- [x] live `20260516202845 book_class_with_access_revoke_public_execute` is semantically mapped to repo `20260516214500_book_class_with_access_revoke_public_execute.sql`
 - [x] `payment_orders` exists in live
 - [x] `user_passes` exists in live
 - [x] current docs stop claiming that live lacks the APP payment schema surface
-- [ ] confirm Git-tracked path for `20260516202546`
-- [ ] confirm Git-tracked path for `20260516202845`
-- [ ] confirm Git-tracked path for `20260518205158`
+- [ ] find or reconstruct Git-tracked source for `20260518205158_create_dataset_runs_and_artifacts`
 - [ ] perform one explicit repo/live migration inventory reconciliation across older history
 - [ ] regenerate DB types only after the broader baseline is intentionally accepted
 
