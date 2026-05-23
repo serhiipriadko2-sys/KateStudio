@@ -1,16 +1,16 @@
 # Центральный индекс документации | KateStudio
 
-> **Обновлено:** 12 мая 2026 | **Версия:** 9.2.0
-> Рабочий канон: refresh pack `2026-05-12` + live Supabase metadata + GitHub `main`.
+> **Обновлено:** 23 мая 2026 | **Версия:** 9.3.0
+> Рабочий канон: GitHub `main` + live Supabase metadata + current operational docs.
 
 ---
 
 ## Читать первым
 
 - `CURRENT_TASKS.md` — актуальный operational backlog и честный статус запуска
-- `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` — canonical live audit на дату 2026-05-12
-- `docs/LAUNCH_CHECKLIST.md` — go / no-go checklist после обновления facts
-- `docs/APP_ONLY_YOOKASSA_CUTOVER_PLAN.md` — safe path для перевода APP на app-only YooKassa contour
+- `docs/LAUNCH_CHECKLIST.md` — текущий go / no-go checklist
+- `docs/EDGE_FUNCTIONS.md` — repo/live function inventory и drift map
+- `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` — historical bridge audit; не использовать как единственный current snapshot
 
 ---
 
@@ -25,7 +25,7 @@
 | `docs/APP_ONLY_YOOKASSA_CUTOVER_PLAN.md` | app-only payment cutover, rollback и verification order |
 | `docs/ANDROID_STORE_READINESS.md` | Android publish path для Google Play и RuStore |
 | `docs/TESTING.md` | test truth и ограничения проверки |
-| `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` | текущий canonical live Supabase audit |
+| `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` | historical bridge audit with 2026-05-23 drift note |
 | `docs/SUPABASE_AUDIT_LIVE_2026_05_10.md` | исторический audit snapshot, не текущий present-tense canon |
 
 ---
@@ -44,22 +44,25 @@
 
 - `docs/SUPABASE_AUDIT_LIVE_2026_05_02.md`
 - `docs/SUPABASE_AUDIT_LIVE_2026_05_10.md`
+- `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` как самостоятельный current snapshot без drift note от 2026-05-23
 
-Причина: они фиксируют более ранние live checkpoints. На 2026-05-12 canonical present-tense snapshot уже другой: live applied migrations = `37`, `profiles` hardening уже отражён в live history, и security headline сузился до leaked-password protection.
+Причина: current live baseline уже выше старого refresh pack и now reaches **41 applied migrations**.
 
 ---
 
-## Быстрые факты на 12 мая 2026
+## Быстрые факты на 23 мая 2026
 
 | Домен | Значение |
 | --- | --- |
-| Repo migrations | 42 |
-| Live applied migrations | 37 |
+| Live applied migrations | 41 |
+| Repo-confirmed live-tail migrations | PARTIAL |
 | Repo functions | 9 |
-| Live functions | 9 |
+| Live functions | 11 |
 | Live-only functions | `ai-run`, `ai-embeddings` |
-| Repo-only functions | `create-yookassa-checkout`, `yookassa-webhook` |
-| Live security advisors | `1 warning` |
+| APP-target payment pair in live | present |
+| Live security advisors | `2 warnings` |
+| Fresh current-main CI proof | unverified |
+| Latest verified green CI signal | PR `#498` / `CI #1246` |
 | Payment business canon | WEB non-payment, APP payment, RuStore publication/proof |
 
 ---
@@ -70,6 +73,6 @@
 
 1. GitHub `main` как truth по repo intent.
 2. Supabase live metadata как truth по deployed state.
-3. Refresh pack `2026-05-12` как мост между ними.
+3. `CURRENT_TASKS.md` + `docs/LAUNCH_CHECKLIST.md` как текущий operational synthesis.
 
-Если документ говорит о текущем live state, он должен быть совместим с canonical snapshot `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md`. Иначе это исторический документ, а не present-tense truth.
+Если документ говорит о текущем live state, он должен быть совместим с live baseline `41` и явно не маскировать `migration-sync` / CI gaps. Иначе это исторический документ, а не present-tense truth.
