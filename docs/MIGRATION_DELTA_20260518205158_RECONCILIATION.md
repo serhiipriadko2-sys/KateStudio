@@ -6,7 +6,7 @@
 
 ## Verdict
 
-`FAIL-PATH CLOSED: exact or semantic Git-tracked origin not confirmed in current evidence packet`
+`DECISION FIXED: additive reconstruction path selected`
 
 [FACT] Live Supabase history includes migration version `20260518205158` with name `create_dataset_runs_and_artifacts`.
 
@@ -14,7 +14,9 @@
 
 [FACT] In the current GitHub evidence pass, no honest semantic mapping to a differently timestamped repo migration was confirmed either.
 
-[INTERP] That means the unresolved state is no longer "investigation pending". It is now an explicit, Git-tracked reconciliation problem.
+[FACT] The project canon now explicitly chooses `additive reconstruction path` for this delta.
+
+[INTERP] That means the unresolved state is no longer "investigation pending" and no longer "strategy undecided". It is now an explicit, Git-tracked reconciliation problem with an accepted path.
 
 ---
 
@@ -66,7 +68,26 @@ Result:
 - live delta exists
 - repo origin is unresolved
 - reproducibility is partial
+- path selection is complete
 - release remains on hold
+
+---
+
+## Decision
+
+Chosen path: `Path B — additive reconstruction`.
+
+Reasoning:
+- no exact Git-tracked origin was confirmed;
+- no semantic mapping was confirmed;
+- historical timestamp drift already exists elsewhere in the tail;
+- continuing origin search without a new evidence source would reduce uncertainty weakly and slowly;
+- additive reconstruction restores honest reproducibility more directly than open-ended searching.
+
+This decision does **not** mean the delta is closed.
+It means the strategy is now explicit:
+- do not keep the delta in ambiguous search mode;
+- prepare the reconstruction path as the canonical repo-side follow-up.
 
 ---
 
@@ -75,41 +96,27 @@ Result:
 - GitHub `main` cannot currently be treated as a fully reproducible source for the full live migration tail.
 - Historical drift for `20260516202546` and `20260516202845` is mapped.
 - `20260518205158` remains the only unresolved migration delta in the narrowed blocker set.
+- Its strategy is now fixed as additive reconstruction.
 
 ---
 
 ## Safe rule from this point
 
-1. Do not fabricate a matching migration file.
+1. Do not fabricate a matching historical migration file.
 2. Do not rename unrelated migration files to cosmetically match the live timestamp.
-3. Do not treat this delta as closed until one of these is true:
-   - exact file is found;
-   - semantic repo mapping is proven;
-   - an additive Git-tracked reconstruction artifact is intentionally prepared and approved.
+3. Do not reopen this as an undecided strategy question unless a new high-value evidence source appears.
+4. Treat the next correct repo-side move as preparation of an additive reconstruction artifact or migration-plan artifact.
 
 ---
 
-## Recommended next move
+## Required next artifact
 
-Choose one explicit path:
-
-### Path A — find hidden repo origin
-
-Use when there is reason to believe the migration exists in another branch, PR, or artifact.
-
-Needed proof:
-- exact file or commit-level semantic mapping
-
-### Path B — additive reconstruction
-
-Use when no repo origin can be found.
-
-Needed artifact:
-- a new Git-tracked reconstruction note or migration-plan artifact describing:
-  - live schema intent
-  - probable affected tables
-  - why original Git origin is missing
-  - what approval would be needed before any actual schema write
+Prepare a new Git-tracked reconstruction note or migration-plan artifact describing:
+- live schema intent;
+- probable affected tables;
+- why original Git origin is missing or unverifiable;
+- what approval would be needed before any actual schema write;
+- PASS / FAIL criteria for considering the delta honestly reconciled at the planning layer.
 
 ---
 
@@ -119,10 +126,11 @@ Needed artifact:
 
 Reason:
 - current-main same-ref green CI proof is still missing;
-- this unresolved live-only delta still blocks honest reproducibility claims.
+- additive reconstruction has been selected, but not yet prepared as an execution-ready artifact;
+- this live-only delta still blocks a full reproducibility claim.
 
 ---
 
 ## Closure sentence
 
-Result: unresolved live delta `20260518205158_create_dataset_runs_and_artifacts` is now explicitly reconciled as a Git-tracked release blocker, not as an open-ended mystery.
+Result: unresolved live delta `20260518205158_create_dataset_runs_and_artifacts` is now explicitly reconciled as a Git-tracked release blocker with `additive reconstruction path` selected as the canonical strategy.
