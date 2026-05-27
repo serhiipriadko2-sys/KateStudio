@@ -38,7 +38,7 @@ environments. It is still not exact-historical Git reproducible.
 - [x] `npm run build:web` green locally.
 - [x] `npm run build:app` green locally.
 
-Local receipts (2026-05-27 pass #2, HEAD `3ff4971`, 21:40 MSK):
+Local receipts (2026-05-27 pass #2, HEAD `9a1c31e`, 21:55 MSK):
 
 - `npm run check:migrations` -> PASS, `67 files, 0 known collision group(s), 1 legacy short timestamp file(s)`
 - `npm run lint` -> PASS, 0 warnings
@@ -60,7 +60,8 @@ GitHub receipts:
   - `Build for Pages`
   - `Deploy`
   - `build-and-deploy`
-- current HEAD `3ff4971` (2026-05-27T18:15:52Z): docs-only changes (AGENTS.md + CLAUDE.md); no code impact on CI.
+- current HEAD `9a1c31e` (2026-05-27T18:53:02Z): docs-only gate pass #2 (RELEASE_GATE update, ADRs, INDEX update, CURRENT_TASKS update); no code impact on CI.
+- commit: https://github.com/serhiipriadko2-sys/KateStudio/commit/9a1c31e64c3af3e20a4ab8204a18475e6c04c0f9
 
 Result: `PASS`
 
@@ -196,9 +197,11 @@ Then retire legacy payment functions in staged order.
 
 ## Closure
 
-Result: KateStudio is code/CI release-candidate ready on current `main` (`3ff4971`).
-All 7 local gates pass as of 2026-05-27 21:40 MSK. Formal ADRs have been written
+Result: KateStudio is code/CI release-candidate ready on current `main` (`9a1c31e`).
+All 7 local gates pass as of 2026-05-27 21:55 MSK. Formal ADRs have been written
 for both live security warnings with named expiry dates and named remediation owners.
-Full production release PASS is withheld until leaked password protection is enabled
-and verified (by 2026-06-03), and legacy payment functions are retired or explicitly
-accepted as a transition window.
+Runtime smoke: https://ksebe-studio.ru/ and https://artful-striker-476211-h4.web.app/ both
+returned content in this pass. Full production release PASS is withheld until leaked
+password protection is enabled and verified (by 2026-06-03), and legacy payment functions
+are retired or explicitly accepted as a transition window. Both actions require live
+production access outside this gate boundary.

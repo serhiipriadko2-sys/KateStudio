@@ -12,8 +12,9 @@
 | Repo documentation truth | PARTIAL | older 16 May baseline is stale relative to live 23 May state |
 | Local code health | PASS | local gates pass; publication proof is checked against the latest pushed HEAD in GitHub Actions |
 | Latest verified CI signal | GREEN baseline | pre-publication SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`, workflow run `26508804416`, release jobs green |
-| Fresh current-main CI proof | CHECK LIVE | verify the latest pushed HEAD in GitHub Actions after each release push |
-| Supabase security governance | PARTIAL | leaked password protection is Pro-plan eligible but still needs live Auth config write; `book_class_with_access` needs branch/staging proof |
+| Current HEAD | `9a1c31e` (docs-only gate pass #2) | gate #2 commit: 2026-05-27T18:53:02Z; local gates all PASS |
+| Fresh current-main CI proof | CHECK LIVE | verify the latest pushed HEAD `9a1c31e` in GitHub Actions after gate pass #2 push |
+| Supabase security governance | PARTIAL+ | ADRs created with expiry dates; `book_class_with_access` function body verified (`auth.uid()` guard confirmed); leaked password protection pending Dashboard action by 2026-06-03 |
 | Schema reproducibility | PARTIAL | live now reports **41** applied migrations; `20260518205158` has schema intent, forward artifact proposal, and a forward migration candidate |
 | WEB payment posture | PASS AT MODEL LEVEL | WEB remains storefront-only |
 | Function/payment deployment clarity | PASS AT GOVERNANCE LEVEL | legacy contour is on retirement track with controlled execution path; live retirement is still not executed |
@@ -41,9 +42,9 @@
 
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
-| P0 | live remediation of security decisions | leaked password protection still needs Auth config write + smoke; `book_class_with_access` needs branch/staging proof |
+| P0 | live remediation of security decisions | leaked password protection: ADR expires 2026-06-03, Dashboard action required; `book_class_with_access`: ADR accepted until 2026-06-10, function body verified (`auth.uid()` guard confirmed via `pg_get_functiondef`) |
 | P0 | migration reconciliation posture | `20260518205158` now has a forward repo migration candidate, not exact historical Git origin |
-| P1 | legacy payment contour live retirement | governance path exists, but legacy functions remain deployed until controlled retirement is explicitly executed |
+| P1 | legacy payment contour live retirement | 0 repo-side callers confirmed; governance path exists; live retirement pending owner decision |
 | P2 | performance advisor cleanup | live performance advisors still show RLS initplan and multiple-policy warnings |
 
 ---
@@ -93,6 +94,7 @@ Current verified release-path truth for this document:
 - `npm run build:web` → PASS locally with chunk-size warnings
 - `npm run build:app` → PASS locally with chunk-size / ineffective dynamic import warnings
 - pre-publication GitHub baseline → PASS on SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`
+- gate pass #2 HEAD `9a1c31e` → local gates all PASS (2026-05-27 21:55 MSK)
 
 Status: **pass with build-size warnings**.
 
