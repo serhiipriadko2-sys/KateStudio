@@ -1,7 +1,7 @@
 # Launch Checklist & Gap Analysis
 
 > **Обновлено:** 27 мая 2026
-> **Вердикт:** production launch readiness **PARTIAL / release candidate with accepted-risk decisions**
+> **Вердикт:** production launch readiness **PARTIAL / live remediation in progress**
 
 ---
 
@@ -13,8 +13,8 @@
 | Local code health | PASS | local gates pass; publication proof is checked against the latest pushed HEAD in GitHub Actions |
 | Latest verified CI signal | GREEN baseline | pre-publication SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`, workflow run `26508804416`, release jobs green |
 | Fresh current-main CI proof | CHECK LIVE | verify the latest pushed HEAD in GitHub Actions after each release push |
-| Supabase security governance | PARTIAL | live security advisors still show two warnings, but separate decision notes now exist |
-| Schema reproducibility | PARTIAL | live now reports **41** applied migrations; drift is documented and `20260518205158` has schema intent + forward artifact proposal |
+| Supabase security governance | PARTIAL | leaked password protection is Pro-plan eligible but still needs live Auth config write; `book_class_with_access` needs branch/staging proof |
+| Schema reproducibility | PARTIAL | live now reports **41** applied migrations; `20260518205158` has schema intent, forward artifact proposal, and a forward migration candidate |
 | WEB payment posture | PASS AT MODEL LEVEL | WEB remains storefront-only |
 | Function/payment deployment clarity | PASS AT GOVERNANCE LEVEL | legacy contour is on retirement track with controlled execution path; live retirement is still not executed |
 | Runtime public smoke | PASS / LOCAL NOTE | `https://ksebe-studio.ru/` and Firebase APP target answer; earlier timeout was VPN-related |
@@ -41,8 +41,8 @@
 
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
-| P0 | owner acceptance or live remediation of security decisions | warnings remain live; repo decision notes accept/defer with expiry dates |
-| P0 | owner acceptance of migration reconciliation posture | `20260518205158` is documented with schema intent and forward proposal, not exact historical Git origin |
+| P0 | live remediation of security decisions | leaked password protection still needs Auth config write + smoke; `book_class_with_access` needs branch/staging proof |
+| P0 | migration reconciliation posture | `20260518205158` now has a forward repo migration candidate, not exact historical Git origin |
 | P1 | legacy payment contour live retirement | governance path exists, but legacy functions remain deployed until controlled retirement is explicitly executed |
 | P2 | performance advisor cleanup | live performance advisors still show RLS initplan and multiple-policy warnings |
 
@@ -60,6 +60,7 @@
 - [x] path decision is fixed: `20260518205158` goes through additive reconstruction
 - [x] prepare additive reconstruction artifact / migration-plan artifact for `20260518205158_create_dataset_runs_and_artifacts`
 - [x] prepare schema intent note and forward artifact proposal for `dataset_runs` / `dataset_artifacts`
+- [x] add forward migration candidate `20260527174716_reconcile_dataset_runs_artifacts_forward.sql`
 - [ ] obtain owner acceptance for treating the live-only delta as explicitly reconciled for this release
 - [ ] perform one explicit repo/live migration inventory reconciliation across older history
 - [ ] regenerate DB types only after the broader baseline is intentionally accepted
@@ -85,7 +86,7 @@ Status: **governance complete; live retirement still pending**.
 
 Current verified release-path truth for this document:
 
-- `npm run check:migrations` → PASS locally, `66 files, 0 known collision group(s), 1 legacy short timestamp file(s)`
+- `npm run check:migrations` → PASS locally, `67 files, 0 known collision group(s), 1 legacy short timestamp file(s)`
 - `npm run lint` → PASS locally with 0 warnings after cleanup
 - `npm run typecheck` → PASS locally
 - `npm run test:run` → PASS locally, `72 files / 503 tests`
@@ -123,4 +124,6 @@ Launch PASS requires all of the following:
 5. live security warnings are resolved or explicitly accepted with evidence;
 6. remaining runtime anomalies around `app_settings` and `site_images` are either fixed or explicitly accepted.
 
-Current status: code and CI are release-candidate ready. Full production PASS still depends on explicit owner acceptance of the documented migration/security residual risks or live remediation of those items.
+Current status: code and CI are release-candidate ready. Full production PASS still depends on completing the live remediation path or recording the remaining blocked steps as explicit operational exceptions.
+
+Live remediation packet: `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.

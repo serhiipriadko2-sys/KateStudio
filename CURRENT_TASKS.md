@@ -4,10 +4,11 @@
 > Publication proof must be read from the GitHub Actions run for the latest
 > pushed HEAD; the previous green baseline was
 > `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`. Status is now
-> **release-candidate ready / production PASS
-> withheld** until owner accepts or remediates the documented Supabase security
-> warnings and accepts the `20260518205158` migration reconciliation posture.
-> Current receipt: `docs/RELEASE_GATE_2026_05_27.md`.
+> **release-candidate ready / live remediation in progress**. Production PASS
+> is withheld until live Auth security, `book_class_with_access`, and legacy
+> payment retirement are verified.
+> Current receipts: `docs/RELEASE_GATE_2026_05_27.md` and
+> `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.
 
 > **Обновлено:** 25 мая 2026 | **Версия:** 5.6.3
 > Источник истины: GitHub `main` + live Supabase metadata, function inventory, advisors и проверенные CI артефакты.
@@ -20,7 +21,7 @@
 | Метрика | Значение | Основание |
 | --- | --- | --- |
 | Live applied migrations | **41** | live `list_migrations` на 2026-05-23 reaches `20260518205158_create_dataset_runs_and_artifacts` |
-| Repo/live tail reconciliation | **PARTIAL, STRATEGY FIXED** | exact match for `20260516182944`; semantic mappings exist for live `20260516202546` and `20260516202845`; unresolved delta `20260518205158` now has explicit additive reconstruction path |
+| Repo/live tail reconciliation | **PARTIAL, FORWARD CANDIDATE READY** | exact match for `20260516182944`; semantic mappings exist for live `20260516202546` and `20260516202845`; unresolved delta `20260518205158` now has explicit forward migration candidate |
 | Live Edge Functions | **11** | Supabase `list_edge_functions` на 2026-05-23 |
 | Live security advisors | **2 warnings** | `authenticated_security_definer_function_executable` для `book_class_with_access` + leaked password protection disabled |
 | Live performance advisors | **warnings remain** | initplan + permissive-policy fan-out + unused indexes |
@@ -54,10 +55,10 @@
 
 | # | Задача | Статус | Почему это P0 |
 | --- | --- | --- | --- |
-| 9 | Подготовить additive reconstruction artifact / migration-plan artifact для `20260518205158` | ⛔ | strategy is fixed, but execution-ready reconstruction artifact is still missing |
-| 10 | Получить fresh green CI на том же current `main` ref | ⛔ | PR-only green does not substitute for release-path proof on the same `main` SHA |
-| 11 | Разрешить dual payment contour | ⛔ | live still exposes both legacy and app-target payment pairs without explicit retirement criteria |
-| 12 | Снять current live security warnings | ⛔ | `book_class_with_access` remains exposed as `SECURITY DEFINER` to `authenticated`; leaked password protection remains disabled |
+| 9 | Подготовить additive reconstruction artifact / migration-plan artifact для `20260518205158` | ✅ | forward migration candidate `20260527174716_reconcile_dataset_runs_artifacts_forward.sql` exists |
+| 10 | Получить fresh green CI на том же current `main` ref | ✅ | current `main` `dbd8f2b` passed CI/deploy after release-format fix |
+| 11 | Разрешить dual payment contour | ⏳ | stale WEB `create-payment` caller removed; live legacy functions still need staged retirement |
+| 12 | Снять current live security warnings | ⏳ | leaked password protection is Pro-plan eligible but still needs Auth config write; `book_class_with_access` needs branch/staging proof |
 
 ---
 
@@ -84,10 +85,10 @@
 
 ## Ближайший рабочий шаг
 
-1. Prepare the additive reconstruction artifact or migration-plan artifact for `20260518205158`.
-2. Obtain a fresh green CI run on the same current `main` SHA.
-3. Decide whether the dual payment contour is an accepted transition window or an unwanted overlap.
-4. Only after that, move from `FAIL` to `PARTIAL` or `PASS` in the release gate.
+1. Enable leaked password protection through Dashboard or scoped Management API token.
+2. Prepare branch/staging proof for `book_class_with_access`.
+3. Retire legacy payment functions only after final inventory/log checks.
+4. Re-run advisors, local gates, GitHub Actions, and runtime smoke.
 
 ---
 
@@ -97,8 +98,8 @@
 | --- | --- |
 | Repo/live docs coherence | PARTIAL |
 | Live Supabase governance | PARTIAL |
-| Migration-sync | PARTIAL with one explicitly tracked delta on additive reconstruction path |
+| Migration-sync | PARTIAL with forward migration candidate |
 | Live payment surface | PRESENT, but dual-contour |
 | Live security advisors | **2 warnings remaining** |
-| Fresh release-path CI | **UNVERIFIED on current `main`** |
-| Overall launch readiness | **FAIL** until additive reconstruction artifact + current-main CI proof + payment/security decisions are resolved |
+| Fresh release-path CI | **PASS on current `main` dbd8f2b** |
+| Overall launch readiness | **PARTIAL** until live Auth security, `book_class_with_access`, and legacy payment retirement are verified |

@@ -17,12 +17,14 @@
 - [x] unresolved delta explicitly documented.
 - [x] schema intent note exists for `dataset_runs` / `dataset_artifacts`.
 - [x] forward schema artifact proposal exists.
+- [x] forward migration candidate exists:
+  `20260527174716_reconcile_dataset_runs_artifacts_forward.sql`.
 
 Result: `PARTIAL`
 
 Reason: `20260518205158_create_dataset_runs_and_artifacts` is now bounded and
-documented, but not exact-Git reproducible. Full PASS requires owner acceptance
-of this explicit reconciliation posture or a later forward artifact.
+documented, and a forward migration candidate exists for fresh/staging
+environments. It is still not exact-historical Git reproducible.
 
 ---
 
@@ -38,7 +40,7 @@ of this explicit reconciliation posture or a later forward artifact.
 
 Local receipts:
 
-- `npm run check:migrations` -> PASS, `66 files, 0 known collision group(s), 1 legacy short timestamp file(s)`
+- `npm run check:migrations` -> PASS, `67 files, 0 known collision group(s), 1 legacy short timestamp file(s)`
 - `npm run lint` -> PASS, 0 warnings after cleanup
 - `npm run typecheck` -> PASS
 - `npm run test:run` -> PASS, `72 files / 503 tests`
@@ -83,8 +85,7 @@ this pass.
 
 - [x] `book_class_with_access` decision note exists.
 - [x] leaked password protection decision note exists.
-- [x] live warnings are explicitly accepted/deferred with owner, expiry, and
-  verification path.
+- [x] live warnings have decision notes and a remediation packet.
 - [ ] live warnings are remediated.
 
 Live advisor receipt:
@@ -95,8 +96,9 @@ Live advisor receipt:
 Result: `PARTIAL`
 
 Reason: governance is no longer missing, but the live warnings remain. Full PASS
-requires either explicit owner acceptance for this release or live remediation
-and verification.
+requires live remediation and verification, or a later explicit exception.
+
+Remediation packet: `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.
 
 ---
 
@@ -134,10 +136,9 @@ Production PASS state: `NOT YET`
 
 Top blocker:
 
-- explicit owner acceptance or live remediation of the two Supabase security
-  warnings;
-- explicit owner acceptance of the migration reconciliation posture for
-  `20260518205158`.
+- leaked password protection live Auth config write + auth smoke;
+- branch/staging proof for `book_class_with_access` remediation;
+- final decision on live legacy payment function retirement.
 
 Rollback concern:
 
@@ -147,14 +148,14 @@ Rollback concern:
 
 One next step:
 
-Obtain owner acceptance for the two temporary security decisions and the
-`20260518205158` forward schema artifact posture, or execute the live
-remediations in a separate approved production-change pass.
+Continue the live remediation packet: enable leaked password protection through
+Dashboard/API, prepare branch/staging proof for `book_class_with_access`, and
+retire legacy payment functions only after the stale callers are gone.
 
 ---
 
 ## Closure
 
-Result: KateStudio is code/CI release-candidate ready on current `main`, but
-full production release PASS is withheld until migration/security residual risks
-are explicitly accepted by the owner or remediated live.
+Result: KateStudio is code/CI release-candidate ready on current `main`, and
+live remediation is in progress. Full production release PASS is withheld until
+the remaining live security and payment retirement steps are verified.

@@ -53,10 +53,25 @@ Release risk:
 
 ---
 
+## Remediation Update
+
+Update 2026-05-27:
+
+[FACT] Owner supplied billing evidence showing the Supabase organization is on
+Pro Plan.
+
+[FACT] Supabase documentation states leaked password protection is available on
+Pro Plan and above.
+
+[INTERP] Plan level is no longer the blocker. The remaining blocker is live Auth
+configuration access and verification.
+
+---
+
 ## Decision
 
-Decision: defer explicitly until owner can change the live Auth setting and
-verify user flows.
+Decision: remediate live as soon as Auth config can be changed through
+Dashboard or a scoped Management API token, then verify user flows.
 
 Owner: project owner / release owner.
 
@@ -64,8 +79,8 @@ Expiry date: 2026-06-03.
 
 Blocking reason:
 
-- This pass does not perform live Supabase Auth configuration mutation.
-- The change should be paired with auth-flow verification and a rollback note.
+- This pass does not have a working Supabase MCP/Management API write channel.
+- The change must be paired with auth-flow verification and a rollback note.
 
 Acceptance rationale:
 
@@ -106,8 +121,9 @@ Rollback expectation:
 
 ## PASS Rule
 
-This decision closes the release governance gap only as an explicit defer note.
+This decision closes the release governance gap only as an explicit remediation
+plan.
 It does not remove the live warning.
 
-Result: leaked password protection is deferred until 2026-06-03 with explicit
-owner, rationale, and verification path.
+Result: leaked password protection is plan-eligible and pending live Auth
+configuration access plus verification.

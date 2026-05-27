@@ -49,7 +49,7 @@ jobs:
           fi
 
           mapfile -t prettier_files < <(
-            git diff --name-only "$base_sha" "${{ github.sha }}" -- \
+            git diff --name-only --diff-filter=ACMR "$base_sha" "${{ github.sha }}" -- \
               '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.html' '*.yml' '*.yaml'
           )
 
