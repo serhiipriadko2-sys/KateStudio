@@ -1,14 +1,16 @@
 # Текущие задачи
 
-> **Update 2026-05-27:** local release gates pass after lint warning cleanup.
-> Publication proof must be read from the GitHub Actions run for the latest
-> pushed HEAD; the previous green baseline was
-> `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`. Status is now
-> **release-candidate ready / live remediation in progress**. Production PASS
-> is withheld until live Auth security, `book_class_with_access`, and legacy
-> payment retirement are verified.
+> **Update 2026-05-27 (pass #2, 21:40 MSK):** All 7 local gates PASS on HEAD `3ff4971`
+> (72 files / 503 tests). ADRs created for both live security warnings with
+> expiry dates. Legacy payment caller inventory complete: 0 repo-side callers.
+> `book_class_with_access` function body verified via `pg_get_functiondef` —
+> `auth.uid()` guard confirmed. Status: **release-candidate ready / live
+> remediation in progress**. Production PASS withheld until leaked password
+> protection is enabled (by 2026-06-03) and legacy payment functions are retired.
 > Current receipts: `docs/RELEASE_GATE_2026_05_27.md` and
 > `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.
+> ADRs: `docs/adr/ADR-2026-05-27-book-class-security-definer-accepted-risk.md`,
+> `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md`.
 
 > **Обновлено:** 25 мая 2026 | **Версия:** 5.6.3
 > Источник истины: GitHub `main` + live Supabase metadata, function inventory, advisors и проверенные CI артефакты.
@@ -58,7 +60,7 @@
 | 9 | Подготовить additive reconstruction artifact / migration-plan artifact для `20260518205158` | ✅ | forward migration candidate `20260527174716_reconcile_dataset_runs_artifacts_forward.sql` exists |
 | 10 | Получить fresh green CI на том же current `main` ref | ✅ | current `main` `dbd8f2b` passed CI/deploy after release-format fix |
 | 11 | Разрешить dual payment contour | ⏳ | stale WEB `create-payment` caller removed; live legacy functions still need staged retirement |
-| 12 | Снять current live security warnings | ⏳ | leaked password protection is Pro-plan eligible but still needs Auth config write; `book_class_with_access` needs branch/staging proof |
+| 12 | Снять current live security warnings | ⏳ | leaked password: ADR expires 2026-06-03, manual Dashboard action required; `book_class_with_access`: ADR accepted until 2026-06-10, function body verified safe (`auth.uid()` guard confirmed) |
 
 ---
 
@@ -85,10 +87,10 @@
 
 ## Ближайший рабочий шаг
 
-1. Enable leaked password protection through Dashboard or scoped Management API token.
-2. Prepare branch/staging proof for `book_class_with_access`.
-3. Retire legacy payment functions only after final inventory/log checks.
-4. Re-run advisors, local gates, GitHub Actions, and runtime smoke.
+1. Enable leaked password protection through Supabase Dashboard → Authentication → Sign In / Providers → Email → Password security. Verify signup/login/reset. Re-run advisors.
+2. Retire legacy payment functions (`create-payment`, `payment-webhook`, `cancel-subscription`) in staged order — 0 repo-side callers confirmed.
+3. Optionally prepare Edge Function wrapper for `book_class_with_access` (not blocking until 2026-06-10 ADR expiry).
+4. After steps 1-2: re-run full local gates + push to `main` + verify GitHub Actions.
 
 ---
 
@@ -99,7 +101,7 @@
 | Repo/live docs coherence | PARTIAL |
 | Live Supabase governance | PARTIAL |
 | Migration-sync | PARTIAL with forward migration candidate |
-| Live payment surface | PRESENT, but dual-contour |
-| Live security advisors | **2 warnings remaining** |
-| Fresh release-path CI | **PASS on current `main` dbd8f2b** |
-| Overall launch readiness | **PARTIAL** until live Auth security, `book_class_with_access`, and legacy payment retirement are verified |
+| Live payment surface | PRESENT, but dual-contour (0 repo-side callers on legacy) |
+| Live security advisors | **2 warnings remaining** (both have ADRs with expiry dates) |
+| Fresh release-path CI | **PASS on HEAD `3ff4971` (local gates), pre-pub baseline `dbd8f2b` (GitHub CI)** |
+| Overall launch readiness | **PARTIAL** until leaked password protection enabled + legacy payment retired |

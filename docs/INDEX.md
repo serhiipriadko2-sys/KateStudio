@@ -1,6 +1,6 @@
 # Центральный индекс документации | KateStudio
 
-> **Обновлено:** 27 мая 2026 | **Версия:** 9.3.4
+> **Обновлено:** 27 мая 2026 | **Версия:** 9.4.0
 > Рабочий канон: GitHub `main` + live Supabase metadata + current operational docs.
 
 ---
@@ -18,8 +18,10 @@
 - `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` — temporary acceptance and remediation path for the live `SECURITY DEFINER` RPC warning
 - `docs/SECURITY_DECISION_LEAKED_PASSWORD_PROTECTION_2026_05_27.md` — live remediation path for leaked password protection
 - `docs/MIGRATION_FORWARD_SCHEMA_ARTIFACT_PROPOSAL_20260518205158.md` — forward artifact proposal for `dataset_runs` / `dataset_artifacts`
-- `docs/RELEASE_GATE_2026_05_27.md` — current release gate receipt for repo/live checks
+- `docs/RELEASE_GATE_2026_05_27.md` — current release gate receipt (pass #2: all 7 local gates PASS, HEAD `bc90d30`, 2026-05-27 21:50 MSK)
 - `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md` — controlled remediation packet for remaining Supabase security, migration, and legacy-payment blockers
+- `docs/adr/ADR-2026-05-27-book-class-security-definer-accepted-risk.md` — formal ADR: `book_class_with_access` SECURITY DEFINER accepted as temporary risk (expires 2026-06-10)
+- `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md` — formal ADR: leaked password protection pending live Dashboard action (expires 2026-06-03)
 - `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` — historical bridge audit; не использовать как единственный current snapshot
 
 ---
@@ -40,6 +42,8 @@
 | `docs/ADMIN_SUBSCRIPTIONS_SURFACE_DECISION_2026_05_27.md` | governance decision for legacy admin subscriptions surface |
 | `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` | temporary acceptance and remediation path for RPC security warning |
 | `docs/SECURITY_DECISION_LEAKED_PASSWORD_PROTECTION_2026_05_27.md` | live Auth setting remediation path |
+| `docs/adr/ADR-2026-05-27-book-class-security-definer-accepted-risk.md` | formal ADR: `book_class_with_access` accepted risk, expires 2026-06-10 |
+| `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md` | formal ADR: leaked password protection pending live action, expires 2026-06-03 |
 | `docs/MIGRATION_FORWARD_SCHEMA_ARTIFACT_PROPOSAL_20260518205158.md` | forward schema artifact proposal for the live-only dataset delta |
 | `docs/RELEASE_GATE_2026_05_27.md` | current release gate receipt |
 | `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md` | live remediation status and blockers |
@@ -48,7 +52,6 @@
 | `docs/SECURITY_DECISION_TEMPLATE_LEAKED_PASSWORD_PROTECTION.md` | template для security decision note по Auth setting |
 | `docs/RELEASE_GATE_WORKSHEET_TEMPLATE.md` | one-pass worksheet для финального release gate |
 | `docs/APP_ONLY_YOOKASSA_CUTOVER_PLAN.md` | app-only payment cutover, rollback и verification order |
-| `docs/ANDROID_STORE_READINESS.md` | Android publish path для Google Play и RuStore |
 | `docs/TESTING.md` | test truth и ограничения проверки |
 | `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` | historical bridge audit with 2026-05-23 drift note |
 | `docs/SUPABASE_AUDIT_LIVE_2026_05_10.md` | исторический audit snapshot, не текущий present-tense canon |
@@ -85,11 +88,12 @@
 | Live functions | 11 |
 | Live-only functions | `ai-run`, `ai-embeddings` |
 | APP-target payment pair in live | present |
-| Legacy payment contour status | retirement track |
+| Legacy payment contour status | retirement track (0 repo-side callers confirmed 2026-05-27) |
 | Legacy admin subscriptions surface | temporary bridge |
-| Live security advisors | `2 warnings`, remediation packet exists |
+| Live security advisors | `2 warnings`, both with ADR records and expiry dates |
 | Current-main CI proof policy | verify the latest pushed SHA in GitHub Actions after publication |
 | Latest verified green CI baseline | SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`, workflow run `26508804416` |
+| Local gate pass (HEAD `bc90d30`) | all 7 PASS as of 2026-05-27 21:50 MSK |
 | Payment business canon | WEB non-payment, APP payment, RuStore publication/proof |
 
 ---

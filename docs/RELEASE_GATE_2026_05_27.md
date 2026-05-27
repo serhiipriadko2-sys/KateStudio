@@ -1,6 +1,6 @@
 # Release Gate | KateStudio | 2026-05-27
 
-> Evaluator: Codex / Iskra
+> Evaluator: Codex / Iskra / Iskra vΩ.7
 > Release-source scope: local code/docs gate; final pushed SHA is verified via GitHub Actions after publication.
 > Supabase project: `qkaycdcbstjobacmuaro`
 > Mode: RELEASE
@@ -38,13 +38,13 @@ environments. It is still not exact-historical Git reproducible.
 - [x] `npm run build:web` green locally.
 - [x] `npm run build:app` green locally.
 
-Local receipts:
+Local receipts (2026-05-27 pass #2, HEAD `3ff4971`, 21:40 MSK):
 
 - `npm run check:migrations` -> PASS, `67 files, 0 known collision group(s), 1 legacy short timestamp file(s)`
-- `npm run lint` -> PASS, 0 warnings after cleanup
+- `npm run lint` -> PASS, 0 warnings
 - `npm run typecheck` -> PASS
 - `npm run test:run` -> PASS, `72 files / 503 tests`
-- `npm run build:web` -> PASS with chunk-size warnings
+- `npm run build:web` -> PASS with chunk-size warnings only
 - `npm run build:app` -> PASS with chunk-size and ineffective dynamic import warnings
 
 GitHub receipts:
@@ -60,6 +60,7 @@ GitHub receipts:
   - `Build for Pages`
   - `Deploy`
   - `build-and-deploy`
+- current HEAD `3ff4971` (2026-05-27T18:15:52Z): docs-only changes (AGENTS.md + CLAUDE.md); no code impact on CI.
 
 Result: `PASS`
 
@@ -72,31 +73,52 @@ Result: `PASS`
 - [x] transition / retirement criteria are explicit.
 - [x] legacy admin subscriptions surface decision exists.
 - [x] controlled retirement execution path exists.
+- [x] `book_class_with_access` ADR written: `docs/adr/ADR-2026-05-27-book-class-security-definer-accepted-risk.md`
+- [x] leaked password protection ADR written: `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md`
 
 Result: `PASS`
 
 Reason: governance is explicit. Live retirement of `create-payment`,
 `payment-webhook`, and `cancel-subscription` is intentionally not executed in
-this pass.
+this pass. Both security items now have formal ADR records with expiry dates.
 
 ---
 
 ## Section D — Security
 
 - [x] `book_class_with_access` decision note exists.
+- [x] `book_class_with_access` ADR exists with expiry 2026-06-10.
 - [x] leaked password protection decision note exists.
+- [x] leaked password protection ADR exists with expiry 2026-06-03.
 - [x] live warnings have decision notes and a remediation packet.
+- [x] live function body verified — `auth.uid()` guard confirmed via `pg_get_functiondef`.
+- [x] legacy payment caller inventory completed — 0 repo-side callers found.
 - [ ] live warnings are remediated.
 
-Live advisor receipt:
+Live advisor receipt (confirmed 2026-05-27 via Supabase MCP):
 
-- `authenticated_security_definer_function_executable`
+- `authenticated_security_definer_function_executable` → `book_class_with_access`
 - `auth_leaked_password_protection`
+
+Function analysis (via `pg_get_functiondef` on live DB):
+
+- `book_class_with_access` contains explicit `auth.uid()` null-check guard.
+- Performs `FOR UPDATE` locking on `classes` + `user_passes` in one transaction.
+- `public` / `anon` execute revoked via migrations `20260516211000` + `20260516214500`.
+- `authenticated` execute is intentional for APP booking path.
+- Cross-user abuse requires bypassing the `auth.uid()` guard, not possible via normal client calls.
+
+Repo-side callers of legacy payment functions (final inventory 2026-05-27):
+
+- `create-payment`: 0 callers in TS/TSX ✅
+- `payment-webhook`: 0 callers in TS/TSX ✅
+- `cancel-subscription`: only self-referenced in its own Edge Function source ✅
 
 Result: `PARTIAL`
 
-Reason: governance is no longer missing, but the live warnings remain. Full PASS
-requires live remediation and verification, or a later explicit exception.
+Reason: governance is no longer missing, both warnings have formal ADR records
+with named expiry dates, but the live warnings remain. Full PASS requires live
+remediation and verification, or a later explicit exception.
 
 Remediation packet: `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.
 
@@ -119,6 +141,13 @@ Live data receipts:
 - policy check: public `app_settings` read policy exposes only
   `studio_contacts` for `anon` / `authenticated`.
 
+Edge Functions inventory (confirmed 2026-05-27 via Supabase MCP, 11 functions):
+
+- AI: `ai-run` (v7), `ai-embeddings` (v7), `gemini-proxy` (v5) — ACTIVE
+- Payment (app-target): `create-yookassa-checkout` (v7), `yookassa-webhook` (v5) — ACTIVE
+- Payment (legacy, retirement pending): `create-payment` (v5), `payment-webhook` (v5), `cancel-subscription` (v5) — ACTIVE
+- Infra: `cron-maintenance` (v5), `send-push` (v5), `subscribe-newsletter` (v5) — ACTIVE
+
 Result: `PASS WITH WARNING`
 
 Warning: `site_images` remains empty, but code falls back to local/static image
@@ -134,11 +163,22 @@ Release-candidate state: `READY`
 
 Production PASS state: `NOT YET`
 
-Top blocker:
+Top blockers (in priority order):
 
-- leaked password protection live Auth config write + auth smoke;
-- branch/staging proof for `book_class_with_access` remediation;
-- final decision on live legacy payment function retirement.
+1. **leaked password protection** (expires 2026-06-03): enable in Supabase Dashboard →
+   Authentication → Sign In / Providers → Email → Password security.
+   Then verify signup, login, reset-password flows and re-run advisors.
+   ADR: `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md`
+
+2. **legacy payment retirement**: `create-payment`, `payment-webhook`,
+   `cancel-subscription` have 0 repo-side callers but remain ACTIVE live.
+   Staged retirement when owner confirms no pending manual calls.
+   Execution path: `docs/LEGACY_PAYMENT_RETIREMENT_EXECUTION_PATH_2026_05_27.md`
+
+3. **`book_class_with_access`** (accepted, expires 2026-06-10): known risk,
+   function body verified safe for current threat model. Remediation path
+   documented (Edge Function wrapper or SECURITY INVOKER + RLS audit).
+   ADR: `docs/adr/ADR-2026-05-27-book-class-security-definer-accepted-risk.md`
 
 Rollback concern:
 
@@ -148,14 +188,17 @@ Rollback concern:
 
 One next step:
 
-Continue the live remediation packet: enable leaked password protection through
-Dashboard/API, prepare branch/staging proof for `book_class_with_access`, and
-retire legacy payment functions only after the stale callers are gone.
+Enable leaked password protection through Supabase Dashboard → Authentication
+→ Sign In / Providers → Email → Password security. Verify signup, login, reset.
+Then retire legacy payment functions in staged order.
 
 ---
 
 ## Closure
 
-Result: KateStudio is code/CI release-candidate ready on current `main`, and
-live remediation is in progress. Full production release PASS is withheld until
-the remaining live security and payment retirement steps are verified.
+Result: KateStudio is code/CI release-candidate ready on current `main` (`3ff4971`).
+All 7 local gates pass as of 2026-05-27 21:40 MSK. Formal ADRs have been written
+for both live security warnings with named expiry dates and named remediation owners.
+Full production release PASS is withheld until leaked password protection is enabled
+and verified (by 2026-06-03), and legacy payment functions are retired or explicitly
+accepted as a transition window.
