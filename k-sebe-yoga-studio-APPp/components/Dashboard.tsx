@@ -37,8 +37,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { dataService } from '../services/dataService';
 import { paymentService, type UserPass } from '../services/paymentService';
-import { subscriptionService } from '../services/subscriptionService';
-import { Booking, Subscription } from '../types';
+import { Booking } from '../types';
 import { Achievements } from './Achievements';
 import { AdminPanel } from './AdminPanel';
 import { Breathwork } from './Breathwork';
@@ -74,8 +73,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   const [activePasses, setActivePasses] = useState<UserPass[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedQr, setExpandedQr] = useState<string | null>(null);
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [, setSubscriptionLoading] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState('');
   const [editCity, setEditCity] = useState('');
@@ -144,17 +141,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
     [authStatus, user, showToast]
   );
 
-  const loadSubscription = useCallback(async () => {
-    if (authStatus !== 'authenticated' || !isSupabaseConfigured) {
-      setSubscription(null);
-      return;
-    }
-    setSubscriptionLoading(true);
-    const current = await subscriptionService.getCurrentSubscription();
-    setSubscription(current);
-    setSubscriptionLoading(false);
-  }, [authStatus, isSupabaseConfigured]);
-
   const loadActivePasses = useCallback(async () => {
     if (authStatus !== 'authenticated' || !isSupabaseConfigured) {
       setActivePasses([]);
@@ -167,10 +153,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   useEffect(() => {
     void fetchBookings(true);
   }, [fetchBookings]);
-
-  useEffect(() => {
-    void loadSubscription();
-  }, [loadSubscription]);
 
   useEffect(() => {
     void loadActivePasses();
@@ -284,6 +266,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
   }, [bookings]);
 
   const nextBooking = bookings.length > 0 ? bookings[0] : null;
+  const hasActivePasses = activePasses.length > 0;
 
   const handleLogout = () => {
     logout();
@@ -507,7 +490,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack, initialTab = 'over
                   </div>
                   <div>
                     <p className="text-2xl font-serif mb-1">
-                      {subscription && subscription.plan !== 'free' ? 'Премиум' : 'Практик'}
+                      {hasActivePasses ? 'Абонемент активен' : 'Практик'}
                     </p>
                     <p className="text-xs text-white/50 font-medium uppercase tracking-wider">
                       Ваш статус
