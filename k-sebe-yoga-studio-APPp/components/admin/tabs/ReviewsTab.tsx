@@ -2,7 +2,7 @@ import { IMAGES, isSupabaseConfigured, supabase } from '@ksebe/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ImageIcon, Loader2, Plus, Pencil, Trash2, Save, Upload, X, Star } from 'lucide-react';
 import React, { useState } from 'react';
-import { defaultTestimonials } from '../../Reviews';
+import { defaultTestimonials, type TestimonialProps } from '../../Reviews';
 
 interface DBReview {
   id: string;
@@ -19,16 +19,18 @@ type ReviewPayload = Omit<DBReview, 'id' | 'source'>;
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
-const siteDefaultReviews: DBReview[] = defaultTestimonials.map((review: any, index: number) => ({
-  id: `site-default-${review.id}`,
-  name: review.name,
-  text: review.text,
-  image_url: review.image,
-  rating: 5,
-  display_order: index,
-  is_active: true,
-  source: 'site-default',
-}));
+const siteDefaultReviews: DBReview[] = defaultTestimonials.map(
+  (review: TestimonialProps, index) => ({
+    id: `site-default-${review.id}`,
+    name: review.name,
+    text: review.text,
+    image_url: review.image,
+    rating: 5,
+    display_order: index,
+    is_active: true,
+    source: 'site-default',
+  })
+);
 
 const toReviewPayload = (review: DBReview): ReviewPayload => ({
   name: review.name,

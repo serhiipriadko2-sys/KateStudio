@@ -15,6 +15,10 @@
 - `docs/LEGACY_PAYMENT_RETIREMENT_DECISION_2026_05_27.md` — legacy payment contour now classified as retirement track
 - `docs/LEGACY_PAYMENT_RETIREMENT_EXECUTION_PATH_2026_05_27.md` — controlled order, stop conditions and rollback checkpoints for live retirement
 - `docs/ADMIN_SUBSCRIPTIONS_SURFACE_DECISION_2026_05_27.md` — admin legacy subscriptions surface is still a temporary bridge
+- `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` — temporary acceptance and remediation path for the live `SECURITY DEFINER` RPC warning
+- `docs/SECURITY_DECISION_LEAKED_PASSWORD_PROTECTION_2026_05_27.md` — explicit defer note and verification path for leaked password protection
+- `docs/MIGRATION_FORWARD_SCHEMA_ARTIFACT_PROPOSAL_20260518205158.md` — forward artifact proposal for `dataset_runs` / `dataset_artifacts`
+- `docs/RELEASE_GATE_2026_05_27.md` — current release gate receipt for repo/live checks
 - `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` — historical bridge audit; не использовать как единственный current snapshot
 
 ---
@@ -33,6 +37,10 @@
 | `docs/LEGACY_PAYMENT_RETIREMENT_DECISION_2026_05_27.md` | retirement-track decision for legacy payment contour |
 | `docs/LEGACY_PAYMENT_RETIREMENT_EXECUTION_PATH_2026_05_27.md` | staged live retirement path for legacy payment contour |
 | `docs/ADMIN_SUBSCRIPTIONS_SURFACE_DECISION_2026_05_27.md` | governance decision for legacy admin subscriptions surface |
+| `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` | temporary acceptance and remediation path for RPC security warning |
+| `docs/SECURITY_DECISION_LEAKED_PASSWORD_PROTECTION_2026_05_27.md` | deferred live Auth setting decision with owner/expiry |
+| `docs/MIGRATION_FORWARD_SCHEMA_ARTIFACT_PROPOSAL_20260518205158.md` | forward schema artifact proposal for the live-only dataset delta |
+| `docs/RELEASE_GATE_2026_05_27.md` | current release gate receipt |
 | `docs/PAYMENT_CONTOUR_DECISION_TEMPLATE.md` | template для решения по dual payment contour |
 | `docs/SECURITY_DECISION_TEMPLATE_BOOK_CLASS_WITH_ACCESS.md` | template для security decision note по RPC warning |
 | `docs/SECURITY_DECISION_TEMPLATE_LEAKED_PASSWORD_PROTECTION.md` | template для security decision note по Auth setting |
@@ -70,16 +78,16 @@
 | Домен | Значение |
 | --- | --- |
 | Live applied migrations | 41 |
-| Repo-confirmed live-tail migrations | PARTIAL |
+| Repo-confirmed live-tail migrations | PARTIAL + forward artifact proposal |
 | Repo functions | 9 |
 | Live functions | 11 |
 | Live-only functions | `ai-run`, `ai-embeddings` |
 | APP-target payment pair in live | present |
 | Legacy payment contour status | retirement track |
 | Legacy admin subscriptions surface | temporary bridge |
-| Live security advisors | `2 warnings` |
-| Fresh current-main CI proof | unverified |
-| Latest verified green CI signal | PR `#498` / `CI #1246` |
+| Live security advisors | `2 warnings`, decision notes exist |
+| Fresh current-main CI proof | verified on SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` |
+| Latest verified green CI signal | current `main` checks on 2026-05-27, workflow run `26508804416` |
 | Payment business canon | WEB non-payment, APP payment, RuStore publication/proof |
 
 ---

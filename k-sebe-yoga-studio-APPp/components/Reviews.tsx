@@ -4,14 +4,14 @@ import React, { useRef, useEffect } from 'react';
 import { FadeIn } from './FadeIn';
 import { Image } from './Image';
 
-interface TestimonialProps {
+export interface TestimonialProps {
   id: number;
   name: string;
   text: string;
   image: string;
 }
 
-export const defaultTestimonials = [
+export const defaultTestimonials: TestimonialProps[] = [
   {
     id: 1,
     name: 'Екатерина',
