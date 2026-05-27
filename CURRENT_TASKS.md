@@ -25,7 +25,7 @@
 | Live applied migrations | **41** | live `list_migrations` на 2026-05-23 reaches `20260518205158_create_dataset_runs_and_artifacts` |
 | Repo/live tail reconciliation | **PARTIAL, FORWARD CANDIDATE READY** | exact match for `20260516182944`; semantic mappings exist for live `20260516202546` and `20260516202845`; unresolved delta `20260518205158` now has explicit forward migration candidate |
 | Live Edge Functions | **11** | Supabase `list_edge_functions` на 2026-05-23 |
-| Live security advisors | **2 warnings** | `authenticated_security_definer_function_executable` для `book_class_with_access` + leaked password protection disabled |
+| Live security advisors | **1 warning** | `book_class_with_access` (authenticated security definer); leaked password protection resolved (enabled & verified) |
 | Live performance advisors | **warnings remain** | initplan + permissive-policy fan-out + unused indexes |
 | Live APP payment tables | **present** | direct metadata confirms `payment_orders` and `user_passes` exist |
 | Live APP payment traffic | **present** | app-target payment contour remains deployed and active |
@@ -60,7 +60,7 @@
 | 9 | Подготовить additive reconstruction artifact / migration-plan artifact для `20260518205158` | ✅ | forward migration candidate `20260527174716_reconcile_dataset_runs_artifacts_forward.sql` exists |
 | 10 | Получить fresh green CI на том же current `main` ref | ✅ | current `main` `dbd8f2b` passed CI/deploy after release-format fix |
 | 11 | Разрешить dual payment contour | ⏳ | stale WEB `create-payment` caller removed; live legacy functions still need staged retirement |
-| 12 | Снять current live security warnings | ⏳ | leaked password: ADR expires 2026-06-03, manual Dashboard action required; `book_class_with_access`: ADR accepted until 2026-06-10, function body verified safe (`auth.uid()` guard confirmed) |
+| 12 | Снять current live security warnings | ⏳ | leaked password: ✅ РАЗРЕШЕНО (включено в Dashboard и подтверждено через advisors); `book_class_with_access`: ADR действует до 2026-06-10, тело функции проверено (`auth.uid()` guard confirmed) |
 
 ---
 
@@ -87,10 +87,10 @@
 
 ## Ближайший рабочий шаг
 
-1. Enable leaked password protection through Supabase Dashboard → Authentication → Sign In / Providers → Email → Password security. Verify signup/login/reset. Re-run advisors.
+1. Leaked password protection is enabled and verified. ✅
 2. Retire legacy payment functions (`create-payment`, `payment-webhook`, `cancel-subscription`) in staged order — 0 repo-side callers confirmed.
 3. Optionally prepare Edge Function wrapper for `book_class_with_access` (not blocking until 2026-06-10 ADR expiry).
-4. After steps 1-2: re-run full local gates + push to `main` + verify GitHub Actions.
+4. Re-run full local gates + push to `main` + verify GitHub Actions.
 
 ---
 
@@ -102,6 +102,6 @@
 | Live Supabase governance | PARTIAL |
 | Migration-sync | PARTIAL with forward migration candidate |
 | Live payment surface | PRESENT, but dual-contour (0 repo-side callers on legacy) |
-| Live security advisors | **2 warnings remaining** (both have ADRs with expiry dates) |
+| Live security advisors | **1 warning remaining** (book_class_with_access has an active ADR) |
 | Fresh release-path CI | **PASS on HEAD `3ff4971` (local gates), pre-pub baseline `dbd8f2b` (GitHub CI)** |
-| Overall launch readiness | **PARTIAL** until leaked password protection enabled + legacy payment retired |
+| Overall launch readiness | **PARTIAL** until legacy payment retired |

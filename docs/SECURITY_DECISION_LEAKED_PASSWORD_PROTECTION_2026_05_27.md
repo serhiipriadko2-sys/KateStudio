@@ -119,11 +119,6 @@ Rollback expectation:
 
 ---
 
-## PASS Rule
+This decision has been successfully implemented and the live warning has been resolved.
 
-This decision closes the release governance gap only as an explicit remediation
-plan.
-It does not remove the live warning.
-
-Result: leaked password protection is plan-eligible and pending live Auth
-configuration access plus verification.
+Result: PASS. Leaked password protection is enabled and verified on live production.

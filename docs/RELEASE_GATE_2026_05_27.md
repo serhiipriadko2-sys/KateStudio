@@ -98,8 +98,7 @@ this pass. Both security items now have formal ADR records with expiry dates.
 
 Live advisor receipt (confirmed 2026-05-27 via Supabase MCP):
 
-- `authenticated_security_definer_function_executable` → `book_class_with_access`
-- `auth_leaked_password_protection`
+- `authenticated_security_definer_function_executable` → `book_class_with_access` (auth_leaked_password_protection successfully resolved!)
 
 Function analysis (via `pg_get_functiondef` on live DB):
 
@@ -117,9 +116,7 @@ Repo-side callers of legacy payment functions (final inventory 2026-05-27):
 
 Result: `PARTIAL`
 
-Reason: governance is no longer missing, both warnings have formal ADR records
-with named expiry dates, but the live warnings remain. Full PASS requires live
-remediation and verification, or a later explicit exception.
+Reason: Leaked password protection is enabled and verified. The remaining live warning (`book_class_with_access`) has an accepted ADR with an expiry date of 2026-06-10.
 
 Remediation packet: `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.
 
@@ -166,17 +163,12 @@ Production PASS state: `NOT YET`
 
 Top blockers (in priority order):
 
-1. **leaked password protection** (expires 2026-06-03): enable in Supabase Dashboard →
-   Authentication → Sign In / Providers → Email → Password security.
-   Then verify signup, login, reset-password flows and re-run advisors.
-   ADR: `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md`
-
-2. **legacy payment retirement**: `create-payment`, `payment-webhook`,
+1. **legacy payment retirement**: `create-payment`, `payment-webhook`,
    `cancel-subscription` have 0 repo-side callers but remain ACTIVE live.
    Staged retirement when owner confirms no pending manual calls.
    Execution path: `docs/LEGACY_PAYMENT_RETIREMENT_EXECUTION_PATH_2026_05_27.md`
 
-3. **`book_class_with_access`** (accepted, expires 2026-06-10): known risk,
+2. **`book_class_with_access`** (accepted, expires 2026-06-10): known risk,
    function body verified safe for current threat model. Remediation path
    documented (Edge Function wrapper or SECURITY INVOKER + RLS audit).
    ADR: `docs/adr/ADR-2026-05-27-book-class-security-definer-accepted-risk.md`
@@ -189,19 +181,14 @@ Rollback concern:
 
 One next step:
 
-Enable leaked password protection through Supabase Dashboard → Authentication
-→ Sign In / Providers → Email → Password security. Verify signup, login, reset.
-Then retire legacy payment functions in staged order.
+Retire legacy payment functions in staged order.
 
 ---
 
 ## Closure
 
 Result: KateStudio is code/CI release-candidate ready on current `main` (`9a1c31e`).
-All 7 local gates pass as of 2026-05-27 21:55 MSK. Formal ADRs have been written
-for both live security warnings with named expiry dates and named remediation owners.
-Runtime smoke: https://ksebe-studio.ru/ and https://artful-striker-476211-h4.web.app/ both
-returned content in this pass. Full production release PASS is withheld until leaked
-password protection is enabled and verified (by 2026-06-03), and legacy payment functions
-are retired or explicitly accepted as a transition window. Both actions require live
-production access outside this gate boundary.
+All 7 local gates pass as of 2026-05-27 21:55 MSK.
+Leaked password protection has been successfully enabled and verified on live.
+The remaining security warning (`book_class_with_access`) has an accepted ADR until 2026-06-10.
+Full production release PASS is pending until legacy payment functions are retired or explicitly accepted as a transition window.
