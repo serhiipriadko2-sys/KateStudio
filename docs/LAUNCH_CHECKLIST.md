@@ -10,9 +10,9 @@
 | Area | Status | Why |
 | --- | --- | --- |
 | Repo documentation truth | PARTIAL | older 16 May baseline is stale relative to live 23 May state |
-| Local code health | PASS | local gates pass and current `main` has same-ref green CI proof |
-| Latest verified CI signal | GREEN on current `main` | SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`, workflow run `26508804416`, release jobs green |
-| Fresh current-main CI proof | VERIFIED | `Lint & Format Check`, `TypeScript Check`, `Run Tests`, `Build WEB`, `Build APP` succeeded |
+| Local code health | PASS | local gates pass; publication proof is checked against the latest pushed HEAD in GitHub Actions |
+| Latest verified CI signal | GREEN baseline | pre-publication SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`, workflow run `26508804416`, release jobs green |
+| Fresh current-main CI proof | CHECK LIVE | verify the latest pushed HEAD in GitHub Actions after each release push |
 | Supabase security governance | PARTIAL | live security advisors still show two warnings, but separate decision notes now exist |
 | Schema reproducibility | PARTIAL | live now reports **41** applied migrations; drift is documented and `20260518205158` has schema intent + forward artifact proposal |
 | WEB payment posture | PASS AT MODEL LEVEL | WEB remains storefront-only |
@@ -31,7 +31,7 @@
 - live `20260516202546 book_class_with_access` maps semantically to repo `supabase/migrations/20260516211000_book_class_with_access.sql`.
 - live `20260516202845 book_class_with_access_revoke_public_execute` maps semantically to repo `supabase/migrations/20260516214500_book_class_with_access_revoke_public_execute.sql`.
 - live `20260518205158 create_dataset_runs_and_artifacts` now has an explicit reconciliation artifact and selected additive reconstruction path.
-- current `main` SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` has green check-runs for lint/format, typecheck, tests, WEB build, APP build, Supabase Preview, GitHub Pages, and Firebase deploy.
+- pre-publication baseline SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` has green check-runs for lint/format, typecheck, tests, WEB build, APP build, Supabase Preview, GitHub Pages, and Firebase deploy.
 - public WEB smoke for `https://ksebe-studio.ru/` returned `200 OK` after VPN route change.
 - public APP smoke for `https://artful-striker-476211-h4.web.app` returned `200 OK`.
 
@@ -91,7 +91,7 @@ Current verified release-path truth for this document:
 - `npm run test:run` → PASS locally, `72 files / 503 tests`
 - `npm run build:web` → PASS locally with chunk-size warnings
 - `npm run build:app` → PASS locally with chunk-size / ineffective dynamic import warnings
-- current-main GitHub checks → PASS on SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`
+- pre-publication GitHub baseline → PASS on SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`
 
 Status: **pass with build-size warnings**.
 

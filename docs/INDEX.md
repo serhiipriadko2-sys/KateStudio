@@ -86,8 +86,8 @@
 | Legacy payment contour status | retirement track |
 | Legacy admin subscriptions surface | temporary bridge |
 | Live security advisors | `2 warnings`, decision notes exist |
-| Fresh current-main CI proof | verified on SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` |
-| Latest verified green CI signal | current `main` checks on 2026-05-27, workflow run `26508804416` |
+| Current-main CI proof policy | verify the latest pushed SHA in GitHub Actions after publication |
+| Latest verified green CI baseline | SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`, workflow run `26508804416` |
 | Payment business canon | WEB non-payment, APP payment, RuStore publication/proof |
 
 ---

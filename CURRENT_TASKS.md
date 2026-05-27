@@ -1,10 +1,10 @@
 # Текущие задачи
 
-> **Update 2026-05-27:** current `main`
-> `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` has fresh green GitHub checks for
-> lint/format, typecheck, tests, WEB build, APP build, Supabase Preview, GitHub
-> Pages deploy, and Firebase deploy. Local release gates also pass after lint
-> warning cleanup. Status is now **release-candidate ready / production PASS
+> **Update 2026-05-27:** local release gates pass after lint warning cleanup.
+> Publication proof must be read from the GitHub Actions run for the latest
+> pushed HEAD; the previous green baseline was
+> `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`. Status is now
+> **release-candidate ready / production PASS
 > withheld** until owner accepts or remediates the documented Supabase security
 > warnings and accepts the `20260518205158` migration reconciliation posture.
 > Current receipt: `docs/RELEASE_GATE_2026_05_27.md`.

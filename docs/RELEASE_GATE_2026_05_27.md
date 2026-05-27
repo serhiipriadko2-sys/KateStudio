@@ -1,7 +1,7 @@
 # Release Gate | KateStudio | 2026-05-27
 
 > Evaluator: Codex / Iskra
-> Repo ref: `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`
+> Release-source scope: local code/docs gate; final pushed SHA is verified via GitHub Actions after publication.
 > Supabase project: `qkaycdcbstjobacmuaro`
 > Mode: RELEASE
 > Boundary: local code/docs changes + read-only live checks; no production mutation.
@@ -28,7 +28,7 @@ of this explicit reconciliation posture or a later forward artifact.
 
 ## Section B — CI / Local Gates
 
-- [x] fresh green run exists on current `main` SHA.
+- [x] pre-publication green CI baseline exists for the prior `main` release path.
 - [x] `npm run check:migrations` green locally.
 - [x] `npm run lint` green locally.
 - [x] `npm run typecheck` green locally.
@@ -47,8 +47,8 @@ Local receipts:
 
 GitHub receipts:
 
-- current `main` SHA: `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`
-- successful check-runs on 2026-05-27:
+- pre-publication baseline SHA: `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`
+- baseline successful check-runs on 2026-05-27:
   - `Lint & Format Check`
   - `TypeScript Check`
   - `Run Tests`

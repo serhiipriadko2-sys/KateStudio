@@ -29,9 +29,7 @@ const PRECACHE_ASSETS = [
 // ── Install ────────────────────────────────────────────────────────────────────
 // Precache essential static assets and activate immediately.
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS)));
   // Activate immediately without waiting for old tabs to close
   self.skipWaiting();
 });

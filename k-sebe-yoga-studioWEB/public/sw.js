@@ -18,18 +18,12 @@ const CACHE_NAME = `ksebe-web-${BUILD_ID}`;
 const RUNTIME_CACHE = `ksebe-web-runtime-${BUILD_ID}`;
 
 // Assets to cache on install (only truly static assets, NOT the HTML shell)
-const PRECACHE_ASSETS = [
-  '/favicon.png',
-  '/apple-touch-icon.png',
-  '/manifest.json',
-];
+const PRECACHE_ASSETS = ['/favicon.png', '/apple-touch-icon.png', '/manifest.json'];
 
 // ── Install ────────────────────────────────────────────────────────────────────
 // Precache essential static assets and activate immediately.
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS)));
   // Activate immediately without waiting for old tabs to close
   self.skipWaiting();
 });
