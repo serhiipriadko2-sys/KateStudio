@@ -1,6 +1,6 @@
 # Центральный индекс документации | KateStudio
 
-> **Обновлено:** 27 мая 2026 | **Версия:** 9.3.3
+> **Обновлено:** 27 мая 2026 | **Версия:** 9.3.4
 > Рабочий канон: GitHub `main` + live Supabase metadata + current operational docs.
 
 ---
@@ -11,7 +11,8 @@
 - `docs/LAUNCH_CHECKLIST.md` — текущий go / no-go checklist
 - `docs/RELEASE_EXECUTION_PACKET_2026_05_23.md` — единый execution packet по migration, CI, governance, security и финальному release gate
 - `docs/EDGE_FUNCTIONS.md` — repo/live function inventory и drift map
-- `docs/adr/ADR-2026-05-27-payment-contour-baseline.md` — canonical payment baseline: `WEB` storefront, `APP` real payment, legacy contour transitional
+- `docs/adr/ADR-2026-05-27-payment-contour-baseline.md` — canonical payment baseline: `WEB` storefront, `APP` real payment, legacy contour transitional baseline
+- `docs/LEGACY_PAYMENT_RETIREMENT_DECISION_2026_05_27.md` — legacy payment contour now classified as retirement track
 - `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` — historical bridge audit; не использовать как единственный current snapshot
 
 ---
@@ -27,6 +28,7 @@
 | `docs/RELEASE_EXECUTION_PACKET_2026_05_23.md` | пошаговый execution packet по текущим blockers |
 | `docs/MIGRATION_SYNC_2026_05_23.md` | Git-tracked reconciliation path по live migration tail |
 | `docs/adr/ADR-2026-05-27-payment-contour-baseline.md` | canonical payment baseline and governance decision |
+| `docs/LEGACY_PAYMENT_RETIREMENT_DECISION_2026_05_27.md` | retirement-track decision for legacy payment contour |
 | `docs/PAYMENT_CONTOUR_DECISION_TEMPLATE.md` | template для решения по dual payment contour |
 | `docs/SECURITY_DECISION_TEMPLATE_BOOK_CLASS_WITH_ACCESS.md` | template для security decision note по RPC warning |
 | `docs/SECURITY_DECISION_TEMPLATE_LEAKED_PASSWORD_PROTECTION.md` | template для security decision note по Auth setting |
@@ -59,7 +61,7 @@
 
 ---
 
-## Быстрые факты на 23 мая 2026
+## Быстрые факты на 27 мая 2026
 
 | Домен | Значение |
 | --- | --- |
@@ -69,6 +71,7 @@
 | Live functions | 11 |
 | Live-only functions | `ai-run`, `ai-embeddings` |
 | APP-target payment pair in live | present |
+| Legacy payment contour status | retirement track |
 | Live security advisors | `2 warnings` |
 | Fresh current-main CI proof | unverified |
 | Latest verified green CI signal | PR `#498` / `CI #1246` |
