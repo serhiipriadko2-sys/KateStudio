@@ -14,6 +14,7 @@
 - `docs/adr/ADR-2026-05-27-payment-contour-baseline.md` — canonical payment baseline: `WEB` storefront, `APP` real payment, legacy contour transitional baseline
 - `docs/LEGACY_PAYMENT_RETIREMENT_DECISION_2026_05_27.md` — legacy payment contour now classified as retirement track
 - `docs/LEGACY_PAYMENT_RETIREMENT_EXECUTION_PATH_2026_05_27.md` — controlled order, stop conditions and rollback checkpoints for live retirement
+- `docs/ADMIN_SUBSCRIPTIONS_SURFACE_DECISION_2026_05_27.md` — admin legacy subscriptions surface is still a temporary bridge
 - `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` — historical bridge audit; не использовать как единственный current snapshot
 
 ---
@@ -31,6 +32,7 @@
 | `docs/adr/ADR-2026-05-27-payment-contour-baseline.md` | canonical payment baseline and governance decision |
 | `docs/LEGACY_PAYMENT_RETIREMENT_DECISION_2026_05_27.md` | retirement-track decision for legacy payment contour |
 | `docs/LEGACY_PAYMENT_RETIREMENT_EXECUTION_PATH_2026_05_27.md` | staged live retirement path for legacy payment contour |
+| `docs/ADMIN_SUBSCRIPTIONS_SURFACE_DECISION_2026_05_27.md` | governance decision for legacy admin subscriptions surface |
 | `docs/PAYMENT_CONTOUR_DECISION_TEMPLATE.md` | template для решения по dual payment contour |
 | `docs/SECURITY_DECISION_TEMPLATE_BOOK_CLASS_WITH_ACCESS.md` | template для security decision note по RPC warning |
 | `docs/SECURITY_DECISION_TEMPLATE_LEAKED_PASSWORD_PROTECTION.md` | template для security decision note по Auth setting |
@@ -74,6 +76,7 @@
 | Live-only functions | `ai-run`, `ai-embeddings` |
 | APP-target payment pair in live | present |
 | Legacy payment contour status | retirement track |
+| Legacy admin subscriptions surface | temporary bridge |
 | Live security advisors | `2 warnings` |
 | Fresh current-main CI proof | unverified |
 | Latest verified green CI signal | PR `#498` / `CI #1246` |
