@@ -1,7 +1,9 @@
 # Edge Functions Reference | KateStudio
 
-> **Обновлено:** 16 мая 2026 | **Версия:** 3.2.2
-> Ниже разделены repo inventory и live inventory. Их смешивать по-прежнему нельзя, но stale claim про missing APP payment pair в live больше недопустим.
+> **Обновлено:** 28 мая 2026 | **Версия:** 3.2.3
+> Ниже разделены repo inventory и live inventory. Их смешивать по-прежнему нельзя.
+> APP-target YooKassa pair is live and canonical; legacy trio remains deployed
+> only as retired-in-place stubs.
 
 ---
 
@@ -11,12 +13,12 @@
 
 | Function | Repo status | Notes |
 | --- | --- | --- |
-| `cancel-subscription` | present | operational / non-AI |
-| `create-payment` | present | legacy/shared payment flow |
+| `cancel-subscription` | present | retired-in-place stub |
+| `create-payment` | present | retired-in-place stub |
 | `create-yookassa-checkout` | present | app-target YooKassa checkout |
 | `cron-maintenance` | present | ops |
 | `gemini-proxy` | present | repo AI contour |
-| `payment-webhook` | present | legacy/shared payment callback |
+| `payment-webhook` | present | retired-in-place stub |
 | `send-push` | present | notifications |
 | `subscribe-newsletter` | present | public marketing/signup path |
 | `yookassa-webhook` | present | app-target YooKassa callback |
@@ -31,9 +33,9 @@ Live Supabase project `qkaycdcbstjobacmuaro` currently reports **11 active funct
 | --- | --- | --- | --- |
 | `ai-run` | true | 7 | ACTIVE |
 | `ai-embeddings` | true | 7 | ACTIVE |
-| `create-payment` | true | 5 | ACTIVE |
-| `payment-webhook` | false | 5 | ACTIVE |
-| `cancel-subscription` | true | 5 | ACTIVE |
+| `create-payment` | true | 7 | ACTIVE, retired-in-place stub |
+| `payment-webhook` | false | 6 | ACTIVE, retired-in-place stub |
+| `cancel-subscription` | true | 7 | ACTIVE, retired-in-place stub |
 | `cron-maintenance` | false | 5 | ACTIVE |
 | `send-push` | false | 5 | ACTIVE |
 | `subscribe-newsletter` | false | 5 | ACTIVE |
@@ -70,30 +72,30 @@ Live Supabase project `qkaycdcbstjobacmuaro` currently reports **11 active funct
 
 ## 4. Meaning of the drift
 
-The key drift changed shape.
+The key payment drift changed shape again.
 
 Old framing that is now stale:
-- the APP-target YooKassa pair was previously treated as repo-only / not-yet-live.
+- live had an active dual payment contour that was still operationally open.
 
 Current framing:
-- live has **both** the legacy shared payment pair (`create-payment`, `payment-webhook`) and the app-target pair (`create-yookassa-checkout`, `yookassa-webhook`)
-- repo still documents APP as the intended YooKassa payment surface
-- live AI and repo AI contours are still not identical because `ai-run` and `ai-embeddings` remain live-only
-- fresh release-path green CI is still unverified in the current baseline review
+- app-target pair (`create-yookassa-checkout`, `yookassa-webhook`) remains the only canonical live payment path;
+- legacy trio (`create-payment`, `payment-webhook`, `cancel-subscription`) remains deployed only as retired-in-place stubs returning controlled retirement responses;
+- live AI and repo AI contours are still not identical because `ai-run` and `ai-embeddings` remain live-only;
+- fresh release-path green CI after the final retirement sync is still unverified.
 
-So the real payment problem is no longer missing deployment. The active launch risk is now **dual payment contour + unverified fresh CI**: function surfaces are present, but canonical ownership and current release proof are still not settled.
+So the payment problem is no longer contour ambiguity. The remaining release truth gap is now **fresh post-retirement release verification**, not active dual payment ownership.
 
 ---
 
 ## 5. Operational rules
 
-1. Do not assume a repo folder means a live endpoint exists.
-2. Do not assume a live endpoint is represented one-to-one by repo naming.
-3. Do not describe the app-target YooKassa pair as repo-only or not-yet-live; that wording is now stale.
-4. Payment docs must distinguish between legacy live payment endpoints and app-target live payment endpoints.
+1. Do not assume a repo folder means a live endpoint is still operational in the old business sense.
+2. Do not assume a deployed live endpoint is intended for continued product use.
+3. Do not describe the app-target YooKassa pair as repo-only or not-yet-live; that wording is stale.
+4. Do not describe the legacy trio as active transitional payment surfaces; they are now retired in place.
 5. WEB should remain on Telegram / lead-form onboarding unless the business operating model changes explicitly.
-6. APP payment work should treat dual-contour ownership as the active governance risk until one pair is clearly marked primary and the other is either transitional or retired.
-7. Do not present function-side cleanup as launch proof until a fresh green release-path CI run is actually verified.
+6. APP payment work should treat `create-yookassa-checkout` + `yookassa-webhook` as the canonical live contour.
+7. Do not present function-side retirement as full launch proof until a fresh green release-path CI run is actually verified.
 8. AI changes still require an explicit decision because live AI and repo AI shapes are not identical.
 
 ---
@@ -105,21 +107,19 @@ Current truth:
 - repo functions: **9**
 - live functions: **11**
 - APP-target payment pair: **present in both repo and live**
-- legacy payment pair: **still live**
+- legacy payment trio: **present in both repo and live, but retired in place**
 - inventories: **not identical overall because of live-only AI functions**
 - business canon: WEB non-payment, APP payment, RuStore publication/proof layer
 
-That means operational docs must no longer speak as if the APP payment pair is still repo-only.
+That means operational docs must no longer speak as if the live payment problem is an unresolved dual contour.
 
 ---
 
 ## 7. Next verification step
 
-Before any function-level refactor or retirement:
+After the retired-in-place sync:
 
 1. keep WEB on Telegram / lead-form onboarding only,
 2. obtain fresh release-path CI proof,
-3. decide whether the dual payment contour is an accepted transition window or an unwanted overlap,
-4. if transition is accepted, document expiry criteria for the legacy pair,
-5. if transition is not accepted, prepare a controlled retirement path for `create-payment` / `payment-webhook`,
-6. decide whether `ai-run` / `ai-embeddings` remain canonical or transitional beside `gemini-proxy`. 
+3. rebuild the release gate on the post-retirement canon,
+4. decide whether `ai-run` / `ai-embeddings` remain canonical or transitional beside `gemini-proxy`.
