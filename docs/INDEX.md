@@ -1,8 +1,8 @@
 # Центральный индекс документации | KateStudio
 
-> **Обновлено:** 28 мая 2026 | **Версия:** 9.5.0
+> **Обновлено:** 28 мая 2026 | **Версия:** 9.5.1
 > Рабочий канон: current GitHub `main` HEAD + explicit GitHub Actions receipt + live Supabase metadata.
-> Этот индекс теперь отражает строгий reconciliation packet и не должен смешивать старые narrative baselines с current truth.
+> Этот индекс отражает строгий reconciliation packet и не должен смешивать старые narrative baselines с current truth.
 
 ---
 
@@ -10,7 +10,7 @@
 
 | Domain | Verified value |
 | --- | --- |
-| Current `main` HEAD | `b61a2718da49555c5a16b3dba7f213911b953dc6` |
+| Current `main` HEAD | `f9135994f32e367536a404f17576efc5518e2251` |
 | Current HEAD same-ref release-path receipt | **UNVERIFIED in this packet** |
 | Latest verified full green release-path receipt | GitHub Actions run `26508804416` for SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` |
 | Live applied migrations | `41` |
@@ -22,7 +22,7 @@
 
 ### Meaning
 
-1. Do **not** infer a green release receipt for `b61a2718da49555c5a16b3dba7f213911b953dc6` from the older verified run on `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`.
+1. Do **not** infer a green release receipt for `f9135994f32e367536a404f17576efc5518e2251` from the older verified run on `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`.
 2. Do **not** describe live Supabase as still carrying the older `profiles` public-policy or leaked-password blockers unless a fresher live source reopens them.
 3. Treat the remaining top-level residue as **release-governance proof**, not as a reopened payment/RLS P0.
 
@@ -32,7 +32,7 @@
 
 - `CURRENT_TASKS.md` — краткий operational status на текущем late-May canon
 - `docs/LAUNCH_CHECKLIST.md` — текущий go / no-go checklist
-- `docs/RELEASE_GATE_2026_05_27.md` — latest release-gate receipt, but **not** same-ref proof for current HEAD `b61a2718da49555c5a16b3dba7f213911b953dc6`
+- `docs/RELEASE_GATE_2026_05_27.md` — latest release-gate receipt, but **not** same-ref proof for current HEAD `f9135994f32e367536a404f17576efc5518e2251`
 - `docs/EDGE_FUNCTIONS.md` — repo/live function inventory и drift map
 - `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md` — remediation status after legacy payment retirement in place
 - `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` — accepted-risk packet for the remaining live warning
