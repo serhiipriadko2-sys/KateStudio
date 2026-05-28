@@ -12,7 +12,7 @@
 | Repo documentation truth | PARTIAL | older 16 May baseline is stale relative to the accepted late-May canon |
 | Local code health | PASS | local gates were previously green and this pass did not introduce code changes |
 | Fresh current-main CI proof | CHECK LIVE | not re-verified in this targeted reconciliation pass |
-| Supabase security governance | PARTIAL+ | leaked password protection is no longer the open issue; `book_class_with_access` remains under accepted-risk / remediation posture |
+| Supabase security governance | PARTIAL+ | `book_class_with_access` is now accepted as a narrow wrapper with branch-proof evidence; the remaining open live governance item is the dual payment contour |
 | Schema reproducibility | PARTIAL, NOT BLOCKED BY `20260518205158` | live reports **41** applied migrations; `20260518205158` is now treated as **accepted forward reconciliation**, not as an open blocker |
 | WEB payment posture | PASS AT MODEL LEVEL | WEB remains storefront-only |
 | Function/payment deployment clarity | PARTIAL | app-target payment contour is live, but legacy contour retirement is still open |
@@ -32,6 +32,7 @@
 - live `20260518205158 create_dataset_runs_and_artifacts` now has an accepted explicit reconciliation path through `20260527174716_reconcile_dataset_runs_artifacts_forward.sql`.
 - public WEB smoke for `https://ksebe-studio.ru/` returned `200 OK` in the current canon.
 - public APP smoke for `https://artful-striker-476211-h4.web.app` returned `200 OK` in the current canon.
+- branch proof accepted `book_class_with_access` as a narrow `SECURITY DEFINER` wrapper while preserving the APP contract.
 
 ---
 
@@ -40,9 +41,13 @@
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
 | P0 | legacy payment contour live retirement | 0 repo-side callers are the current canon; live legacy functions still remain active and need staged retirement or explicit transition-window acceptance |
-| P0 | `book_class_with_access` security-definer warning | live security advisors still flag the authenticated RPC; current evidence supports accepted-risk posture, not closure |
 
-`20260518205158` is no longer listed here as an open release blocker. Its status in the current canon is **accepted forward reconciliation**.
+`book_class_with_access` is no longer listed here as an open release blocker. In
+the current canon it is accepted as a narrow `SECURITY DEFINER` wrapper with
+branch-proof evidence, even though the advisor warning remains.
+
+`20260518205158` is no longer listed here as an open release blocker. Its status
+in the current canon is **accepted forward reconciliation**.
 
 ---
 
@@ -71,6 +76,7 @@ Status: **accepted reconciliation; not a launch blocker by itself**.
 - [x] confirm APP YooKassa pair is live
 - [x] decide how long the legacy pair `create-payment` / `payment-webhook` remains intentionally live
 - [x] document retirement or coexistence criteria for the dual payment contour
+- [x] accept `book_class_with_access` as a narrow `SECURITY DEFINER` wrapper with preserved APP contract and branch-proof evidence
 - [ ] confirm which payment/public endpoints are intentionally exposed after the transition window
 
 Status: **open only on dual payment contour**.
@@ -100,6 +106,7 @@ Recent grounded truth supports these passes:
 - [x] payment-table surface exists in live
 - [x] generic public `app_settings` reads outside `studio_contacts` are checked; live policy exposes only `studio_contacts` to `anon` / `authenticated`
 - [x] empty `site_images` content is explicitly accepted as non-blocking because runtime falls back to local/static image state
+- [x] branch proof shows `book_class_with_access` persists canonical class data and self-scoped pass usage under the current APP contract
 
 Status: **pass with non-blocking follow-up items**.
 
@@ -115,6 +122,6 @@ Launch PASS requires all of the following:
 4. APP payment contour is canonically owned: the dual contour is either explicitly transitional or the legacy pair is formally retired;
 5. live security warnings are resolved or explicitly accepted with evidence.
 
-Current status: code and schema reconciliation are no longer blocked by `20260518205158`. Full production PASS still depends on the dual payment contour decision and the `book_class_with_access` security-definer remediation or explicit release-time acceptance.
+Current status: code and schema reconciliation are no longer blocked by `20260518205158`. `book_class_with_access` is accepted in the current release canon as a narrow `SECURITY DEFINER` wrapper with branch-proof evidence. Full production PASS still depends on the dual payment contour decision and fresh same-ref CI proof.
 
 Live remediation packet: `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.
