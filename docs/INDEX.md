@@ -1,28 +1,43 @@
 # Центральный индекс документации | KateStudio
 
-> **Обновлено:** 27 мая 2026 | **Версия:** 9.4.0
-> Рабочий канон: GitHub `main` + live Supabase metadata + current operational docs.
+> **Обновлено:** 28 мая 2026 | **Версия:** 9.5.0
+> Рабочий канон: current GitHub `main` HEAD + explicit GitHub Actions receipt + live Supabase metadata.
+> Этот индекс теперь отражает строгий reconciliation packet и не должен смешивать старые narrative baselines с current truth.
+
+---
+
+## Strict Reconciliation Snapshot
+
+| Domain | Verified value |
+| --- | --- |
+| Current `main` HEAD | `b61a2718da49555c5a16b3dba7f213911b953dc6` |
+| Current HEAD same-ref release-path receipt | **UNVERIFIED in this packet** |
+| Latest verified full green release-path receipt | GitHub Actions run `26508804416` for SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` |
+| Live applied migrations | `41` |
+| Live functions | `11` |
+| Live security advisors | `1 warning` |
+| Remaining live warning | `book_class_with_access` as authenticated `SECURITY DEFINER` RPC |
+| APP-target payment pair in live | present |
+| Legacy payment trio in live | present as retired-in-place controlled stubs |
+
+### Meaning
+
+1. Do **not** infer a green release receipt for `b61a2718da49555c5a16b3dba7f213911b953dc6` from the older verified run on `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`.
+2. Do **not** describe live Supabase as still carrying the older `profiles` public-policy or leaked-password blockers unless a fresher live source reopens them.
+3. Treat the remaining top-level residue as **release-governance proof**, not as a reopened payment/RLS P0.
 
 ---
 
 ## Читать первым
 
-- `CURRENT_TASKS.md` — актуальный operational backlog и честный статус запуска
+- `CURRENT_TASKS.md` — краткий operational status на текущем late-May canon
 - `docs/LAUNCH_CHECKLIST.md` — текущий go / no-go checklist
-- `docs/RELEASE_EXECUTION_PACKET_2026_05_23.md` — единый execution packet по migration, CI, governance, security и финальному release gate
+- `docs/RELEASE_GATE_2026_05_27.md` — latest release-gate receipt, but **not** same-ref proof for current HEAD `b61a2718da49555c5a16b3dba7f213911b953dc6`
 - `docs/EDGE_FUNCTIONS.md` — repo/live function inventory и drift map
-- `docs/adr/ADR-2026-05-27-payment-contour-baseline.md` — canonical payment baseline: `WEB` storefront, `APP` real payment, legacy contour transitional baseline
-- `docs/LEGACY_PAYMENT_RETIREMENT_DECISION_2026_05_27.md` — legacy payment contour now classified as retirement track
-- `docs/LEGACY_PAYMENT_RETIREMENT_EXECUTION_PATH_2026_05_27.md` — controlled order, stop conditions and rollback checkpoints for live retirement
-- `docs/ADMIN_SUBSCRIPTIONS_SURFACE_DECISION_2026_05_27.md` — admin legacy subscriptions surface is still a temporary bridge
-- `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` — temporary acceptance and remediation path for the live `SECURITY DEFINER` RPC warning
-- `docs/SECURITY_DECISION_LEAKED_PASSWORD_PROTECTION_2026_05_27.md` — live remediation path for leaked password protection
-- `docs/MIGRATION_FORWARD_SCHEMA_ARTIFACT_PROPOSAL_20260518205158.md` — forward artifact proposal for `dataset_runs` / `dataset_artifacts`
-- `docs/RELEASE_GATE_2026_05_27.md` — current release gate receipt (pass #2: all 7 local gates PASS, HEAD `bc90d30`, 2026-05-27 21:50 MSK)
-- `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md` — controlled remediation packet for remaining Supabase security, migration, and legacy-payment blockers
-- `docs/adr/ADR-2026-05-27-book-class-security-definer-accepted-risk.md` — formal ADR: `book_class_with_access` SECURITY DEFINER accepted as temporary risk (expires 2026-06-10)
-- `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md` — formal ADR: leaked password protection pending live Dashboard action (expires 2026-06-03)
-- `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` — historical bridge audit; не использовать как единственный current snapshot
+- `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md` — remediation status after legacy payment retirement in place
+- `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` — accepted-risk packet for the remaining live warning
+- `docs/SECURITY_DECISION_LEAKED_PASSWORD_PROTECTION_2026_05_27.md` — resolved live remediation note; filename is current, content says remediation completed
+- `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` — historical bridge audit only; not a standalone present-tense snapshot
 
 ---
 
@@ -30,80 +45,73 @@
 
 | Документ | Роль |
 | --- | --- |
-| `CURRENT_TASKS.md` | короткий оперативный канон |
-| `docs/ARCHITECTURE.md` | структура monorepo, runtime contour, repo/live split |
-| `docs/EDGE_FUNCTIONS.md` | function inventory и drift map |
+| `CURRENT_TASKS.md` | короткий operational канон |
+| `docs/ARCHITECTURE.md` | monorepo structure, runtime contour, repo/live split |
+| `docs/EDGE_FUNCTIONS.md` | repo/live function inventory и drift map |
 | `docs/LAUNCH_CHECKLIST.md` | release readiness и blockers |
-| `docs/RELEASE_EXECUTION_PACKET_2026_05_23.md` | пошаговый execution packet по текущим blockers |
-| `docs/MIGRATION_SYNC_2026_05_23.md` | Git-tracked reconciliation path по live migration tail |
-| `docs/adr/ADR-2026-05-27-payment-contour-baseline.md` | canonical payment baseline and governance decision |
-| `docs/LEGACY_PAYMENT_RETIREMENT_DECISION_2026_05_27.md` | retirement-track decision for legacy payment contour |
-| `docs/LEGACY_PAYMENT_RETIREMENT_EXECUTION_PATH_2026_05_27.md` | staged live retirement path for legacy payment contour |
-| `docs/ADMIN_SUBSCRIPTIONS_SURFACE_DECISION_2026_05_27.md` | governance decision for legacy admin subscriptions surface |
-| `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` | temporary acceptance and remediation path for RPC security warning |
-| `docs/SECURITY_DECISION_LEAKED_PASSWORD_PROTECTION_2026_05_27.md` | live Auth setting remediation path |
-| `docs/adr/ADR-2026-05-27-book-class-security-definer-accepted-risk.md` | formal ADR: `book_class_with_access` accepted risk, expires 2026-06-10 |
-| `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md` | formal ADR: leaked password protection pending live action, expires 2026-06-03 |
-| `docs/MIGRATION_FORWARD_SCHEMA_ARTIFACT_PROPOSAL_20260518205158.md` | forward schema artifact proposal for the live-only dataset delta |
-| `docs/RELEASE_GATE_2026_05_27.md` | current release gate receipt |
-| `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md` | live remediation status and blockers |
-| `docs/PAYMENT_CONTOUR_DECISION_TEMPLATE.md` | template для решения по dual payment contour |
-| `docs/SECURITY_DECISION_TEMPLATE_BOOK_CLASS_WITH_ACCESS.md` | template для security decision note по RPC warning |
-| `docs/SECURITY_DECISION_TEMPLATE_LEAKED_PASSWORD_PROTECTION.md` | template для security decision note по Auth setting |
-| `docs/RELEASE_GATE_WORKSHEET_TEMPLATE.md` | one-pass worksheet для финального release gate |
-| `docs/APP_ONLY_YOOKASSA_CUTOVER_PLAN.md` | app-only payment cutover, rollback и verification order |
-| `docs/TESTING.md` | test truth и ограничения проверки |
-| `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` | historical bridge audit with 2026-05-23 drift note |
-| `docs/SUPABASE_AUDIT_LIVE_2026_05_10.md` | исторический audit snapshot, не текущий present-tense canon |
+| `docs/RELEASE_GATE_2026_05_27.md` | latest explicit release-gate receipt |
+| `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md` | live remediation packet after late-May security/payment narrowing |
+| `docs/SECURITY_MODEL.md` | current security model and confirmed live deltas |
+| `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` | accepted warning packet for `book_class_with_access` |
+| `docs/SECURITY_DECISION_LEAKED_PASSWORD_PROTECTION_2026_05_27.md` | leaked-password remediation note; resolved state is in the content |
+| `docs/adr/ADR-2026-05-27-book-class-security-definer-accepted-risk.md` | formal ADR for the remaining accepted live warning |
+| `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md` | historical filename only; current content records the remediation as resolved |
+| `docs/MIGRATION_FORWARD_SCHEMA_ARTIFACT_PROPOSAL_20260518205158.md` | forward reconciliation artifact proposal for `dataset_runs` / `dataset_artifacts` |
+| `docs/CHATGPT_AGENT_RUNTIME.md` | builder-runtime governance for the ChatGPT KateStudio agent |
+| `docs/TESTING.md` | stable testing architecture + evidence discipline |
 
 ---
 
-## Agent governance
+## Historical, Not Present-Tense
 
-| Document | Purpose |
-| --- | --- |
-| [docs/CHATGPT_AGENT_RUNTIME.md](./CHATGPT_AGENT_RUNTIME.md) | Canonical builder-runtime governance for the ChatGPT KateStudio agent |
-
----
-
-## Что считать историческим, а не текущим operational truth
-
-Следующие документы остаются полезными как история, но не должны считаться текущим operational truth без fresh check:
+These documents remain useful, but must not be used as standalone present-tense truth without fresher repo/live evidence:
 
 - `docs/SUPABASE_AUDIT_LIVE_2026_05_02.md`
 - `docs/SUPABASE_AUDIT_LIVE_2026_05_10.md`
-- `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` как самостоятельный current snapshot без drift note от 2026-05-23
+- `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md` when quoted without its later drift corrections
+- `PRODUCTION_READINESS_AUDIT.md`
 
-Причина: current live baseline уже выше старого refresh pack и now reaches **41 applied migrations**.
+Reason: the current verified live baseline is already at `41` applied migrations, `11` functions, and `1` remaining security advisor warning.
 
 ---
 
-## Быстрые факты на 27 мая 2026
+## Filename Traps
 
-| Домен | Значение |
+The following filenames can mislead if read literally instead of by content:
+
+- `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md`
+  - current content says the remediation is **resolved**
+- `docs/RELEASE_GATE_2026_05_27.md`
+  - current content says a fresh same-ref verification pass is still required for full production `PASS`
+- `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md`
+  - current content is a historical bridge with later correction notes, not a raw present-tense snapshot
+
+---
+
+## Quick Facts
+
+| Domain | Current truth |
 | --- | --- |
-| Live applied migrations | 41 |
-| Repo-confirmed live-tail migrations | PARTIAL + forward migration candidate |
-| Repo functions | 9 |
-| Live functions | 11 |
+| Live applied migrations | `41` |
+| Live functions | `11` |
 | Live-only functions | `ai-run`, `ai-embeddings` |
-| APP-target payment pair in live | present |
-| Legacy payment contour status | retirement track (0 repo-side callers confirmed 2026-05-27) |
-| Legacy admin subscriptions surface | temporary bridge |
-| Live security advisors | `2 warnings`, both with ADR records and expiry dates |
-| Current-main CI proof policy | verify the latest pushed SHA in GitHub Actions after publication |
-| Latest verified green CI baseline | SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`, workflow run `26508804416` |
-| Local gate pass (HEAD `bc90d30`) | all 7 PASS as of 2026-05-27 21:50 MSK |
-| Payment business canon | WEB non-payment, APP payment, RuStore publication/proof |
+| Repo functions | `9` |
+| APP payment canon | `create-yookassa-checkout` + `yookassa-webhook` |
+| Legacy payment contour | retired in place, not an active business contour |
+| Live security warning count | `1` |
+| Current exact warning | `book_class_with_access` |
+| Latest verified full green receipt | run `26508804416` on SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` |
+| Current HEAD receipt status | still requires explicit same-ref attachment |
 
 ---
 
-## Рабочее правило
+## Working Rule
 
-Не использовать один документ как абсолютную истину. Для KateStudio сейчас truth собирается из трёх слоёв:
+For any launch-sensitive or security-sensitive statement, use this order:
 
-1. GitHub `main` как truth по repo intent.
-2. Supabase live metadata как truth по deployed state.
-3. `CURRENT_TASKS.md` + `docs/LAUNCH_CHECKLIST.md` + `docs/RELEASE_EXECUTION_PACKET_2026_05_23.md` как текущий operational synthesis.
+1. current GitHub `main` HEAD,
+2. explicit GitHub Actions receipt tied to that exact SHA,
+3. live Supabase metadata/advisors/functions,
+4. only then the derived operational documents.
 
-Если документ говорит о текущем live state, он должен быть совместим с live baseline `41` и явно не маскировать `migration-sync` / CI gaps. Иначе это исторический документ, а не present-tense truth.
+If a document claims a greener state than the attached same-ref receipt proves, treat that as docs drift rather than truth.
