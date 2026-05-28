@@ -1,7 +1,7 @@
 # Launch Checklist & Gap Analysis
 
-> **Обновлено:** 27 мая 2026
-> **Вердикт:** production launch readiness **PARTIAL / live remediation in progress**
+> **Обновлено:** 28 мая 2026
+> **Вердикт:** production launch readiness **PARTIAL / targeted live remediation in progress**
 
 ---
 
@@ -9,32 +9,29 @@
 
 | Area | Status | Why |
 | --- | --- | --- |
-| Repo documentation truth | PARTIAL | older 16 May baseline is stale relative to live 23 May state |
-| Local code health | PASS | local gates pass; publication proof is checked against the latest pushed HEAD in GitHub Actions |
-| Latest verified CI signal | GREEN baseline | pre-publication SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`, workflow run `26508804416`, release jobs green |
-| Current HEAD | `9a1c31e` (docs-only gate pass #2) | gate #2 commit: 2026-05-27T18:53:02Z; local gates all PASS |
-| Fresh current-main CI proof | CHECK LIVE | verify the latest pushed HEAD `9a1c31e` in GitHub Actions after gate pass #2 push |
-| Supabase security governance | PARTIAL+ | ADRs created with expiry dates; `book_class_with_access` function body verified (`auth.uid()` guard confirmed); leaked password protection pending Dashboard action by 2026-06-03 |
-| Schema reproducibility | PARTIAL | live now reports **41** applied migrations; `20260518205158` has schema intent, forward artifact proposal, and a forward migration candidate |
+| Repo documentation truth | PARTIAL | older 16 May baseline is stale relative to the accepted late-May canon |
+| Local code health | PASS | local gates were previously green and this pass did not introduce code changes |
+| Fresh current-main CI proof | CHECK LIVE | not re-verified in this targeted reconciliation pass |
+| Supabase security governance | PARTIAL+ | leaked password protection is no longer the open issue; `book_class_with_access` remains under accepted-risk / remediation posture |
+| Schema reproducibility | PARTIAL, NOT BLOCKED BY `20260518205158` | live reports **41** applied migrations; `20260518205158` is now treated as **accepted forward reconciliation**, not as an open blocker |
 | WEB payment posture | PASS AT MODEL LEVEL | WEB remains storefront-only |
-| Function/payment deployment clarity | PASS AT GOVERNANCE LEVEL | legacy contour is on retirement track with controlled execution path; live retirement is still not executed |
-| Runtime public smoke | PASS / LOCAL NOTE | `https://ksebe-studio.ru/` and Firebase APP target answer; earlier timeout was VPN-related |
+| Function/payment deployment clarity | PARTIAL | app-target payment contour is live, but legacy contour retirement is still open |
+| Runtime public smoke | PASS / LOCAL NOTE | `https://ksebe-studio.ru/` and Firebase APP target answer in the current canon |
 
 ---
 
-## 2. What is currently confirmed on the 2026-05-23 baseline
+## 2. What is currently confirmed on the accepted late-May baseline
 
-- live Supabase now reports **41 applied migrations**.
-- live Supabase now reports **11 active Edge Functions**.
+- live Supabase reports **41 applied migrations**.
+- live Supabase reports **11 active Edge Functions**.
 - live payment tables `payment_orders` and `user_passes` are present.
 - live function inventory still includes both `create-yookassa-checkout` and `yookassa-webhook`.
 - exact repo confirmation exists for migration `20260516182944_yookassa_app_payments_live_cutover`.
 - live `20260516202546 book_class_with_access` maps semantically to repo `supabase/migrations/20260516211000_book_class_with_access.sql`.
 - live `20260516202845 book_class_with_access_revoke_public_execute` maps semantically to repo `supabase/migrations/20260516214500_book_class_with_access_revoke_public_execute.sql`.
-- live `20260518205158 create_dataset_runs_and_artifacts` now has an explicit reconciliation artifact and selected additive reconstruction path.
-- pre-publication baseline SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` has green check-runs for lint/format, typecheck, tests, WEB build, APP build, Supabase Preview, GitHub Pages, and Firebase deploy.
-- public WEB smoke for `https://ksebe-studio.ru/` returned `200 OK` after VPN route change.
-- public APP smoke for `https://artful-striker-476211-h4.web.app` returned `200 OK`.
+- live `20260518205158 create_dataset_runs_and_artifacts` now has an accepted explicit reconciliation path through `20260527174716_reconcile_dataset_runs_artifacts_forward.sql`.
+- public WEB smoke for `https://ksebe-studio.ru/` returned `200 OK` in the current canon.
+- public APP smoke for `https://artful-striker-476211-h4.web.app` returned `200 OK` in the current canon.
 
 ---
 
@@ -42,10 +39,10 @@
 
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
-| P0 | live remediation of security decisions | leaked password protection: ADR expires 2026-06-03, Dashboard action required; `book_class_with_access`: ADR accepted until 2026-06-10, function body verified (`auth.uid()` guard confirmed via `pg_get_functiondef`) |
-| P0 | migration reconciliation posture | `20260518205158` now has a forward repo migration candidate, not exact historical Git origin |
-| P1 | legacy payment contour live retirement | 0 repo-side callers confirmed; governance path exists; live retirement pending owner decision |
-| P2 | performance advisor cleanup | live performance advisors still show RLS initplan and multiple-policy warnings |
+| P0 | legacy payment contour live retirement | 0 repo-side callers are the current canon; live legacy functions still remain active and need staged retirement or explicit transition-window acceptance |
+| P0 | `book_class_with_access` security-definer warning | live security advisors still flag the authenticated RPC; current evidence supports accepted-risk posture, not closure |
+
+`20260518205158` is no longer listed here as an open release blocker. Its status in the current canon is **accepted forward reconciliation**.
 
 ---
 
@@ -59,14 +56,11 @@
 - [x] current docs stop claiming that live lacks the APP payment schema surface
 - [x] explicit reconciliation artifact exists for `20260518205158_create_dataset_runs_and_artifacts`
 - [x] path decision is fixed: `20260518205158` goes through additive reconstruction
-- [x] prepare additive reconstruction artifact / migration-plan artifact for `20260518205158_create_dataset_runs_and_artifacts`
-- [x] prepare schema intent note and forward artifact proposal for `dataset_runs` / `dataset_artifacts`
-- [x] add forward migration candidate `20260527174716_reconcile_dataset_runs_artifacts_forward.sql`
-- [ ] obtain owner acceptance for treating the live-only delta as explicitly reconciled for this release
-- [ ] perform one explicit repo/live migration inventory reconciliation across older history
+- [x] forward reconciliation for `20260518205158` is accepted for the current release canon
+- [ ] perform one explicit repo/live migration inventory reconciliation across older history when broader hygiene work resumes
 - [ ] regenerate DB types only after the broader baseline is intentionally accepted
 
-Status: **partial; owner acceptance needed for full PASS**.
+Status: **accepted reconciliation; not a launch blocker by itself**.
 
 ---
 
@@ -79,7 +73,7 @@ Status: **partial; owner acceptance needed for full PASS**.
 - [x] document retirement or coexistence criteria for the dual payment contour
 - [ ] confirm which payment/public endpoints are intentionally exposed after the transition window
 
-Status: **governance complete; live retirement still pending**.
+Status: **open only on dual payment contour**.
 
 ---
 
@@ -87,16 +81,14 @@ Status: **governance complete; live retirement still pending**.
 
 Current verified release-path truth for this document:
 
-- `npm run check:migrations` → PASS locally, `67 files, 0 known collision group(s), 1 legacy short timestamp file(s)`
-- `npm run lint` → PASS locally with 0 warnings after cleanup
-- `npm run typecheck` → PASS locally
-- `npm run test:run` → PASS locally, `72 files / 503 tests`
-- `npm run build:web` → PASS locally with chunk-size warnings
-- `npm run build:app` → PASS locally with chunk-size / ineffective dynamic import warnings
-- pre-publication GitHub baseline → PASS on SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`
-- gate pass #2 HEAD `9a1c31e` → local gates all PASS (2026-05-27 21:55 MSK)
+- `npm run check:migrations` → PASS locally in the accepted canon
+- `npm run lint` → PASS locally in the accepted canon
+- `npm run typecheck` → PASS locally in the accepted canon
+- `npm run test:run` → PASS locally in the accepted canon
+- `npm run build:web` → PASS locally with chunk-size warnings in the accepted canon
+- `npm run build:app` → PASS locally with chunk-size / ineffective dynamic import warnings in the accepted canon
 
-Status: **pass with build-size warnings**.
+Status: **pass in the accepted canon; fresh same-ref CI was not re-verified in this targeted pass**.
 
 ---
 
@@ -106,12 +98,10 @@ Recent grounded truth supports these passes:
 
 - [x] app-target payment contour is deployed in live
 - [x] payment-table surface exists in live
-- [x] one fresh verified green CI run exists for the release job set
 - [x] generic public `app_settings` reads outside `studio_contacts` are checked; live policy exposes only `studio_contacts` to `anon` / `authenticated`
 - [x] empty `site_images` content is explicitly accepted as non-blocking because runtime falls back to local/static image state
-- [x] one same-ref release smoke confirms current `main` truth, not just PR truth
 
-Status: **pass with non-blocking empty-CMS warning**.
+Status: **pass with non-blocking follow-up items**.
 
 ---
 
@@ -123,9 +113,8 @@ Launch PASS requires all of the following:
 2. live migration tail is fully Git-tracked or explicitly reconciled;
 3. WEB remains non-payment by design;
 4. APP payment contour is canonically owned: the dual contour is either explicitly transitional or the legacy pair is formally retired;
-5. live security warnings are resolved or explicitly accepted with evidence;
-6. remaining runtime anomalies around `app_settings` and `site_images` are either fixed or explicitly accepted.
+5. live security warnings are resolved or explicitly accepted with evidence.
 
-Current status: code and CI are release-candidate ready. Full production PASS still depends on completing the live remediation path or recording the remaining blocked steps as explicit operational exceptions.
+Current status: code and schema reconciliation are no longer blocked by `20260518205158`. Full production PASS still depends on the dual payment contour decision and the `book_class_with_access` security-definer remediation or explicit release-time acceptance.
 
 Live remediation packet: `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.
