@@ -2,16 +2,15 @@
 
 > Mode: PRODUCTION-REMEDIATION
 > Project: `qkaycdcbstjobacmuaro`
-> Current repo HEAD at preparation time: `dbd8f2b24d2f90fafbc996c3483b020c836aedd7`
-> Boundary: no hidden Supabase production mutation; every live change needs a receipt.
+> Boundary: live mutations were executed with receipts; current packet reflects the post-retirement canon.
 
 ---
 
 ## Scope
 
-This packet tracks the remaining live remediation path for:
+This packet now tracks only:
 
-1. legacy payment contour retirement;
+1. post-retirement verification;
 2. advisors / CI / runtime smoke after the above.
 
 `book_class_with_access` is no longer an open remediation item in this packet.
@@ -20,6 +19,9 @@ preserved APP contract and branch-proof evidence.
 
 `20260518205158_create_dataset_runs_and_artifacts` is no longer an open item in
 this packet. Its status in the current canon is **accepted forward reconciliation**.
+
+Legacy payment trio is no longer an open retirement item in this packet. It is
+now retired in place in live and synced in repo canon.
 
 Reference planning artifacts:
 
@@ -58,11 +60,6 @@ Accepted interpretation:
 - The advisor warning remains policy-level, not behavior-level, under the
   current accepted release canon.
 
-Execution note:
-
-- Use `docs/BOOK_CLASS_WITH_ACCESS_BRANCH_PROOF_PLAN_2026_05_28.md` as the
-  evidence trail for the accepted branch-proof path.
-
 ---
 
 ## Step 2 - `20260518205158` Migration Reconciliation
@@ -81,51 +78,26 @@ Accepted meaning:
   original live-applied `20260518205158` migration;
 - this delta is no longer treated as an open release blocker by itself.
 
-Verification basis:
-
-- live migration ledger contains `20260518205158_create_dataset_runs_and_artifacts`;
-- live schema contains `dataset_runs` and `dataset_artifacts` with the expected
-  core table shape, PK/FK relation, and RLS enabled;
-- the forward reconciliation artifact covers that core shape additively.
-
-Residual note:
-
-- exact historical origin, comments, policy text, and index-level parity remain
-  long-term hygiene work, not current release gating.
-
 ---
 
 ## Step 3 - Legacy Payment References
 
-Status: `STALE WEB CLIENT REFERENCES REMOVED; LIVE FUNCTIONS NOT RETIRED`
+Status: `RETIRED IN PLACE`
 
-Removed stale files:
+Current live/resulting canon:
 
-- `k-sebe-yoga-studioWEB/services/subscriptionService.ts`
-- `k-sebe-yoga-studioWEB/components/SubscriptionProfile.tsx`
+- `cancel-subscription` -> controlled retirement stub
+- `create-payment` -> controlled retirement stub
+- `payment-webhook` -> controlled retirement stub
+- app-target pair remains active:
+  - `create-yookassa-checkout`
+  - `yookassa-webhook`
 
-Reason:
+Meaning:
 
-- The deleted WEB service was the remaining repo-side client path to
-  `create-payment`.
-- `SubscriptionProfile` was not mounted by the active WEB app.
-
-Live retirement still pending:
-
-- `create-payment`
-- `payment-webhook`
-- `cancel-subscription`
-
-Required before deleting live functions:
-
-- one final function inventory;
-- one final repo search;
-- recent function-log check if available;
-- APP YooKassa checkout smoke after each staged removal.
-
-Execution note:
-
-- Use `docs/LEGACY_PAYMENT_RETIREMENT_PLAN_2026_05_28.md` as the canonical staged retirement sequence.
+- new legacy payments are no longer created;
+- legacy completion path no longer mutates subscription/payment state;
+- hidden remaining callers, if any, now surface as controlled retirement responses instead of silent state changes.
 
 ---
 
@@ -154,5 +126,5 @@ Before production PASS:
 
 Full production PASS is not yet honest until:
 
-- legacy payment functions are retired in staged order or explicitly kept as an accepted transition window after stale repo callers are gone;
-- fresh same-ref CI and final runtime verification are attached to the accepted late-May canon.
+- a fresh same-ref release gate is attached to the post-retirement canon;
+- final runtime and CI verification are attached to the accepted late-May baseline.
