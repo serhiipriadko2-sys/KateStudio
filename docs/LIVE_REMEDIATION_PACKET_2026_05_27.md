@@ -11,9 +11,12 @@
 
 This packet tracks the remaining live remediation path for:
 
-1. `book_class_with_access` security-definer warning;
-2. legacy payment contour retirement;
-3. advisors / CI / runtime smoke after the above.
+1. legacy payment contour retirement;
+2. advisors / CI / runtime smoke after the above.
+
+`book_class_with_access` is no longer an open remediation item in this packet.
+The current canon accepts it as a narrow `SECURITY DEFINER` wrapper with
+preserved APP contract and branch-proof evidence.
 
 `20260518205158_create_dataset_runs_and_artifacts` is no longer an open item in
 this packet. Its status in the current canon is **accepted forward reconciliation**.
@@ -27,46 +30,38 @@ Reference planning artifacts:
 
 ## Step 1 - `book_class_with_access`
 
-Status: `BRANCH/STAGING PROOF REQUIRED`
+Status: `ACCEPTED NARROW SECURITY DEFINER WRAPPER`
 
-Current evidence:
+Accepted evidence:
 
 - Live security advisors still flag
   `authenticated_security_definer_function_executable`.
 - APP calls `public.book_class_with_access` from
   `k-sebe-yoga-studio-APPp/services/dataService.ts`.
 - Directly revoking `authenticated` execute would break APP booking.
-- Directly changing the function to `SECURITY INVOKER` is not a safe blind fix:
+- Directly changing the function to `SECURITY INVOKER` is not a safe narrow fix:
   the RPC decrements `public.user_passes`, while authenticated users currently
-  have a read-oriented pass surface.
+  do not have a matching direct update-oriented pass surface.
+- Branch proof accepted a narrow wrapper posture without changing APP contract.
+- Branch scenario matrix confirmed:
+  - valid active pass -> booking created and visit decremented;
+  - duplicate booking -> expected failure;
+  - no visits left -> expected failure;
+  - no pass -> expected failure.
+- Branch proof also confirmed canonical class data persistence from
+  `public.classes`, rather than trusting tampered client-supplied metadata.
 
-Required proof before live DB change:
+Accepted interpretation:
 
-1. Create a Supabase branch or staging project.
-2. Apply a candidate implementation there.
-3. Verify booking cases:
-   - valid active pass -> booking created and visit decremented;
-   - no pass -> expected failure;
-   - expired pass -> expected failure;
-   - no visits left -> expected failure;
-   - duplicate booking -> expected failure;
-   - class full -> expected failure.
-4. Re-run security advisors on the branch/staging target.
-
-Current blocker:
-
-- Branch creation cost must be checked and accepted first.
-- MCP cost check failed in the earlier Codex pass because Supabase MCP handshake timed out.
-- No branch was created in that pass.
-
-Recommended remediation design:
-
-- Move privileged booking/decrement orchestration behind an authenticated Edge Function or a private helper that is not directly executable from public RPC.
-- Keep the APP client contract stable until branch proof passes.
+- The function remains a consciously narrow server-side wrapper for self-service
+  booking.
+- The advisor warning remains policy-level, not behavior-level, under the
+  current accepted release canon.
 
 Execution note:
 
-- Use `docs/BOOK_CLASS_WITH_ACCESS_BRANCH_PROOF_PLAN_2026_05_28.md` as the canonical proof matrix before any live remediation pass.
+- Use `docs/BOOK_CLASS_WITH_ACCESS_BRANCH_PROOF_PLAN_2026_05_28.md` as the
+  evidence trail for the accepted branch-proof path.
 
 ---
 
@@ -139,7 +134,7 @@ Execution note:
 Before production PASS:
 
 1. security advisors:
-   - `book_class_with_access` warning gone after staged remediation, or branch proof / accepted-risk evidence attached before live change.
+   - `book_class_with_access` warning is either consciously accepted with branch-proof evidence or superseded by a later narrower design with equivalent evidence.
 2. migration integrity:
    - `npm run check:migrations`;
 3. repo health:
@@ -159,5 +154,5 @@ Before production PASS:
 
 Full production PASS is not yet honest until:
 
-- `book_class_with_access` has branch/staging proof and live remediation, or a consciously accepted release-time exception;
-- legacy payment functions are retired in staged order or explicitly kept as an accepted transition window after stale repo callers are gone.
+- legacy payment functions are retired in staged order or explicitly kept as an accepted transition window after stale repo callers are gone;
+- fresh same-ref CI and final runtime verification are attached to the accepted late-May canon.
