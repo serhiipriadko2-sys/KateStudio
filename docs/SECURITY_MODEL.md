@@ -1,8 +1,9 @@
 # Security Model | KateStudio
 
-> **Обновлено:** 13 мая 2026
+> **Обновлено:** 28 мая 2026
 > Этот документ описывает security model и текущие подтверждённые security deltas.
-> Для present-tense launch/status claims используйте `CURRENT_TASKS.md` и `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md`.
+> Для present-tense launch/status claims используйте `CURRENT_TASKS.md` и
+> `docs/LAUNCH_CHECKLIST.md`.
 
 ---
 
@@ -15,7 +16,8 @@
 - Изоляция строится на RLS по `auth.uid() = user_id` на чувствительных таблицах.
 - Не получает admin-права через клиентский код или публичный API.
 
-> Важно: не считать APP auth OTP-only или Magic-Link-only каноном. Текущие live auth logs уже подтверждают password и refresh-token сессии с WEB referer `https://ksebe-studio.ru/`.
+> Важно: не считать APP auth OTP-only или Magic-Link-only каноном. Текущие
+> live auth evidence уже не поддерживают такую упрощённую картину.
 
 ### Studio Admin
 
@@ -56,7 +58,8 @@
 | Rate limiting | защита AI и дорогих операций |
 | Ops secrets (`CRON_SECRET` etc.) | maintenance/admin automation paths |
 
-> Точный domain allowlist не держите в голове по этому документу. Для present-tense значений смотрите код конкретной функции и deployment evidence. Старые списки доменов в документации не считаются сами по себе каноном.
+> Точный domain allowlist не держите в голове по этому документу. Для
+> present-tense значений смотрите код конкретной функции и deployment evidence.
 
 ---
 
@@ -65,7 +68,8 @@
 | Домен | Подтверждённое состояние |
 | --- | --- |
 | Live security advisors | остался `1 warning` |
-| Current warning | leaked password protection disabled |
+| Current warning | `book_class_with_access` remains callable as authenticated `SECURITY DEFINER` RPC |
+| Leaked password protection | resolved in current canon; no longer treated as open warning |
 | GraphQL discoverability | снят из live canonical snapshot |
 | `vector` in `public` | снят; extension moved out of public surface |
 | `profiles` public drift | historical blocker closed in current live migration history |
@@ -76,10 +80,12 @@
 
 | Риск | Статус |
 | --- | --- |
-| leaked password protection в live Auth | open |
-| APP payment cutover drift (`create-yookassa-checkout` vs current live payment pair) | open |
-| in-memory rate limiting для `gemini-proxy` | open for scale risk |
-| repo/live drift по function/domain contracts | open |
+| `book_class_with_access` accepted-risk / remediation window | open |
+| dual payment contour in live (`create-payment` / `payment-webhook` alongside app-target pair) | open |
+
+`20260518205158` does not remain an open security blocker in this document. Its
+current status belongs to release/schema reconciliation and is accepted there as
+forward reconciliation.
 
 ---
 
@@ -87,4 +93,5 @@
 
 > Секреты живут только в Vault, deployment secrets и server-side runtime.
 > `.env.example` не должен содержать настоящих секретов.
-> Любой present-tense security verdict проверяйте по `CURRENT_TASKS.md` и `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md`, а не по старым narrative docs.
+> Любой present-tense security verdict проверяйте по `CURRENT_TASKS.md` и
+> `docs/LAUNCH_CHECKLIST.md`, а не по старым narrative docs.
