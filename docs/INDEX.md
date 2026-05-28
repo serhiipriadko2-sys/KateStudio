@@ -1,7 +1,7 @@
 # Центральный индекс документации | KateStudio
 
-> **Обновлено:** 28 мая 2026 | **Версия:** 9.5.1
-> Рабочий канон: current GitHub `main` HEAD + explicit GitHub Actions receipt + live Supabase metadata.
+> **Обновлено:** 28 мая 2026 | **Версия:** 9.5.2
+> Рабочий канон: reconciled repo evidence base + explicit GitHub Actions receipt + live Supabase metadata.
 > Этот индекс отражает строгий reconciliation packet и не должен смешивать старые narrative baselines с current truth.
 
 ---
@@ -10,8 +10,8 @@
 
 | Domain | Verified value |
 | --- | --- |
-| Current `main` HEAD | `f9135994f32e367536a404f17576efc5518e2251` |
-| Current HEAD same-ref release-path receipt | **UNVERIFIED in this packet** |
+| Latest reconciled repo HEAD before this index self-sync | `cd0e0d871603329bf6173c7275230851b8cb76fb` |
+| Same-ref release-path receipt for that HEAD | **UNVERIFIED in this packet** |
 | Latest verified full green release-path receipt | GitHub Actions run `26508804416` for SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` |
 | Live applied migrations | `41` |
 | Live functions | `11` |
@@ -20,11 +20,16 @@
 | APP-target payment pair in live | present |
 | Legacy payment trio in live | present as retired-in-place controlled stubs |
 
+### Self-Sync Caveat
+
+This file is committed onto `main`. Any commit that rewrites `docs/INDEX.md` advances `main` and therefore cannot also remain a perfect self-description of the post-write HEAD SHA. To avoid false precision, treat `cd0e0d871603329bf6173c7275230851b8cb76fb` as the latest reconciled repo HEAD that was fully inspected before this index self-sync write.
+
 ### Meaning
 
-1. Do **not** infer a green release receipt for `f9135994f32e367536a404f17576efc5518e2251` from the older verified run on `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`.
+1. Do **not** infer a green release receipt for `cd0e0d871603329bf6173c7275230851b8cb76fb` from the older verified run on `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`.
 2. Do **not** describe live Supabase as still carrying the older `profiles` public-policy or leaked-password blockers unless a fresher live source reopens them.
 3. Treat the remaining top-level residue as **release-governance proof**, not as a reopened payment/RLS P0.
+4. Treat any newer commit created solely to sync this index as documentation drift control, not as evidence that a same-ref release receipt already exists.
 
 ---
 
@@ -32,7 +37,7 @@
 
 - `CURRENT_TASKS.md` — краткий operational status на текущем late-May canon
 - `docs/LAUNCH_CHECKLIST.md` — текущий go / no-go checklist
-- `docs/RELEASE_GATE_2026_05_27.md` — latest release-gate receipt, but **not** same-ref proof for current HEAD `f9135994f32e367536a404f17576efc5518e2251`
+- `docs/RELEASE_GATE_2026_05_27.md` — latest release-gate receipt, but **not** same-ref proof for reconciled HEAD `cd0e0d871603329bf6173c7275230851b8cb76fb`
 - `docs/EDGE_FUNCTIONS.md` — repo/live function inventory и drift map
 - `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md` — remediation status after legacy payment retirement in place
 - `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` — accepted-risk packet for the remaining live warning
@@ -92,6 +97,8 @@ The following filenames can mislead if read literally instead of by content:
 
 | Domain | Current truth |
 | --- | --- |
+| Reconciled repo HEAD before index self-sync | `cd0e0d871603329bf6173c7275230851b8cb76fb` |
+| Same-ref receipt status for that HEAD | still requires explicit attachment |
 | Live applied migrations | `41` |
 | Live functions | `11` |
 | Live-only functions | `ai-run`, `ai-embeddings` |
@@ -101,7 +108,6 @@ The following filenames can mislead if read literally instead of by content:
 | Live security warning count | `1` |
 | Current exact warning | `book_class_with_access` |
 | Latest verified full green receipt | run `26508804416` on SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` |
-| Current HEAD receipt status | still requires explicit same-ref attachment |
 
 ---
 
@@ -109,7 +115,7 @@ The following filenames can mislead if read literally instead of by content:
 
 For any launch-sensitive or security-sensitive statement, use this order:
 
-1. current GitHub `main` HEAD,
+1. latest reconciled repo HEAD,
 2. explicit GitHub Actions receipt tied to that exact SHA,
 3. live Supabase metadata/advisors/functions,
 4. only then the derived operational documents.
