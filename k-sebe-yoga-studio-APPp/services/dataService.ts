@@ -38,7 +38,7 @@ export interface DataServiceMutationResult {
   reason?: Extract<DataServiceReadReason, 'auth_required' | 'server_unavailable'>;
 }
 
-interface BookClassRpcResult {
+interface BookClassResult {
   ok: boolean;
   code:
     | 'success'
@@ -54,6 +54,11 @@ interface BookClassRpcResult {
   visits_remaining: number | null;
 }
 
+interface AuthenticatedSession {
+  userId: string;
+  accessToken: string;
+}
+
 export const DATA_SOURCES = {
   userProfile: 'supabase',
   bookings: 'supabase',
@@ -67,15 +72,22 @@ const isUuid = (value?: string) =>
   !!value &&
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
-const getAuthenticatedUserId = async (expectedUserId?: string): Promise<string | null> => {
+const getAuthenticatedSession = async (
+  expectedUserId?: string
+): Promise<AuthenticatedSession | null> => {
   if (!isSupabaseConfigured) return null;
   if (expectedUserId && !isUuid(expectedUserId)) return null;
   const session = await supabase.auth.getSession();
-  const sessionUserId = session.data.session?.user?.id;
-  if (!sessionUserId) return null;
+  const currentSession = session.data.session;
+  const sessionUserId = currentSession?.user?.id;
+  const accessToken = currentSession?.access_token;
+  if (!sessionUserId || !accessToken) return null;
   if (expectedUserId && sessionUserId !== expectedUserId) return null;
-  return sessionUserId;
+  return { userId: sessionUserId, accessToken };
 };
+
+const getAuthenticatedUserId = async (expectedUserId?: string): Promise<string | null> =>
+  (await getAuthenticatedSession(expectedUserId))?.userId ?? null;
 
 // --- Mock Data Generators ---
 const pseudoRandom = (seed: number) => {
@@ -111,7 +123,7 @@ const buildMutationResult = (
   ...(reason ? { reason } : {}),
 });
 
-const mapRpcBookingStatus = (code: BookClassRpcResult['code']): DataServiceMutationStatus => {
+const mapBookingStatus = (code: BookClassResult['code']): DataServiceMutationStatus => {
   switch (code) {
     case 'success':
       return 'success';
@@ -142,27 +154,31 @@ const isTerminalPendingBookingStatus = (status: DataServiceMutationStatus) =>
   status === 'class_full' ||
   status === 'class_not_found';
 
-const callBookClassRpc = async (params: {
+const callBookClassWithAccess = async (params: {
   classId: string;
   className: string;
   date: string;
   time: string;
   location: string;
   timestamp: number;
-}): Promise<BookClassRpcResult | null> => {
-  const { data, error } = await supabase
-    .rpc('book_class_with_access', {
-      p_class_id: params.classId,
-      p_class_name: params.className,
-      p_class_date: params.date,
-      p_class_time: params.time,
-      p_class_location: params.location,
-      p_class_timestamp: params.timestamp,
-    })
-    .single();
+  accessToken: string;
+}): Promise<BookClassResult | null> => {
+  const { data, error } = await supabase.functions.invoke('book-class-with-access', {
+    body: {
+      classId: params.classId,
+      className: params.className,
+      date: params.date,
+      time: params.time,
+      location: params.location,
+      timestamp: params.timestamp,
+    },
+    headers: {
+      Authorization: `Bearer ${params.accessToken}`,
+    },
+  });
 
   if (error) throw error;
-  return (data ?? null) as BookClassRpcResult | null;
+  return (data ?? null) as BookClassResult | null;
 };
 
 // In-memory cache: key = "YYYY-MM-type" → array of ClassSessions for the whole month
@@ -711,13 +727,13 @@ export const dataService = {
 
   bookClass: async (cls: ClassSession, user: UserProfile): Promise<DataServiceMutationResult> => {
     // Auth-first: real bookings require authenticated user_id.
-    const authUserId = await getAuthenticatedUserId(user.id);
-    if (!authUserId) {
+    const authSession = await getAuthenticatedSession(user.id);
+    if (!authSession) {
       await cacheAdapter.setUser({ ...user, isRegistered: true });
       return buildMutationResult(false, 'auth_required', 'cache', 'auth_required');
     }
 
-    await dataService.registerUser(user.name, user.phone ?? '', authUserId);
+    await dataService.registerUser(user.name, user.phone ?? '', authSession.userId);
 
     const existingLocal = await cacheAdapter.findBookingByClassId(user.phone ?? '', cls.id);
     if (existingLocal) {
@@ -725,30 +741,31 @@ export const dataService = {
     }
 
     try {
-      const rpcResult = await callBookClassRpc({
+      const bookingResult = await callBookClassWithAccess({
         classId: cls.id,
         className: cls.name,
         date: cls.dateStr,
         time: cls.time,
         location: cls.location,
         timestamp: Date.now(),
+        accessToken: authSession.accessToken,
       });
 
-      if (!rpcResult) {
+      if (!bookingResult) {
         return buildMutationResult(false, 'server_error', 'server');
       }
 
-      const status = mapRpcBookingStatus(rpcResult.code);
-      if (!rpcResult.ok || status !== 'success') {
+      const status = mapBookingStatus(bookingResult.code);
+      if (!bookingResult.ok || status !== 'success') {
         return buildMutationResult(false, status, 'server');
       }
 
-      if (!rpcResult.booking_id) {
+      if (!bookingResult.booking_id) {
         return buildMutationResult(false, 'server_error', 'server');
       }
 
       const cachedBooking: CachedBooking = {
-        id: rpcResult.booking_id,
+        id: bookingResult.booking_id,
         classId: cls.id,
         className: cls.name,
         date: cls.dateStr,
@@ -797,8 +814,8 @@ export const dataService = {
   },
 
   syncPendingBookings: async (user: UserProfile): Promise<void> => {
-    const authUserId = await getAuthenticatedUserId(user.id);
-    if (!authUserId) return;
+    const authSession = await getAuthenticatedSession(user.id);
+    if (!authSession) return;
 
     const pending = await cacheAdapter.getPendingBookings(user.phone ?? '');
     if (!pending.length) return;
@@ -806,33 +823,34 @@ export const dataService = {
     await Promise.all(
       pending.map(async (booking) => {
         try {
-          const rpcResult = await callBookClassRpc({
+          const bookingResult = await callBookClassWithAccess({
             classId: booking.classId,
             className: booking.className,
             date: booking.date,
             time: booking.time,
             location: booking.location,
             timestamp: booking.timestamp,
+            accessToken: authSession.accessToken,
           });
 
-          if (!rpcResult) {
+          if (!bookingResult) {
             return;
           }
 
-          const status = mapRpcBookingStatus(rpcResult.code);
-          if (!rpcResult.ok || status !== 'success') {
+          const status = mapBookingStatus(bookingResult.code);
+          if (!bookingResult.ok || status !== 'success') {
             if (isTerminalPendingBookingStatus(status)) {
               await cacheAdapter.removeBooking(booking.id);
             }
             return;
           }
 
-          if (!rpcResult.booking_id) {
+          if (!bookingResult.booking_id) {
             return;
           }
 
           const synced: CachedBooking = {
-            id: rpcResult.booking_id,
+            id: bookingResult.booking_id,
             classId: booking.classId,
             className: booking.className,
             date: booking.date,
