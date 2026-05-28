@@ -2,10 +2,29 @@ import type { ClassRow, TrainerCard, TrainerDetail, TrainerRow } from '../types'
 import { supabase } from './supabase';
 import { getTrainerImageFallbacks } from './trainerImageFallbacks';
 
+const normalizeTrainerText = (value: string | null | undefined): string | null => {
+  if (typeof value !== 'string') return value ?? null;
+  return value.startsWith('$') ? value.slice(1) : value;
+};
+
+const normalizeTrainerUrl = (value: string | null | undefined): string | null => {
+  const normalized = normalizeTrainerText(value);
+  return normalized ? normalized : null;
+};
+
+const normalizeTrainerUrlList = (values: string[] | null | undefined): string[] => {
+  if (!Array.isArray(values)) return [];
+  return values
+    .map((value) => normalizeTrainerUrl(value))
+    .filter((value): value is string => Boolean(value));
+};
+
 export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
   const imageFallbacks = getTrainerImageFallbacks(row.slug);
   const fallbackGallery =
     imageFallbacks && 'galleryImageUrls' in imageFallbacks ? imageFallbacks.galleryImageUrls : [];
+  const galleryImageUrls =
+    normalizeTrainerUrlList(row.gallery_image_urls) || fallbackGallery;
 
   return {
     id: row.id,
@@ -13,8 +32,8 @@ export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
     fullName: row.full_name,
     roleTitle: row.role_title,
     bioShort: row.bio_short,
-    avatarUrl: row.avatar_url ?? imageFallbacks?.avatarUrl ?? null,
-    galleryImageUrls: row.gallery_image_urls ?? fallbackGallery,
+    avatarUrl: normalizeTrainerUrl(row.avatar_url) ?? imageFallbacks?.avatarUrl ?? null,
+    galleryImageUrls: galleryImageUrls.length > 0 ? galleryImageUrls : fallbackGallery,
     specialties: row.specialties,
     isFeatured: row.is_featured,
   };
@@ -26,9 +45,9 @@ export const mapTrainerRowToDetail = (row: TrainerRow): TrainerDetail => {
 
   return {
     ...card,
-    bioLong: row.bio_long,
-    quote: row.quote,
-    coverImageUrl: row.cover_image_url ?? imageFallbacks?.coverImageUrl ?? card.avatarUrl,
+    bioLong: normalizeTrainerText(row.bio_long),
+    quote: normalizeTrainerText(row.quote),
+    coverImageUrl: normalizeTrainerUrl(row.cover_image_url) ?? imageFallbacks?.coverImageUrl ?? card.avatarUrl,
     experienceYears: row.experience_years,
     teachingFormats: row.teaching_formats,
     instagramUrl: row.instagram_url,
