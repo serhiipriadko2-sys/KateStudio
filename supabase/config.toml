@@ -14,3 +14,6 @@ port = 55424
 
 [analytics]
 port = 55427
+
+[functions.book-class-with-access]
+verify_jwt = true

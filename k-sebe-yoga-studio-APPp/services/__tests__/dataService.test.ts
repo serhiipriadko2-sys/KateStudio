@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { dataService } from '../dataService';
 
-const { mockFrom, mockGetSession, mockRpc } = vi.hoisted(() => ({
+const { mockFrom, mockGetSession, mockInvoke, mockRpc } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
   mockGetSession: vi.fn(),
+  mockInvoke: vi.fn(),
   mockRpc: vi.fn(),
 }));
 
@@ -14,6 +15,9 @@ vi.mock('@ksebe/shared', () => ({
     auth: {
       getSession: mockGetSession,
     },
+    functions: {
+      invoke: mockInvoke,
+    },
   },
   isSupabaseConfigured: true,
 }));
@@ -22,6 +26,7 @@ const authenticatedSession = {
   data: {
     session: {
       user: { id: '11111111-1111-4111-8111-111111111111' },
+      access_token: 'token-123',
     },
   },
 };
@@ -62,14 +67,11 @@ const createBookingDeleteQuery = (result: { error: unknown }) => ({
   eq: vi.fn().mockResolvedValue(result),
 });
 
-const createBookClassRpcQuery = (result: { data: unknown; error: unknown }) => ({
-  single: vi.fn().mockResolvedValue(result),
-});
-
 describe('dataService', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     mockFrom.mockReset();
+    mockInvoke.mockReset();
     mockRpc.mockReset();
     mockGetSession.mockReset();
     localStorage.clear();
@@ -339,18 +341,16 @@ describe('dataService', () => {
 
     it('returns duplicate when booking already exists on server', async () => {
       vi.spyOn(dataService, 'registerUser').mockResolvedValue(user);
-      mockRpc.mockReturnValue(
-        createBookClassRpcQuery({
-          data: {
-            ok: false,
-            code: 'duplicate',
-            booking_id: null,
-            pass_id: null,
-            visits_remaining: null,
-          },
-          error: null,
-        })
-      );
+      mockInvoke.mockResolvedValue({
+        data: {
+          ok: false,
+          code: 'duplicate',
+          booking_id: null,
+          pass_id: null,
+          visits_remaining: null,
+        },
+        error: null,
+      });
 
       const result = await dataService.bookClass(cls, user);
 
@@ -359,13 +359,18 @@ describe('dataService', () => {
         status: 'duplicate',
         source: 'server',
       });
-      expect(mockRpc).toHaveBeenCalledWith('book_class_with_access', {
-        p_class_id: cls.id,
-        p_class_name: cls.name,
-        p_class_date: cls.dateStr,
-        p_class_time: cls.time,
-        p_class_location: cls.location,
-        p_class_timestamp: expect.any(Number),
+      expect(mockInvoke).toHaveBeenCalledWith('book-class-with-access', {
+        body: {
+          classId: cls.id,
+          className: cls.name,
+          date: cls.dateStr,
+          time: cls.time,
+          location: cls.location,
+          timestamp: expect.any(Number),
+        },
+        headers: {
+          Authorization: 'Bearer token-123',
+        },
       });
     });
 
@@ -399,18 +404,16 @@ describe('dataService', () => {
       await dataService.getClassesForMonth(2024, 1, 'offline');
       expect(mockFrom).toHaveBeenCalledTimes(2);
 
-      mockRpc.mockReturnValue(
-        createBookClassRpcQuery({
-          data: {
-            ok: true,
-            code: 'success',
-            booking_id: 'booking-1',
-            pass_id: 'pass-1',
-            visits_remaining: 4,
-          },
-          error: null,
-        })
-      );
+      mockInvoke.mockResolvedValue({
+        data: {
+          ok: true,
+          code: 'success',
+          booking_id: 'booking-1',
+          pass_id: 'pass-1',
+          visits_remaining: 4,
+        },
+        error: null,
+      });
 
       const bookingResult = await dataService.bookClass(cls, user);
       expect(bookingResult).toMatchObject({
@@ -444,7 +447,7 @@ describe('dataService', () => {
         .mockReturnValueOnce(createBookingsInQuery({ data: [], error: null }));
 
       await dataService.getClassesForMonth(2024, 1, 'offline');
-      expect(mockRpc).toHaveBeenCalledTimes(1);
+      expect(mockInvoke).toHaveBeenCalledTimes(1);
       expect(mockFrom).toHaveBeenCalledTimes(4);
     });
   });
