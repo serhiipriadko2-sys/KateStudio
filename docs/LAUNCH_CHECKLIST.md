@@ -1,7 +1,7 @@
 # Launch Checklist & Gap Analysis
 
 > **Обновлено:** 28 мая 2026
-> **Вердикт:** production launch readiness **PARTIAL / targeted live remediation in progress**
+> **Вердикт:** production launch readiness **PARTIAL / post-retirement verification pending**
 
 ---
 
@@ -10,12 +10,12 @@
 | Area | Status | Why |
 | --- | --- | --- |
 | Repo documentation truth | PARTIAL | older 16 May baseline is stale relative to the accepted late-May canon |
-| Local code health | PASS | local gates were previously green and this pass did not introduce code changes |
-| Fresh current-main CI proof | CHECK LIVE | not re-verified in this targeted reconciliation pass |
-| Supabase security governance | PARTIAL+ | `book_class_with_access` is now accepted as a narrow wrapper with branch-proof evidence; the remaining open live governance item is the dual payment contour |
-| Schema reproducibility | PARTIAL, NOT BLOCKED BY `20260518205158` | live reports **41** applied migrations; `20260518205158` is now treated as **accepted forward reconciliation**, not as an open blocker |
+| Local code health | PASS | current pass changed function/docs canon, not product code paths in APP/WEB |
+| Fresh current-main CI proof | CHECK LIVE | not yet re-verified after the final retirement-in-place sync |
+| Supabase security governance | PARTIAL+ | `book_class_with_access` is accepted as a narrow wrapper with branch-proof evidence; legacy payment trio is now retired in place |
+| Schema reproducibility | PARTIAL, NOT BLOCKED BY `20260518205158` | live reports **41** applied migrations; `20260518205158` is treated as **accepted forward reconciliation** |
 | WEB payment posture | PASS AT MODEL LEVEL | WEB remains storefront-only |
-| Function/payment deployment clarity | PARTIAL | app-target payment contour is live, but legacy contour retirement is still open |
+| Function/payment deployment clarity | PASS AT MODEL LEVEL | app-target payment contour remains live; legacy trio is retired in place rather than transitional |
 | Runtime public smoke | PASS / LOCAL NOTE | `https://ksebe-studio.ru/` and Firebase APP target answer in the current canon |
 
 ---
@@ -26,10 +26,14 @@
 - live Supabase reports **11 active Edge Functions**.
 - live payment tables `payment_orders` and `user_passes` are present.
 - live function inventory still includes both `create-yookassa-checkout` and `yookassa-webhook`.
+- live legacy trio remains deployed but is now retired in place:
+  - `cancel-subscription` -> controlled retirement stub
+  - `create-payment` -> controlled retirement stub
+  - `payment-webhook` -> controlled retirement stub
 - exact repo confirmation exists for migration `20260516182944_yookassa_app_payments_live_cutover`.
 - live `20260516202546 book_class_with_access` maps semantically to repo `supabase/migrations/20260516211000_book_class_with_access.sql`.
 - live `20260516202845 book_class_with_access_revoke_public_execute` maps semantically to repo `supabase/migrations/20260516214500_book_class_with_access_revoke_public_execute.sql`.
-- live `20260518205158 create_dataset_runs_and_artifacts` now has an accepted explicit reconciliation path through `20260527174716_reconcile_dataset_runs_artifacts_forward.sql`.
+- live `20260518205158 create_dataset_runs_and_artifacts` has an accepted explicit reconciliation path through `20260527174716_reconcile_dataset_runs_artifacts_forward.sql`.
 - public WEB smoke for `https://ksebe-studio.ru/` returned `200 OK` in the current canon.
 - public APP smoke for `https://artful-striker-476211-h4.web.app` returned `200 OK` in the current canon.
 - branch proof accepted `book_class_with_access` as a narrow `SECURITY DEFINER` wrapper while preserving the APP contract.
@@ -38,9 +42,11 @@
 
 ## 3. Hard blockers still open
 
+В текущем каноне нет больше отдельного live payment blocker-а.
+
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
-| P0 | legacy payment contour live retirement | 0 repo-side callers are the current canon; live legacy functions still remain active and need staged retirement or explicit transition-window acceptance |
+| P0 | fresh same-ref release proof | после финального retirement-in-place sync ещё не пересобран честный release gate поверх текущего `main` и live state |
 
 `book_class_with_access` is no longer listed here as an open release blocker. In
 the current canon it is accepted as a narrow `SECURITY DEFINER` wrapper with
@@ -74,12 +80,11 @@ Status: **accepted reconciliation; not a launch blocker by itself**.
 - [ ] decide canonical AI contour: `ai-run` / `ai-embeddings` vs repo-side alternatives
 - [x] keep WEB non-payment canon explicit
 - [x] confirm APP YooKassa pair is live
-- [x] decide how long the legacy pair `create-payment` / `payment-webhook` remains intentionally live
-- [x] document retirement or coexistence criteria for the dual payment contour
+- [x] retire legacy trio in place: `cancel-subscription`, `create-payment`, `payment-webhook`
 - [x] accept `book_class_with_access` as a narrow `SECURITY DEFINER` wrapper with preserved APP contract and branch-proof evidence
-- [ ] confirm which payment/public endpoints are intentionally exposed after the transition window
+- [ ] confirm which payment/public endpoints remain intentionally exposed after the retirement-in-place decision
 
-Status: **open only on dual payment contour**.
+Status: **payment contour no longer open as a live blocker**.
 
 ---
 
@@ -94,7 +99,7 @@ Current verified release-path truth for this document:
 - `npm run build:web` → PASS locally with chunk-size warnings in the accepted canon
 - `npm run build:app` → PASS locally with chunk-size / ineffective dynamic import warnings in the accepted canon
 
-Status: **pass in the accepted canon; fresh same-ref CI was not re-verified in this targeted pass**.
+Status: **pass in the accepted canon; fresh same-ref CI was not yet re-verified after the final payment retirement sync**.
 
 ---
 
@@ -107,6 +112,7 @@ Recent grounded truth supports these passes:
 - [x] generic public `app_settings` reads outside `studio_contacts` are checked; live policy exposes only `studio_contacts` to `anon` / `authenticated`
 - [x] empty `site_images` content is explicitly accepted as non-blocking because runtime falls back to local/static image state
 - [x] branch proof shows `book_class_with_access` persists canonical class data and self-scoped pass usage under the current APP contract
+- [x] legacy trio is retired in place while `yookassa-webhook` and `create-yookassa-checkout` remain active
 
 Status: **pass with non-blocking follow-up items**.
 
@@ -119,9 +125,9 @@ Launch PASS requires all of the following:
 1. current `main` has fresh green proof for migration check, lint, typecheck, tests, and both builds;
 2. live migration tail is fully Git-tracked or explicitly reconciled;
 3. WEB remains non-payment by design;
-4. APP payment contour is canonically owned: the dual contour is either explicitly transitional or the legacy pair is formally retired;
+4. APP payment contour is canonically owned and legacy payment contour is either retired or explicitly accepted as retired in place;
 5. live security warnings are resolved or explicitly accepted with evidence.
 
-Current status: code and schema reconciliation are no longer blocked by `20260518205158`. `book_class_with_access` is accepted in the current release canon as a narrow `SECURITY DEFINER` wrapper with branch-proof evidence. Full production PASS still depends on the dual payment contour decision and fresh same-ref CI proof.
+Current status: code and schema reconciliation are no longer blocked by `20260518205158`. `book_class_with_access` is accepted in the current release canon as a narrow `SECURITY DEFINER` wrapper with branch-proof evidence. Legacy payment trio is retired in place. Full production PASS still depends on a fresh same-ref release gate after this final sync.
 
 Live remediation packet: `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.
