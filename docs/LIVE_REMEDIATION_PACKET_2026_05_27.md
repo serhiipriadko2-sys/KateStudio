@@ -18,6 +18,11 @@ This packet tracks the remaining live remediation path for:
 `20260518205158_create_dataset_runs_and_artifacts` is no longer an open item in
 this packet. Its status in the current canon is **accepted forward reconciliation**.
 
+Reference planning artifacts:
+
+- `docs/BOOK_CLASS_WITH_ACCESS_BRANCH_PROOF_PLAN_2026_05_28.md`
+- `docs/LEGACY_PAYMENT_RETIREMENT_PLAN_2026_05_28.md`
+
 ---
 
 ## Step 1 - `book_class_with_access`
@@ -58,6 +63,10 @@ Recommended remediation design:
 
 - Move privileged booking/decrement orchestration behind an authenticated Edge Function or a private helper that is not directly executable from public RPC.
 - Keep the APP client contract stable until branch proof passes.
+
+Execution note:
+
+- Use `docs/BOOK_CLASS_WITH_ACCESS_BRANCH_PROOF_PLAN_2026_05_28.md` as the canonical proof matrix before any live remediation pass.
 
 ---
 
@@ -118,6 +127,10 @@ Required before deleting live functions:
 - one final repo search;
 - recent function-log check if available;
 - APP YooKassa checkout smoke after each staged removal.
+
+Execution note:
+
+- Use `docs/LEGACY_PAYMENT_RETIREMENT_PLAN_2026_05_28.md` as the canonical staged retirement sequence.
 
 ---
 
