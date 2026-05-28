@@ -1,6 +1,6 @@
 # Центральный индекс документации | KateStudio
 
-> **Обновлено:** 28 мая 2026 | **Версия:** 9.5.2
+> **Обновлено:** 28 мая 2026 | **Версия:** 9.5.3
 > Рабочий канон: reconciled repo evidence base + explicit GitHub Actions receipt + live Supabase metadata.
 > Этот индекс отражает строгий reconciliation packet и не должен смешивать старые narrative baselines с current truth.
 
@@ -10,9 +10,12 @@
 
 | Domain | Verified value |
 | --- | --- |
-| Latest reconciled repo HEAD before this index self-sync | `cd0e0d871603329bf6173c7275230851b8cb76fb` |
-| Same-ref release-path receipt for that HEAD | **UNVERIFIED in this packet** |
-| Latest verified full green release-path receipt | GitHub Actions run `26508804416` for SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` |
+| Latest reconciled repo HEAD before index self-sync | `cd0e0d871603329bf6173c7275230851b8cb76fb` |
+| Same-ref release-path receipt for that HEAD | **VERIFIED**: CI run `26588248604` on `push` to `main` |
+| Latest verified full green release-path receipt | GitHub Actions run `26588248604` for SHA `cd0e0d871603329bf6173c7275230851b8cb76fb` |
+| Same-ref CI jobs | `Lint & Format Check`, `TypeScript Check`, `Run Tests`, `Build WEB`, `Build APP` all `success` |
+| Same-ref CI artifacts | `web-build`, `app-build` |
+| Companion deploy receipts on same push | Pages run `26588248681`, Firebase run `26588248787` |
 | Live applied migrations | `41` |
 | Live functions | `11` |
 | Live security advisors | `1 warning` |
@@ -26,10 +29,11 @@ This file is committed onto `main`. Any commit that rewrites `docs/INDEX.md` adv
 
 ### Meaning
 
-1. Do **not** infer a green release receipt for `cd0e0d871603329bf6173c7275230851b8cb76fb` from the older verified run on `5a2393539bc664e40fd4f966bc0d7af6aa85dd86`.
-2. Do **not** describe live Supabase as still carrying the older `profiles` public-policy or leaked-password blockers unless a fresher live source reopens them.
-3. Treat the remaining top-level residue as **release-governance proof**, not as a reopened payment/RLS P0.
-4. Treat any newer commit created solely to sync this index as documentation drift control, not as evidence that a same-ref release receipt already exists.
+1. Exact same-ref release proof now exists for reconciled HEAD `cd0e0d871603329bf6173c7275230851b8cb76fb`: CI run `26588248604`, triggered via `push` to `main`, with all five release-path jobs green and both build artifacts attached.
+2. Companion deploy runs also exist on the same push: GitHub Pages `26588248681` and Firebase `26588248787`, both `success`.
+3. Do **not** describe live Supabase as still carrying the older `profiles` public-policy or leaked-password blockers unless a fresher live source reopens them.
+4. The remaining top-level residue is the accepted live warning on `book_class_with_access`, not a missing same-ref release proof.
+5. Treat any newer commit created solely to sync this index as documentation drift control, not as evidence that the reconciled head itself changed.
 
 ---
 
@@ -37,7 +41,7 @@ This file is committed onto `main`. Any commit that rewrites `docs/INDEX.md` adv
 
 - `CURRENT_TASKS.md` — краткий operational status на текущем late-May canon
 - `docs/LAUNCH_CHECKLIST.md` — текущий go / no-go checklist
-- `docs/RELEASE_GATE_2026_05_27.md` — latest release-gate receipt, but **not** same-ref proof for reconciled HEAD `cd0e0d871603329bf6173c7275230851b8cb76fb`
+- `docs/RELEASE_GATE_2026_05_27.md` — historical release-gate packet; its same-ref gap note is now superseded by CI run `26588248604` for reconciled HEAD `cd0e0d871603329bf6173c7275230851b8cb76fb`
 - `docs/EDGE_FUNCTIONS.md` — repo/live function inventory и drift map
 - `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md` — remediation status after legacy payment retirement in place
 - `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` — accepted-risk packet for the remaining live warning
@@ -54,7 +58,7 @@ This file is committed onto `main`. Any commit that rewrites `docs/INDEX.md` adv
 | `docs/ARCHITECTURE.md` | monorepo structure, runtime contour, repo/live split |
 | `docs/EDGE_FUNCTIONS.md` | repo/live function inventory и drift map |
 | `docs/LAUNCH_CHECKLIST.md` | release readiness и blockers |
-| `docs/RELEASE_GATE_2026_05_27.md` | latest explicit release-gate receipt |
+| `docs/RELEASE_GATE_2026_05_27.md` | historical release-gate receipt set; same-ref CI gap is now closed by later evidence |
 | `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md` | live remediation packet after late-May security/payment narrowing |
 | `docs/SECURITY_MODEL.md` | current security model and confirmed live deltas |
 | `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md` | accepted warning packet for `book_class_with_access` |
@@ -87,7 +91,7 @@ The following filenames can mislead if read literally instead of by content:
 - `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md`
   - current content says the remediation is **resolved**
 - `docs/RELEASE_GATE_2026_05_27.md`
-  - current content says a fresh same-ref verification pass is still required for full production `PASS`
+  - current content still says a fresh same-ref verification pass is required, but that statement is superseded by CI run `26588248604` on `cd0e0d871603329bf6173c7275230851b8cb76fb`
 - `docs/SUPABASE_AUDIT_LIVE_2026_05_12.md`
   - current content is a historical bridge with later correction notes, not a raw present-tense snapshot
 
@@ -98,7 +102,8 @@ The following filenames can mislead if read literally instead of by content:
 | Domain | Current truth |
 | --- | --- |
 | Reconciled repo HEAD before index self-sync | `cd0e0d871603329bf6173c7275230851b8cb76fb` |
-| Same-ref receipt status for that HEAD | still requires explicit attachment |
+| Same-ref receipt status for that HEAD | verified by CI run `26588248604` |
+| Same-ref deploy follow-through | Pages `26588248681`, Firebase `26588248787` |
 | Live applied migrations | `41` |
 | Live functions | `11` |
 | Live-only functions | `ai-run`, `ai-embeddings` |
@@ -107,7 +112,7 @@ The following filenames can mislead if read literally instead of by content:
 | Legacy payment contour | retired in place, not an active business contour |
 | Live security warning count | `1` |
 | Current exact warning | `book_class_with_access` |
-| Latest verified full green receipt | run `26508804416` on SHA `5a2393539bc664e40fd4f966bc0d7af6aa85dd86` |
+| Latest verified full green receipt | run `26588248604` on SHA `cd0e0d871603329bf6173c7275230851b8cb76fb` |
 
 ---
 
