@@ -70,6 +70,7 @@
 | Live security advisors | остался `1 warning` |
 | Current warning | `book_class_with_access` remains callable as authenticated `SECURITY DEFINER` RPC |
 | `book_class_with_access` policy decision | accepted as a narrow `SECURITY DEFINER` wrapper with branch-proof evidence and preserved APP contract |
+| Legacy payment trio | retired in place; old live endpoints now return controlled retirement stubs and no longer mutate subscription/payment state |
 | Leaked password protection | resolved in current canon; no longer treated as open warning |
 | GraphQL discoverability | снят из live canonical snapshot |
 | `vector` in `public` | снят; extension moved out of public surface |
@@ -79,9 +80,7 @@
 
 ## Что остаётся открытым
 
-| Риск | Статус |
-| --- | --- |
-| dual payment contour in live (`create-payment` / `payment-webhook` alongside app-target pair) | open |
+В текущем security canon нет отдельного live payment blocker-а.
 
 `book_class_with_access` no longer remains an open remediation item in this
 document. The current canon accepts it as a narrow `SECURITY DEFINER` wrapper
