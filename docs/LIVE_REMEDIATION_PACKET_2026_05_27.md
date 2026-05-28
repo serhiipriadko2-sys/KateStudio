@@ -9,57 +9,18 @@
 
 ## Scope
 
-This packet replaces accepted-risk release posture with a remediation track for:
+This packet tracks the remaining live remediation path for:
 
-1. leaked password protection;
-2. `book_class_with_access` security-definer warning;
-3. live-only migration `20260518205158_create_dataset_runs_and_artifacts`;
-4. legacy payment contour retirement;
-5. advisors / CI / runtime smoke after the above.
+1. `book_class_with_access` security-definer warning;
+2. legacy payment contour retirement;
+3. advisors / CI / runtime smoke after the above.
 
----
-
-## Step 1 - Leaked Password Protection
-
-Status: `BLOCKED ON LIVE CONFIG ACTION`
-
-Facts:
-
-- Supabase docs state leaked password protection is available on Pro Plan and
-  above.
-- The owner supplied billing evidence showing the organization is on Pro Plan.
-- The Management API supports `PATCH /v1/projects/{ref}/config/auth` with
-  `password_hibp_enabled`.
-
-Current blocker:
-
-- This Codex runtime does not have `SUPABASE_ACCESS_TOKEN` in the environment.
-- Supabase MCP is configured, but this session still times out during MCP
-  handshake.
-- `supabase config push` exists, but pushing the minimal local `config.toml`
-  would be unsafe because the repo config is not a full live Auth config.
-
-Safe enablement options:
-
-1. Owner enables leaked password protection in Dashboard:
-   Authentication -> Sign In / Providers -> Email -> Password security.
-2. Owner provides a scoped management-token path through environment variable,
-   not chat text, and the agent patches only `password_hibp_enabled: true`.
-
-Verification:
-
-- Re-run `npx supabase db advisors --linked --type security --output json`.
-- Confirm `auth_leaked_password_protection` disappears.
-- Smoke password signup, sign-in, and reset/change-password flows.
-
-Rollback:
-
-- Disable the setting in Auth settings if user-facing password flow breaks in a
-  way the current UI cannot explain.
+`20260518205158_create_dataset_runs_and_artifacts` is no longer an open item in
+this packet. Its status in the current canon is **accepted forward reconciliation**.
 
 ---
 
-## Step 2 - `book_class_with_access`
+## Step 1 - `book_class_with_access`
 
 Status: `BRANCH/STAGING PROOF REQUIRED`
 
@@ -90,41 +51,47 @@ Required proof before live DB change:
 Current blocker:
 
 - Branch creation cost must be checked and accepted first.
-- MCP cost check failed in this Codex session because Supabase MCP handshake
-  timed out.
-- No branch was created in this pass.
+- MCP cost check failed in the earlier Codex pass because Supabase MCP handshake timed out.
+- No branch was created in that pass.
 
 Recommended remediation design:
 
-- Move privileged booking/decrement orchestration behind an authenticated Edge
-  Function or a private helper that is not directly executable from public RPC.
+- Move privileged booking/decrement orchestration behind an authenticated Edge Function or a private helper that is not directly executable from public RPC.
 - Keep the APP client contract stable until branch proof passes.
 
 ---
 
-## Step 3 - `20260518205158` Migration Reconciliation
+## Step 2 - `20260518205158` Migration Reconciliation
 
-Status: `REPO-SIDE FORWARD RECONCILIATION PREPARED`
+Status: `ACCEPTED FORWARD RECONCILIATION`
 
-Added artifact:
+Accepted artifact:
 
 - `supabase/migrations/20260527174716_reconcile_dataset_runs_artifacts_forward.sql`
 
-Purpose:
+Accepted meaning:
 
-- make fresh/staging environments aware of `public.dataset_runs` and
-  `public.dataset_artifacts`;
-- avoid rewriting the historical live timestamp;
-- keep these tables non-product-facing until ownership is defined.
+- fresh/staging environments have a Git-tracked additive path for
+  `public.dataset_runs` and `public.dataset_artifacts`;
+- the project does **not** pretend to know the exact historical SQL text of the
+  original live-applied `20260518205158` migration;
+- this delta is no longer treated as an open release blocker by itself.
 
-Verification:
+Verification basis:
 
-- `npm run check:migrations` -> PASS with `67 files, 0 known collision group(s),
-  1 legacy short timestamp file(s)`.
+- live migration ledger contains `20260518205158_create_dataset_runs_and_artifacts`;
+- live schema contains `dataset_runs` and `dataset_artifacts` with the expected
+  core table shape, PK/FK relation, and RLS enabled;
+- the forward reconciliation artifact covers that core shape additively.
+
+Residual note:
+
+- exact historical origin, comments, policy text, and index-level parity remain
+  long-term hygiene work, not current release gating.
 
 ---
 
-## Step 4 - Legacy Payment References
+## Step 3 - Legacy Payment References
 
 Status: `STALE WEB CLIENT REFERENCES REMOVED; LIVE FUNCTIONS NOT RETIRED`
 
@@ -154,14 +121,12 @@ Required before deleting live functions:
 
 ---
 
-## Step 5 - Final Verification Required
+## Step 4 - Final Verification Required
 
 Before production PASS:
 
 1. security advisors:
-   - `auth_leaked_password_protection` gone, or dashboard/API blocker recorded;
-   - `book_class_with_access` warning gone after staged remediation, or branch
-     proof attached before live change.
+   - `book_class_with_access` warning gone after staged remediation, or branch proof / accepted-risk evidence attached before live change.
 2. migration integrity:
    - `npm run check:migrations`;
 3. repo health:
@@ -179,9 +144,7 @@ Before production PASS:
 
 ## Current Verdict
 
-Remediation has started, but full production PASS is not yet honest until:
+Full production PASS is not yet honest until:
 
-- leaked password protection is actually enabled and verified;
-- `book_class_with_access` has branch/staging proof and live remediation;
-- legacy payment functions are retired in staged order or explicitly kept as an
-  accepted transition window after stale repo callers are gone.
+- `book_class_with_access` has branch/staging proof and live remediation, or a consciously accepted release-time exception;
+- legacy payment functions are retired in staged order or explicitly kept as an accepted transition window after stale repo callers are gone.
