@@ -69,6 +69,7 @@
 | --- | --- |
 | Live security advisors | остался `1 warning` |
 | Current warning | `book_class_with_access` remains callable as authenticated `SECURITY DEFINER` RPC |
+| `book_class_with_access` policy decision | accepted as a narrow `SECURITY DEFINER` wrapper with branch-proof evidence and preserved APP contract |
 | Leaked password protection | resolved in current canon; no longer treated as open warning |
 | GraphQL discoverability | снят из live canonical snapshot |
 | `vector` in `public` | снят; extension moved out of public surface |
@@ -80,8 +81,13 @@
 
 | Риск | Статус |
 | --- | --- |
-| `book_class_with_access` accepted-risk / remediation window | open |
 | dual payment contour in live (`create-payment` / `payment-webhook` alongside app-target pair) | open |
+
+`book_class_with_access` no longer remains an open remediation item in this
+document. The current canon accepts it as a narrow `SECURITY DEFINER` wrapper
+because branch proof confirmed self-scoped booking behavior, canonical class
+data persistence, and preserved APP contract, even though the advisor warning
+remains at policy level.
 
 `20260518205158` does not remain an open security blocker in this document. Its
 current status belongs to release/schema reconciliation and is accepted there as
