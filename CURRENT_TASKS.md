@@ -1,20 +1,15 @@
 # Текущие задачи
 
-> **Update 2026-05-27 (pass #2, 21:40 MSK):** All 7 local gates PASS on HEAD `3ff4971`
-> (72 files / 503 tests). ADRs created for both live security warnings with
-> expiry dates. Legacy payment caller inventory complete: 0 repo-side callers.
-> `book_class_with_access` function body verified via `pg_get_functiondef` —
-> `auth.uid()` guard confirmed. Status: **release-candidate ready / live
-> remediation in progress**. Production PASS withheld until leaked password
-> protection is enabled (by 2026-06-03) and legacy payment functions are retired.
-> Current receipts: `docs/RELEASE_GATE_2026_05_27.md` and
-> `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.
-> ADRs: `docs/adr/ADR-2026-05-27-book-class-security-definer-accepted-risk.md`,
-> `docs/adr/ADR-2026-05-27-leaked-password-protection-pending.md`.
+> **Update 2026-05-28:** targeted reconciliation pass for live delta
+> `20260518205158_create_dataset_runs_and_artifacts` is now accepted as
+> **forward reconciliation**, not an open release blocker. Current release/security
+> focus is narrowed to two live issues only: dual payment contour retirement and
+> `book_class_with_access` accepted-risk window.
 
-> **Обновлено:** 25 мая 2026 | **Версия:** 5.6.3
-> Источник истины: GitHub `main` + live Supabase metadata, function inventory, advisors и проверенные CI артефакты.
-> Текущий режим: `release-hold` до закрытия migration-sync и current-main CI proof.
+> **Обновлено:** 28 мая 2026 | **Версия:** 5.6.4
+> Источник истины: GitHub `main` + live Supabase metadata, function inventory,
+> advisors и проверенные CI артефакты.
+> Текущий режим: `release-candidate / targeted live remediation`.
 
 ---
 
@@ -22,19 +17,20 @@
 
 | Метрика | Значение | Основание |
 | --- | --- | --- |
-| Live applied migrations | **41** | live `list_migrations` на 2026-05-23 reaches `20260518205158_create_dataset_runs_and_artifacts` |
-| Repo/live tail reconciliation | **PARTIAL, FORWARD CANDIDATE READY** | exact match for `20260516182944`; semantic mappings exist for live `20260516202546` and `20260516202845`; unresolved delta `20260518205158` now has explicit forward migration candidate |
-| Live Edge Functions | **11** | Supabase `list_edge_functions` на 2026-05-23 |
-| Live security advisors | **1 warning** | `book_class_with_access` (authenticated security definer); leaked password protection resolved (enabled & verified) |
-| Live performance advisors | **warnings remain** | initplan + permissive-policy fan-out + unused indexes |
+| Live applied migrations | **41** | live `list_migrations` reaches `20260518205158_create_dataset_runs_and_artifacts` |
+| Repo/live tail reconciliation | **PARTIAL, ACCEPTED FORWARD RECONCILIATION** | exact match for `20260516182944`; semantic mappings exist for `20260516202546` and `20260516202845`; `20260518205158` is now covered by accepted forward reconciliation artifact `20260527174716_reconcile_dataset_runs_artifacts_forward.sql` |
+| Live Edge Functions | **11** | Supabase `list_edge_functions` |
+| Live security advisors | **1 warning** | `book_class_with_access` remains flagged as authenticated security-definer RPC |
+| Live performance advisors | **warnings remain** | initplan + permissive-policy fan-out + unused indexes; non-gating in this pass |
 | Live APP payment tables | **present** | direct metadata confirms `payment_orders` and `user_passes` exist |
-| Live APP payment traffic | **present** | app-target payment contour remains deployed and active |
 | Live legacy payment pair | **still present** | `create-payment` and `payment-webhook` remain active |
-| Live app-target payment pair | **present** | `create-yookassa-checkout` and `yookassa-webhook` are active |
-| Fresh green CI on current `main` release path | **UNVERIFIED** | this pass did not obtain a fresh green run on the same current `main` ref |
-| Latest verified green CI signal | **PR-only green** | PR `#498`, workflow `CI #1246`, all jobs green on PR head SHA `7bfcc466b08a5e2c4f097c7d5b4abadccbc37b73` |
+| Live app-target payment pair | **present** | `create-yookassa-checkout` and `yookassa-webhook` remain active |
+| Fresh green CI on current `main` release path | **UNVERIFIED IN THIS PASS** | not re-checked in the current targeted reconciliation pass |
+| Latest verified green CI signal | **repo evidence exists** | current canon keeps prior green release-path evidence; CI is not the primary blocker in this pass |
 
-Главное изменение по сравнению с предыдущим шагом: для unresolved delta `20260518205158` стратегия больше не обсуждается. В каноне зафиксирован `additive reconstruction path`.
+Главное изменение по сравнению с предыдущим каноном: `20260518205158` больше не
+держится как open migration blocker. Для него принят путь
+`accepted forward reconciliation`.
 
 ---
 
@@ -42,55 +38,43 @@
 
 | # | Задача | Статус | Что изменилось |
 | --- | --- | --- | --- |
-| 1 | Зафиксировать live baseline выше 16 мая | DONE | current live baseline is `41 migrations / 11 functions` |
+| 1 | Зафиксировать live baseline выше 16 мая | DONE | current live baseline remains `41 migrations / 11 functions` |
 | 2 | Подтвердить app-target payment contour в live | DONE | `create-yookassa-checkout` + `yookassa-webhook` remain active |
-| 3 | Подтвердить repo/live совпадение по двум app-target payment functions | DONE | checked function code matches on inspected pair |
-| 4 | Подтвердить один свежий green CI signal | DONE | PR `#498` / `CI #1246` passed lint, typecheck, tests, build:web, build:app |
-| 5 | Сузить migration-sync uncertainty | DONE | live `20260516202546` maps semantically to repo `20260516211000`, and live `20260516202845` maps semantically to repo `20260516214500` |
-| 6 | Закрыть Section 1 investigation path | DONE | unresolved delta `20260518205158` now has explicit reconciliation artifact instead of vague pending status |
-| 7 | Зафиксировать стратегию для `20260518205158` | DONE | canonical path is now `additive reconstruction`, not open-ended search |
-| 8 | Сохранить WEB non-payment canon | DONE | docs still keep WEB as storefront-only surface |
+| 3 | Подтвердить repo/live совпадение по app-target payment schema surface | DONE | `payment_orders` and `user_passes` are present in live and tracked in repo canon |
+| 4 | Сузить migration-sync uncertainty | DONE | live `20260516202546` and `20260516202845` remain semantically mapped to repo files |
+| 5 | Зафиксировать verdict по `20260518205158` | DONE | live delta is now treated as **accepted forward reconciliation**, not as an unresolved blocker |
+| 6 | Сохранить WEB non-payment canon | DONE | docs still keep WEB as storefront-only surface |
+| 7 | Подтвердить текущий live security tail | DONE | only `book_class_with_access` remains in security advisors |
+| 8 | Подтвердить dual payment contour как live governance issue | DONE | legacy and app-target payment pairs remain live side-by-side |
 
 ---
 
-## 🔴 P0 — Текущие blockers
+## 🔴 Открытые release/security blockers
 
-| # | Задача | Статус | Почему это P0 |
+| # | Задача | Статус | Почему это открыто |
 | --- | --- | --- | --- |
-| 9 | Подготовить additive reconstruction artifact / migration-plan artifact для `20260518205158` | ✅ | forward migration candidate `20260527174716_reconcile_dataset_runs_artifacts_forward.sql` exists |
-| 10 | Получить fresh green CI на том же current `main` ref | ✅ | current `main` `dbd8f2b` passed CI/deploy after release-format fix |
-| 11 | Разрешить dual payment contour | ⏳ | stale WEB `create-payment` caller removed; live legacy functions still need staged retirement |
-| 12 | Снять current live security warnings | ⏳ | leaked password: ✅ РАЗРЕШЕНО (включено в Dashboard и подтверждено через advisors); `book_class_with_access`: ADR действует до 2026-06-10, тело функции проверено (`auth.uid()` guard confirmed) |
+| 1 | Разрешить dual payment contour | ⏳ | stale WEB `create-payment` caller removed; live legacy functions still need staged retirement or explicit transition-window acceptance |
+| 2 | Закрыть или формально довести accepted-risk окно для `book_class_with_access` | ⏳ | live security advisors still flag authenticated security-definer RPC; current evidence supports only accepted-risk posture through ADR window, not closure |
 
 ---
 
-## 🟠 P1 — Runtime and governance follow-up
+## 🟠 Background follow-up (non-gating in this pass)
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 13 | Разобрать `app_settings` public reads outside `studio_contacts` | ⏳ | prior runtime symptom remains unclosed in the canon |
-| 14 | Разобрать empty `site_images` dataset | ⏳ | table exists, but operational intent is still not explicit |
-| 15 | Явно зафиксировать canonical AI contour | ⏳ | live keeps `ai-run` / `ai-embeddings` alongside `gemini-proxy` |
-| 16 | Обновить stale operational docs everywhere | ⏳ | older `38-migration` baseline must stop appearing as present-tense truth |
-
----
-
-## 🟡 P2 — Техническая чистка после baseline reconciliation
-
-| # | Задача | Статус | Примечание |
-| --- | --- | --- | --- |
-| 17 | Полностью reconcile older repo/live migration history | ⏳ | one explicit parity pass across historical migrations still has value |
-| 18 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after migration baseline is intentionally accepted |
-| 19 | Reduce permissive-policy fan-out and initplan noise | ⏳ | performance advisors still flag hot tables including `payment_orders` and `user_passes` |
+| 3 | Разобрать `app_settings` public reads outside `studio_contacts` | ⏳ | keep as runtime/governance follow-up, not as current release blocker |
+| 4 | Разобрать empty `site_images` dataset | ⏳ | accepted as non-blocking in current runtime posture |
+| 5 | Явно зафиксировать canonical AI contour | ⏳ | live keeps `ai-run` / `ai-embeddings` alongside `gemini-proxy` |
+| 6 | Полностью reconcile older repo/live migration history | ⏳ | still useful for long-term hygiene, but `20260518205158` is no longer gating |
+| 7 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after broader baseline housekeeping is intentionally scheduled |
+| 8 | Reduce permissive-policy fan-out and initplan noise | ⏳ | performance advisors remain non-gating in this pass |
 
 ---
 
 ## Ближайший рабочий шаг
 
-1. Leaked password protection is enabled and verified. ✅
-2. Retire legacy payment functions (`create-payment`, `payment-webhook`, `cancel-subscription`) in staged order — 0 repo-side callers confirmed.
-3. Optionally prepare Edge Function wrapper for `book_class_with_access` (not blocking until 2026-06-10 ADR expiry).
-4. Re-run full local gates + push to `main` + verify GitHub Actions.
+1. Retire legacy payment functions (`create-payment`, `payment-webhook`, `cancel-subscription`) in staged order after one final function inventory and APP YooKassa smoke.
+2. Prepare branch/staging proof for `book_class_with_access` remediation while keeping the APP contract stable.
 
 ---
 
@@ -98,10 +82,9 @@
 
 | Домен | Статус |
 | --- | --- |
-| Repo/live docs coherence | PARTIAL |
+| Repo/live docs coherence | PARTIAL, but `20260518205158` is now reconciled in canon |
 | Live Supabase governance | PARTIAL |
-| Migration-sync | PARTIAL with forward migration candidate |
-| Live payment surface | PRESENT, but dual-contour (0 repo-side callers on legacy) |
-| Live security advisors | **1 warning remaining** (book_class_with_access has an active ADR) |
-| Fresh release-path CI | **PASS on HEAD `3ff4971` (local gates), pre-pub baseline `dbd8f2b` (GitHub CI)** |
-| Overall launch readiness | **PARTIAL** until legacy payment retired |
+| Migration-sync | PARTIAL with accepted forward reconciliation for `20260518205158` |
+| Live payment surface | PRESENT, but dual-contour |
+| Live security advisors | **1 warning remaining** (`book_class_with_access`) |
+| Overall launch readiness | **PARTIAL** until dual payment contour and `book_class_with_access` are resolved or explicitly accepted at release time |
