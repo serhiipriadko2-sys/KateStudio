@@ -1,4 +1,9 @@
-import type { ClassRow, TrainerCard, TrainerDetail, TrainerRow } from '../types';
+import type {
+  ClassRow,
+  TrainerCard,
+  TrainerDetail,
+  TrainerRow,
+} from '../types';
 import { supabase } from './supabase';
 import { getTrainerImageFallbacks } from './trainerImageFallbacks';
 
@@ -8,17 +13,23 @@ interface TrainerImageFallback {
   galleryImageUrls?: readonly string[];
 }
 
-const normalizeTrainerText = (value: string | null | undefined): string | null => {
+const normalizeTrainerText = (
+  value: string | null | undefined
+): string | null => {
   if (typeof value !== 'string') return value ?? null;
   return value.startsWith('$') ? value.slice(1) : value;
 };
 
-const normalizeTrainerUrl = (value: string | null | undefined): string | null => {
+const normalizeTrainerUrl = (
+  value: string | null | undefined
+): string | null => {
   const normalized = normalizeTrainerText(value);
   return normalized ? normalized : null;
 };
 
-const normalizeTrainerUrlList = (values: string[] | null | undefined): string[] => {
+const normalizeTrainerUrlList = (
+  values: string[] | null | undefined
+): string[] => {
   if (!Array.isArray(values)) return [];
   return values
     .map((value) => normalizeTrainerUrl(value))
@@ -26,7 +37,9 @@ const normalizeTrainerUrlList = (values: string[] | null | undefined): string[] 
 };
 
 const getFallbackGallery = (slug: string): string[] => {
-  const imageFallbacks = getTrainerImageFallbacks(slug) as TrainerImageFallback | null;
+  const imageFallbacks = getTrainerImageFallbacks(
+    slug
+  ) as TrainerImageFallback | null;
 
   if (!Array.isArray(imageFallbacks?.galleryImageUrls)) {
     return [];
@@ -46,14 +59,20 @@ export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
     fullName: row.full_name,
     roleTitle: row.role_title,
     bioShort: row.bio_short,
-    avatarUrl: normalizeTrainerUrl(row.avatar_url) ?? imageFallbacks?.avatarUrl ?? null,
-    galleryImageUrls: galleryImageUrls.length > 0 ? galleryImageUrls : fallbackGallery,
+    avatarUrl:
+      normalizeTrainerUrl(row.avatar_url) ??
+      imageFallbacks?.avatarUrl ??
+      null,
+    galleryImageUrls:
+      galleryImageUrls.length > 0 ? galleryImageUrls : fallbackGallery,
     specialties: row.specialties,
     isFeatured: row.is_featured,
   };
 };
 
-export const mapTrainerRowToDetail = (row: TrainerRow): TrainerDetail => {
+export const mapTrainerRowToDetail = (
+  row: TrainerRow
+): TrainerDetail => {
   const card = mapTrainerRowToCard(row);
   const imageFallbacks = getTrainerImageFallbacks(row.slug);
 
@@ -83,7 +102,9 @@ export const listPublicTrainers = async (): Promise<TrainerCard[]> => {
   return ((data ?? []) as TrainerRow[]).map(mapTrainerRowToCard);
 };
 
-export const getTrainerBySlug = async (slug: string): Promise<TrainerDetail | null> => {
+export const getTrainerBySlug = async (
+  slug: string
+): Promise<TrainerDetail | null> => {
   const { data, error } = await supabase
     .from('trainers')
     .select('*')
@@ -97,7 +118,7 @@ export const getTrainerBySlug = async (slug: string): Promise<TrainerDetail | nu
 
 export const listClassesByTrainer = async (
   trainerId: string,
-  fromDate = new Date().toISOString().slice(0, 10),
+  fromDate = new Date().toISOString().slice(0, 10)
 ): Promise<
   Array<{
     id: string;
@@ -172,8 +193,14 @@ export const listAdminTrainers = async (): Promise<TrainerRow[]> => {
   return (data ?? []) as TrainerRow[];
 };
 
-export const createTrainer = async (payload: TrainerAdminPayload): Promise<TrainerRow> => {
-  const { data, error } = await supabase.from('trainers').insert(payload).select().single();
+export const createTrainer = async (
+  payload: TrainerAdminPayload
+): Promise<TrainerRow> => {
+  const { data, error } = await supabase
+    .from('trainers')
+    .insert(payload)
+    .select()
+    .single();
 
   if (error) throw error;
   return data as TrainerRow;
@@ -181,7 +208,7 @@ export const createTrainer = async (payload: TrainerAdminPayload): Promise<Train
 
 export const updateTrainer = async (
   id: string,
-  payload: Partial<TrainerAdminPayload>,
+  payload: Partial<TrainerAdminPayload>
 ): Promise<TrainerRow> => {
   const { data, error } = await supabase
     .from('trainers')
