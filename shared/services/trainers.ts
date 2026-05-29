@@ -19,11 +19,19 @@ const normalizeTrainerUrlList = (values: string[] | null | undefined): string[] 
     .filter((value): value is string => Boolean(value));
 };
 
-export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
-  const imageFallbacks = getTrainerImageFallbacks(row.slug);
-  const fallbackGallery = Array.isArray(imageFallbacks?.galleryImageUrls)
+const getFallbackGallery = (slug: string): string[] => {
+  const imageFallbacks = getTrainerImageFallbacks(slug) as
+    | { galleryImageUrls?: readonly string[] }
+    | null;
+
+  return Array.isArray(imageFallbacks?.galleryImageUrls)
     ? [...imageFallbacks.galleryImageUrls]
     : [];
+};
+
+export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
+  const imageFallbacks = getTrainerImageFallbacks(row.slug);
+  const fallbackGallery = getFallbackGallery(row.slug);
   const galleryImageUrls = normalizeTrainerUrlList(row.gallery_image_urls);
 
   return {
