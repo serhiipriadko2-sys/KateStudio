@@ -2,6 +2,12 @@ import type { ClassRow, TrainerCard, TrainerDetail, TrainerRow } from '../types'
 import { supabase } from './supabase';
 import { getTrainerImageFallbacks } from './trainerImageFallbacks';
 
+interface TrainerImageFallback {
+  avatarUrl: string;
+  coverImageUrl: string;
+  galleryImageUrls?: readonly string[];
+}
+
 const normalizeTrainerText = (value: string | null | undefined): string | null => {
   if (typeof value !== 'string') return value ?? null;
   return value.startsWith('$') ? value.slice(1) : value;
@@ -20,13 +26,13 @@ const normalizeTrainerUrlList = (values: string[] | null | undefined): string[] 
 };
 
 const getFallbackGallery = (slug: string): string[] => {
-  const imageFallbacks = getTrainerImageFallbacks(slug) as {
-    galleryImageUrls?: readonly string[];
-  } | null;
+  const imageFallbacks = getTrainerImageFallbacks(slug) as TrainerImageFallback | null;
 
-  return Array.isArray(imageFallbacks?.galleryImageUrls)
-    ? [...imageFallbacks.galleryImageUrls]
-    : [];
+  if (!Array.isArray(imageFallbacks?.galleryImageUrls)) {
+    return [];
+  }
+
+  return [...imageFallbacks.galleryImageUrls];
 };
 
 export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
@@ -40,10 +46,8 @@ export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
     fullName: row.full_name,
     roleTitle: row.role_title,
     bioShort: row.bio_short,
-    avatarUrl:
-      normalizeTrainerUrl(row.avatar_url) ?? imageFallbacks?.avatarUrl ?? null,
-    galleryImageUrls:
-      galleryImageUrls.length > 0 ? galleryImageUrls : fallbackGallery,
+    avatarUrl: normalizeTrainerUrl(row.avatar_url) ?? imageFallbacks?.avatarUrl ?? null,
+    galleryImageUrls: galleryImageUrls.length > 0 ? galleryImageUrls : fallbackGallery,
     specialties: row.specialties,
     isFeatured: row.is_featured,
   };
