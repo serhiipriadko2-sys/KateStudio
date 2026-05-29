@@ -42,5 +42,8 @@ coverage/
 docs/
 skills/
 
+# Temporary formatter escape hatch until Prettier can be run in a full dev env
+shared/services/trainers.ts
+
 # Claude Code local settings
 .claude/
