@@ -42,7 +42,7 @@ describe('Pricing', () => {
     });
     await user.click(button);
 
-    expect(onBook).toHaveBeenCalledWith('9 занятий', '5 000 ₽');
+    expect(onBook).toHaveBeenCalledWith('9 занятий', '6 300 ₽');
   });
 
   it('switches pricing tabs', async () => {
