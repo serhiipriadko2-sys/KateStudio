@@ -20,9 +20,9 @@ const normalizeTrainerUrlList = (values: string[] | null | undefined): string[] 
 };
 
 const getFallbackGallery = (slug: string): string[] => {
-  const imageFallbacks = getTrainerImageFallbacks(slug) as
-    | { galleryImageUrls?: readonly string[] }
-    | null;
+  const imageFallbacks = getTrainerImageFallbacks(slug) as {
+    galleryImageUrls?: readonly string[];
+  } | null;
 
   return Array.isArray(imageFallbacks?.galleryImageUrls)
     ? [...imageFallbacks.galleryImageUrls]
@@ -40,8 +40,10 @@ export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
     fullName: row.full_name,
     roleTitle: row.role_title,
     bioShort: row.bio_short,
-    avatarUrl: normalizeTrainerUrl(row.avatar_url) ?? imageFallbacks?.avatarUrl ?? null,
-    galleryImageUrls: galleryImageUrls.length > 0 ? galleryImageUrls : fallbackGallery,
+    avatarUrl:
+      normalizeTrainerUrl(row.avatar_url) ?? imageFallbacks?.avatarUrl ?? null,
+    galleryImageUrls:
+      galleryImageUrls.length > 0 ? galleryImageUrls : fallbackGallery,
     specialties: row.specialties,
     isFeatured: row.is_featured,
   };
@@ -55,7 +57,10 @@ export const mapTrainerRowToDetail = (row: TrainerRow): TrainerDetail => {
     ...card,
     bioLong: normalizeTrainerText(row.bio_long),
     quote: normalizeTrainerText(row.quote),
-    coverImageUrl: normalizeTrainerUrl(row.cover_image_url) ?? imageFallbacks?.coverImageUrl ?? card.avatarUrl,
+    coverImageUrl:
+      normalizeTrainerUrl(row.cover_image_url) ??
+      imageFallbacks?.coverImageUrl ??
+      card.avatarUrl,
     experienceYears: row.experience_years,
     teachingFormats: row.teaching_formats,
     instagramUrl: row.instagram_url,
