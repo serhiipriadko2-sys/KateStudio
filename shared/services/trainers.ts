@@ -37,7 +37,9 @@ const normalizeTrainerUrlList = (
 };
 
 const getFallbackGallery = (slug: string): string[] => {
-  const imageFallbacks = getTrainerImageFallbacks(slug) as TrainerImageFallback | null;
+  const imageFallbacks = getTrainerImageFallbacks(
+    slug
+  ) as TrainerImageFallback | null;
 
   if (!Array.isArray(imageFallbacks?.galleryImageUrls)) {
     return [];
@@ -49,7 +51,9 @@ const getFallbackGallery = (slug: string): string[] => {
 export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
   const imageFallbacks = getTrainerImageFallbacks(row.slug);
   const fallbackGallery = getFallbackGallery(row.slug);
-  const galleryImageUrls = normalizeTrainerUrlList(row.gallery_image_urls);
+  const galleryImageUrls = normalizeTrainerUrlList(
+    row.gallery_image_urls
+  );
 
   return {
     id: row.id,
@@ -62,7 +66,9 @@ export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
       imageFallbacks?.avatarUrl ??
       null,
     galleryImageUrls:
-      galleryImageUrls.length > 0 ? galleryImageUrls : fallbackGallery,
+      galleryImageUrls.length > 0
+        ? galleryImageUrls
+        : fallbackGallery,
     specialties: row.specialties,
     isFeatured: row.is_featured,
   };
@@ -172,7 +178,9 @@ export interface TrainerAdminPayload {
   cover_image_url?: string | null;
   gallery_image_urls?: string[];
   specialties: string[];
-  teaching_formats: Array<'studio' | 'online' | 'retreat' | 'private'>;
+  teaching_formats: Array<
+    'studio' | 'online' | 'retreat' | 'private'
+  >;
   experience_years?: number | null;
   instagram_url?: string | null;
   telegram_url?: string | null;
@@ -220,7 +228,10 @@ export const updateTrainer = async (
 };
 
 export const deleteTrainer = async (id: string): Promise<void> => {
-  const { error } = await supabase.from('trainers').delete().eq('id', id);
+  const { error } = await supabase
+    .from('trainers')
+    .delete()
+    .eq('id', id);
 
   if (error) throw error;
 };
