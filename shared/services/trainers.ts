@@ -97,7 +97,7 @@ export const getTrainerBySlug = async (slug: string): Promise<TrainerDetail | nu
 
 export const listClassesByTrainer = async (
   trainerId: string,
-  fromDate = new Date().toISOString().slice(0, 10)
+  fromDate = new Date().toISOString().slice(0, 10),
 ): Promise<
   Array<{
     id: string;
@@ -181,7 +181,7 @@ export const createTrainer = async (payload: TrainerAdminPayload): Promise<Train
 
 export const updateTrainer = async (
   id: string,
-  payload: Partial<TrainerAdminPayload>
+  payload: Partial<TrainerAdminPayload>,
 ): Promise<TrainerRow> => {
   const { data, error } = await supabase
     .from('trainers')
