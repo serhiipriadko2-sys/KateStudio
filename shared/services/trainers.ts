@@ -21,10 +21,9 @@ const normalizeTrainerUrlList = (values: string[] | null | undefined): string[] 
 
 export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
   const imageFallbacks = getTrainerImageFallbacks(row.slug);
-  const fallbackGallery =
-    imageFallbacks && 'galleryImageUrls' in imageFallbacks
-      ? [...imageFallbacks.galleryImageUrls]
-      : [];
+  const fallbackGallery = Array.isArray(imageFallbacks?.galleryImageUrls)
+    ? [...imageFallbacks.galleryImageUrls]
+    : [];
   const galleryImageUrls = normalizeTrainerUrlList(row.gallery_image_urls);
 
   return {
