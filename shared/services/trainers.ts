@@ -37,9 +37,7 @@ const normalizeTrainerUrlList = (
 };
 
 const getFallbackGallery = (slug: string): string[] => {
-  const imageFallbacks = getTrainerImageFallbacks(
-    slug
-  ) as TrainerImageFallback | null;
+  const imageFallbacks = getTrainerImageFallbacks(slug) as TrainerImageFallback | null;
 
   if (!Array.isArray(imageFallbacks?.galleryImageUrls)) {
     return [];
