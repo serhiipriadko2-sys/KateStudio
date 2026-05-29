@@ -48,6 +48,9 @@ const getFallbackGallery = (slug: string): string[] => {
   return [...imageFallbacks.galleryImageUrls];
 };
 
+const getDefaultFromDate = (): string =>
+  new Date().toISOString().slice(0, 10);
+
 export const mapTrainerRowToCard = (row: TrainerRow): TrainerCard => {
   const imageFallbacks = getTrainerImageFallbacks(row.slug);
   const fallbackGallery = getFallbackGallery(row.slug);
@@ -122,7 +125,7 @@ export const getTrainerBySlug = async (
 
 export const listClassesByTrainer = async (
   trainerId: string,
-  fromDate = new Date().toISOString().slice(0, 10)
+  fromDate = getDefaultFromDate()
 ): Promise<
   Array<{
     id: string;
