@@ -48,16 +48,17 @@ function logEvent(
   event: string,
   correlationId: string,
   fields: Record<string, unknown> = {},
-  level: 'log' | 'warn' | 'error' = 'log'
+  level: 'warn' | 'error' = 'warn'
 ) {
-  console[level](
-    JSON.stringify({
-      function: FUNCTION_NAME,
-      event,
-      correlation_id: correlationId,
-      ...fields,
-    })
-  );
+  const payload = JSON.stringify({
+    function: FUNCTION_NAME,
+    event,
+    correlation_id: correlationId,
+    ...fields,
+  });
+
+  if (level === 'error') console.error(payload);
+  else console.warn(payload);
 }
 
 function json(
@@ -109,21 +110,31 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    logEvent('request_completed', correlationId, {
-      status: 405,
-      code: 'method_not_allowed',
-      duration_ms: Date.now() - startedAt,
-    }, 'warn');
+    logEvent(
+      'request_completed',
+      correlationId,
+      {
+        status: 405,
+        code: 'method_not_allowed',
+        duration_ms: Date.now() - startedAt,
+      },
+      'warn'
+    );
     return json({ error: 'Method not allowed' }, { status: 405 }, cors, correlationId);
   }
 
   const token = getBearerToken(req);
   if (!token) {
-    logEvent('request_completed', correlationId, {
-      status: 401,
-      code: 'auth_required',
-      duration_ms: Date.now() - startedAt,
-    }, 'warn');
+    logEvent(
+      'request_completed',
+      correlationId,
+      {
+        status: 401,
+        code: 'auth_required',
+        duration_ms: Date.now() - startedAt,
+      },
+      'warn'
+    );
     return json({ error: 'Authentication required' }, { status: 401 }, cors, correlationId);
   }
 
@@ -131,12 +142,17 @@ Deno.serve(async (req) => {
   try {
     payload = RequestSchema.parse(await req.json());
   } catch (e) {
-    logEvent('request_completed', correlationId, {
-      status: 400,
-      code: 'validation_error',
-      duration_ms: Date.now() - startedAt,
-      error: serializeError(e),
-    }, 'warn');
+    logEvent(
+      'request_completed',
+      correlationId,
+      {
+        status: 400,
+        code: 'validation_error',
+        duration_ms: Date.now() - startedAt,
+        error: serializeError(e),
+      },
+      'warn'
+    );
     return json(
       { error: 'Validation error', details: e instanceof z.ZodError ? e.errors : e },
       { status: 400 },
@@ -153,12 +169,17 @@ Deno.serve(async (req) => {
     } = await admin.auth.getUser(token);
 
     if (authError || !user) {
-      logEvent('request_completed', correlationId, {
-        status: 401,
-        code: 'invalid_user_session',
-        duration_ms: Date.now() - startedAt,
-        error: authError ? serializeError(authError) : null,
-      }, 'warn');
+      logEvent(
+        'request_completed',
+        correlationId,
+        {
+          status: 401,
+          code: 'invalid_user_session',
+          duration_ms: Date.now() - startedAt,
+          error: authError ? serializeError(authError) : null,
+        },
+        'warn'
+      );
       return json({ error: 'Invalid user session' }, { status: 401 }, cors, correlationId);
     }
 
@@ -177,12 +198,17 @@ Deno.serve(async (req) => {
       .single();
 
     if (error) {
-      logEvent('request_completed', correlationId, {
-        status: 500,
-        code: 'rpc_failed',
-        duration_ms: Date.now() - startedAt,
-        error: serializeError(error),
-      }, 'error');
+      logEvent(
+        'request_completed',
+        correlationId,
+        {
+          status: 500,
+          code: 'rpc_failed',
+          duration_ms: Date.now() - startedAt,
+          error: serializeError(error),
+        },
+        'error'
+      );
       return json({ error: 'Booking failed' }, { status: 500 }, cors, correlationId);
     }
 
@@ -195,12 +221,17 @@ Deno.serve(async (req) => {
 
     return json(data, {}, cors, correlationId);
   } catch (e) {
-    logEvent('request_completed', correlationId, {
-      status: 500,
-      code: 'internal_error',
-      duration_ms: Date.now() - startedAt,
-      error: serializeError(e),
-    }, 'error');
+    logEvent(
+      'request_completed',
+      correlationId,
+      {
+        status: 500,
+        code: 'internal_error',
+        duration_ms: Date.now() - startedAt,
+        error: serializeError(e),
+      },
+      'error'
+    );
     return json({ error: 'Internal Server Error' }, { status: 500 }, cors, correlationId);
   }
 });
