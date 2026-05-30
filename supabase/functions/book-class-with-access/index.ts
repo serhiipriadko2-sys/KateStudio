@@ -61,6 +61,27 @@ function logEvent(
   else console.warn(payload);
 }
 
+function recordEvent(
+  traceEvents: string[],
+  event: string,
+  correlationId: string,
+  fields: Record<string, unknown> = {},
+  level: 'warn' | 'error' = 'warn'
+) {
+  traceEvents.push(event);
+  logEvent(event, correlationId, fields, level);
+}
+
+function withTrace(data: Record<string, unknown>, correlationId: string, traceEvents: string[]) {
+  return {
+    ...data,
+    trace: {
+      correlation_id: correlationId,
+      events: traceEvents,
+    },
+  };
+}
+
 function json(
   data: unknown,
   init: ResponseInit = {},
@@ -93,15 +114,16 @@ function getSupabaseAdmin() {
 Deno.serve(async (req) => {
   const startedAt = Date.now();
   const correlationId = getCorrelationId(req);
+  const traceEvents: string[] = [];
   const cors = getCorsHeaders(req);
 
-  logEvent('request_received', correlationId, {
+  recordEvent(traceEvents, 'request_received', correlationId, {
     method: req.method,
     origin: req.headers.get('origin') || null,
   });
 
   if (req.method === 'OPTIONS') {
-    logEvent('request_completed', correlationId, {
+    recordEvent(traceEvents, 'request_completed', correlationId, {
       status: 200,
       code: 'preflight_ok',
       duration_ms: Date.now() - startedAt,
@@ -110,7 +132,8 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    logEvent(
+    recordEvent(
+      traceEvents,
       'request_completed',
       correlationId,
       {
@@ -120,12 +143,18 @@ Deno.serve(async (req) => {
       },
       'warn'
     );
-    return json({ error: 'Method not allowed' }, { status: 405 }, cors, correlationId);
+    return json(
+      withTrace({ error: 'Method not allowed' }, correlationId, traceEvents),
+      { status: 405 },
+      cors,
+      correlationId
+    );
   }
 
   const token = getBearerToken(req);
   if (!token) {
-    logEvent(
+    recordEvent(
+      traceEvents,
       'request_completed',
       correlationId,
       {
@@ -135,14 +164,20 @@ Deno.serve(async (req) => {
       },
       'warn'
     );
-    return json({ error: 'Authentication required' }, { status: 401 }, cors, correlationId);
+    return json(
+      withTrace({ error: 'Authentication required' }, correlationId, traceEvents),
+      { status: 401 },
+      cors,
+      correlationId
+    );
   }
 
   let payload: z.infer<typeof RequestSchema>;
   try {
     payload = RequestSchema.parse(await req.json());
   } catch (e) {
-    logEvent(
+    recordEvent(
+      traceEvents,
       'request_completed',
       correlationId,
       {
@@ -154,7 +189,11 @@ Deno.serve(async (req) => {
       'warn'
     );
     return json(
-      { error: 'Validation error', details: e instanceof z.ZodError ? e.errors : e },
+      withTrace(
+        { error: 'Validation error', details: e instanceof z.ZodError ? e.errors : e },
+        correlationId,
+        traceEvents
+      ),
       { status: 400 },
       cors,
       correlationId
@@ -169,21 +208,36 @@ Deno.serve(async (req) => {
     } = await admin.auth.getUser(token);
 
     if (authError || !user) {
-      logEvent(
+      recordEvent(
+        traceEvents,
+        'auth_failure',
+        correlationId,
+        {
+          code: 'invalid_user_session',
+          error: authError ? serializeError(authError) : null,
+        },
+        'warn'
+      );
+      recordEvent(
+        traceEvents,
         'request_completed',
         correlationId,
         {
           status: 401,
           code: 'invalid_user_session',
           duration_ms: Date.now() - startedAt,
-          error: authError ? serializeError(authError) : null,
         },
         'warn'
       );
-      return json({ error: 'Invalid user session' }, { status: 401 }, cors, correlationId);
+      return json(
+        withTrace({ error: 'Invalid user session' }, correlationId, traceEvents),
+        { status: 401 },
+        cors,
+        correlationId
+      );
     }
 
-    logEvent('session_verified', correlationId);
+    recordEvent(traceEvents, 'session_verified', correlationId);
 
     const { data, error } = await admin
       .rpc('book_class_with_access_internal', {
@@ -198,7 +252,8 @@ Deno.serve(async (req) => {
       .single();
 
     if (error) {
-      logEvent(
+      recordEvent(
+        traceEvents,
         'request_completed',
         correlationId,
         {
@@ -209,10 +264,15 @@ Deno.serve(async (req) => {
         },
         'error'
       );
-      return json({ error: 'Booking failed' }, { status: 500 }, cors, correlationId);
+      return json(
+        withTrace({ error: 'Booking failed' }, correlationId, traceEvents),
+        { status: 500 },
+        cors,
+        correlationId
+      );
     }
 
-    logEvent('request_completed', correlationId, {
+    recordEvent(traceEvents, 'request_completed', correlationId, {
       status: 200,
       code: data?.code ?? 'unknown',
       ok: data?.ok ?? null,
@@ -221,7 +281,8 @@ Deno.serve(async (req) => {
 
     return json(data, {}, cors, correlationId);
   } catch (e) {
-    logEvent(
+    recordEvent(
+      traceEvents,
       'request_completed',
       correlationId,
       {
@@ -232,6 +293,11 @@ Deno.serve(async (req) => {
       },
       'error'
     );
-    return json({ error: 'Internal Server Error' }, { status: 500 }, cors, correlationId);
+    return json(
+      withTrace({ error: 'Internal Server Error' }, correlationId, traceEvents),
+      { status: 500 },
+      cors,
+      correlationId
+    );
   }
 });
