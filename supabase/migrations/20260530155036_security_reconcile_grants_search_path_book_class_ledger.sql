@@ -167,7 +167,7 @@ revoke execute on function public.book_class_with_access_internal(uuid, text, te
 grant execute on function public.book_class_with_access_internal(uuid, text, text, date, text, text, bigint) to service_role;
 
 comment on function public.book_class_with_access_internal(uuid, text, text, date, text, text, bigint)
-  is 'Server-only class booking helper for book-class-with-access Edge Function. Not executable by anon/authenticated. Reconciled forward by 20260530160000_security_reconcile_grants_search_path_book_class_ledger.';
+  is 'Server-only class booking helper for book-class-with-access Edge Function. Not executable by anon/authenticated. Reconciled forward by 20260530155036_security_reconcile_grants_search_path_book_class_ledger.';
 
 revoke execute on function public.book_class_with_access(text, text, date, text, text, bigint) from public;
 revoke execute on function public.book_class_with_access(text, text, date, text, text, bigint) from anon;
@@ -176,7 +176,7 @@ revoke execute on function public.book_class_with_access(text, text, date, text,
 grant execute on function public.book_class_with_access(text, text, date, text, text, bigint) to service_role;
 
 comment on function public.book_class_with_access(text, text, date, text, text, bigint)
-  is 'Deprecated direct APP RPC. Use book-class-with-access Edge Function. Reconciled forward by 20260530160000_security_reconcile_grants_search_path_book_class_ledger.';
+  is 'Deprecated direct APP RPC. Use book-class-with-access Edge Function. Reconciled forward by 20260530155036_security_reconcile_grants_search_path_book_class_ledger.';
 
 revoke all privileges on table public.payment_orders from anon;
 revoke all privileges on table public.user_passes from anon;
