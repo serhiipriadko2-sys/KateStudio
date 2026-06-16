@@ -153,17 +153,22 @@ serve(async (req: Request) => {
     return new Response(null, { status: 204 });
   }
 
-  // Authenticate request with CRON_SECRET
   const cronSecret = Deno.env.get('CRON_SECRET');
-  if (cronSecret) {
-    const auth = req.headers.get('Authorization') ?? '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-    if (token !== cronSecret) {
-      return new Response(JSON.stringify({ error: 'unauthorized' }), {
-        status: 401,
-        headers: CORS_HEADERS,
-      });
-    }
+  if (!cronSecret) {
+    console.error('cron-maintenance: missing CRON_SECRET');
+    return new Response(JSON.stringify({ error: 'server_misconfigured' }), {
+      status: 500,
+      headers: CORS_HEADERS,
+    });
+  }
+
+  const auth = req.headers.get('Authorization') ?? '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (token !== cronSecret) {
+    return new Response(JSON.stringify({ error: 'unauthorized' }), {
+      status: 401,
+      headers: CORS_HEADERS,
+    });
   }
 
   // Determine which tasks to run
