@@ -2,14 +2,24 @@
 
 - Context date: 2026-05-27
 - Author: Iskra vΩ.7 / release-gate pass
-- Status: ACCEPTED (temporary, expires 2026-06-10)
+- Status: **SUPERSEDED** (see ADR-2026-06-16-002 in `adr-log.md`)
+- Superseded date: 2026-06-16
 - Live project: `qkaycdcbstjobacmuaro`
+
+> **⚠️ This ADR is no longer current.** The design evolved after migration
+> `20260530155036_security_reconcile_grants_search_path_book_class_ledger` and PRs #517–#518.
+> The canonical booking boundary is now:
+> - `book-class-with-access` Edge Function (`verify_jwt=true`, version 7) handles APP auth and CORS;
+> - internal RPC `book_class_with_access_internal` is service-role-only and called by the Edge Function.
+>
+> Current operational truth is in `project-memory.md`, `docs/RELEASE_EVIDENCE_2026_05_30.md`,
+> `docs/SECURITY_MODEL.md`, and `adr-log.md` (ADR-2026-06-16-002).
 
 ---
 
-## Context
+## Historical Context
 
-Live Supabase security advisor reports
+Live Supabase security advisor reported
 `authenticated_security_definer_function_executable` for:
 
 ```
@@ -17,89 +27,42 @@ public.book_class_with_access(p_class_id text, p_class_name text, p_class_date d
   p_class_time text, p_class_location text, p_class_timestamp bigint)
 ```
 
-The function is the core APP booking gate. It runs as `SECURITY DEFINER` and is
-callable by the `authenticated` role via `supabase.rpc('book_class_with_access', ...)`.
-
-The APP client calls this RPC in:
-`k-sebe-yoga-studio-APPp/services/dataService.ts` (line 154)
-
-Migrations that define this function:
-- `supabase/migrations/20260516211000_book_class_with_access.sql`
-- `supabase/migrations/20260516214500_book_class_with_access_revoke_public_execute.sql`
+At the time, the function was the core APP booking gate, ran as `SECURITY DEFINER`,
+and was callable by the `authenticated` role via `supabase.rpc('book_class_with_access', ...)`.
 
 ---
 
-## Decision
+## Historical Decision
 
-**Accept the current SECURITY DEFINER posture as a known temporary release risk.**
-
-Rationale:
-
-1. The function contains an explicit `auth.uid()` null-check guard — unauthenticated
-   callers receive `auth_required` and are rejected before any data access.
-2. The function uses `for update` row-level locking on `classes` and `user_passes`,
-   which preserves atomicity that would be hard to replicate in a non-definer design.
-3. Switching to `SECURITY INVOKER` without changes to RLS would require granting
-   `authenticated` UPDATE rights on `public.user_passes` — a larger blast radius.
-4. The repo already revokes `public` / `anon` execute; `authenticated` is intentional
-   for the current release architecture.
-5. The safer path (Edge Function wrapper or schema rework) requires branch/staging
-   proof that has not yet been prepared.
+**Accepted the current SECURITY DEFINER posture as a known temporary release risk**
+with an expiry window of 2026-06-10.
 
 ---
 
-## Alternatives Considered
+## Why It Was Superseded
 
-1. **SECURITY INVOKER + RLS update** — requires granting `authenticated` write to
-   `user_passes`, which exposes the passes table to direct client mutation. Not
-   safe without full RLS audit.
-
-2. **Edge Function wrapper** — recommended future path. Would move orchestration
-   behind a Deno function, keep the RPC body simple and SECURITY INVOKER. Requires
-   a new Edge Function, APP client update, and full booking regression test.
-
-3. **Revoke `authenticated` execute immediately** — breaks APP booking. Not safe
-   without a replacement path tested and deployed.
+1. Migration `20260530155036` revoked `authenticated`/`anon` execute on `book_class_with_access`
+   and introduced `book_class_with_access_internal` for service-role-only use.
+2. PRs #517–#518 deployed `book-class-with-access` Edge Function version 7, which validates
+   the user JWT and calls the internal RPC with the service role key.
+3. The security advisor WARN was cleared; the APP contract is preserved through the Edge Function.
+4. The expiry date 2026-06-10 passed without needing renewal because the architecture changed.
 
 ---
 
-## Consequences / Price
+## Current Canonical Path
 
-- Security advisor warning remains visible in Supabase Dashboard.
-- The accepted risk window is bounded: expires **2026-06-10**.
-- Monitoring required: watch for duplicate booking anomalies, unexpected
-  `user_passes` decrements, and failed/suspicious RPC calls.
+- APP client → `POST /functions/v1/book-class-with-access` with user JWT.
+- Edge Function validates JWT, then calls `book_class_with_access_internal(...)` via admin client.
+- Internal RPC performs atomic booking logic under service-role context.
 
----
-
-## Verification
-
-PASS condition for this ADR:
-- Decision note exists in canon (`docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md`) ✅
-- APP booking with valid pass succeeds.
-- Duplicate, expired-pass, no-visits, class-full cases return expected codes.
-- No unauthorized cross-user booking possible via this RPC (verified by `auth.uid()` guard).
-
----
-
-## Rollback / Reversal Trigger
-
-This decision is reversed when ANY of the following occurs:
-
-1. Evidence of cross-user booking abuse through this RPC.
-2. Unexpected `user_passes` decrement not tied to a legitimate booking.
-3. Security audit reveals a bypass path in the function body.
-4. A branch/staging-proven alternative implementation is ready.
-5. Expiry date 2026-06-10 passes without renewal — re-evaluate or remediate.
+For verification details, see `docs/RELEASE_EVIDENCE_2026_05_30.md`.
 
 ---
 
 ## ∆DΩΛ
 
-- ∆ Decision recorded in ADR canon.
-- D Evidence: live function definition confirmed via `pg_get_functiondef`; APP caller
-  identified at `dataService.ts:154`; security decision note at
-  `docs/SECURITY_DECISION_BOOK_CLASS_WITH_ACCESS_2026_05_27.md`.
-- Ω 0.82 — high confidence the function is correctly guarded for current threat model;
-  residual risk from missed ownership predicate or future edit under definer context.
-- Λ Reversal on abuse evidence, audit finding, or expiry 2026-06-10.
+- ∆ ADR superseded by architectural change.
+- D `docs/RELEASE_EVIDENCE_2026_05_30.md`, live function source, migration ledger.
+- Ω 1.0 — superseded by verified code change.
+- Λ Re-open only if the Edge Function boundary is removed and the authenticated RPC is restored.
