@@ -1,125 +1,83 @@
 # Edge Functions Reference | KateStudio
 
-> **Обновлено:** 28 мая 2026 | **Версия:** 3.2.3
-> Ниже разделены repo inventory и live inventory. Их смешивать по-прежнему нельзя.
-> APP-target YooKassa pair is live and canonical; legacy trio remains deployed
-> only as retired-in-place stubs.
+> **Обновлено:** 16 июня 2026 | **Версия:** 3.3.0
+> Source of truth for this file: GitHub branch `codex/security-retire-live-ai-cron-20260616` + live Supabase function inventory for project `qkaycdcbstjobacmuaro` after the 2026-06-16 security hardening deploy.
 
 ---
 
-## 1. Repo inventory
+## 1. Current branch intent
 
-В `supabase/functions/` на `main` сейчас находятся **9** function folders:
+This change-set reconciles the live Edge Function surface with repo-tracked intent without reopening the legacy AI contour:
 
-| Function | Repo status | Notes |
+| Function | Branch status | Intended behavior |
 | --- | --- | --- |
-| `cancel-subscription` | present | retired-in-place stub |
-| `create-payment` | present | retired-in-place stub |
-| `create-yookassa-checkout` | present | app-target YooKassa checkout |
-| `cron-maintenance` | present | ops |
-| `gemini-proxy` | present | repo AI contour |
-| `payment-webhook` | present | retired-in-place stub |
+| `ai-run` | present | retired-in-place stub; JWT required; returns controlled `410` for POST |
+| `ai-embeddings` | present | retired-in-place stub; JWT required; returns controlled `410` for POST |
+| `cron-maintenance` | present | custom bearer cron endpoint; fails closed if `CRON_SECRET` is missing or invalid |
+| `gemini-proxy` | present | canonical supported AI contour |
+| `create-yookassa-checkout` | present | canonical APP YooKassa checkout |
+| `yookassa-webhook` | present | canonical APP YooKassa callback |
+| `create-payment` | present | legacy payment stub |
+| `payment-webhook` | present | legacy payment stub |
+| `cancel-subscription` | present | legacy payment/subscription stub |
+| `book-class-with-access` | present | authenticated APP booking/access wrapper |
 | `send-push` | present | notifications |
 | `subscribe-newsletter` | present | public marketing/signup path |
-| `yookassa-webhook` | present | app-target YooKassa callback |
 
 ---
 
-## 2. Live inventory
+## 2. Live inventory after deploy
 
-Live Supabase project `qkaycdcbstjobacmuaro` currently reports **11 active functions**:
+Live Supabase currently reports **12 active functions**:
 
 | Function | JWT | Version | Live status |
 | --- | --- | --- | --- |
-| `ai-run` | true | 7 | ACTIVE |
-| `ai-embeddings` | true | 7 | ACTIVE |
-| `create-payment` | true | 7 | ACTIVE, retired-in-place stub |
-| `payment-webhook` | false | 6 | ACTIVE, retired-in-place stub |
-| `cancel-subscription` | true | 7 | ACTIVE, retired-in-place stub |
-| `cron-maintenance` | false | 5 | ACTIVE |
+| `ai-run` | true | 8 | ACTIVE, retired-in-place AI stub |
+| `ai-embeddings` | true | 8 | ACTIVE, retired-in-place AI stub |
+| `create-payment` | true | 7 | ACTIVE, retired-in-place payment stub |
+| `payment-webhook` | false | 7 | ACTIVE, retired-in-place payment stub |
+| `cancel-subscription` | true | 7 | ACTIVE, retired-in-place payment/subscription stub |
+| `cron-maintenance` | false | 6 | ACTIVE, custom bearer auth, fail-closed on missing/invalid `CRON_SECRET` |
 | `send-push` | false | 5 | ACTIVE |
 | `subscribe-newsletter` | false | 5 | ACTIVE |
-| `gemini-proxy` | true | 5 | ACTIVE |
-| `create-yookassa-checkout` | true | 7 | ACTIVE |
-| `yookassa-webhook` | false | 5 | ACTIVE |
+| `gemini-proxy` | true | 5 | ACTIVE, canonical supported AI contour |
+| `create-yookassa-checkout` | true | 7 | ACTIVE, canonical APP payment path |
+| `yookassa-webhook` | false | 5 | ACTIVE, signed webhook path |
+| `book-class-with-access` | true | 7 | ACTIVE, authenticated APP access booking path |
 
 ---
 
 ## 3. Drift map
 
-### Present in both repo and live
+### Closed by this change-set
 
-- `cancel-subscription`
-- `create-payment`
-- `create-yookassa-checkout`
-- `cron-maintenance`
-- `gemini-proxy`
-- `payment-webhook`
-- `send-push`
-- `subscribe-newsletter`
-- `yookassa-webhook`
+- `ai-run` is no longer a live-only source surface on this branch.
+- `ai-embeddings` is no longer a live-only source surface on this branch.
+- `cron-maintenance` no longer has the old fail-open behavior when `CRON_SECRET` is absent.
 
-### Live-only
+### Still true until merge
 
-- `ai-run`
-- `ai-embeddings`
-
-### Repo-only
-
-- none on the payment surface
+- `main` is not reconciled until this branch is merged.
+- Full release PASS still requires a fresh green CI/release receipt for this branch or the post-merge SHA.
 
 ---
 
-## 4. Meaning of the drift
+## 4. Operational rules
 
-The key payment drift changed shape again.
-
-Old framing that is now stale:
-- live had an active dual payment contour that was still operationally open.
-
-Current framing:
-- app-target pair (`create-yookassa-checkout`, `yookassa-webhook`) remains the only canonical live payment path;
-- legacy trio (`create-payment`, `payment-webhook`, `cancel-subscription`) remains deployed only as retired-in-place stubs returning controlled retirement responses;
-- live AI and repo AI contours are still not identical because `ai-run` and `ai-embeddings` remain live-only;
-- fresh release-path green CI after the final retirement sync is still unverified.
-
-So the payment problem is no longer contour ambiguity. The remaining release truth gap is now **fresh post-retirement release verification**, not active dual payment ownership.
+1. Treat `gemini-proxy` as the only supported AI operation path.
+2. Treat `ai-run` and `ai-embeddings` as compatibility stubs only, not product features.
+3. Do not reintroduce service-role AI writes from user-controlled payloads without a new design review.
+4. Keep `cron-maintenance` with `verify_jwt=false` only because it has custom bearer auth and is called by scheduled infrastructure.
+5. Never allow `cron-maintenance` to run privileged tasks when `CRON_SECRET` is missing.
+6. Keep APP payment ownership on `create-yookassa-checkout` + `yookassa-webhook`.
+7. Do not use historical late-May function counts as present-tense truth.
 
 ---
 
-## 5. Operational rules
+## 5. Release implication
 
-1. Do not assume a repo folder means a live endpoint is still operational in the old business sense.
-2. Do not assume a deployed live endpoint is intended for continued product use.
-3. Do not describe the app-target YooKassa pair as repo-only or not-yet-live; that wording is stale.
-4. Do not describe the legacy trio as active transitional payment surfaces; they are now retired in place.
-5. WEB should remain on Telegram / lead-form onboarding unless the business operating model changes explicitly.
-6. APP payment work should treat `create-yookassa-checkout` + `yookassa-webhook` as the canonical live contour.
-7. Do not present function-side retirement as full launch proof until a fresh green release-path CI run is actually verified.
-8. AI changes still require an explicit decision because live AI and repo AI shapes are not identical.
+Current security posture improved from the previous FAIL gate, but release status remains **PARTIAL** until:
 
----
-
-## 6. Documentation correction
-
-Current truth:
-
-- repo functions: **9**
-- live functions: **11**
-- APP-target payment pair: **present in both repo and live**
-- legacy payment trio: **present in both repo and live, but retired in place**
-- inventories: **not identical overall because of live-only AI functions**
-- business canon: WEB non-payment, APP payment, RuStore publication/proof layer
-
-That means operational docs must no longer speak as if the live payment problem is an unresolved dual contour.
-
----
-
-## 7. Next verification step
-
-After the retired-in-place sync:
-
-1. keep WEB on Telegram / lead-form onboarding only,
-2. obtain fresh release-path CI proof,
-3. rebuild the release gate on the post-retirement canon,
-4. decide whether `ai-run` / `ai-embeddings` remain canonical or transitional beside `gemini-proxy`.
+1. the branch has fresh green CI;
+2. the branch is merged or otherwise promoted intentionally;
+3. the final release receipt is attached to the exact promoted SHA.

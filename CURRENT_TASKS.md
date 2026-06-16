@@ -1,15 +1,8 @@
 # Текущие задачи
 
-> **Update 2026-05-28:** targeted reconciliation pass for live delta
-> `20260518205158_create_dataset_runs_and_artifacts` is now accepted as
-> **forward reconciliation**, not an open release blocker. Legacy payment trio is
-> now **retired in place** in live, so the old dual payment contour is no longer
-> an active release/security blocker.
-
-> **Обновлено:** 28 мая 2026 | **Версия:** 5.6.5
-> Источник истины: GitHub `main` + live Supabase metadata, function inventory,
-> advisors и проверенные CI артефакты.
-> Текущий режим: `release-candidate / post-retirement canon sync`.
+> **Обновлено:** 16 июня 2026 | **Версия:** 5.7.0
+> Источник истины: GitHub branch `codex/security-retire-live-ai-cron-20260616` + live Supabase metadata/advisors after the 2026-06-16 security hardening deploy.
+> Текущий режим: `release-candidate / security hardening PR pending CI`.
 
 ---
 
@@ -17,71 +10,53 @@
 
 | Метрика | Значение | Основание |
 | --- | --- | --- |
-| Live applied migrations | **41** | live `list_migrations` reaches `20260518205158_create_dataset_runs_and_artifacts` |
-| Repo/live tail reconciliation | **PARTIAL, ACCEPTED FORWARD RECONCILIATION** | exact match for `20260516182944`; semantic mappings exist for `20260516202546` and `20260516202845`; `20260518205158` is now covered by accepted forward reconciliation artifact `20260527174716_reconcile_dataset_runs_artifacts_forward.sql` |
-| Live Edge Functions | **11** | Supabase `list_edge_functions` |
-| Live security advisors | **1 warning** | `book_class_with_access` remains flagged as authenticated security-definer RPC, but is accepted in canon as a narrow wrapper with branch-proof evidence |
-| Live performance advisors | **warnings remain** | initplan + permissive-policy fan-out + unused indexes; non-gating in this pass |
-| Live APP payment tables | **present** | direct metadata confirms `payment_orders` and `user_passes` exist |
-| Live legacy payment trio | **retired in place** | `create-payment`, `payment-webhook`, `cancel-subscription` remain deployed but now return controlled retirement stubs |
-| Live app-target payment pair | **present** | `create-yookassa-checkout` and `yookassa-webhook` remain active as the canonical live payment path |
-| Fresh green CI on current `main` release path | **UNVERIFIED IN THIS PASS** | not re-checked after the final retirement-in-place sync |
-| Latest verified green CI signal | **repo evidence exists** | prior green release-path evidence remains; CI is now a larger remaining uncertainty than payment contour drift |
-
-Главное изменение по сравнению с предыдущим каноном: legacy payment trio больше
-не держится как active dual contour. В live он теперь зафиксирован как
-`retired in place`.
-
-Второе важное изменение: `book_class_with_access` больше не держится как
-неопределённое accepted-risk окно. В текущем каноне он принят как narrow
-`SECURITY DEFINER` wrapper с branch-proof evidence и сохранённым APP contract.
+| Live applied migrations | **42** | Supabase `list_migrations` reaches `20260530155036_security_reconcile_grants_search_path_book_class_ledger` |
+| Live Edge Functions | **12** | Supabase `list_edge_functions` after deploy |
+| Live security advisors | **0 WARN / 9 INFO** | Supabase security advisors; INFO entries are `rls_enabled_no_policy` on empty/scaffold tables |
+| Legacy AI contour | **retired in place** | `ai-run` v8 and `ai-embeddings` v8 return controlled retirement responses and still require JWT |
+| Canonical AI contour | **`gemini-proxy`** | only supported AI operation path in this branch |
+| Cron maintenance auth boundary | **hardened** | `cron-maintenance` v6 fails closed if `CRON_SECRET` is missing or invalid |
+| Live APP payment path | **canonical** | `create-yookassa-checkout` + `yookassa-webhook` remain active |
+| Live legacy payment trio | **retired in place** | `create-payment`, `payment-webhook`, `cancel-subscription` remain controlled stubs |
+| Fresh CI/release receipt for this branch | **PENDING** | PR/CI receipt must be attached before release PASS |
 
 ---
 
-## ✅ Что подтверждено
+## Что изменено в минимальном change-set
 
-| # | Задача | Статус | Что изменилось |
+| # | Задача | Статус | Что подтверждено |
 | --- | --- | --- | --- |
-| 1 | Зафиксировать live baseline выше 16 мая | DONE | current live baseline remains `41 migrations / 11 functions` |
-| 2 | Подтвердить app-target payment contour в live | DONE | `create-yookassa-checkout` + `yookassa-webhook` remain active |
-| 3 | Подтвердить repo/live совпадение по app-target payment schema surface | DONE | `payment_orders` and `user_passes` are present in live and tracked in repo canon |
-| 4 | Сузить migration-sync uncertainty | DONE | live `20260516202546` and `20260516202845` remain semantically mapped to repo files |
-| 5 | Зафиксировать verdict по `20260518205158` | DONE | live delta is treated as **accepted forward reconciliation**, not as an unresolved blocker |
-| 6 | Сохранить WEB non-payment canon | DONE | docs keep WEB as storefront-only surface |
-| 7 | Подтвердить текущий live security tail | DONE | only `book_class_with_access` remains in security advisors, and its wrapper posture is accepted in canon |
-| 8 | Закрыть dual payment contour как live blocker | DONE | legacy trio is now retired in place; app-target pair remains the only active canonical payment path |
-| 9 | Принять branch-proof verdict по `book_class_with_access` | DONE | narrow `SECURITY DEFINER` wrapper accepted with canonical-class persistence and self-scoped pass usage evidence |
+| 1 | Disable/harden `ai-run` | DONE | live v8 is a JWT-protected retired stub |
+| 2 | Disable/harden `ai-embeddings` | DONE | live v8 is a JWT-protected retired stub |
+| 3 | Make `cron-maintenance` fail closed | DONE | live v6 returns `server_misconfigured` if `CRON_SECRET` is absent and `unauthorized` on invalid bearer |
+| 4 | Track legacy AI stubs in repo | DONE ON BRANCH | branch adds `supabase/functions/ai-run/index.ts` and `supabase/functions/ai-embeddings/index.ts` |
+| 5 | Refresh release truth docs | IN PROGRESS | current docs no longer use the stale `41 / 11 / 1 warning` snapshot |
+| 6 | Attach fresh CI/release receipt | PENDING | required before full release PASS |
 
 ---
 
-## 🔴 Открытые release/security blockers
+## Открытый release/security blocker
 
-В текущем каноне нет больше отдельного live payment blocker-а.
-
-Оставшийся честный open item перед full production PASS:
-
-| # | Задача | Статус | Почему это открыто |
-| --- | --- | --- | --- |
-| 1 | Пересобрать и подтвердить fresh same-ref release gate | ⏳ | после финального retirement-in-place sync нужен свежий release verdict поверх текущего `main` и live state |
+| Priority | Blocker | Current fact |
+| --- | --- | --- |
+| P0 | Fresh exact-ref release proof | live is hardened, but the repo branch still needs green CI and promotion/merge before it can be called a release PASS |
 
 ---
 
-## 🟠 Background follow-up (non-gating in this pass)
+## Background follow-up, non-gating in this change-set
 
 | # | Задача | Статус | Примечание |
 | --- | --- | --- | --- |
-| 2 | Разобрать `app_settings` public reads outside `studio_contacts` | ⏳ | keep as runtime/governance follow-up, not as current release blocker |
-| 3 | Разобрать empty `site_images` dataset | ⏳ | accepted as non-blocking in current runtime posture |
-| 4 | Явно зафиксировать canonical AI contour | ⏳ | live keeps `ai-run` / `ai-embeddings` alongside `gemini-proxy` |
-| 5 | Полностью reconcile older repo/live migration history | ⏳ | still useful for long-term hygiene, but `20260518205158` is no longer gating |
-| 6 | Regenerate `shared/types/database.types.ts` after accepted baseline | ⏳ | do this only after broader baseline housekeeping is intentionally scheduled |
-| 7 | Reduce permissive-policy fan-out and initplan noise | ⏳ | performance advisors remain non-gating in this pass |
+| 1 | Decide whether to delete retired AI endpoints later | LATER | current safer move is retire-in-place, not deletion |
+| 2 | Review INFO-only RLS tables | LATER | advisors are INFO, not WARN; keep as housekeeping unless data appears in those tables |
+| 3 | Regenerate DB types after accepted baseline | LATER | useful hygiene, not part of this minimal security patch |
+| 4 | Runtime/browser E2E smoke | LATER | needs normal browser/app flow and test identities, outside this connector-only change-set |
 
 ---
 
 ## Ближайший рабочий шаг
 
-1. Пересобрать общий release gate на текущем `main` и live state после retirement-in-place sync.
+1. Open the PR for `codex/security-retire-live-ai-cron-20260616`, wait for CI, and use the exact branch/PR SHA as the release receipt.
 
 ---
 
@@ -89,9 +64,8 @@
 
 | Домен | Статус |
 | --- | --- |
-| Repo/live docs coherence | PARTIAL, but `20260518205158`, `book_class_with_access`, and legacy payment retirement are now reconciled in canon |
-| Live Supabase governance | PARTIAL |
-| Migration-sync | PARTIAL with accepted forward reconciliation for `20260518205158` |
-| Live payment surface | CANONICAL APP-TARGET; legacy trio retired in place |
-| Live security advisors | **1 warning remaining** (`book_class_with_access`, accepted in canon as narrow wrapper) |
-| Overall launch readiness | **PARTIAL** until a fresh same-ref release gate is attached to the post-retirement canon |
+| Live Supabase security advisors | PASS at WARN level; INFO remains |
+| Live Edge Function auth posture | PARTIAL+; target risks are fixed, but final release proof pending |
+| Repo/live function drift | PARTIAL; fixed on branch/live, not yet merged to `main` |
+| Docs truth | PARTIAL; current release docs refreshed, historical docs remain historical |
+| Overall launch readiness | **PARTIAL** until fresh exact-ref CI/release receipt is green and attached |
