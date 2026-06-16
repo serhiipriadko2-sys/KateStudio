@@ -1,5 +1,8 @@
 name: Daily Maintenance Cron
 
+permissions:
+  contents: read
+
 # Runs daily at 03:00 UTC (06:00 Moscow time)
 on:
   schedule:

@@ -1,3 +1,9 @@
+# Local Supabase CLI configuration.
+# project_id below is the LOCAL development project identifier used by
+# `supabase start` / `supabase stop`. It is NOT the live project ref.
+# Live project ref: qkaycdcbstjobacmuaro
+# Never run `supabase db push` or `supabase functions deploy` against live
+# from this local config without an explicit `supabase link` to the live ref.
 project_id = "katestudio-supabase-rehearsal"
 
 [api]

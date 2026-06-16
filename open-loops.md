@@ -9,27 +9,34 @@
 
 ### 1. `supabase/config.toml` targets rehearsal project, not live
 
-- **Context:** `supabase/config.toml` declares `project_id = "katestudio-supabase-rehearsal"` while all tooling and MCP point to live ref `qkaycdcbstjobacmuaro`.
+- **Context:** `supabase/config.toml` declared `project_id = "katestudio-supabase-rehearsal"` while all tooling and MCP point to live ref `qkaycdcbstjobacmuaro`.
 - **Risk:** Accidental `supabase db push` / `supabase functions deploy` against the wrong project.
-- **Evidence:** `supabase/config.toml` line 1; `.mcp.json`, `.vscode/mcp.json`, AGENTS.md live ref.
-- **Next:** Align `config.toml` `project_id` with live ref, or isolate rehearsal config behind explicit guard comments and never use it for live ops.
-- **Status:** open
+- **Evidence:** `supabase/config.toml`; `.mcp.json`, `.vscode/mcp.json`, AGENTS.md live ref.
+- **Fix:** Added explicit comments clarifying local-vs-live project id and warning against accidental live ops.
+- **Next:** Verify in PR review; consider renaming local project_id to `katestudio-local-dev` if local volumes can be rebuilt.
+- **Status:** in_progress
 
 ### 2. GitHub Actions workflows lack least-privilege `permissions`
 
-- **Context:** `ci.yml`, `capacitor-build.yml`, `cron.yml`, `firebase-deploy.yml` do not declare top-level `permissions:`.
+- **Context:** `ci.yml`, `capacitor-build.yml`, `cron.yml`, `firebase-deploy.yml` did not declare top-level `permissions:`.
 - **Risk:** `GITHUB_TOKEN` gets broad default scopes; increased blast radius if token is compromised.
 - **Evidence:** `.github/workflows/*.yml`.
-- **Next:** Add explicit `permissions:` blocks to each workflow (e.g., `contents: read` at top level, job-level overrides where needed).
-- **Status:** open
+- **Fix:** Added `permissions:` blocks:
+  - `ci.yml`: `contents: read`, `actions: write`
+  - `capacitor-build.yml`: `contents: read`, `actions: write` (write implies read for artifact download/upload)
+  - `cron.yml`: `contents: read`
+  - `firebase-deploy.yml`: `contents: read`, `checks: write`
+- **Next:** Confirm CI green on the PR; adjust scopes if any action fails.
+- **Status:** in_progress
 
 ### 3. `scripts/create-admin.ts` logs plaintext password
 
-- **Context:** The script prints the generated admin password via `console.log('Password: ${password}')`.
+- **Context:** The script printed the admin password via `console.log('Password: ${password}')` and usage example showed a sample password.
 - **Risk:** Secret leak in CI logs, terminal history, or process output.
 - **Evidence:** `scripts/create-admin.ts`.
-- **Next:** Remove the log line or emit a one-time URL/token instead.
-- **Status:** open
+- **Fix:** Removed password log line; replaced sample password in usage help with `<password>` placeholder.
+- **Next:** Merge PR; consider requiring password via secure prompt instead of CLI arg in future.
+- **Status:** in_progress
 
 ---
 

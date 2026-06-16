@@ -55,12 +55,12 @@
 
 ---
 
-## 5. HIGH-RISK DRIFT (open)
+## 5. HIGH-RISK DRIFT (fixes in progress)
 
-- `[FACT]` `supabase/config.toml` declares `project_id = "katestudio-supabase-rehearsal"`, which does **not** match the live project ref `qkaycdcbstjobacmuaro`. Risk: accidental local CLI operations against the wrong project.
-- `[FACT]` `.github/workflows/ci.yml`, `capacitor-build.yml`, `cron.yml`, and `firebase-deploy.yml` do not declare least-privilege `permissions:` blocks.
-- `[FACT]` `scripts/create-admin.ts` logs the generated admin password to stdout (`console.log('Password: ${password}')`).
-- `[INTERP]` These three items are the highest-priority security fixes before the next production change.
+- `[FACT]` `supabase/config.toml` declares `project_id = "katestudio-supabase-rehearsal"`, which does **not** match the live project ref `qkaycdcbstjobacmuaro`. Risk: accidental local CLI operations against the wrong project. **Fix applied:** added explicit comments distinguishing local project id from live ref and warning against accidental live ops.
+- `[FACT]` `.github/workflows/ci.yml`, `capacitor-build.yml`, `cron.yml`, and `firebase-deploy.yml` previously did not declare least-privilege `permissions:` blocks. **Fix applied:** added `permissions:` blocks with minimal required scopes.
+- `[FACT]` `scripts/create-admin.ts` logged the generated admin password to stdout (`console.log('Password: ${password}')`). **Fix applied:** removed the password log line and replaced the sample password in usage help with `<password>` placeholder.
+- `[INTERP]` These fixes are staged; they will be closed after PR merge and CI green.
 
 ---
 

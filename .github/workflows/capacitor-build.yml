@@ -1,5 +1,9 @@
 name: Capacitor Native Build
 
+permissions:
+  contents: read
+  actions: write
+
 on:
   workflow_dispatch:
     inputs:
