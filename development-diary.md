@@ -1,5 +1,23 @@
 # Development Diary
 
+## 2026-06-16 — Security fixes for three HIGH-RISK drift items
+
+- **Context:** Follow-up to governance/memory sync. Three HIGH-RISK security items were identified in `open-loops.md`.
+- **Changes:**
+  - `supabase/config.toml`: added explicit comments clarifying that `project_id` is the local dev identifier and not the live ref `qkaycdcbstjobacmuaro`.
+  - `.github/workflows/ci.yml`, `capacitor-build.yml`, `cron.yml`, `firebase-deploy.yml`: added least-privilege `permissions:` blocks.
+  - `scripts/create-admin.ts`: removed plaintext password logging; updated usage example to use `<password>` placeholder.
+- **Evidence:**
+  - Prettier check passed for modified YAML/TS files.
+  - `npm run typecheck` passed.
+  - `npm run lint` passed.
+  - `npm run check:migrations` passed.
+- **Risk:** Workflow permissions may need refinement if a specific action requires additional scopes; CI run on the PR will confirm.
+- **Next:** Open PR with these changes, get CI green, merge, then close the items in `open-loops.md`.
+- **Status:** in_progress
+
+---
+
 ## 2026-06-16 — Governance and memory stack sync after full sweep
 
 - **Context:** Ran full scientific sweep across agent, GitHub, Supabase, docs, memory, and runtime surface. Found operational canon drifting from committed code and live state.
@@ -16,7 +34,7 @@
 - **Next:**
   1. Submit PR fixing the three HIGH-RISK security items.
   2. Keep memory files updated after each significant pass.
-- **Status:** in_progress
+- **Status:** done
 
 ---
 

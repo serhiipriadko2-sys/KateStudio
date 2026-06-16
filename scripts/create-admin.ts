@@ -89,8 +89,8 @@ async function createAdmin(email: string, password: string, name: string) {
   console.log('\n✅ Admin created successfully!');
   console.log(`\n📌 Login credentials:`);
   console.log(`   Email: ${email}`);
-  console.log(`   Password: ${password}`);
   console.log(`   Admin Panel: http://localhost:5173/admin`);
+  console.log('   Password: <supplied via CLI argument, not logged)');
 }
 
 async function ensureAdmin(userId: string) {
@@ -123,7 +123,7 @@ const [, , email, password, name] = process.argv;
 if (!email || !password) {
   console.log('📖 Usage: npx tsx scripts/create-admin.ts <email> <password> [name]');
   console.log('\nExample:');
-  console.log('  npx tsx scripts/create-admin.ts admin@ksebe.ru SecurePass123 "Катя Габран"');
+  console.log('  npx tsx scripts/create-admin.ts admin@ksebe.ru <password> "Катя Габран"');
   process.exit(1);
 }
 
