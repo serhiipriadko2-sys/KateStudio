@@ -22,6 +22,7 @@ coverage/
 
 # IDE - Include shared settings, exclude personal
 .idea/
+.codex/
 *.swp
 *.swo
 *~
