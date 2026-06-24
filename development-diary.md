@@ -46,3 +46,12 @@
 - Risk: Codex must be restarted before the newly installed skill is picked up by future sessions.
 - Next: Restart Codex, then invoke the skill when a task needs dynamic workflow orchestration.
 - Status: verified
+
+## 2026-06-24 — WEB trainers section temporarily hidden
+
+- Context: User requested the WEB trainers/teachers section be made temporarily invisible.
+- Finding: [FACT] `k-sebe-yoga-studioWEB/App.tsx` now uses `IS_TRAINERS_SECTION_VISIBLE = false` to hide the homepage trainers preview, remove the trainers item from the mobile menu, and redirect `/trainers` and `/trainers/:slug` to `/` while hidden.
+- Evidence: `npm run typecheck` passed; `npm run build:web` passed with existing Vite chunk-size warning.
+- Risk: [INTERP] Admin trainer management and shared trainer data remain unchanged; public routes are only code-gated in WEB, not deleted.
+- Next: Flip `IS_TRAINERS_SECTION_VISIBLE` back to `true` when the public trainers section should return.
+- Status: verified

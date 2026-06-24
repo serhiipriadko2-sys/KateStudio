@@ -10,7 +10,7 @@ import {
 } from '@ksebe/shared';
 import { Menu, X, Send, RefreshCcw, WifiOff } from 'lucide-react';
 import { lazy, Suspense, useState, useEffect, useRef } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Navigate, Routes, Route, useNavigate } from 'react-router-dom';
 import { About } from './components/About';
 import { BookingModal } from './components/BookingModal';
 import { Contact } from './components/Contact';
@@ -45,6 +45,8 @@ const TrainersPage = lazy(() =>
 const TrainerProfilePage = lazy(() =>
   import('./components/TrainerProfilePage').then((m) => ({ default: m.TrainerProfilePage }))
 );
+
+const IS_TRAINERS_SECTION_VISIBLE = false;
 
 function App() {
   useEffect(() => {
@@ -227,7 +229,7 @@ function App() {
       <FirstVisit onBook={() => openBooking({ type: 'Первый визит (Консультация)' })} />
       <Gallery />
       <Pricing onBook={(plan, price) => openBooking({ type: plan, price })} />
-      <TrainersPreview />
+      {IS_TRAINERS_SECTION_VISIBLE && <TrainersPreview />}
       <Schedule onBook={(details) => openBooking(details)} />
       <InstagramFeed />
       <Reviews />
@@ -369,7 +371,7 @@ function App() {
                 'Галерея',
                 'Стоимость',
                 'Расписание',
-                'Тренеры',
+                ...(IS_TRAINERS_SECTION_VISIBLE ? ['Тренеры'] : []),
                 'Отзывы',
                 'Контакты',
               ].map((item, i) => (
@@ -417,17 +419,25 @@ function App() {
             <Route
               path="/trainers"
               element={
-                <Suspense fallback={null}>
-                  <TrainersPage />
-                </Suspense>
+                IS_TRAINERS_SECTION_VISIBLE ? (
+                  <Suspense fallback={null}>
+                    <TrainersPage />
+                  </Suspense>
+                ) : (
+                  <Navigate to="/" replace />
+                )
               }
             />
             <Route
               path="/trainers/:slug"
               element={
-                <Suspense fallback={null}>
-                  <TrainerProfilePage />
-                </Suspense>
+                IS_TRAINERS_SECTION_VISIBLE ? (
+                  <Suspense fallback={null}>
+                    <TrainerProfilePage />
+                  </Suspense>
+                ) : (
+                  <Navigate to="/" replace />
+                )
               }
             />
           </Routes>
