@@ -9,11 +9,12 @@ interface SEOProps {
   url?: string;
 }
 
-const DEFAULT_TITLE = 'К себе — Студия йоги К Себе';
+const DEFAULT_TITLE = 'К себе — студия йоги в Дубне';
 const DEFAULT_DESCRIPTION =
-  'Студия йоги в Дубне. Inside Flow, Хатха-йога, саундхилинг. Пространство для гармонии тела и души.';
+  'Студия йоги в Дубне: Inside Flow, хатха-йога, саундхилинг и мягкие практики для тела и внимания.';
 const DEFAULT_IMAGE = '/og-image.jpg';
-const SITE_URL = 'https://ksebe.yoga';
+const SITE_URL = 'https://ksebe-studio.ru';
+const SITE_NAME = 'К себе';
 
 export const SEO: React.FC<SEOProps> = ({
   title = DEFAULT_TITLE,
@@ -37,6 +38,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="og:type" content={type} />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:title" content={fullTitle} />
+      <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={fullImage} />
 
