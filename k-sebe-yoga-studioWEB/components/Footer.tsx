@@ -195,7 +195,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin, onOpenLegal }) => {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/20">
-          <p>© {new Date().getFullYear()} Катя Габран. Все права защищены.</p>
+          <p>© {new Date().getFullYear()} Студия К Себе. Все права защищены.</p>
           <div className="flex flex-wrap gap-6 items-center justify-center">
             <button
               onClick={() => onOpenLegal?.('privacy')}
