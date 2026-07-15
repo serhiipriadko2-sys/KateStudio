@@ -21,7 +21,7 @@
 - `[FACT]` Live applied migrations: 41 (ledger tail `20260530155036_security_reconcile_grants_search_path_book_class_ledger`).
 - `[FACT]` Live Edge Functions: 12 active (`ai-run`, `ai-embeddings`, `book-class-with-access`, `cancel-subscription`, `create-payment`, `create-yookassa-checkout`, `cron-maintenance`, `gemini-proxy`, `payment-webhook`, `send-push`, `subscribe-newsletter`, `yookassa-webhook`).
 - `[FACT]` All `public.*` tables have `rls_enabled = true`.
-- `[FACT]` Supabase security advisors: no WARN lints after 2026-05-30 reconciliation; remaining notices are INFO-level (RLS enabled/no policy on empty/scaffold tables, unused indexes, multiple permissive policies, initplan hints).
+- `[FACT]` Supabase security advisors: no WARN lints after 2026-05-30 reconciliation; remaining notices are INFO-level (unused indexes, connection limits). RLS warnings (`auth_rls_initplan`, `multiple_permissive_policies`) resolved on 2026-07-15.
 
 ---
 
@@ -75,7 +75,6 @@
 
 ## 7. Residual non-blocking follow-up
 
-- `[INTERP]` Consolidate multiple permissive RLS policies and resolve `auth_rls_initplan` warnings when performance becomes material.
 - `[INTERP]` Decide canonical AI contour (`ai-run`/`ai-embeddings` vs `gemini-proxy`).
 - `[INTERP]` Add e2e smoke tests to reduce manual release-gate work.
 - `[INTERP]` Review and merge open Dependabot branches (Capacitor, dompurify, firebase, etc.).
