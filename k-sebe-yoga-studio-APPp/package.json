@@ -36,7 +36,7 @@
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
-    "@capacitor/android": "8.3.3",
+    "@capacitor/android": "8.4.1",
     "@capacitor/cli": "8.3.3",
     "@capacitor/ios": "8.3.3",
     "@tailwindcss/postcss": "^4.3.0",
