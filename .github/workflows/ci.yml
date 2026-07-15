@@ -180,6 +180,12 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Download WEB artifact
+        uses: actions/download-artifact@v6
+        with:
+          name: web-build
+          path: k-sebe-yoga-studioWEB/dist
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
