@@ -6,7 +6,7 @@ test.describe('Smoke Tests - WEB', () => {
     await page.goto('/');
 
     // Check that the title is correct
-    await expect(page).toHaveTitle(/К себе — Студия йоги К Себе/);
+    await expect(page).toHaveTitle(/К себе — студия йоги в Дубне/);
 
     // Check that the hero text we just updated is visible
     const heroText = page.locator('text=Студия К Себе').first();
