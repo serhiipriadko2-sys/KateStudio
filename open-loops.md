@@ -71,8 +71,8 @@
 - **Context:** Only unit/component tests and manual smoke checks exist.
 - **Risk:** Release gate remains partially manual.
 - **Evidence:** `docs/TESTING.md`, absence of Playwright/Cypress config.
-- **Next:** Add lightweight e2e smoke for critical booking/payment flows when bandwidth allows.
-- **Status:** open
+- **Next:** Resolved (Basic e2e smoke tests configured with Playwright and added to CI/CD on 2026-07-15).
+- **Status:** resolved
 
 ---
 

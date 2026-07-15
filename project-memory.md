@@ -76,5 +76,4 @@
 ## 7. Residual non-blocking follow-up
 
 - `[INTERP]` Decide canonical AI contour (`ai-run`/`ai-embeddings` vs `gemini-proxy`).
-- `[INTERP]` Add e2e smoke tests to reduce manual release-gate work.
 - `[INTERP]` Review and merge open Dependabot branches (Capacitor, dompurify, firebase, etc.).

@@ -64,7 +64,7 @@ export const Hero: React.FC<HeroProps> = ({ onBook }) => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
           <FadeIn delay={500} direction="up" className="md:w-1/2">
             <div className="text-xl md:text-2xl text-white font-light tracking-wide border-l border-white/40 pl-6 py-1 backdrop-blur-sm">
-              <p>Студия Кати Габран</p>
+              <p>Студия К Себе</p>
               <p className="text-white/80 text-base mt-1">Гармония тела и души в каждом движении</p>
             </div>
           </FadeIn>

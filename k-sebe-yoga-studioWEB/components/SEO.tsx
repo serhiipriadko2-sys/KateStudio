@@ -9,7 +9,7 @@ interface SEOProps {
   url?: string;
 }
 
-const DEFAULT_TITLE = 'К себе — Студия йоги Кати Габран';
+const DEFAULT_TITLE = 'К себе — Студия йоги К Себе';
 const DEFAULT_DESCRIPTION =
   'Студия йоги в Дубне. Inside Flow, Хатха-йога, саундхилинг. Пространство для гармонии тела и души.';
 const DEFAULT_IMAGE = '/og-image.jpg';

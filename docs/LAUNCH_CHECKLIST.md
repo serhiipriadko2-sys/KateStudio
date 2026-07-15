@@ -47,9 +47,7 @@ No live payment or security WARN blockers remain.
 
 | Priority | Blocker | Current fact |
 | --- | --- | --- |
-| P0 | `supabase/config.toml` project_id drift | `project_id = "katestudio-supabase-rehearsal"` does not match live ref `qkaycdcbstjobacmuaro` |
-| P0 | Missing workflow `permissions:` | four workflows use default token scopes |
-| P0 | Plaintext password logging | `scripts/create-admin.ts` prints generated password to stdout |
+| - | - | All P0 blockers from June 2026 are resolved in main |
 
 `book_class_with_access` is **not** listed here. It is now a service-role-only internal RPC behind the `book-class-with-access` Edge Function.
 
@@ -129,10 +127,10 @@ Launch PASS requires all of the following:
 3. WEB remains non-payment by design;
 4. APP payment contour is canonically owned and legacy payment contour is retired in place;
 5. live security warnings are resolved or explicitly accepted with evidence;
-6. **NEW:** `supabase/config.toml` project_id matches live or is explicitly isolated;
-7. **NEW:** GitHub Actions workflows declare least-privilege `permissions:`;
-8. **NEW:** no plaintext secrets are logged by scripts.
+6. **NEW:** `supabase/config.toml` project_id matches live or is explicitly isolated (satisfied);
+7. **NEW:** GitHub Actions workflows declare least-privilege `permissions:` (satisfied);
+8. **NEW:** no plaintext secrets are logged by scripts (satisfied).
 
-Current status: items 1–5 are satisfied. Items 6–8 are queued for the next PR and are **not** launch blockers for the already-deployed release, but they block the next production change.
+Current status: items 1–8 are satisfied.
 
 Live remediation packet: `docs/LIVE_REMEDIATION_PACKET_2026_05_27.md`.

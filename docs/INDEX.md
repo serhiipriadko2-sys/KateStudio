@@ -75,15 +75,15 @@ This file is committed onto `main`. Any commit that rewrites `docs/INDEX.md` adv
 
 ---
 
-## HIGH-RISK DRIFT (active)
+## HIGH-RISK DRIFT (resolved)
 
 | Issue | Source | Status |
 | --- | --- | --- |
-| `supabase/config.toml` `project_id` does not match live ref | `supabase/config.toml` line 1 vs `.mcp.json` / live metadata | open |
-| Missing least-privilege `permissions:` in workflows | `.github/workflows/ci.yml`, `capacitor-build.yml`, `cron.yml`, `firebase-deploy.yml` | open |
-| Plaintext password logging | `scripts/create-admin.ts` | open |
+| `supabase/config.toml` `project_id` does not match live ref | `supabase/config.toml` | closed |
+| Missing least-privilege `permissions:` in workflows | `.github/workflows/` | closed |
+| Plaintext password logging | `scripts/create-admin.ts` | closed |
 
-See `open-loops.md` for details and next steps.
+See `open-loops.md` for historical details.
 
 ---
 

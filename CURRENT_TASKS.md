@@ -46,13 +46,13 @@
 
 ---
 
-## 🔴 Открытые HIGH-RISK blockers
+## 🔴 Бывшие HIGH-RISK blockers (Устранены)
 
 | # | Задача | Статус | Почему это открыто |
 | --- | --- | --- | --- |
-| 1 | Выровнять `supabase/config.toml` project_id с live ref | ⏳ | `project_id = "katestudio-supabase-rehearsal"` ≠ `qkaycdcbstjobacmuaro`; риск accidental ops в не тот проект |
-| 2 | Добавить least-privilege `permissions:` в workflow-файлы | ⏳ | `ci.yml`, `capacitor-build.yml`, `cron.yml`, `firebase-deploy.yml` не декларируют scopes |
-| 3 | Убрать plaintext password logging из `scripts/create-admin.ts` | ⏳ | `console.log('Password: ...')` утекает secret в логи |
+| 1 | Выровнять `supabase/config.toml` project_id с live ref | ✅ DONE | Выполнено (отражено в main) |
+| 2 | Добавить least-privilege `permissions:` в workflow-файлы | ✅ DONE | Выполнено (отражено в main) |
+| 3 | Убрать plaintext password logging из `scripts/create-admin.ts` | ✅ DONE | Выполнено (отражено в main) |
 
 ---
 
@@ -73,10 +73,8 @@
 
 ## Ближайший рабочий шаг
 
-1. Создать PR, закрывающий три HIGH-RISK security item-а:
-   - `supabase/config.toml` project_id alignment;
-   - `permissions:` blocks в workflows;
-   - удаление `console.log('Password: ...')` из `scripts/create-admin.ts`.
+- [x] Три HIGH-RISK security item-а закрыты в `main` (проверено 2026-07-15).
+- Разобрать оставшиеся Medium-Risk items (RLS, выбор AI-контура, smoke тесты).
 
 ---
 

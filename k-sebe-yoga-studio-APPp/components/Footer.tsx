@@ -63,7 +63,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
           <div className="flex flex-col items-start">
             <Logo className="w-20 h-20 mb-6" color="#fff" />
             <p className="text-white/50 text-sm leading-relaxed mb-6">
-              Студия йоги Кати Габран.
+              Студия К Себе.
               <br />
               Гармония тела и души в каждом движении.
             </p>

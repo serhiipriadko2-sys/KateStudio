@@ -87,11 +87,7 @@
 
 `20260518205158` не остаётся open security blocker. Его статус — accepted forward reconciliation.
 
-Однако идентифицированы три HIGH-RISK security item-а, которые должны быть закрыты перед следующим production change:
-
-1. `supabase/config.toml` `project_id` mismatch — см. `open-loops.md`.
-2. Missing least-privilege `permissions:` в `.github/workflows` — см. `open-loops.md`.
-3. Plaintext password logging в `scripts/create-admin.ts` — см. `open-loops.md`.
+Три HIGH-RISK security item-а (config.toml project_id, workflow permissions, plaintext logging в create-admin) были закрыты и влиты в `main`. Открытых security blocker-ов перед production change нет.
 
 ---
 
