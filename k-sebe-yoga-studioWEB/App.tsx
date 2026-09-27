@@ -45,6 +45,9 @@ const TrainersPage = lazy(() =>
 const TrainerProfilePage = lazy(() =>
   import('./components/TrainerProfilePage').then((m) => ({ default: m.TrainerProfilePage }))
 );
+const LightnessTracker = lazy(() =>
+  import('./components/LightnessTracker').then((m) => ({ default: m.LightnessTracker }))
+);
 
 const IS_TRAINERS_SECTION_VISIBLE = false;
 
@@ -416,6 +419,14 @@ function App() {
         <main id="main-content" tabIndex={-1} className="flex-1">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route
+              path="/30-days"
+              element={
+                <Suspense fallback={null}>
+                  <LightnessTracker />
+                </Suspense>
+              }
+            />
             <Route
               path="/trainers"
               element={
